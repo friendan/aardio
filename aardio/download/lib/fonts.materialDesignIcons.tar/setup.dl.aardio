@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fonts\");
+fsys.copy( "\materialDesignIcons.aardio","~\lib\fonts\" ); 
+fsys.copy("\Material Design Icons.ttf","~/lib/fonts/.res/Material Design Icons.ttf");ide.loadPrivateFont("~/lib/fonts/.res/Material Design Icons.ttf")
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fonts.materialDesignIcons扩展库已安装成功!","aardio- fonts.materialDesignIcons扩展库安装程序")

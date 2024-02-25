@@ -1,0 +1,38 @@
+﻿
+class string.eventStream{
+	ctor( tab ){
+		
+		var r = {}
+		for k,v in ..table.eachName(tab){
+			if(type(v)=="table"){
+			 
+				if( v@[["_json"]] ) {
+					var is;
+					v,is = invoke(v@[["_json"]],v ); 
+					if(! (is && type(v)==="string") ){
+						v = ..web.json.stringify(v);
+					}
+				} 
+				elseif( ..time.istime(v)){
+					v = tostring(v.utc(true),`"%Y-%m-%dT%H:%M:%SZ"`);
+				}
+				else{
+					v = ..web.json.stringify(v);
+				}	
+			}
+			else{
+				v = tostring(v);
+			}
+			
+			..table.push(r,k,": ",v,'\r\n');
+		}
+		
+		..table.push(r,#r?'\r\n':'\r\n\r\n')
+		
+		return ..string.join(r);
+	}; 
+}
+
+/*****intellisense()
+string.eventStream(.(message) = 自动转换 response.eventStream 函数参数为 text/event-stream 格式
+end intellisense*****/

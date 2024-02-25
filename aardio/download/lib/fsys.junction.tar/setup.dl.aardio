@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\junction","~\lib\fsys\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.junction扩展库已安装成功!","aardio- fsys.junction扩展库安装程序")

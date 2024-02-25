@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\wsock\udp\");
+fsys.copy( "\xgimiClient.aardio","~\lib\wsock\udp\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("wsock.udp.xgimiClient 扩展库已安装成功!","aardio- wsock.udp.xgimiClient扩展库安装程序")

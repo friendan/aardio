@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\unrar","~\lib\fsys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.unrar扩展库已安装成功!","aardio- fsys.unrar扩展库安装程序")

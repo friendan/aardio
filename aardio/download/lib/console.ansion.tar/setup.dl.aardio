@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\console\");
+fsys.copy( "\ansion","~\lib\console\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("console.ansion扩展库已安装成功!","aardio- console.ansion扩展库安装程序")

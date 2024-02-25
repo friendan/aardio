@@ -1,0 +1,59 @@
+//入门
+import win.ui;
+var winform = win.form(text="第一个 aardio 程序")
+winform.add(
+	edit={cls="richedit";multiline=1;vscroll=1;edge=1;link=1;z=1;marginLeft=6;marginTop=6;marginRight=6;marginBottom=6}
+)
+
+winform.edit.print("aardio 读音🔊 ['ɑ:diəʊ] 。 
+请注意 aardio 的正确写法是：在任何时候都不要单独大写首字母。");
+
+/*
+aardio 语法速览
+https://mp.weixin.qq.com/s/wk2oe5USuBvTs3QWdjyYhw
+
+aardio 特殊符号用法大全
+https://bbs.aardio.com/forum.php?mod=viewthread&tid=11257&from=portal
+
+aardio 语法与使用手册
+chm://the%20language/basic%20syntax.html
+
+快捷键与小技巧
+https://bbs.aardio.com/forum.php?mod=viewthread&tid=13220&from=portal
+*/
+import web.json;
+winform.edit.print({
+	string = "字符串";
+	comment = /*注释也可以赋值为字符串*/;
+	number = 123;
+	object = {
+		name = "object";
+		value = { 
+			object = {
+				name = "object.object"
+			}
+		}
+	};
+	array = {1,2,3,4,5,6,7};
+	buffer = raw.buffer("二进制字节数组");
+	pointer = topointer(1);
+	time = time.now();
+	boolean = true || false;
+});
+
+winform.edit.print("《 aardio 快速入门教程 》
+https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2209804829378543621
+");
+
+//定义一个回调函数，在文本框中点击链接时自动触发此函数。
+winform.edit.onHyperlink =function(message,href){
+
+	//在链接上弹起鼠标左键
+	if( message = 0x202/*_WM_LBUTTONUP*/ ) {
+		import process;
+		process.openUrl(href/*超链接*/);
+	}
+}
+
+winform.show();
+win.loopMessage();

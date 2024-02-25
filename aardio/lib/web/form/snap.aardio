@@ -1,0 +1,63 @@
+﻿//snap 网页截图
+import win.ui;
+import web.form;
+import gdi;
+import gdip.bitmap;
+import com.interface.IViewObject2;
+
+namespace web.form;
+
+class snap{
+	ctor(wb,filepath,quality,windowWidth,windowHeight){
+		if(type.isString(wb)){
+			if(!defaultBrowser){
+				var winform = ..win.form(right=1;bottom=1;border="none");
+				winform.messageOnly();
+				
+				defaultBrowser = ..web.form( winform ); 
+				defaultBrowser.noScriptErr = true; 
+			}
+			
+			defaultBrowser._form.width = windowWidth : 1280;
+			defaultBrowser._form.height = windowHeight : 720;
+			
+			var url = wb;
+			defaultBrowser.go(url);
+			defaultBrowser.wait(); 
+			
+			wb = defaultBrowser;
+		}
+		
+    	var _,_,width,height = ..win.getPos(wb.hwndEmbedding); 
+    	var _,_,docWidth,docHeight = wb.scrollPos(); 
+    	
+    	if(wb === defaultBrowser && !(windowWidth || windowHeight)){
+    		defaultBrowser._form.width = docWidth;
+    		defaultBrowser._form.height = docHeight;	
+    	}
+    	..win.setPos(wb.hwndEmbedding,0,0,docWidth,docHeight);  
+    	
+    	..gdi.clientBuffer( wb.hwndEmbedding,
+    	    function( hdc,hMemDc,hMemBitmap,width,height ){
+    	        var view = ..com.interface.IViewObject2.Query(wb._object); 
+            	view.Draw(0x1/*_DVASPECT_CONTENT*/,1, null,{}
+                	,hdc, hMemDc,::RECT(0,0,width,height),{},null,0);
+          	
+            	var bmp = ..gdip.bitmap(hMemBitmap,0)
+            	bmp.save(filepath,q)   
+    	    }
+    	) 
+	 
+    	..win.setPos(wb.hwndEmbedding,0,0,width,height); 
+    	
+    	if(wb === defaultBrowser){
+    		wb.go("about:blank");
+    	}
+	}; 
+}
+
+/*****intellisense()
+web.form.snap( = 网页截图
+web.form.snap(.(wb,filepath,quality) = 参数 @wb 指定 web.form 对象。\n参数 @filepath 指定保存图像路径。\n可选参数 @quality 指定图像质量（0 到 100 ，100 最佳）
+web.form.snap(.(url,filepath,quality,width,height) = 参数 @url 指定需要截图的网址，IE11 可指定 *.svg 地址。\n参数 @filepath 指定保存图像路径。\n可选参数 @quality 指定图像质量（0 到 100 ，100 最佳）。\n可选参数 @width，@height 指定窗口宽度，高度
+end intellisense*****/

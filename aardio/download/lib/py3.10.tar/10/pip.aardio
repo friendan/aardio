@@ -1,0 +1,180 @@
+﻿//pip 安装模块
+if(!_STUDIO_INVOKED) error("py3.pip 只能用于开发环境",2)
+
+import console;
+console.setTitle("aardio - Python 模块自动安装工具");
+
+import ide;
+import process;
+import fsys;
+import string.cmdline;
+import py3.10;
+import process.python.pip;
+
+namespace py3;
+
+class pip {
+	ctor( ... ){
+		if(!..io.exist("~\lib\py3\10\.res\pip\Lib\site-packages")){
+			
+			//pip 安装程序结束会自动结束进程，所以新建一个进程
+			var pid = ..ide.createProcess(,`
+				import fsys;
+				fsys.createDir("~\lib\py3\10\.res\pip\");
+				
+				import fiber;
+				var fib = fiber.create( 
+					function(){
+						//附加到父进程控制台
+						::Kernel32.AttachConsole(`+..process.getId() +`)
+						
+						//打开控制台再导入 py3 扩展库，Python 才能在控制台输出
+						import console;
+						console.showLoading("正在下载 Python 模块安装工具：pip");
+						
+						import inet.http;
+						var http = inet.http();
+		
+						var pyCode = http.get("https://bootstrap.pypa.io/get-pip.py");
+						if(!#pyCode){
+							pyCode = http.get("https://mirrors.aliyun.com/pypi/get-pip.py");
+						}
+						
+						if(!#pyCode){
+							console.log("下载 pip 失败，请稍后重试 ……");
+							return;
+						}
+						else {
+							console.log("已下载完成，正在安装 pip ……"); 
+						}
+						
+						import py3.10;
+						
+						//设置启动参数，注意第 1 个参数设为启动程序路径，Python 从第 2 个参数开始取参数是
+						py3.setArgv(..io._exepath,"--no-warn-script-location");
+						py3.exec( pyCode ) 	
+						
+						//Python 3.10 会安装 pip 到 aardio 工程目录				
+					},"~\lib\py3\10\.res\pip\");
+					
+				fiber.resume(fib);
+			`); 
+			 
+			
+			if(!pid) return; 
+			..process(pid).waitOne();
+		}	
+
+		var args = ..string.cmdline.arguments(...);
+		if(!#args){
+			import win.path; 
+			win.path.add("~\lib\py3\10\.res\pip\Scripts");
+			
+			import py3;
+			py3.appendPath("~\lib\py3\10\.res\pip\Lib\site-packages");
+			
+			return py3.import("pip");
+		}
+		
+		//将 "pip -t /py" 命令中的 /py 路径转换为完整路径 
+		if(args[1]=="install"){
+			var target;
+			var pip;
+			for(i=1;#args;1){
+				if(args[i]=="pip"){
+					pip = true;
+				}
+				elseif(args[i]=="-t" || args[i]=="--target" ){
+					if(args[i+1]){
+						args[i+1] = ..io.fullpath(args[i+1]);
+						break;
+					}
+					
+					target = true;
+				} 
+			}
+
+			if(!target){
+				if(pip){
+					..table.push(args,"-t",..io.fullpath("~/lib/py3/10/.res/pip/Lib/site-packages"));
+				}
+				else {
+					..table.push(args,"-t",..io.fullpath("/py/Python310-32/site-packages"));
+				}
+			}	
+		}
+	
+		//pip 出错会自动结束进程，所以新建一个进程		
+		var pid = ..ide.createProcess(,`
+		
+			//附加到父进程控制台
+			::Kernel32.AttachConsole(`+..process.getId() +`)
+			
+			//打开控制台再导入 py3 扩展库，Python 才能在控制台输出
+			import console;
+			console.open();
+				
+			import win.path; 
+			win.path.add("~\lib\py3\10\.res\pip\Scripts");
+			
+			import py3.10;
+			py3.appendPath("~\lib\py3\10\.res\pip\Lib\site-packages");
+			
+			var pip = py3.import("pip")
+ 			pip.main(`+..table.tostring(args)+`);
+ 			
+ 			//Python3.10 的 py3.run() 会重置 sys.path，Python 3.8 不会
+		`); 
+		
+		if(!pid) return; 
+		..process(pid).waitOne();
+	};
+}
+
+namespace pip{
+    setIndexUrl = function(url){
+    	if(url){
+    	    if(url=="aliyun") url = "https://mirrors.aliyun.com/pypi/simple/";
+    	    elseif(url=="tsinghua") url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+    	    elseif(url=="tencent") url = "http://mirrors.cloud.tencent.com/pypi/simple"
+    	    elseif(url=="douban") url = "http://pypi.douban.com/simple/"
+    	    
+    		..py3.pip(" config set global.index-url " + url);
+    	}
+    	else {
+    	    ..py3.pip(" config set global.index-url https://pypi.org/simple");
+    	}
+    }
+    
+    upgrade = function(){
+    	..py3.pip("install --upgrade pip");
+    }
+    
+    ..process.python.version = "3.10.1";
+    ..process.python.path = "~\lib\process\python\.res\3.10.1-win32\python.exe";
+    ..process.python.pip.target = "/py/Python310-32/site-packages";
+    ..process.python.win32 = true;
+     process = ..process.python.pip;  
+    
+}
+
+..subscribe("beforeUnload",function(){
+	..console.pause();
+} );
+
+/**details(参考文档)
+https://pip.pypa.io/en/stable/cli/pip_install/
+end details**/
+
+/**intellisense()
+py3.pip = aardio 自带绿色版 Python 模块安装工具，\n只能在开发环境中使用。\n\n导入 py3,py3.10 扩展库后可用，\n其他 Python 环境版本低于 3.7 的扩展库不可用。\n\n注意只能在导入库时写 py3.10.pip 这种带版本号的库，\n在调用时不能写为 py3.10.pip，应始终写为 py3.pip\n\n个别模块在安装时调用 python.exe 会导致错误打开 aardio.exe，\n这些模块建议改用 process.python.pip 安装同版本的模块，\n然后复制到/py/site-packages 目录下就可以了
+py3.pip("install","__/*模块名称*/") = 执行 pip 命令，只能在开发环境单独运行。\n可以用一个字符串参数指定多个 pip 参数，用空格分格多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分格参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n也可以将多个字符串参数放到一个数组里作为调用参数。\n\n默认安装模块到 "/py/Python+版本号/site-packages" 目录下\n\n如果不指定任何参数，直接返回 pip 模块对象
+py3.pip.setIndexUrl("aliyun") = 设置镜像源。\n参数指定源网址，支持常用镜像源缩写。\n"aliyun" 表示阿里云源，\n"tsinghua" 表示清化源，\n"tencent" 表示腾讯源，\n"douban" 表示豆瓣源
+py3.pip.upgrade() = 更新 pip
+py3.pip() = !py3Module.
+
+py3.pip.process = 进程外 Python 模块安装工具，\n调用相同版本 python.exe 安装模块。\n适用于安装时会调用 python.exe 创建子进程的 Python 模块。\n避免用 py3.pip 安装模块时重复打开 aardio.exe 且安装失败
+py3.pip.process("install","__/*模块名称*/") = 执行 pip 命令，只能在开发环境单独运行。\n可用一个字符串参数指定多个 pip 参数，空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n\n默认安装模块到 "/py/Python+版本号/site-packages" 目录下 
+py3.pip.process.setIndexUrl("aliyun") = 设置镜像源。\n参数指定源网址，支持常用镜像源缩写。\n"aliyun" 表示阿里云源，\n"tsinghua" 表示清化源，\n"tencent" 表示腾讯源，\n"douban" 表示豆瓣源
+py3.pip.process.require("__") = 如果没有安装指定的模块，则调用 pip 安装
+end intellisense**/

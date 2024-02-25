@@ -1,0 +1,17 @@
+﻿//v6 运行时
+import java;
+import sevenZip.lzma.tar;
+
+namespace java.jre.v6;
+
+path  = ..io.appData("\aardio\std\java\jre6")
+if(!..io.exist(path)){
+	..sevenZip.lzma.tar($"~\lib\java\jre\v6\.res\jre6.tar.lzma",..io.appData("\aardio\std\java\"));
+	 
+}
+
+..java.path.setJreHome(path);
+/**intellisense()
+java.jre.v6 = 检测并在必要时自动下载 OpenJDK JRE v6,\n导入此库后，发布不用带 JRE,\n导入此库已自动导入 java 库
+java.jre.v6.path = 如果成功下载并设为 JRE 根目录,\n此属性为 JRE 根目录路径,\n否则此属性值为 null
+end intellisense**/

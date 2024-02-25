@@ -1,0 +1,57 @@
+﻿//oleDb 数据库
+import com;
+import win.reg;
+namespace com.oleDb;
+
+getProviders = function(){
+	var reg = ..win.regReader("HKEY_CLASSES_ROOT\CLSID")
+	var name,description;
+	var ret = {}
+	for(clsid in reg.eachKey() ){
+		var regCls = reg.open(clsid); 
+		if(!regCls) continue;
+		
+		if(regCls.queryValue("OLEDB_SERVICES")){
+			var keyOle = regCls.open("OLE DB Provider"); 
+			if(keyOle){
+				description = keyOle.queryValue("")
+				keyOle.close()	
+				
+				var keyProgID = regCls.open("ProgID"); 
+				if(keyProgID){
+					name = keyProgID.queryValue("");
+					keyProgID.close();
+					ret[name] = {clsid=clsid;description} 
+				} 
+			} 
+		}
+		regCls.close()
+	}
+
+	return ret;
+}
+
+hasProvider = function(name){
+	
+	var reg = ..win.regReader("HKEY_CLASSES_ROOT\" + name + "\CLSID")
+	if( reg ){ 
+		var clsId = reg.queryValue("");
+    	reg.close();
+    	
+    	if(clsId){
+    		var regCls = ..win.regReader("HKEY_CLASSES_ROOT\CLSID\" + clsId)
+    		if(regCls){
+    		    var ret = regCls.queryValue("OLEDB_SERVICES");
+    		    regCls.close();
+    			
+    			return !!ret; 
+    		} 
+    	} 
+	}	
+}
+
+/**intellisense()
+com.oleDb = 用于检查、获取 OLEDB 提供程序
+com.oleDb.getProviders() = 获取所有 OLEDB 提供程序。\n返回一个表，键为提供程序名，\n值为包含 clsid,description 字段的对象
+com.oleDb.hasProvider(__) = 是否安装参数 @1 指定名称的 OLEDB 提供程序
+end intellisense**/

@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\com\");
+fsys.copy( "\comm","~\lib\com\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("com.comm扩展库已安装成功!","aardio- com.comm扩展库安装程序")

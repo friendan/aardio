@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\sys\");
+fsys.copy( "\wlan.aardio","~\lib\sys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("sys.wlan 扩展库已安装成功!","aardio- sys.wlan扩展库安装程序")

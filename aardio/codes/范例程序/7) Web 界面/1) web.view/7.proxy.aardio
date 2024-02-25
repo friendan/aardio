@@ -1,0 +1,22 @@
+//启动参数 / 代理
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="WebView2 - 设置启动参数";right=966;bottom=622)
+winform.add()
+/*}}*/
+
+import web.view;
+
+//参数@3 可用于指定浏览器启动参数， 多个参数以空格分开
+var wb = web.view(winform,,"--proxy-server=SOCKS5://IP地址:端口  --accept-lang=zh-CN");
+
+/*
+如果上面不指定浏览器启动参数，则该参数的默认值设为 web.view.browserArguments 的值。
+如果 web.view.browserArguments 是函数对象，则调用该函数获取默认的浏览器启动参数。
+*/
+
+//Chromium 启动参数请参考以下链接：
+wb.go("https://peter.sh/experiments/chromium-command-line-switches/");
+
+winform.show(3/*_SW_MAXIMIZE*/);
+win.loopMessage();

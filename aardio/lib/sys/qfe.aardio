@@ -1,0 +1,14 @@
+﻿//qfe 系统补丁
+import com.wmi;
+
+namespace sys;
+
+class qfe{
+	ctor(hotfixId){
+		return ..com.wmi.getProperties("SELECT * FROM Win32_QuickFixEngineering WHERE HotFixID =@hotfixId",{hotfixId=hotfixId} ) 
+	}; 
+}
+
+/**intellisense()
+sys.qfe("KB__") = 返回参数指定 ID 的系统补丁安装信息\n未安装返回 null\n\n inet.installer 支持安装 *.msu 补丁
+end intellisense**/

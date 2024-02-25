@@ -1,0 +1,201 @@
+﻿//script 系统脚本组件
+import com;
+import web.json;
+import raw.apiHook;
+
+namespace web;
+
+class script {
+	ctor(language = 'JScript'){{
+		this.msc = ..com.CreateObject("ScriptControl");
+		..com.SetPreferredArrayType(this.msc,0xC/*_VT_VARIANT*/);
+		this.msc.UseSafeSubset = false;
+		this.msc.AllowUI = true;
+		this.msc.TimeOut = -1;
+		this.msc.siteHwnd = ::User32.GetActiveWindow();
+ 
+ 		var lowerLangId = ..string.lower(language);
+ 		var langClsId = __langIds__[lowerLangId];
+		if(langClsId){
+			if(!_WIN10_LATER && (lowerLangId== "es6" || lowerLangId== "jscript9" )){
+				this.msc.Language = 'JScript';
+			}
+			else{
+				var apiHook = ..raw.apiHook(
+					"Ole32.dll", "CLSIDFromProgID", "int(ustring progId,ptr pClsId)", 
+					function( progId,pClsId ){ 
+				 		if(progId == language ) { 
+				 			..raw.copy(pClsId,langClsId,#langClsId);
+				 			return 0 ;
+				 		}
+				 		
+						return owner.callApi(progid,lpclsid); ;
+					}
+				);
+				
+				apiHook.install();
+				this.msc.Language = language;
+				apiHook.unInstall();			
+			} 
+		}
+		else {
+			this.msc.Language = language;
+		}
+ 
+		
+		this.createArray = function(v){ 
+			
+			var lang = ..string.lower(this.Language); 
+			if(__jsLangIds__[lang]){
+				return this.msc.eval(..web.json.stringify(v));
+			}
+			return ..com.SafeArrayV(v)
+		}
+
+		this.reset = function(){
+			this.msc.Reset();
+			 
+			var lang = ..string.lower(this.msc.Language);
+			if(__jsLangIds__[lang]){
+				var javascript = /*     
+ 				jsConstructor = function(jsObject) {
+					if(typeof(jsObject) == "string") jsObject = eval(jsObject);
+    				function ctor(args) { return jsObject.apply(this, args); }
+    				ctor.prototype = jsObject.prototype;
+    				return function() { return new ctor(arguments); }
+				}
+				*/
+				this.msc.AddCode(javascript);
+				this.jsConstructor = this.msc.CodeObject.jsConstructor
+			} 
+			
+			for(k,v in self.preload){
+				if(!v.language || v.language[lang]){
+					if(v.code)this.msc.AddCode(v.code);
+					if(v.init)v.init(this.msc);
+				}
+			}	
+		}
+		this.reset();
+		
+		this.doScript = _meta.doScript;
+		this.xcall = this.msc.Run;
+		this.eval = function(s,...){
+			if(...) s = ..string.format(s,...);
+			return this.msc.eval(s);
+		}
+		
+		this.json = {@{
+			_get = function(k,ownerCall){
+				if(ownerCall || type(k)=="string") return function(...){
+					var r = this.eval("JSON.stringify("+k+".apply(" + k + "," +..web.json.stringifyArray({...}) + "))");
+					return ..web.json.tryParse(r);
+				} 
+			}; 
+			_call = function(obj){
+				if(..com.IsObject(obj)){
+					var r = this.script.JSON.stringify(obj);
+					return ..web.json.tryParse(r);
+				}
+				else {
+					return this.eval( ..web.json.stringify(obj) );
+				} 
+			};
+		}} 
+	}}  
+	@_meta;
+}
+
+script._meta = {
+	
+	_get = function(k){ 
+		if( k == "script" ) return owner.msc.CodeObject;
+		return owner.msc[k]
+	};
+	_set = function(k,v){ 
+		var t = type(v);
+		if( t == "table" ) {
+			if(  #v  && ..table.isArray(v) ){
+				owner.msc[k] = owner.createArray(v); 
+			}
+			else {
+				owner.msc.AddObject(k,v);
+			}
+		}
+		elseif( t == type.function ){
+			owner.msc.AddObject(k,v); 
+		}
+		else{
+			if( k == "script" ) return owner.msc.AddCode(v);
+			owner.msc[k] = v;
+		} 
+	};
+	doScript = function(arg){
+		if( #arg <= 2048 ){
+			
+			if( ..string.startWith(arg,"http",true) 
+				&& ..string.match(arg,"^\w+\:") && ..inet[["http"]] ){
+				arg = ..inet.http.get(arg);
+				if(!arg) return;
+			}
+			elseif(len<= 0x410/*_MAX_PATH_U8*/ ){
+				if( ..io.exist( arg) ) arg = ..string.load(arg);  
+				elseif( ..io.localpath(arg) ) arg = ..string.load(arg) : arg;
+			} 
+			
+			if(!#arg) error("参数不能是空字符串",2);
+		}
+		
+		return owner.msc.AddCode(arg);
+	} 
+}
+
+script.eval = function(s,...){
+	if(!_vm_) _vm_ = ..web.script('JScript');
+	return _vm_.eval(s,...);
+}
+
+script.__jsLangIds__ = {
+	jscript = 1; javascript = 1;ecmascript=1;jscript9=1;es6 = 1;chakra = 1;
+}
+
+script.__langIds__ = {
+	es6 = '\x97\xD9\x7C\x1B\xFF\xE5\x32\x49\xA7\xA6\x2A\x9E\x63\x6D\xA3\x85'; 
+	jscript9 = '\x79\x15\xD5\x16\x0B\xA3\x8B\x4C\xA2\x76\x0F\xF4\xDC\x41\xE7\x55';
+}
+
+/**intellisense()
+!web_script.executeStatement("__") = 执行代码,无返回值
+!web_script.timeOut = 脚本超时时间,以毫秒为单位,默认为-1表示不超时,\n如设置超时脚本运行太久会弹出是否继续运行的对话框
+!web_script.useSafeSubset = 脚本控件是否限制运行未被标记为“脚本安全”的组件
+!web_script.reset() = 重置脚本虚拟机,丢弃所有对象和代码\n并将State属性设为0
+!web_script.jsConstructor("Array__") = 获取JS对象构造函数,\n参数可以是JS对象，或字符串类型的对象名字
+!web_script.doScript("__") = 添加脚本代码\n参数可以是脚本代码、脚本文件路径，\n如果事先引入 inet.http 库，就可以在参数中指定脚本网址
+!web_script.addCode("__") = 添加脚本代码,\n调用这个函数的作用等价于直接对 script 属性赋值
+!web_script.language = 设置或获取正在使用的 Script 语言名称\n 可选值"VBScript","JScript"。\n注意 "ES6"，"JScript9" 只能在 web.script 构造函数里指定
+!web_script.eval(__) = 计算并返回参数@1中脚本代码指定的表达式的值,\n如果有多个参数,则调用 string.format 格式化所有参数获取要执行的脚本代码
+!web_script.executeStatement("__") = 执行代码,无返回值
+!web_script.xcall("函数名__",参数) = 运行 JS 函数，\nChakra（ES6）不支持无参数函数，但可通 json 属性调用
+!web_script.modules = 组件模块集合\n可使用 com.each 迭代器遍历 
+!web_script.procedures(__/*序号*/) =  模块中定义函数的集合 
+!web_script.procedures() = !web_script_func.
+!web_script_func.Name = 函数名字
+!web_script_func.NumArgs = 参数数目
+!web_script_func.HasReturnValue = 是否有返回值
+!web_script.siteHwnd = 脚本中显示UI的父窗口句柄
+!web_script.state = 为0不转发事件\n为1则转发事件
+!web_script.error = 发生错误时此属性返回错误对象
+!web_script.allowUi = 是否允许消息框等界面元素
+!web_script.script = 获取属性时返回脚本对象\n通过此对象可直接调用脚本中的函数,\n\n写入属性时应使用字符串指定脚本代码,相当于调用 doScript 函数,\n多次写入此属性是添加脚本不是覆盖替换脚本
+!web_script.script.? = 读写脚本中的对象，\n可调用脚本函数并返回值,支持不定个数参数\n\n调用 Chakra（ES6）函数时不支持无参数函数，但可通 json 属性调用
+!web_script.json = 通过此对象的成员可调用 JavaScript 脚本中的同名全局函数,\n也可在下标操作符中用一个指向函数对象的 JS 表达式以获取对应的调用函数，\n参数自动转换为 JSON（支持单个参数），返回值自动解析 JSON\n\n也可以将此对象作为函数调用，\n传入 aardio 对象自动转换为 JScript 对象，\n传入 JScript 对象时则返回 aardio 对象。\n\nweb.script.es6 直接支持 json 对象\n创建 web.script 对象则必须提前导入 web.script.json 库
+!web_script.createArray(__) = 参数传入 aardio 数组，转换为当前脚本支持的数组对象
+!web_script.? = 可直接赋值为 aardio 对象或函数以允许脚本调用，\n在这里写入数组属性时，会自动调用 createArray 转换\n\n注意如果只是要读写脚本中的变量值，应通过 script 属性读写
+web.script("JScript") = 创建 JScript 脚本解释器\n参数可省略
+web.script("VBScript") = 创建 VBScript 脚本解释器
+web.script("ES6") = 创建 JavaScript（ES6） 脚本解释器，\n需要调用 Win10/Win11 自带 Chakra 组件。\nWin10 以下系统退化为 JScript。\nChakra 支持 ES6，支持箭头函数，let,const,类等 ES6 语法。\n但不支持一些 JScript 专有的函数，例如 VBArray。\n\n对于 Chakra，ScriptEngine 等函数返回的版本信息是无意义的
+web.script("JScript9") = 创建 JScript9 脚本解释器。\n操作系统最低要求 Win10/Win11，\nWin10 以下系统退化为 JScript。
+web.script() = 创建 JScript 脚本解释器\n!web_script.
+web.script.eval(__) = 计算并返回参数@1中 JScript 代码指定的表达式的值,\n如果有多个参数,则调用 string.format 格式化所有参数获取要执行的脚本代码
+web.script.preload = 此名字空间下的对象用于添加初始化脚本,\n每个初始化脚本对象必须包含以下字段:\nlanguage 一个表,键为小写的脚本语言名称,值为 true 则支持该语言,\ncode 指定要加载的脚本代码\n\n具体用法请参考 web.script.json 源码
+end intellisense**/

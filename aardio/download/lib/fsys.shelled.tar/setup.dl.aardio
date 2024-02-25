@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\shelled.aardio","~\lib\fsys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.shelled 扩展库已安装成功!","aardio- fsys.shelled扩展库安装程序")

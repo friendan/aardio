@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\mysql\plugin\");
+fsys.copy( "\sha256Password","~\lib\mysql\plugin\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("mysql.plugin.sha256Password 扩展库已安装成功!","aardio- mysql.plugin.sha256Password扩展库安装程序")

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\win\util\");
+fsys.copy( "\lyric.aardio","~\lib\win\util\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("win.util.lyric 扩展库已安装成功!","aardio- win.util.lyric扩展库安装程序")

@@ -1,0 +1,206 @@
+import dotNet; 
+var compiler = dotNet.createCompiler("C#");
+compiler.Reference("~\lib\dotNet\audio\.res\NAudio.dll");
+compiler.Parameters.CompilerOptions = "/optimize";
+ 
+compiler.Source = /******  
+using NAudio.Wave;
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using NAudio.MediaFoundation;
+
+namespace dotNet
+{
+    public class Audio
+    {
+        public IWaveIn WaveIn;
+        public WaveFileWriter Writer;
+        public delegate void OnWaveInDelegate(float max);
+        public OnWaveInDelegate OnWaveIn;
+        
+        public void StopWaveIn(){
+         	if(WaveIn != null){
+            	WaveIn.StopRecording();
+            	WaveIn.Dispose();
+            	WaveIn = null;
+            }
+            
+            if(Writer != null){
+                 Writer.Dispose();
+                 Writer = null;
+            }
+        }
+        
+        public void StartWasapiLoopbackCapture(){
+            StartWasapiLoopbackCapture(null,null);
+        }
+        
+        public void StartWasapiLoopbackCapture(string path){
+            StartWasapiLoopbackCapture(path,null);
+        }
+         
+        public void StartWasapiLoopbackCapture(string path,WaveFormat waveFormat)
+        { 
+            StopWaveIn();
+            
+            WaveIn = new WasapiLoopbackCapture();
+            
+            if(waveFormat==null) waveFormat = WaveIn.WaveFormat;
+            else WaveIn.WaveFormat = waveFormat;
+            
+            if(!string.IsNullOrEmpty(path)){
+            	Writer = new WaveFileWriter(path, waveFormat);
+            }
+
+            WaveIn.DataAvailable += (s, a) =>
+            { 
+                if(Writer != null)Writer.Write(a.Buffer, 0, a.BytesRecorded);
+                if(OnWaveIn==null) return;
+                
+                float max = 0;
+    			var buffer = new WaveBuffer(a.Buffer); 
+    			for (int index = 0; index < a.BytesRecorded / 4; index++)
+    			{
+        			var sample = buffer.FloatBuffer[index]; 
+        			if (sample < 0) sample = -sample; 
+        			if (sample > max) max = sample;
+    			}
+    			
+    			OnWaveIn(max);
+            };
+            WaveIn.RecordingStopped += (s, a) =>
+            {
+                if(Writer != null){
+                	Writer.Dispose();
+                	Writer = null;
+                }
+            };
+            
+            WaveIn.StartRecording();
+        }
+        
+        public void StartWaveIn(){
+            StartWaveIn(null,-1,null);
+        }
+        
+        public void StartWaveIn(string path){
+            StartWaveIn(path,-1,null);
+        }
+        
+        public void StartWaveIn(string path,int deviceNumber){
+            StartWaveIn(path,deviceNumber,null);
+        }
+        
+        public void StartWaveIn(string path,int deviceNumber,WaveFormat waveFormat)
+        { 
+            StopWaveIn();
+            
+            WaveIn = new WaveInEvent(){ DeviceNumber = deviceNumber };  
+            
+            if(waveFormat==null) waveFormat = WaveIn.WaveFormat;
+            else WaveIn.WaveFormat = waveFormat;
+            
+            if(!string.IsNullOrEmpty(path)){
+            	Writer = new WaveFileWriter(path, waveFormat);
+            } 
+            
+            WaveIn.DataAvailable += (s, a) =>
+            { 
+                if(Writer != null) Writer.Write(a.Buffer, 0, a.BytesRecorded); 
+                if(OnWaveIn==null || a.BytesRecorded < 2) return;
+
+                float max = 0;
+    			for (int index = 0; index < a.BytesRecorded; index += 2)
+    			{
+        			short sample = (short)((a.Buffer[index + 1] << 8) | a.Buffer[index + 0]);
+         
+					var sample32 = sample/32768f;
+        			if (sample32 < 0) sample32 = -sample32;
+        			if (sample32 > max) max = sample32;	
+    			}
+    			
+    			OnWaveIn(max);
+            };
+            WaveIn.RecordingStopped += (s, a) =>
+            {
+               if(Writer != null){
+                	Writer.Dispose();
+                	Writer = null;
+               }
+            };
+            
+            WaveIn.StartRecording();
+        }
+        
+        public WaveInCapabilities WaveInGetCapabilities(int devNumber)
+        {   
+           return NAudio.Wave.WaveIn.GetCapabilities(devNumber);
+  	    }
+  	    
+  	    public int WaveInDeviceCount(){
+			return NAudio.Wave.WaveIn.DeviceCount;
+		}
+		
+		public string convertWavToMp3(string inPath,string outPath,int desiredBitRate){ 
+			string err = null;
+			MediaFoundationApi.Startup();
+			
+			using (var reader = new WaveFileReader(inPath))
+			{
+    			try
+    			{
+        			MediaFoundationEncoder.EncodeToMp3(reader, outPath,desiredBitRate);
+    			}
+    			catch (InvalidOperationException ex)
+    			{
+        			err = ex.Message;
+    			}
+			}
+			
+			return err;
+		}
+		
+		public string convertToMp3(string inPath,string outPath,int desiredBitRate){ 
+			string err = null;
+			MediaFoundationApi.Startup();
+			
+			using (var reader = new MediaFoundationReader(inPath))
+			{
+    			try
+    			{
+        			MediaFoundationEncoder.EncodeToMp3(reader, outPath,desiredBitRate);
+    			}
+    			catch (InvalidOperationException ex)
+    			{
+        			err = ex.Message;
+    			}
+			}
+			
+			return err;
+		}
+		
+		public string convertToWav(string inPath,string outPath){ 
+			string err = null;
+			MediaFoundationApi.Startup(); 
+			
+			using (var reader = new MediaFoundationReader(inPath))
+			{
+    			try
+    			{
+        			 WaveFileWriter.CreateWaveFile(outPath, reader);
+    			}
+    			catch (InvalidOperationException ex)
+    			{
+        			err = ex.Message;
+    			}
+			}
+			
+			return err;
+		}
+    } 
+}
+
+******/
+
+compiler.CompileOrFail("~\lib\dotNet\audio\.res\Audio.dll");  

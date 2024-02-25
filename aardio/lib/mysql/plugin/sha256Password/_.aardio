@@ -1,0 +1,12 @@
+﻿import mysql.client;
+
+namespace mysql.plugin.sha256Password;
+
+if(..mysql.client.pluginDir){
+	..io.updateData( $"~\lib\mysql\plugin\sha256Password\.res\sha256_password.dll"
+		,..mysql.client.pluginDir,"sha256_password.dll");	
+}
+
+/**intellisense()
+mysql.plugin.sha256Password = 在 mysql.client.pluginDir 目录下添加 sha256_password.dll\n如果 mysql.client.pluginDir 为 null 则忽略不执行操作
+end intellisense**/

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fonts\");
+fsys.copy( "\ionicons.aardio","~\lib\fonts\" ); 
+fsys.copy("\ionicons.ttf","~/lib/fonts/.res/ionicons.ttf");ide.loadPrivateFont("~/lib/fonts/.res/ionicons.ttf")
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fonts.ionicons扩展库已安装成功!","aardio- fonts.ionicons扩展库安装程序")

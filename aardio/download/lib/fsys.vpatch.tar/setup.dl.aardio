@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\vpatch","~\lib\fsys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.vpatch 扩展库已安装成功!","aardio- fsys.vpatch扩展库安装程序")

@@ -1,0 +1,94 @@
+﻿import dotNet;
+
+namespace dotNet.audio;
+
+..dotNet.reference({
+	"NAudio":$"~\lib\dotNet\audio\.res\NAudio.dll"; //NAudio v1.1
+});
+
+var dll = ..dotNet.loadFile($"~\lib\dotNet\audio\.res\Audio.dll");
+var simpleAudio = dll.new("dotNet.Audio");
+var onWaveInDelegate;
+
+startWaveIn = function(path,deviceNumber){
+	
+	var err;
+	try {
+		..dotNet.delegate.remove(simpleAudio,"OnWaveIn",onWaveInDelegate);
+		onWaveInDelegate = ..dotNet.delegate.combine(simpleAudio,"OnWaveIn" ,self.onWaveIn); 
+		
+		if(#path) path=..io.fullpath(path);
+			
+		if(deviceNumber==-2 || deviceNumber===null) {
+			simpleAudio.StartWasapiLoopbackCapture(path);
+		}
+		else {
+			simpleAudio.StartWaveIn(path,deviceNumber);
+		}
+	}
+	catch(e){
+		err = e;
+	}
+	
+	if(err) return null,err;
+	return true;
+}
+
+stopWaveIn = function(){
+	simpleAudio.StopWaveIn();
+}
+
+eachWaveInDevice = function(){
+	var count = simpleAudio.WaveInDeviceCount();
+ 
+	var i,caps = -2;
+	return function(){
+		i++;
+		if(i<count){
+			var caps = simpleAudio.WaveInGetCapabilities(i);
+			return i,caps.ProductName,caps	
+		} 
+	}
+}
+
+convertToMp3 = function(inPath,outPath,desiredBitRate){
+	if(!..string.startWith(inPath,"http")){
+		inPath = ..io.fullpath(inPath)
+	}
+	outPath = ..io.fullpath(outPath);
+	
+	var err = ..string.endWith(inPath,".wav",true) ? simpleAudio.convertWavToMp3(inPath,outPath,desiredBitRate:192000)
+		: simpleAudio.convertToMp3(inPath,outPath,desiredBitRate:192000);
+		
+	if(!err) return true;
+	return false,err; 
+}
+
+convertToWav = function(inPath,outPath){
+	if(!..string.startWith(inPath,"http")){
+		inPath = ..io.fullpath(inPath)
+	}
+	outPath = ..io.fullpath(outPath);
+	
+	var err = simpleAudio.convertToWav(inPath,outPath);
+		
+	if(!err) return true;
+	return false,err; 
+}
+
+
+/**intellisense()
+dotNet.audio = 录音
+dotNet.audio.startWaveIn(__) = 开始录音。\n录音前会自动调用 stopWaveIn 函数停止之前创建的录音操作。\n可选用参数 @1 指定 *.wav 文件路径。\n可选用参数 @2 指定设备 ID，省略则默认指定为 -2。\n设备 ID 指定为 -2 录制系统声音，\n指定为 -1 则使用默认录音设备\n\n如果不指定任何参数，则仅用于捕获系统声音并触发 onWaveIn 事件
+dotNet.audio.stopWaveIn() = 停止录音
+dotNet.audio.onWaveIn = @.onWaveIn = function(max){
+	__/*表示当前录制声音峰值百分比的小数*/
+}
+dotNet.audio.eachWaveInDevice() = @for deviceNumber,deviceName,caps in dotNet.audio.eachWaveInDevice(){
+	__/*遍历录音设备。\ndeviceNumber 为设备 ID，deviceName 为设备名称。\ncaps 参数用法请参考源码与 NAudio 文档*/
+}
+dotNet.audio.convertToMp3( = 转换音频为 MP3 文件，或提取视频中的音频为 MP3 文件
+dotNet.audio.convertToMp3(.(inPath,outPath,desiredBitRate) = 参数 @inPath 可指定 *.wav 文件路径，\n也可指定 MP3, WMA, AAC（MP4）音频文件、MP4 视频文件路径或网址。\n参数 @outPath 指定输出 *.mp3 文件路径。\n可选用 @desiredBitRate 指定比特率，省略则默认值为 192000
+dotNet.audio.convertToWav( = 转换音频为 WAV 文件，或提取视频中的音频为 WAV 文件
+dotNet.audio.convertToWav(.(inPath,outPath,desiredBitRate) = 参数 @inPath 可指定 MP3, WMA, AAC（MP4）音频文件、MP4 视频文件路径或网址。\n参数 @outPath 指定输出 *.wav 文件路径
+end intellisense**/

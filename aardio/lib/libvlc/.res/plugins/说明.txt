@@ -1,0 +1,2 @@
+此目录下的文件取自 VLC 播放器，
+许可证与源码可自 https://www.videolan.org 获取。

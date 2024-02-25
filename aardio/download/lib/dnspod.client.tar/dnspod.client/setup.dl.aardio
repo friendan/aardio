@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\dnspod\");
+fsys.copy( "\client","~\lib\dnspod\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dnspod.client扩展库已安装成功!","aardio - dnspod.client扩展库安装程序")

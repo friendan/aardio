@@ -1,0 +1,71 @@
+﻿import process.popen;
+import string.cmdline;
+import fsys;
+
+namespace protobuf;
+
+class compile {
+	ctor(language,outDir,workDir,...){ 
+		if(!outDir){
+			return ..process.popen( path,language );
+		}
+		
+		if(language=="aardio"){
+			error("请直接调用 aardio 标准库中的 protobuf.parser",2);
+		}
+		
+		workDir = ..io.fullpath(workDir);
+		
+		var protoPath;
+		if(..io.exist(workDir,4)){
+			var tPath = ..io.splitpath(workDir);
+			protoPath = tPath.file;
+			workDir = tPath.dir;
+		}
+		
+		if(outDir!="."){
+			if( !..string.indexOf(outDir,":")  
+				&& !..io.localpath(outDir) 
+				&& outDir[1]!='/'# 
+				&& outDir[1]!='\\'#){
+
+				..io.createDir(workDir,outDir);
+			}
+			else {
+				outDir = ..io.fullpath(outDir);
+				..io.createDir(outDir); 
+			} 
+		}
+		
+		outDir = ..fsys.path.removeBackslash(outDir);
+		if(..string.find(outDir,":")){
+			error('因 protoc.exe 的限制，@outDir 参数不能包含中文。\n"'+outDir+'"\n建议改为相对路径，例如 "."',2)
+		}
+ 		
+		var args = {   
+			'--' + language + '_out=' + outDir;
+		} 
+		
+		if(protoPath) ..table.push(args,protoPath); 
+		if(...)..table.push(args,...);
+
+	 	var out,err = ..process.popen( path,args,{workDir=workDir});
+	 	return out,err;
+	};
+}
+
+namespace compile{
+    path  = "~\lib\protobuf\compile\.res\protoc.exe";
+
+	if(!..io.exist(path)){
+    	path = ..io.appData("aardio\compile\compile.exe",$"~\lib\protobuf\compile\.res\protoc.exe");
+    } 
+}
+
+/**intellisense()
+protobuf.compile = Protobuf 编译器。\naardio 可直接调用标准库中的 protobuf.parser
+protobuf.compile(.(language,outDir,workDir,->->->) = 调用 Protobuf 编译 *.proto 文件。\n返回进程输出字符串，错误输出字符串，无错误时只有一个返回值。\n\n@language 指定语言，例如 "cpp","java","python","csharp"。\n@outDir 指定生成的源码文件输出目录，设为 "."表示 @workDir 。\n@workDir 指定包含 proto 文件的工作目录或 proto 文件路径（可包含中文）。\n后面可添加不定个数的其他参数，或不定个数 proto 文件名。\n@outDir 或 proto 文件路径可使用相对于@workDir 的路径。\n@outDir 或除 @workDir 以外的 proto 文件路径都不能包含中文，\n这个是 protoc.exe 的限制，只能帮到这里了
+protobuf.compile(.("--help") = 返回帮助文档
+protobuf.compile(.("--version") = 返回版本信息
+protobuf.compile() = !process_popen.
+end intellisense**/

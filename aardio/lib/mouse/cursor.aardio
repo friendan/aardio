@@ -1,0 +1,43 @@
+﻿//cursor 光标
+namespace mouse.cursor;
+
+var name2cursor = {
+	appStarting = ::User32.LoadCursorP(,32650/*_IDC_APPSTARTING*/);
+	arrow = ::User32.LoadCursorP(,32512/*_IDC_ARROW*/);
+	cross = ::User32.LoadCursorP(,32515/*_IDC_CROSS*/);
+	help = ::User32.LoadCursorP(,32651/*_IDC_HELP*/);
+	iBeam = ::User32.LoadCursorP(,32513/*_IDC_IBEAM*/);
+	icon = ::User32.LoadCursorP(,32641/*_IDC_ICON*/);
+	No = ::User32.LoadCursorP(,32648/*_IDC_NO*/);
+	size = ::User32.LoadCursorP(,32640/*_IDC_SIZE*/);
+	sizeAll = ::User32.LoadCursorP(,32646/*_IDC_SIZEALL*/);
+	sizeNesw = ::User32.LoadCursorP(,32643/*_IDC_SIZENESW*/);
+	sizeNs = ::User32.LoadCursorP(,32645/*_IDC_SIZENS*/);
+	sizeNwse = ::User32.LoadCursorP(,32642/*_IDC_SIZENWSE*/);
+	sizeWe = ::User32.LoadCursorP(,32644/*_IDC_SIZEWE*/);
+	upArrow = ::User32.LoadCursorP(,32516/*_IDC_UPARROW*/);
+	wait = ::User32.LoadCursorP(,32514/*_IDC_WAIT*/);	
+}
+
+..table.assign(self,name2cursor);
+
+var cursor2name = {}
+for(k,p in name2cursor) cursor2name[p] = k;
+
+getInfo = function(){
+	var info = {INT cbSize = 20; INT flags; pointer hCursor;struct pt = ::POINT() };
+	if(::User32.GetCursorInfo(info)) return info;
+}
+
+getName = function(){
+	var info = {INT cbSize = 20; INT flags; pointer hCursor;struct pt = ::POINT() }
+	if(::User32.GetCursorInfo(info) ){
+	 	return cursor2name[info.hCursor];
+	}
+}
+
+/**intellisense()
+mouse.cursor = 鼠标指针光标（Cursor）\n操作界面光标请改用 win.cur
+mouse.cursor.getInfo() = 返回全局鼠标指针光标信息
+mouse.cursor.getName() = 返回全局鼠标指针光标预定义名称，\n非预定义光标返回 null
+end intellisense**/

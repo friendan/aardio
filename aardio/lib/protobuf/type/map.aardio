@@ -1,0 +1,84 @@
+﻿	
+import protobuf.type.scalar
+
+namespace protobuf.type;
+ 
+class map{  
+	ctor(...) {
+		this = ..protobuf.message(...)
+		this.wiredType = 2/*..protobuf.message.wiredTypeLengthDelimited*/; 
+		this.value = {};
+	}
+ 	
+	deserialize = function () {  
+		
+		var clsKey,clsValue = this.keyValueType[1],this.keyValueType[2];
+		
+		var length = this.reader.nextUInt32();
+        var _begin = this.reader.getPointer(); 
+			
+		var k,v;
+		for(i=1;2;1){
+			//if (reader.getPointer() - _begin >= length) break;
+			 
+			var next = this.reader.nextUInt32();  
+            var fieldTag = this.getFieldTag(next);  
+            
+            if(fieldTag.fieldNum==1){
+            	k = clsKey(this.reader);
+            	k.deserialize();
+            }
+            elseif(fieldTag.fieldNum==2){
+            	v = clsValue(this.reader);
+            	v.deserialize();
+            } 
+		}
+		
+        if(k !== null ){
+            
+  			if(k[["_isProtobufValueType"]]){
+            	k = k.value;
+        	}
+        	
+        	if(v[["_isProtobufValueType"]]){
+            	v = v.value;
+        	}   
+        	
+        	this.value[k] = v;   	
+        }        
+		
+		return k,v; 
+	}
+
+	serialize = function ( rec = -1 ) { 
+		var clsKey,clsValue = this.keyValueType[1],this.keyValueType[2];
+		var str = '';
+		
+		for(k,v in this.value){
+			if ( rec > -1) {
+				str ++= this.encodeVarUint64( rec << 3 | this.wiredType );
+			}
+			
+			if(!v[["_isProtobufValueType"]]){
+				var keyMsg =  clsKey(); 
+				keyMsg.value = k;
+				k = keyMsg;
+			} 
+			var stringinner =  k.serialize(1); 
+			
+			if(!v[["_isProtobufValueType"]]){
+				var valueMsg =  clsValue(); 
+				valueMsg.value = v;
+				v = valueMsg;
+			} 
+			stringinner =  stringinner ++ v.serialize(2); 
+			
+			str =  str ++ this.encodeVarUint64( # stringinner ); 
+			str =  str ++  stringinner; 
+		} 
+ 
+		return str;
+	}
+	
+	_isProtobufValueType = true;  
+}

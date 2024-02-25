@@ -1,0 +1,103 @@
+﻿namespace sys.locale;
+
+getString = function(lcid,lcType,low,len){
+	if(lcid===null) lcid = 0x800/*_LOCALE_SYSTEM_DEFAULT*/;
+	
+	var f = ::Kernel32.GetLocaleInfoW;
+	if(type(lcid)=="string") {
+		f = ::Kernel32.GetLocaleInfoExW;
+		if(!f) return;
+	}
+	
+	if(!len){
+		len = f(lcid,lcType,, 0);
+		if(!len) return;
+	} 	
+	
+	var buf = ..raw.buffer(len*2);
+	var len = f(lcid,lcType,buf,len);
+
+	if(len){
+		buf = ..string.fromUnicode(buf,,len-1);
+		return low?..string.lower(buf):buf;
+	}	
+}
+
+getNumber = function(lcid,lcType){
+	var f = ::Kernel32.GetLocaleInfoW;
+	if(type(lcid)=="string") {
+		f = ::Kernel32.GetLocaleInfoExW;
+		if(!f) return;
+	}
+	
+	if(lcid===null) lcid = 0x800/*_LOCALE_SYSTEM_DEFAULT*/;
+	var ret = {INT value}
+	var len = f(lcid, (lcType:0)|0x20000000,ret, 4);	
+	if(len) return ret.value;
+}
+
+getId = lambda(locale) getNumber(locale,1/*_LOCALE_ILANGUAGE*/) 
+
+getCodePage = lambda(lcid) getNumber(lcid,0x1004/*_LOCALE_IDEFAULTANSICODEPAGE*/); 
+
+getAbbrevName = lambda(lcid,low) getString(lcid,3/*_LOCALE_SABBREVLANGNAME*/);	 
+
+getLangName = lambda(lcid,low) getString(lcid,0x59/*_LOCALE_SISO639LANGNAME*/,low); 
+
+getCountryName = lambda(lcid,low)  getString(lcid,0x5A/*_LOCALE_SISO3166CTRYNAME*/,low); 
+
+getNativeCountryName = lambda(lcid) getString(lcid,8/*LOCALE_SNATIVECTRYNAME*/);
+
+getName = function(lcid,c,low){
+	var a,b = getString(lcid,0x59/*_LOCALE_SISO639LANGNAME*/,low),getString(lcid,0x5A/*_LOCALE_SISO3166CTRYNAME*/,low);
+	if(a&&b) return a ++ (c : '-') ++ b;	
+}
+
+update = function(name,flags){
+	if( 0 == ::Kernel32.NlsUpdateLocaleW(name,flags) ){
+		::User32.SendNotifyMessage(65535,0x1A/*_WM_SETTINGCHANGE*/,0, "intl");
+		return true; 
+	}		
+}
+
+setUserDefault = function(name,proc){
+	if(!proc) return update(name,3/*NLS_LOCALE_SELECT | NLS_LOCALE_CLEAR_USER_DATA*/);
+	
+	var u = getUserDefault();
+	if(setUserDefault(name)){
+		proc();
+		return setUserDefault(u);
+	}
+}
+
+getUserDefault = function(){
+	return getName(0x400/*_LOCALE_USER_DEFAULT*/);
+}
+
+/**intellisense()
+sys.locale = 系统区域与语言相关函数，\n注意此名字空间下的函数在非XP系统下可用区域名代替 LCID 参数，\n相关标准库: win.rt.bcp47,string.conv
+end intellisense**/
+
+/**intellisense(sys.locale)
+getCodePage() = 返回默认 ANSI 代码页，例如中文为 936
+getLangName( = 转换数值格式 LCID 为 ISO 639 格式语言代码,例如 "zh",\n返回值通常为2个字母，但也有极少数3字母，例如"haw"
+getLangName(.(lcid)  = 转换数值格式 LCID 为 ISO 639 格式语言代码,例如 "zh"
+getNativeCountryName(__) = 返回国家或区域的本地名称，例如"中国"\n参数 @1 可指定 LCID，非 XP 系统可指定区域名称,\n关于区域名请参考 getId 函数说明
+getCountryName( = 转换数值格式 LCID 为 ISO 3166 国家代码,例如 "CN",\n返回值通常为2个字母，但也有极少数的数值，例如"029"
+getCountryName(.(lcid,lowerCase) = 转换数值格式 LCID 为 ISO 3166 国家代码,例如 "CN",\n参数@1指定LCID，省略则使用默认值 _LOCALE_SYSTEM_DEFAULT\n可选用 @lowerCase 指定返回字符串是否转换为小写
+getName( = 转换数值格式 LCID 为 ISO 639 格式语言与国家代码,例如 "zh-CN"
+getName(.(lcid,concatenation,lowerCase) = 转换数值格式 LCID 为 ISO 639 格式字符串,例如 "zh-CN",\n参数@1指定LCID，省略则使用默认值 _LOCALE_SYSTEM_DEFAULT,\n@concatenation 参数指定分隔符,默认为 "-",\n可选用 @lowerCase 指定返回字符串是否转换为小写
+getAbbrevName( = 转换数值格式 LCID 为3字母格式字符串,例如 chs,\n3字母转换为LCID 请使用 abbrevNames 表
+getAbbrevName(.(lcid,lowerCase) = 转换数值格式 LCID 为3字母格式字符串,例如 chs,\n参数@1指定LCID，省略则使用默认值 _LOCALE_SYSTEM_DEFAULT,\n可选用 @lowerCase 指定返回字符串是否小写
+getId(__) = 返回表示区域ID（LCID）的数值，\n参数@1指定区域名，此函数在 XP 系统返回 null\n关于区域名请参考文档： https://docs.microsoft.com/en-us/windows/win32/intl/locale-names
+getString(.(locale,lcType,low,len) = 返回指定区域信息，成功返回字符串。\n参数@locale 指定LCID，省略则使用默认值 _LOCALE_SYSTEM_DEFAULT,\n非 XP 系统 @locale 参数可指定字符串，请参考此函数源码与相关 API 文档。\n@lcType 参数用法请参考此函数源码与相关 API 文档。\n可选用 @lowerCase 指定返回字符串是否小写,\n可选用 @len 指定返回字符串最大字符数
+getNumber(.(locale,lcType,low,len) = 返回指定区域信息，成功返回数值。\n参数@locale 指定LCID，省略则使用默认值 _LOCALE_SYSTEM_DEFAULT,\n非 XP 系统 @locale 参数可指定字符串，请参考此函数源码与相关 API 文档。\n@lcType 参数用法请参考此函数源码与相关 API 文档。\n可选用 @lowerCase 指定返回字符串是否小写,\n可选用 @len 指定返回字符串最大字符数
+setUserDefault( = 设置用户默认区域
+setUserDefault(.(locale,proc) = 设置默认字符串参数 @locale 指定的区域名为用户默认区域，\n参数支持 RFC 4646 格式。\n\n如果参数 @proc 指定回调函数，则在修改用户默认区域后执行该函数，\n在该函数执行完成以后，恢复区域设置。\n\n成功返回 true，此设置会更改 ::Kernel32.GetUserDefaultLangID 函数的返回值
+getUserDefault() = 获取默认区域名，\n返回值使用 ISO 639 格式 语言与国家代码。\n与  ::Kernel32.GetUserDefaultLangID 函数返回的区域 ID 一致
+end intellisense**/
+
+/**intellisense()
+_LOCALE_USER_DEFAULT=@0x400/*_LOCALE_USER_DEFAULT*/
+_LOCALE_SYSTEM_DEFAULT=@0x800/*_LOCALE_SYSTEM_DEFAULT*/;
+end intellisense**/

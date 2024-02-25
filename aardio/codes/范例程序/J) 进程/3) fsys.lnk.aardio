@@ -1,0 +1,16 @@
+//查找快捷方式
+
+import process 
+import fsys.lnk;
+ 
+//参数为要查找的文件名,支持模式表达式, 可忽略大小写
+var qqPath  = fsys.lnk.search( {"qq.exe";"QQScLauncher.exe";"QQProtect.exe"} )  
+  
+process.execute( qqPath )
+
+//丢失 QQ 快捷链接, 在资源管理器里浏览位置：
+//process.exploreSelect(qqPath)
+
+//添加到系统搜索路径
+//import sys.reg;
+//sys.reg.setValue("",qqPath,`SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\qq.exe`);

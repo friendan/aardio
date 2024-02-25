@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\thread\");
+fsys.copy( "\trustedInstaller.aardio","~\lib\thread\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("thread.trustedInstaller 扩展库已安装成功!","aardio- thread.trustedInstaller扩展库安装程序")

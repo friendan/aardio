@@ -1,0 +1,185 @@
+//statusbar 状态条
+import util.metaProperty; 
+import win.ui.ctrl.metaProperty;
+
+namespace win.ui {
+	statusbar = class {
+		ctor (winform) {
+			if( ! winform[["hwnd"]] ){
+				if(type(winform)==type.number){
+					winform = {hwnd=winform;_mapCommandProc={}}
+				}
+				else {
+					error("第一个构造参数必须指定有效窗口",3)
+				} 
+			} 
+			this.parent = winform;
+			this.hParent = winform.hwnd 
+			 
+			if(winform.statusbar)winform.statusbar.close();
+			this.hwnd = ::CreateWindowEx(0, "msctls_statusbar32", "", 
+				 0x40000000/*_WS_CHILD*/ | 0x10000000/*_WS_VISIBLE*/ | 0x4000000/*_WS_CLIPSIBLINGS*/, 
+				 0 ,0 ,0 ,0, winform.hwnd , 0);
+										 
+			if(!this.hwnd)error("创建状态栏失败！",2); 
+			winform.statusbar = this;
+			
+			this.cls = "statusbar";
+			this.className = "msctls_statusbar32";
+			if(winform[["hwnd"]] && winform.add){
+				winform.add(this);
+			}
+			
+			this.items = {};  
+		}
+		@_metaProperty; 
+	}
+	
+	statusbar._metaProperty = ..win.ui.ctrl.metaProperty( { 
+		_preadjust = function(){
+			::SendMessage(owner.hwnd, 0x5/*_WM_SIZE*/);
+		} 
+		updateItems = function () { 
+			var tbl = {};
+			var n = 0;
+			for (k, v in owner.items ) {
+				..table.push(tbl, v == -1 ? -1 : n + v);
+				n += v;
+			} 
+			::SendMessageByStruct( owner.hwnd, 0x404, #(tbl), {int arr[] = tbl} ); 
+		}
+		addItem = function ( text, width = -1 ) { 
+			var p = ..table.push( owner.items, width ); 
+			var len = #owner.items; 
+			owner.updateItems();
+			owner.setText( text,p );
+			return owner, p;
+		}
+		insertItem = function ( text ,position = 1, width = -1 ) {
+			var p = ..table.insert( owner.items, width, position ); 
+			owner.updateItems();
+			owner.setText( text,position );
+			return owner, p;
+		}
+		count = function () {
+			return #owner.items;
+		}
+		getItemWidth = function ( index ) {
+			return owner.items[index];
+		}
+		setItemWidth = function ( index, width = -1 ) {
+			owner.items[index] = width;
+			owner.updateItems();
+			return owner;
+		}
+		getItemRect = function(idx){
+			var rc = ::RECT();
+			::User32.SendMessage(owner.hwnd,0x40A/*_SB_GETRECT*/,idx-1,rc)
+			return rc;
+		}
+		getText = function ( index ) { 
+			if ( #(owner.items) == 0 ) {
+				return ..win.getText( owner.hwnd )
+			} else {
+				var len = ::User32.SendMessageW( owner.hwnd, 0x40C/*_SB_GETTEXTLENGTHW*/, index - 1, 0 );
+				var re, buffer = ::SendMessageByStr( owner.hwnd, 0x40D/*_SB_GETTEXTW*/, index - 1, len*2 );
+				return buffer;
+			}
+		}
+		setText = function ( text, index ) { 
+			var len = #(owner.items);
+			if ( #(owner.items) == 0 || (!index)  )
+				..win.setText( owner.hwnd,text );
+			else{ 
+				::SendMessageByStr( owner.hwnd, 0x40B/*_SB_SETTEXTW*/, index - 1, text );
+			}
+			return owner;
+		}
+		getBorders = function(){
+			var b = {int h;int v;int p}
+			::User32.SendMessage(owner.hwnd,0x407,0,b);
+			return b.v,b.h,b.p;
+		}
+		_beforeDpiChanged = function(scaleX,scaleY,origScaleX,origScaleY){
+			if(owner[["(minHeight)"]]){
+				owner.sendMessage(0x408/*_SB_SETMINHEIGHT*/,owner[["(minHeight)"]]*scaleY);
+				owner.sendMessage(5/*_WM_SIZE*/,0,0);	
+			}
+			
+			return false;
+		} 
+		setMinHeight = function(w){
+			w = w - owner.getBorders();
+			owner[["(minHeight)"]] = w;
+			owner.sendMessage(0x408/*_SB_SETMINHEIGHT*/,w*(owner[["dpiScaleY"]]:1));
+			owner.sendMessage(5/*_WM_SIZE*/,0,0);
+		}
+		bgcolor = {
+			_get = function(){
+				return owner[["(bgcolor)"]];
+			}
+			_set = function(v){
+				::User32.SendMessage(owner.hwnd,0x2001/*_CCM_SETBKCOLOR*/,0,v);
+				owner[["(bgcolor)"]] = v;
+			} 
+		};
+	})
+}
+
+//感谢lujjjh贡献最初的源代码 2010.9
+
+/**intellisense()
+win.ui.statusbar = 状态栏控件
+win.ui.statusbar(__/*父窗口*/) = 创建一个状态栏
+win.ui.statusbar() = !statusbar.
+end intellisense**/
+
+/**intellisense(!statusbar)
+addItem(__/*文本*/, /*宽度*/) = 创建一个状态栏分块
+insertItem(__/*文本*/, /*插入位置*/, /*宽度*/) = 插入一个状态栏分块,插入位置从 1 开始
+getItemWidth(__/*第几个分块*/) = 获取指定分块的宽度,分块从 1 开始
+setItemWidth(__/*第几个分块*/, /*宽度*/) = 设置指定分块的宽度,分块从 1 开始
+getText() = 获取状态栏的文本(无分块)
+getText(__/*第几个分块*/) = 获取指定分块的文本,分块从 1 开始
+setText(__/*文本*/) = 设置状态栏的文本(无分块)
+setText(__/*文本*/, /*第几个分块*/) = 设置指定分块的文本,分块从 1 开始
+count() = 获取分块的数量
+close() = 清除状态栏
+wndproc = @.wndproc = function(hwnd,message,wParam,lParam){\n	__/*窗口消息回调，返回任意非null值阻止默认回调\nwndproc重复赋值时追加函数而不是覆盖之前的回调\n设为null添除所有消息回调函数\nwndproc也可以是一个表,键要为处理的消息,值为对应的消息回调函数*/	\n}
+sendMessage(.(msg,wParam,lParam) = 发送窗口消息\n此函数用法请参考 ::User32.SendMessage
+postMessage(.(msg,wParam,lParam) = 投递窗口消息到消息队列中\n此函数用法请参考 ::User32.PostMessage
+getRoot() = 获取顶层父窗口
+setMinHeight(__) = 设置状态栏内部最小高度，\n此高度已包含上下边框宽度（通常是 2 个像素）。\n此函数已自动支持 DPI 缩放
+getBorders() = 返回上下边框，左右边框，间隔边框宽度，\n这个值实际测试基本都是返回 2,0,2
+height = 获取时返回状态栏实际高度。\n修改高度无效，请改用 setMinHeight 函数。\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+width = 状态栏宽度。\n只能获取，修改无效\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+left = 左侧坐标。\n只能获取，修改无效\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+right = 右侧坐标。\n只能获取，修改无效\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+top = 顶部坐标。\n只能获取，修改无效\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+bottom = 底部坐标。\n只能获取，修改无效\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+getPos() = 返回相对父窗口客户区的坐标,宽,高,\n参数为 true 返回屏幕坐标,宽,高\n\n注意状态栏是默认已经做过 DPI 缩放的，\n所以请在 winform.enableDpiScaling("init"); 以后使用这些属性
+getRect() = 控件区块位置，返回值为 ::RECT结构体\n!rect.
+getRect(true) = 控件屏幕区块位置，返回值为 ::RECT结构体 
+getItemRect(__) = 返回表示项目区块位置的 ::RECT 结构体，\n参数指定从 1 开始的项目索引
+getItemRect() = !rect.
+bgcolor = 背景颜色
+onDestroy = @.onDestroy = function(){\n	__/*窗口销毁前触发*/\n}
+onnotify = @.onnotify = function(id,code,ptr){\n	__/*通知事件触发*/\n}
+show(true__) = 显示控件
+getFont(true) = 返回控件字体，返回值为 ::LOGFONT 结构体\n!logfont.
+setFont(__/*指定字体*/) = 指定LOGFONT字体对象,或逻辑字体句柄 
+hide = 控件是否隐藏
+capture = 是否捕获全局鼠标消息
+redraw() = 刷新
+setRedraw(false) = 禁止重绘
+setRedraw(true) = 恢复重绘
+redrawTransparent() = 刷新\n透明背景时请使用此函数替代 redraw()
+theme = 外观主题,例如\nwinform.button.theme = "Explorer"\nwinform.button.theme = false
+modifyStyle(.(移除样式,添加样式) = 所有参数可选,默认为0\n使用 _TBSTYLE_ 前缀常量表示样式
+cls = 设计时类名
+className = 运行时类名
+hwnd = 控件句柄
+getForm() = 如果是窗体返回自身\n如果是控件则返回 _parentForm \n!winform.
+getParent() = 返回父窗口\n!winform.
+disabled = 是否禁用
+end intellisense**/

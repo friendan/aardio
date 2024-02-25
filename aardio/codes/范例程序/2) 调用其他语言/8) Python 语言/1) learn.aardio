@@ -1,0 +1,76 @@
+//Python 入门
+import fonts.fontAwesome;
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="Python 入门教程";right=992;bottom=623;bgcolor=16777215)
+winform.add(
+custom={cls="custom";left=-25;top=0;right=993;bottom=569;db=1;dl=1;dr=1;dt=1;z=3};
+nav1={cls="plus";text="aardio + Python 开发入门";left=504;top=572;right=684;bottom=604;border={top=1;color=-16744448};db=1;dr=1;font=LOGFONT(name='FontAwesome');z=5};
+nav2={cls="plus";text="Python 快速入门";left=684;top=572;right=835;bottom=604;border={top=1;color=-16744448};db=1;dr=1;font=LOGFONT(name='FontAwesome');notify=1;z=4};
+nav3={cls="plus";text="Python 语法速览";left=835;top=572;right=987;bottom=603;border={top=1;color=-16744448};db=1;dr=1;font=LOGFONT(name='FontAwesome');notify=1;z=7};
+navBegin={cls="plus";left=246;top=572;right=506;bottom=573;bgcolor=32768;border={color=-16744448};db=1;dl=1;dr=1;forecolor=16777215;linearGradient=180;z=1};
+navEnd={cls="plus";left=984;top=573;right=992;bottom=603;border={top=1;color=-16744448};db=1;dr=1;z=2};
+static={cls="static";text="1、在开发环境运行 aardio 代码时，aardio 会自动安装缺少的扩展库。
+2、注意 Python 语法对使用空格有严格的限制，乱按空格报错不是 bug。";left=2;top=583;right=520;bottom=620;db=1;dl=1;transparent=1;z=6}
+)
+/*}}*/
+
+import win.ui.atom;
+var atom,hwnd = winform.atom("{7353F88E-7B9F-41A6-80AC-B5E6A75947BF}.Python");
+if(!atom){
+	win.showForeground(hwnd);
+	win.quitMessage();	
+	return;
+}
+
+import web.view;
+var wb = web.view(winform.custom);
+if(_WINXP){ error("本程序基于 WebView2 ，不支持 XP 系统",2) }
+
+import win.ui.tabs;
+var tbs = win.ui.tabs(winform.nav1,winform.nav2,winform.nav3); 
+tbs.margin = 0;
+ 
+var urls = {
+	"https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2270340412479438855#wechat_redirect";
+	"https://learnxinyminutes.com/docs/zh-cn/python-cn/"; 
+	"https://quickref.me/python"; 
+}
+
+tbs.onSelchange = function(idx,strip,form){
+	var url = urls[idx];
+	if(url){  
+		strip.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+		wb.go(url);
+		
+		win.delay(500);
+		strip.disabledText = null;
+	} 
+	else { 
+		if(idx==4){
+			tbs.selForm.checkInstall();
+		}
+	}
+}
+
+tbs.skin({
+	foreground={
+		active=0xFFFFFFFF;
+		default=0x00FFFFFF;
+		hover=0xFFCCCCCC;
+	};
+	checked={
+		foreground={ 
+			default=0x00FFFFFF; 
+		};
+		border = { 
+			default = {left=1;right=1;bottom=1;color=0xFF008000} 
+			disabled = {left=1;right=1;bottom=1;color=0xFF008000} 
+		}; 
+	}
+});
+
+tbs.selIndex = 1;
+
+winform.show(3/*_SW_MAXIMIZE*/);
+win.loopMessage();

@@ -1,0 +1,46 @@
+﻿//ax COM 控件
+import com.lite;
+namespace libvlc;
+
+class ax{
+	ctor(winform,...){ 
+		this = _dll.createEmbed(winform,"{9BE31822-FDAD-461B-AD51-BE1D1C159921}");
+		
+		this.Toolbar = false; 
+	};
+	@_meta;
+}
+
+namespace ax{
+	
+    _meta = {
+		_get = function(k){
+			if(type(k)=="string" && !..string.startWith(k,"MediaPlayer")){
+				return owner._object[k]; 	
+			}
+		};
+		_set = function(k,v){ 
+			if(type(v) === "function") owner[[k]] = v;
+			else owner._object[k] = v; 
+		};
+	};
+    
+	_dll = ..com.lite("~\lib\libvlc\.res\axvlc.dll")
+	
+}
+
+/**intellisense(libvlc)
+ax = LibVLC COM 控件
+ax( = 创建 LibVLC 控件
+ax(.(winform) = 参数 @winform 指定宿主窗口或控件对象
+ax() = !libVlcAx.
+end intellisense**/
+
+/**intellisense(!libVlcAx)
+MediaPlayerPositionChanged = @.MediaPlayerPositionChanged = function(pos){
+	_/*播放进度改变回调此函数，pos 为当前进度*/
+}
+Playlist.Add(__) = 添加视频地址，返回播放列表 ID
+Playlist.PlayItem(__) = 播放视频，参数指定播放列表 ID
+end intellisense**/
+

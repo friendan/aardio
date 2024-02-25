@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\icmp\");
+fsys.copy( "\ping.aardio","~\lib\icmp\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("icmp.ping扩展库已安装成功!","aardio- icmp.ping扩展库安装程序")

@@ -1,0 +1,25 @@
+//YAML
+import console;
+import web.script.yaml;
+var yaml = web.script.yaml;
+
+/*
+YAML 快速入门
+https://quickref.me/yaml
+https://learnxinyminutes.com/docs/zh-cn/yaml-cn
+*/
+var yamlText = /*
+YAML: YAML Ain't Markup Language™
+
+What It Is:
+  YAML is a human-friendly data serialization language.
+
+*/
+
+var object = yaml.loadAll(yamlText)
+console.dumpJson(object);
+
+var text = yaml.dump(object);
+console.dump(text);
+
+console.pause();

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\dotNet\");
+fsys.copy( "\desktop","~\lib\dotNet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dotNet.desktop 扩展库已安装成功!","aardio- dotNet.desktop扩展库安装程序")

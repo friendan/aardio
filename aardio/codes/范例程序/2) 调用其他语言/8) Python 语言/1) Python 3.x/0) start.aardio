@@ -1,0 +1,59 @@
+//入门
+import console;
+//console.open() 如果要在 Python 中使用 print 函数,请在导入 py3 库以前打开控制台，
+
+//在开发环境运行代码 —— aardio 会自动安装缺少的 py3 扩展库，很简单！
+import py3;
+
+//aardio + Python 入门教程系列：
+//https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2270340412479438855#wechat_redirect
+
+//导入 Python 模块
+var math = py3.import("math");
+
+//调用 Python 模块的函数，可使用纯 aardio 类型的调用参数。
+var pyInt = math.floor(22.3);
+
+// Python 函数返回的值都是 pyObject —— 在 aardio 中都基于 py3.object 构建。 
+console.log("返回 Python 对象的类型:",pyInt.type() );
+
+//pyObject 可用 parseValue() 可转换为纯 aardio 对象。
+var v = pyInt.parseValue();
+
+//pyObject 也支持 tonumber(),tostring() 等类型转换函数。
+var n = tonumber( pyInt ); 
+console.dump( n );
+
+//调用 Python 内建函数
+var n = py3.builtin.abs(-12);
+console.log(n);
+
+//定义 Python 函数
+var pyCode = /**  
+def getList(items):  
+    return items
+**/ 
+
+//执行 Python 代码
+py3.exec( pyCode );
+
+//从 py3.main 模块获取并调用 Python 创建的函数 
+var pyList = py3.main.getList({1,2,3});
+
+// pyObject 提供 each 迭代器
+for( item in pyList.each() ){
+	console.log(item);
+}
+
+// pyObject 支持 table.eachIndex 创建的迭代器
+for i,v in table.eachIndex(pyList){
+	console.log(i,v);
+}
+
+// pyObject 支持 web.json 
+console.log( web.json.stringify(pyList) );
+
+// pyObject 支持 tostring() 等函数，注意 console.log() 已默认调用 tostring() 转换参数
+console.log( tostring(pyList) );
+
+console.pause();

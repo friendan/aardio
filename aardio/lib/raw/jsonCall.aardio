@@ -1,0 +1,18 @@
+﻿//jsonCall 函数指针
+import web.json;
+
+class raw.jsonCall{
+	ctor( callback  ){
+ 		return ..raw.tostdcall(
+			function(json,size){
+				json = ..raw.tostring(json,1,size);
+				var args = ..web.json.parse(json);
+				return callback(..table.unpackArgs(args)); 
+			},"int(ptr json,INT size)");
+		)
+	}; 
+}
+
+/**intellisense()
+raw.jsonCall(__) = 参数 @1 指定回调函数，\n返回 stdcall 函数指针，参数类型声明为 "int(ptr json,INT size)"。\n\n通过该函数指针调用时应传入表示数组的 JSON，\nraw.jsonCall 将 JSON 展开为参数列表并调用指定的回调函数，\n回调函数返回值应为数值或 null
+end intellisense**/

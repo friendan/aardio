@@ -1,0 +1,218 @@
+﻿//object 对象
+if(!java) error("请先导入 java",2);;
+
+namespace java;
+
+class object{
+	ctor( jvm,jvmInstancePtr ){ {
+			this.jvm = jvm;
+			this.jniEnv = this.jvm.env;
+			this.invokeMethod = jvm.invokeMethod;
+			
+			var jvm,jniEnv = this.jvm,this.jniEnv;
+			
+			if(!jvmInstancePtr) return;
+			this.$jvmInstancePtr = topointer(jvmInstancePtr);
+			
+			var localInstanceRef = this.$jvmInstancePtr;
+    		this.$jvmInstancePtr = this.jniEnv.NewGlobalRef(localInstanceRef);
+    		this.jniEnv.DeleteLocalRef(localInstanceRef);  
+    		
+    		
+			this.getField = function(fname,asign){ 
+			
+    			if(! (asign && fname ) )error("必须指定参数:字段名,类型声明",2);
+    			var jsign = getSignature(asign); 
+			
+    			var jvm,jniEnv = this.jvm,this.jniEnv;
+    			var jClassPtr = this.jniEnv.GetObjectClass( this.$jvmInstancePtr );
+    			f(!jClassPtr)error("查找类失败",2); 
+			
+    			var fid = jniEnv.GetFieldID(jClassPtr,fname,jsign); 
+    			jniEnv.DeleteLocalRef(jClassPtr);
+			
+    			if ( jvm.exceptionClear() || (!fid) ) { 
+        			error("查找字段名失败。方法名:" + fname,2); 
+    			}
+    			
+    			var jTypeName = typeNameFromAardio(asign); 
+    			var jGetterName = ..string.format("Get%sField",jTypeName )
+    			var jGetter = jniEnv[jGetterName]
+    			if(!jGetter) error("查找字段调用方法" + jGetterName + "失败,Java字段名:" + fname,2); 
+    			
+    			var ret = jGetter( this.$jvmInstancePtr, fid);
+    			if( asign == "string"){
+        			return jvm.parseString(ret);
+    			}
+    			elseif( jTypeName = "Object"){
+        			if( ..string.find(asign,"\[") ){
+            			return jvm.parseArray( ..string.match(asign,"\w+") ,ret );
+        			}
+        			return ..java.object(jvm,ret);
+    			}
+    			
+    			return ret;
+			};
+			
+			this.getMethod = function(methodName,asign){ 
+				if(!asign){
+					if( type(methodName) == "string" ){
+						var r,f = callex(,this@._get,this,methodName,true);
+						if(r) return f;
+					}
+					 
+					return;	
+				}
+				
+    			var jvm,jniEnv = this.jvm,this.jniEnv;
+    			
+    			if(!asign)asign = "void()";	
+    			if(!methodName)error("必须指定参数:字段名,类型声明",2);
+			
+    			var arg1 = ..string.match(asign,"\((.+?)\,");
+    			if( arg1 ){
+        			for a in ..string.gmatch( asign,"\,([^,)]+)") { 
+            			if( a != arg1 ){error('请用多个参数时,类型必须相同',2)}
+        			}
+        			asign = ..string.replace(asign,"%()","(" + arg1 + "[])");
+    			}
+    			
+    			var jsign = getSignature(asign); 
+			
+    			var jClassPtr = jniEnv.GetObjectClass( this.$jvmInstancePtr );
+    			if(!jClassPtr) error("查找类失败",2); 
+    			var method  = jniEnv.GetMethodID(jClassPtr,methodName,jsign);
+    			jniEnv.DeleteLocalRef(jClassPtr);
+    			
+    			if ( jvm.exceptionClear() || (!method) ) {
+        			error("查找方法失败。方法名:" + methodName,2);
+        			return false;
+    			}
+    			
+    			var retype = ..string.match(asign, "\s*(.+)\s*\(");
+    			var jRettype = typeNameFromAardio(retype);
+    			var jCallerName  = ..string.format("Call%sMethod",jRettype );
+    			jCallerName = jCallerName + "A"; 
+    			
+    			var jCaller = jniEnv[jCallerName]
+    			if(!jCaller){ error("找不到调用函数 jniEnv."+jCallerName+"()",2) }
+    			
+    			var argType = ..string.match(asign,"\(\W*([\w\/\.\[]+)\W*\)");
+    			var argTypeNoArray = argType ? ..string.replace( argType,"[\[\]]","");
+    			var argname =  "j" + ..string.lower( typeNameFromAardio(argTypeNoArray) );    
+     			
+    			var safeRet = function(ret){
+         			if ( jvm.exceptionClear() ) { return; } 
+         			return ret;
+    			} 
+     			
+    			if(retype){
+         			if( jRettype = "Object"){
+            			if(..string.find(retype,"\[")  ){
+                			var feildType = typeNameToAardio(..string.match(retype,"[^\[]+"));
+                			safeRet = function(ret){
+                     			if ( jvm.exceptionClear() ) { return; } 
+                     			return jvm.parseArray(feildType,ret);
+                 			}
+            			}
+            			elseif( ..string.cmp(retype,"string") == 0 ){
+                 			safeRet = function(ret){ 
+                    			if ( jvm.exceptionClear() ) { return; }  
+                     			return jvm.parseString(ret);
+                 			}
+             			}
+            			else {
+                			safeRet = function(ret){
+                     			if ( jvm.exceptionClear() ) { return;  } 
+                     			return ..java.object(jvm,ret);
+                 			}
+            			}
+        			} 
+    			}
+      			
+    			if( argType ? ..string.find(argType,"\[") ){  
+        			if( argTypeNoArray ? ..string.cmp(argTypeNoArray,"string") == 0 ){ 
+            			return function(...){ 
+                			return safeRet( jCaller(this,method,{ pointer jobject = jvm.stringArray(...) } ) );
+            			}
+        			}
+        			else{ 
+            			return function(...){ 
+                			return safeRet( jCaller(this,method,{ pointer jobject = jvm.array(argTypeNoArray,...) }) );
+            			}
+        			}
+    			}
+    			else{   
+        			if(!argType){
+            			return function(){
+                			return safeRet( jCaller(this,method,{} ) );
+            			}
+        			}
+        			elseif(  ..string.cmp(argType,"string") == 0 ){
+            			return function(arg){
+                			var jv = jvalue();
+                			jv.v[argname] = jvm.string(arg);
+                			return safeRet( jCaller(this,method,jv) );
+            			}
+        			}
+        			else{ 
+            			return function(arg){ 
+                			jarg = jvalue();
+                			jarg.v[argname] = arg;  
+                			return safeRet( jCaller(this,method,jarg) );
+            			}
+        			}
+    			}
+			};
+    		
+			this.hashCode = this.getMethod("hashCode","INT()");
+			this.toString = this.getMethod("toString","string()");
+			this.equals = this.getMethod("equals","bool(pointer)");
+
+			..table.gc(this,function(){
+				if( this.$jvmInstancePtr ){
+					jniEnv.DeleteGlobalRef(this.$jvmInstancePtr); 
+					this.$jvmInstancePtr = null;
+				}
+			}) 
+	} };
+
+
+	@_meta; 
+}
+
+namespace object{
+	_meta = { 
+		_topointer = function(){
+			return owner.$jvmInstancePtr;
+		}
+		_tostring = function(){
+			return owner.toString();
+		}
+		_eq = function(b){
+			return ( b[["equals"]] ? owner.equals( b ) );
+		}
+		_set = function(k,v){
+			if(type(k)!="string" || k=='_struct' || type(v) == "function") {
+				owner[[k]] = v;
+				return;
+			}
+			owner.jvm.setFieldValue(owner,k,v);
+		}
+		_get = function(k,ownerCall){
+			if(type(k)!="string" || k=='_struct') return;
+			if( (!ownerCall) || owner.jvm.fieldExists(owner,k) )return owner.jvm.getFieldValue(owner,k);
+			
+			var this = owner;
+			owner[[k]] = function(...){
+				return this.invokeMethod(this,k,...)
+			}
+			return owner[[k]];
+		}
+	}  
+	
+	jvalue =  ..java.jvalue;
+	getSignature =  ..java.getSignature;
+	typeNameToAardio = ..java.typeNameToAardio;
+	typeNameFromAardio = ..java.typeNameFromAardio;
+}

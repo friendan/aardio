@@ -1,0 +1,53 @@
+﻿import dotNet; 
+namespace dotNet;
+
+var assembly = ..dotNet.loadFile($"~\lib\dotNet\toastListener\.res\ToastListener.dll");
+
+class toastListener{
+	ctor(){ 
+		if(!assembly.invokeStaticMember("aardio.ToastListener.IsSupported") ){
+			return null;
+		}
+		
+		this.listener = assembly.new("aardio.ToastListener");  
+	};
+	isAllowed = function(){
+		return this.listener.IsAllowed();
+	};
+	getNotifications = function(){
+		var items = this.listener.GetNotifications();
+
+		var result  = {};
+		for(i=1;#items;4){ 
+			..table.push(result,{
+				id = tonumber(items[i]);
+				title = items[i+1];
+				body = items[i+2];
+				creationTime =  ..time(items[i+3]);
+			}); 
+		}
+		return result;
+	}; 
+	remove = function(id){
+		return this.listener.RemoveNotification(id);
+	};
+	clear = function(){
+		return this.listener.ClearNotifications();
+	};
+	close = function(){
+		this.listener = null;
+		collectgarbage("collect");
+	};
+}
+
+/**intellisense()
+dotNet.toastListener = 系统 Toast 消息监听器。\n系统自带组件，仅支持 Windows 10 1607 以上版本
+dotNet.toastListener() = 创建系统 Toast 消息监听器,失败返回 null。\n!dotNetToastListener.
+end intellisense**/
+
+/**intellisense(!dotNetToastListener)
+isAllowed() = 是否有获取通知权限
+getNotifications() = 获取所有Toast 消息通知,返回数组。\n数组成员为包含 id,title,body 三个字段的对象。\n id 为通知 ID，title 为标题, body 为文本,creationTime 为创建时间
+remove(__) = 移除指定消息通知，参数 @1 指定通知 ID
+clear() = 清除所有消息通知\n此函数暂不可用
+end intellisense**/

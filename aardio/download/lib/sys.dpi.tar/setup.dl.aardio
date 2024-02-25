@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\sys\");
+fsys.copy( "\dpi","~\lib\sys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("sys.dpi 扩展库已安装成功!","aardio- sys.dpi扩展库安装程序")

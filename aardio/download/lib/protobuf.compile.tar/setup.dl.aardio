@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\protobuf\");
+fsys.copy( "\compile","~\lib\protobuf\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("protobuf.compile 扩展库已安装成功!","aardio- protobuf.compile扩展库安装程序")

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\win\ui\ctrl\");
+fsys.copy( "\mCtrl","~\lib\win\ui\ctrl\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("win.ui.ctrl.mCtrl 扩展库已安装成功!","aardio- win.ui.ctrl.mCtrl扩展库安装程序")

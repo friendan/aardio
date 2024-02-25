@@ -1,0 +1,178 @@
+//privateFontCollection 私有字体集合
+import gdip.core;
+import gdip.font;
+import gdip.family;
+
+namespace gdip
+
+class privateFontCollection {
+	ctor(pFontCollection){
+		if(type(pFontCollection)==type.pointer){
+			this.pFontCollection = pFontCollection; //仅供 gdip.installedFontCollection() 构造函数复用
+		}
+		else {
+			var err;
+			var collect = {ptr p}
+			err = ::Gdiplus.GdipNewPrivateFontCollection(collect);
+			if( err ) return null,gdip.errMsg[err]; 
+			
+			this.pFontCollection = collect.p;	
+			
+			this.__PrivateFamilyList = {};
+		}
+		 
+		if(!this.pFontCollection) error("创建字体参数错误",2) ; 
+		..table.gc(this,"delete"); 
+	}
+
+	@_metaProperty
+}
+
+namespace privateFontCollection {
+
+ 	gdip = ..gdip; 
+	_metaProperty = ..util.metaProperty( 
+		
+		add = function(f){
+			var ok;
+			var data = f;
+			if( #f <= 0x410/*_MAX_PATH_U8*/){
+				var path = ..io.exist(f)
+				if( path ){
+					ok = 0 == ::Gdiplus.GdipPrivateAddFontFileW( owner[["pFontCollection"]],path );
+					data = null;
+				} 
+				else {
+					data = ..string.loadBuffer(f) : f; 
+				}
+			}
+	 		
+			if( data ){
+				ok = 0 == ::Gdiplus.GdipPrivateAddMemoryFont( owner[["pFontCollection"]],data,#data);  
+			}
+			
+			if(ok){
+				var sought = owner.count();
+				var families = {ptr p[]={length=sought}};
+				var numFound = ..raw.uint(,true)
+				..gdip.assert2(::Gdiplus.GdipGetFontCollectionFamilyList(owner[["pFontCollection"]],sought,families,numFound));
+				
+				var pfamilies = families.p;
+				for(i=1;tonumber(numFound);1){ 
+					var p = pfamilies[i];
+					if(!owner.__PrivateFamilyList[p]){
+						..table.push(owner.__PrivateFamilyList,p);
+						owner.__PrivateFamilyList[p] = 1;
+					}
+				}					
+			} 
+
+			return ok;
+		};
+		
+		delete = function(){
+			if( owner[["pFontCollection"]]  ){
+				::Gdiplus.GdipDeletePrivateFontCollection({ptr p = owner[["pFontCollection"]]})
+				owner[["pFontCollection"]] = null;
+			}
+		};
+		
+		count = function(){
+			var numFound = {INT value}
+			::Gdiplus.GdipGetFontCollectionFamilyCount(owner[["pFontCollection"]],numFound);
+			return numFound.value; 
+		};
+		
+		getFamilies = function(sought,clone){
+			if(sought===null)sought = owner.count();
+			if(!sought)return null;
+			
+			var families = {ptr p[]={length=sought}};
+			var numFound ={INT len}
+			..gdip.assert2(::Gdiplus.GdipGetFontCollectionFamilyList(owner[["pFontCollection"]],sought,families,numFound));
+			
+			var result = {}
+			var len = numFound.len;
+			var pfamilies = families.p;
+			for(i=1;len;1){ 
+				result[i] = ..gdip.family(pfamilies[i],clone)
+			}
+			
+			return result;
+		};
+		
+		getLastFamily = function(clone){
+			if(owner.__PrivateFamilyList){
+				var count = #owner.__PrivateFamilyList;
+				if(count){
+					return  ..gdip.family(owner.__PrivateFamilyList[count],clone) 	
+				}
+			}
+			else {
+				var sought = owner.count();
+				if(!sought)return null;
+				
+				var families = {ptr p[]={length=sought}};
+				var numFound ={INT len}
+				..gdip.assert2(::Gdiplus.GdipGetFontCollectionFamilyList(owner[["pFontCollection"]],sought,families,numFound));
+				
+				var result = {}
+				var len = numFound.len;
+				var pfamilies = families.p;
+				return  ..gdip.family(pfamilies[len],clone) 		
+			}
+		};
+		
+		createFamily = function(name){
+			if(!name) {
+				return owner.getLastFamily(true); 
+			}
+			return gdip.family(name,owner[["pFontCollection"]]);
+		};
+		
+		_topointer = function(){
+			return owner[["pFontCollection"]];
+		};
+	)  
+
+	getInstance = function(){
+		if(!__theInstance){
+			__theInstance = ..gdip.privateFontCollection();
+			__theInstance.delete = ..table.gcOnly( __theInstance.delete )	
+		} 
+		
+		return __theInstance;
+	}
+ 
+	createFamily = function(path,name){
+		if(!path) error("参数错误",2); 
+	 
+	 	if(!__theInstance) getInstance();
+		if( __theInstance.add(path) ) return __theInstance.createFamily(name); 
+	}
+	
+	createFont = function(path,name,emSize,style,unit){
+		if(!(path && name)  ) error("参数错误",2);
+		var f = createFamily(path,name);
+		if(f) return f.createFont(emSize,style,unit); 
+	}
+}
+
+/**intellisense()
+gdip.privateFontCollection = 私有字体集合\n\n如果需要创建 gdip.font 自动支持的嵌入字体,\n请在 fonts 名字空间下添加库,并调用 fonts.createFamily 函数注册嵌入字体
+gdip.privateFontCollection.createFamily(.(字体路径,字体名) = 创建字样,创建失败返回空值\n参数@1可以是路径或资源文件、内存数据\n如果不指定名字,则返回字体列表中的第一个字样
+gdip.privateFontCollection.createFont(.(字体路径,字体名,大小,样式,单位) = 创建字体\n参数@1可以是路径或资源文件、内存数据\n单位默认为像素
+gdip.privateFontCollection()  = 私有字体集合,调用时不应在参数中指定指针\n较老的系统在私有字体集合释放后,会导致该容器加载并仍在使用的的字体异常\n稳妥的方式是调用 gdip.privateFontCollection.getInstance 函数\n获取私有字体集合的单一实例\n!gdipprvfontcoll.
+gdip.privateFontCollection.getInstance() = 获取默认的私有字体集合,\n较老的系统在私有字体集合释放后,会导致该容器加载并仍在使用的的字体异常,\n 稳妥的方式是调用此函数获取单一实例的自定义容器\naardio 会在程序结束前自动释放此容器对象,\n但手动调用此对象的 delete 函数将被忽略,\n\n!gdipprvfontcoll.
+!gdipprvfontcoll.add( = 添加自字义字体
+!gdipprvfontcoll.add(.(字体) = 参数可以是字体文件,资源文件\n或字体文件加载到内存的数据
+!gdipprvfontcoll.createFamily( = 创建字样对象
+!gdipprvfontcoll.createFamily(.("字体名") = 参数为字体名\n如果不指定名字,则返回字体列表中的最后一个添加的字样
+!gdipprvfontcoll.createFamily() = !gdipfamily.
+!gdipprvfontcoll.count() = 返回字体列表中包含的字样总数,\n一个字样可以用于创建不同大小、不同样式的同名字体
+!gdipprvfontcoll.getFamilies( = 返回字体集合中的字样数组,\n一个字样可以用于创建不同大小、不同样式的同名字体
+!gdipprvfontcoll.getFamilies(.(sought,clone) = 返回字体集合中的字样数组,所有参数可选,\n参数  @sought 指定期望返回的字样数目,\n不指定则自动获取全部字样并返回,clone参数指定是否复制字样对象,\n如果不复制，在字体列表被删除以后，此函数返回的字样也不能再使用
+!gdipprvfontcoll.getLastFamily(.(clone) = 返回字体集合中的最后一个添加的字样,\n可选参数 @sought 指定期望返回的字样数目,\n不指定则自动获取全部字样并返回,clone参数指定是否复制字样对象,\n如果不复制，在字体列表被删除以后，此函数返回的字样也不能再使用
+!gdipprvfontcoll.getLastFamily() = !gdipfamily.
+!gdipprvfontcoll.delete() = 删除字体
+end intellisense**/

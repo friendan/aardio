@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\pdfium","~\lib\fsys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.pdfium 扩展库已安装成功!","aardio- fsys.pdfium扩展库安装程序")

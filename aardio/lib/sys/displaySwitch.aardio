@@ -1,0 +1,27 @@
+﻿//displaySwitch 切换显示器
+
+namespace sys.displaySwitch;
+
+clone = function(){
+	::User32.SetDisplayConfig(0,null,0,null,2/*SDC_TOPOLOGY_CLONE*/|0x80/*_SDC_APPLY*/);
+} 
+
+extend = function(){
+	::User32.SetDisplayConfig(0,null,0,null,4/*SDC_TOPOLOGY_EXTEND*/|0x80/*_SDC_APPLY*/);
+}
+
+internal = function(){
+	::User32.SetDisplayConfig(0,null,0,null,1/*SDC_TOPOLOGY_INTERNAL*/|0x80/*_SDC_APPLY*/);
+}
+
+external = function(){
+	::User32.SetDisplayConfig(0,null,0,null,8/*SDC_TOPOLOGY_EXTERNAL*/|0x80/*_SDC_APPLY*/);
+}
+
+/**intellisense(sys)
+displaySwitch = 切换显示器，支持 Win7 以及之后操作系统。\n也可以直接按 WIN + P 切换
+displaySwitch.clone() = 切换为复制主显示器
+displaySwitch.extend() = 切换为扩展主显示器
+displaySwitch.internal() = 切换为使用主显示器
+displaySwitch.external() = 切换为使用副显示器
+end intellisense**/

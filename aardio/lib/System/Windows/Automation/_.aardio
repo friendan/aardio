@@ -1,0 +1,74 @@
+﻿import dotNet;
+
+if(table.getByNamespace("System.Windows.Automation['3']")){
+	return;
+}
+
+::UIAutomationTypes := dotNet.load("UIAutomationTypes");
+::UIAutomationClient := dotNet.load("UIAutomationClient");
+::UIAutomationClient.import("System.Windows.Automation"); 
+
+namespace System.Windows.Automation{
+    
+	var types = {
+		"AsyncContentLoadedEventArgs";
+		"AutomationElementIdentifiers";
+		"AutomationEvent";
+		"AutomationEventArgs";
+		"AsyncContentLoadedState";
+		"AutomationIdentifier";
+		"AutomationPattern";
+		"AutomationProperty";
+		"AutomationPropertyChangedEventArgs";
+		"AutomationTextAttribute";
+		"ControlType";
+		"DockPatternIdentifiers";
+		"DockPosition";
+		"ExpandCollapsePatternIdentifiers";
+		"ExpandCollapseState";
+		"GridItemPatternIdentifiers";
+		"InvokePatternIdentifiers";
+		"ItemContainerPatternIdentifiers";
+		"MultipleViewPatternIdentifiers";
+		"OrientationType";
+		"RangeValuePatternIdentifiers";
+		"RowOrColumnMajor";
+		"ScrollAmount";
+		"ScrollItemPatternIdentifiers";
+		"ScrollPatternIdentifiers";
+		"SelectionItemPatternIdentifiers";
+		"SelectionPatternIdentifiers";
+		"StructureChangedEventArgs";
+		"StructureChangeType";
+		"SupportedTextSelection";
+		"SynchronizedInputPatternIdentifiers";
+		"SynchronizedInputType";
+		"TableItemPatternIdentifiers";
+		"TablePatternIdentifiers";
+		"TextPatternIdentifiers";
+		"TogglePatternIdentifiers";
+		"ToggleState";
+		"TransformPatternIdentifiers";
+		"TreeScope";
+		"ValuePatternIdentifiers";
+		"VirtualizedItemPatternIdentifiers";
+		"WindowClosedEventArgs";
+		"WindowInteractionState";
+		"WindowPatternIdentifiers";
+		"WindowVisualState"; 
+		"Text"; 
+	}
+	
+	for(k,v in types){ 
+		self[[v]] = ::UIAutomationTypes.import("System.Windows.Automation."+v); 
+	} 
+	
+	Text.SafeTextRangeHandle = ::UIAutomationClient.import("System.Windows.Automation.Text.SafeTextRangeHandle"); 
+	Text.TextPatternRange = ::UIAutomationClient.import("System.Windows.Automation.Text.TextPatternRange"); 
+	
+	AutomationElement[["NotSupported"]] = AutomationElement.NotSupported;
+}
+
+/**intellisense()
+System.Windows.Automation = .NET System.Windows.Automation 组件。\nSystem.Windows.Automation.3 扩展库可导入兼容的库。\n用法相同且扩展了部分接口。\n[相关文档](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6)\n!dotNetNameSpace.
+end intellisense**/

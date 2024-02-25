@@ -1,0 +1,11 @@
+﻿import dotNet;
+dotNet.load("System.IO.Compression.FileSystem").import("System.IO.Compression.ZipFile")
+
+/**intellisense()
+System.IO.Compression.ZipFile = .Net System.IO.Compression.ZipFile 名字空间\n支持 .NET 4.5 及以上，Win10 以及更新的系统已自带
+System.IO.Compression.ZipFile.CreateFromDirectory( = 简单压缩目录到 zip 文件，\n如果需要更多功能请改用 zlib.zip 库
+System.IO.Compression.ZipFile.CreateFromDirectory(.(源目录路径,zip文件路径,压缩级别,是否包含根目录名) = 简单压缩目录到 zip 文件\n如果 zip 文件存在会报错，请先用 io.exist 判断一下,\n路径请用 io.fullpath 转换为绝对路径。\n压缩级别为 0 表示优化，为 1 表示速度优化，为 2 不压缩
+System.IO.Compression.ZipFile.ExtractToDirectory( = 简单解压缩 zip 文件，\n如果需要更多功能请改用 zlib.unzip 库
+System.IO.Compression.ZipFile.ExtractToDirectory(.(zip文件路径,目标目录路径) = 简单解压缩 zip 文件\n路径请用 io.fullpath 转换为绝对路径
+end intellisense**/
+

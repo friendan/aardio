@@ -1,0 +1,92 @@
+﻿//input 输入法
+import win.guid;
+namespace sys.input;
+
+var dll = ..raw.loadDll("input.dll","","stdcall,unicode");
+
+install = function(v,flags){
+	dll.InstallLayoutOrTipW(v,flags );
+}
+
+disable = function(v,disabled){
+	dll.InstallLayoutOrTipW(v,disabled?1:0 );	
+}
+
+getDescription = function(v){
+	var buf = ..raw.buffer(512);
+	var len = {int v = 256 }
+	if(dll.GetLayoutDescription(v,buf,len) >= 0){ 
+		return ..string.fromUnicode(buf,,len.v);
+	}
+}
+
+getLayoutOrTips = function(enabled){
+	var count  = dll.EnumEnabledLayoutOrTip(userReg,sysReg,softReg,null,0)
+	if(!count) return;
+	
+	var lot = {
+  		INT  profileType;//2 是 HKL,1 是输入法
+  		INT langId;
+  		struct clsId = ..win.guid();
+  		struct guidProfile = ..win.guid();
+  		struct catId = ..win.guid();
+  		INT  substituteLayout;
+  		INT  flags; //LOT_DEFAULT  1 2
+  		WORD id[0x104/*_MAX_PATH*/];
+	} 
+	
+	var profiles = {lot;length = count;}
+	if( dll.EnumEnabledLayoutOrTip(userReg,sysReg,softReg, { struct items[] = profiles } ,..raw.sizeof(lot)*count) ){
+		profiles.length = null;
+		if(enabled){
+			for(i=#profiles;1;-1){
+				if(profiles[i].flags&2/*_LOT_DISABLED*/){
+					..table.remove(profiles,i);
+				}
+			}
+		}
+		return profiles;
+	}
+}
+
+getEnabledLayoutOrTips = function(){
+	var tips = getLayoutOrTips(true);
+	
+	var ret = {};
+	for(i,t in tips) ret[t.id] = t.profileType;
+	return ret;
+}
+
+setDefault = function(v,flags){
+	if(::Bcp47Langs) ::Bcp47Langs.SetInputMethodOverride(v?v:"");
+	if(#v) return dll.SetDefaultLayoutOrTipB(v,flags); 
+}
+
+self@ ={
+	_get = lambda(k) dll[k];
+}
+
+/**intellisense(sys.input)
+install( = 禁用与启用键盘布局或输入法\n可使用 win.rt.bcp47.getInputMethods 函数返回所有可用键盘布局或输入法
+install(.(layoutOrTip,flags) = 禁用与启用键盘布局或输入法，\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n例如 "0409:00000409" 为英文键盘。\n@flags 用一个数值指定选项，1 为禁用，0 为启用，\n其他可用值参考 https://docs.microsoft.com/en-us/windows/win32/tsf/installlayoutortip
+disable( = 禁用与启用键盘布局或输入法\n可使用 win.rt.bcp47.getInputMethods 函数返回所有可用键盘布局或输入法
+disable(.(layoutOrTip,enabled) = 禁用与启用键盘布局或输入法，\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n例如 "0409:00000409" 为英文键盘。\n@disabled 参数指定是否禁用输入法，省略参数则默认值为 true
+getDescription( = 返回键盘布局或输入法描述
+getDescription(.(layoutOrTip) = 返回键盘布局或输入法描述\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n例如 "0409:00000409" 为英文键盘
+getLayoutOrTips( = 返回所有键盘布局与输入法的数组
+getLayoutOrTips(.(enabled) = 返回所有键盘布局与输入法的数组，\n如果参数 @1 为 true，则不返回已禁用的元素。\n数组成员为 LAYOUTORTIPPROFILE 结构体，\n详细用法请查看函数源码\n\n一般可使用简化了的 getEnabledLayoutOrTips 函数
+getEnabledLayoutOrTips() = 返回一个包含所有启用的输入法或键盘布局状态的表，\n键为键盘布局或输入法的 ID，例如 "0409:00000409" ，\n值为如下类型之一，\n键盘布局的值为 2 _LOTP_KEYBOARDLAYOUT，输入法的值为 1 _LOTP_INPUTPROCESSOR
+setDefault(.(layoutOrTip,flags) = 设置默认输入法，\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n@flags 参数不必指定\n\n仅支持 Win10,Win11 或之后的操作系统，\n必须提前导入库： win.rt.bcp47\n\n系统设置每个应用窗口使用不同输入法才能实时看到效果，\n可用 SystemParametersInfo 修改该设置（参考 ImTip 源码）
+? = 可不用声明直接在此输入函数名并调用 input.dll 的 API 函数 
+end intellisense**/
+
+/**intellisense()
+sys.input = 系统输入法相关函数，\n可用于 Win7/Win10/Win11 以及之后的系统\n\n相关库：win.rt.bcp47
+
+_LOTP_INPUTPROCESSOR=@1/*_LOTP_INPUTPROCESSOR*/
+_LOTP_KEYBOARDLAYOUT=@2/*_LOTP_KEYBOARDLAYOUT*/
+end intellisense**/
+
+/*
+raw.execute("control.exe","input.dll"); //打开系统输入法设置
+*/

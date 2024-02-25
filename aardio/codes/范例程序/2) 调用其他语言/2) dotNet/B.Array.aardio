@@ -1,0 +1,61 @@
+//数组
+import console;
+import dotNet; 
+var compiler = dotNet.createCompiler("C#");
+compiler.Source = /***
+namespace CSharpLibrary  
+{   
+    public class Object  
+    {      
+        public int num = 123;
+        
+ 		public static object TestSafeArray(double [] arr)
+   		{
+       		 return arr;
+   		}
+   		
+   		public static object TestObjectArray(CSharpLibrary.Object [] arr)
+   		{
+       		 return arr;
+   		}
+    }   
+} 
+***/
+ 
+compiler.import("CSharpLibrary"); 
+
+//简单的数值、字符串数组可以直接交换
+var safeArray = CSharpLibrary.Object.TestSafeArray({1,2,3});
+console.dump(safeArray); //会转换为 aardio 数组兼容的 com.SafeArray
+
+//创建 .NET 类型化数组，参数类型正确匹配，不会报错。
+var objArray = dotNet.createArray( CSharpLibrary.Object, 2 )
+objArray[1] = CSharpLibrary.Object(); //默认数组是空的
+objArray[2] = CSharpLibrary.Object(); 
+
+//这样写也可以，如果不指定数组长度，参数 @1 可以直接传入数组（传其他类型直接返回）
+var objArray = dotNet.createArray( { CSharpLibrary.Object(),CSharpLibrary.Object() }  )
+
+/*
+如果普通数组首元素为 .NET 对象，
+aardio 会自动调用 dotNet.createArray() 创建一个临时的类型化数组作为参数。
+
+所以下面这样写，也不会报错。
+*/
+var objArray = { CSharpLibrary.Object(),CSharpLibrary.Object() } 
+
+//类型化数组正确匹配参数类型，不会报错
+var objArray = CSharpLibrary.Object.TestObjectArray(objArray);
+
+//但是这种数组是  .NET 对象，例如取长度要用 Length 属性而不是#。
+console.log("数组长度",objArray.Length)
+
+//访问数组的第 1 个元素（ aardio 中起始下标为 1 ）
+console.log(objArray[1].num)
+
+//遍历 .NET 数组
+for i,v in dotNet.each(objArray) {
+	console.log(i,v)
+}
+
+console.pause();

@@ -1,0 +1,47 @@
+//禁止弹窗
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="禁止弹窗";right=757;bottom=467)
+winform.add()
+/*}}*/
+
+import web.view; 
+var wb = web.view(winform);
+
+/*
+添加网页默认加载的 JavaScript （ 在 window.onload 事件触发之前执行 ）。
+*/
+wb.preloadScript(`
+//禁止超链接默认开新窗口
+window.addEventListener('load',function(){ 
+	let base = document.querySelector('base'); 
+	if (base) base.removeAttribute('target');	
+})
+
+//禁止超链接开新窗口
+document.addEventListener('mousedown', function (event) {
+  var target = event.target;
+  for(var i=1;target && i<=5;i++){
+  	if ( target.tagName == 'A')  {
+  		target.removeAttribute('target');
+  		return;
+  	}
+  	
+  	target = target.parentNode; 
+  } 
+}, true);
+
+//禁止弹窗函数
+window.open =  function(url){ window.location.href = url; } 
+`)
+
+wb.html = /**
+<!doctype html>
+<html><head><base target="_blank" /></head>
+<body style="margin:50px">
+<a href="http://www.example.com"  ><span><span>example.com</span></span></a>
+<button onclick="window.open('http://www.example.com')" >example.com</button>
+**/
+
+winform.show();
+win.loopMessage();

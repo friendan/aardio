@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\caseSensitivity.aardio","~\lib\fsys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.caseSensitivity 扩展库已安装成功!","aardio- fsys.caseSensitivity扩展库安装程序")

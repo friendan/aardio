@@ -1,0 +1,65 @@
+//CGI 快速回调
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="PHP CGI 回调 aardio";right=753;bottom=434)
+winform.add(
+edit={cls="edit";left=20;top=12;right=734;bottom=404;edge=1;multiline=1;z=1}
+)
+/*}}*/
+
+var code = /*<?php
+//禁止缓存
+header("Cache-Control:no-cache,must-revalidate,no-store");
+header("Pragma:no-cache"); 
+	
+ignore_user_abort(true); // 后台运行
+set_time_limit(0); // 取消脚本运行时间的超时上限
+
+function sendJson($data) { 
+  $data = json_encode($data);
+  $options = array('http' => array(  'method' => 'POST', 'header' => 'Content-type:application/json',  'content' => $data, 'timeout' => 15 * 60  ));
+  $context = stream_context_create($options);
+  $result = file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/json', false, $context);
+  return json_decode( $result );
+}
+
+//PHP 调用 aardio 的速度更快
+for ($i=1; $i<=20; $i++)
+{ 
+	sendJson( array( 'name' => 'tom', 'value' => 22 ) );
+	sleep(1);
+}
+
+?>*/
+string.save("/test.php",code);
+	
+//导入 php 扩展库自带的 PHP 5.2 CGI 服务端
+import process.php.5.2 //.5.6;
+
+//注册服务端线程全局变量
+process.php.threadGlobal = { 
+	winform = winform; 
+}
+
+/*
+可选在这里自定义指定路径的 HTTP 处理函数。
+PHP 也可以直接请求 aardio 工程里的 aardio 文件。
+要注意这是多线程 HTTP 服务器，下面的函数都是多线程函数。
+线程函数不能直接访问外部对象，但可以通过 process.php.threadGlobal 访问窗口或控件对象。
+线程函数内使用的库要单独导入。
+*/
+process.php.httpHandle = {
+	["/json"] = function(response,request,session){
+		var data  = request.postJson();
+		..winform.edit.print("PHP 请求了，参数：",data) 
+		 
+		//输出对象时会自动转换为 JSON
+		response.write({a:123}); 
+	} 
+}
+
+//通知 PHP 页面启动，不等待页面输出立即关闭连接，不阻塞界面线程
+process.php.notify("/test.php")
+
+winform.show();
+win.loopMessage();

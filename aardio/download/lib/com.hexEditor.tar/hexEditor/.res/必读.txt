@@ -1,0 +1,4 @@
+HexEdit.ocx 可免费用于 aardio 编写的软件，但禁止用于非 aardio 编写的软件
+
+HexEdit.ocx 基于以下源码修改：
+https://www.codeproject.com/Articles/1384/Hex-Editor-OCX-Control

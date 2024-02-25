@@ -1,0 +1,380 @@
+﻿import fsys;
+import process.popen;
+import string.cmdline;
+import zlib.httpFile;
+import process.job.limitKill;
+import web.json;
+import win.reg;
+import process.rpc.jsonClient;
+
+namespace process{
+    
+    class python{
+    	ctor(...){{
+    	 
+    	    var path = checkPath();
+				
+			var err;
+    		this,err = ..process.popen(self.path,..string.cmdline.arguments(...),{workDir=workDir});
+    		if(!this) error(err,2); 
+			
+    		this.codepage = codepage;
+    		this.assignToJobObject(..process.job.limitKill);
+    	}};
+    }
+    
+    namespace python{
+        
+        jsonRpc = function(code,...){
+       		var path = checkPath();
+       		path = ..fsys.path.replaceFile(path,"jsonrpyc.py");
+       		if(!..io.exist(path)){
+       			..string.save(path,$"~\lib\process\python\.py\jsonrpyc.py");
+       		}
+            
+            var prcs,err;
+            
+        	if(..string.endWith(code,".py",true) ){
+        	    if(..io.exist(code)){
+        	    	prcs,err = execfile(code,...);
+        	    }
+        		elseif(..io.localpath(code)) {
+        		    code = ..string.load(code);
+        			if(code) prcs,err = command(code,...);
+        		}
+        	}
+        	elseif( ..string.endWith(code,".aardio",true)  ){
+        		var code,err = ..string.loadcode(code);
+        		if(code === null ) return null,err;
+        		
+        		prcs,err = command(code,...);
+        	}
+        	elseif(..string.match(code,"^\w+[\.\w]*$")){
+        		prcs,err = module(code,...);
+        	}
+        	else {
+        		prcs,err = command(code,...);
+        	}
+        	
+        	if(!prcs) return null,err;
+        	
+        	var client = ..process.rpc.jsonClient(prcs);
+        	client.rpc.varargs = true;
+			client.rpc.beforeRequest = function(reqData){
+				
+				if(owner.kwargs && owner.varargs){
+					var params = reqData.params;
+					var arg1 = params[1];
+					if(type(arg1)=="table" && #params==1){
+						var kwargs = {} 
+						for k,v in ..table.eachName(arg1){
+							kwargs[k] = v;
+						}
+					
+						if(..table.next(kwargs)){
+							reqData.params = {args = ..table.append({@{_type="array"}},arg1);kwargs=kwargs};	
+							return reqData;
+						} 
+					}
+				}
+				
+				reqData.params = {args = reqData.params;kwargs={}};
+				return reqData;
+			}
+			
+			return client;
+        }
+        
+    	command = function(code,...){ 
+    		var args = ..string.cmdline.arguments(...); 
+    		if( type.isString(code) &&  ..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>') ){
+    		    var err;
+				code,err = ..string.loadcode(code);
+				if(err) error(err,2);
+			}
+			
+			..table.unshift(args,"-c",code);
+    		return ..process.python(args);
+    	}        
+    	
+    	module = function(name,...){ 
+    	    var args = ..string.cmdline.arguments(name,...); 
+    	    ..table.unshift(args,"-m");
+    	    
+    		return ..process.python(args);
+    	} 
+    	
+    	execfile = function(path,...){
+    	    var args = ..string.cmdline.arguments(...); 
+    	    ..table.unshift(args,..io.fullpath(path));
+    	    
+    		return ..process.python(args);
+    	}
+    	
+        exec = function(code,...){
+             var args = ..string.cmdline.arguments(...); 
+    	    ..table.unshift(args,`-`); 
+    	    
+        	var py = ..process.python(args);
+        	
+        	if( type.isString(code) ){
+        	    if(..io.localpath(code) || ..io.exist(code)){
+        	    	if( ..string.endWith(code,".aardio",true) ){
+        	    		code = ..string.loadcode(code);
+        	    	}
+        	    	else {
+        	    		code = ..string.load(code);
+        	    	} 
+        	    }
+        	    elseif( ..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>') ){
+        	    	code = ..string.loadcode(code);
+        	    }
+			}
+				
+        	py.writeClose( code );
+        	return py;
+        }
+        
+        test = function(code,...){
+        	 var python = command(code,...)
+        	 if(python){
+        	 	var e =  python.readErr(-1);
+        	 	python.close();
+        	 	
+        	 	return #e == 0;
+        	 }
+        }
+        
+        path = "/py/python.exe";//process.pip 有判断此默认路径
+        version = "3.8.10";
+        codepage = 65001;
+        win32 = null;
+        userBase = ..io.fullpath("/py/lib");
+        
+		workDir = ..io.fullpath("/");
+		
+		//下载镜像，如果镜像失效会自动跳转到 Python 官网下载
+		cdnUrl = "https://cdn.npmmirror.com/binaries/python/";
+		
+		var findPython = function(regPath,python,samDesired){
+			if(!python) python = {}
+			var reg = ..win.reg(regPath,true,,samDesired);
+			if(!reg) return python;
+			
+			for(sysVersion,writeTime in reg.eachKey() ){
+				var sysVersionKey = reg.open(sysVersion,true); 
+				if(sysVersionKey){
+					var installPathKey = sysVersionKey.open("InstallPath",true)
+					if(installPathKey){
+						python[sysVersion] = installPathKey.queryValue("ExecutablePath");
+						installPathKey.close();
+					}
+					sysVersionKey.close()
+				}
+			}
+			
+			return python;	
+		}
+		
+		getInstallPath = function(version,win32){
+			var python = {};
+			findPython("HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore",python);
+			findPython("HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore",python,0x20019/*_KEY_READ*/| 0x0100/*_KEY_WOW64_64KEY*/);
+			findPython("HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore",python);//Win7 之后 HKCR\SOFTWARE 不再重定向
+			
+			if(version){
+				var sysVersion = (..string.match(version,"\d+\.\d+"));
+				if(win32){
+					for(k,v in python){
+						if( (k===sysVersion+"-32") && ..io.exist(v)  )  return v; 
+					}	
+				}
+				
+				for(k,v in python){
+					if( k===sysVersion && ..io.exist(v) )  return v; 
+				}
+				
+				if(!win32){
+					for(k,v in python){
+						if( (k===sysVersion+"-32") && ..io.exist(v)  )  return v; 
+					}	
+				}
+				
+				for k,v in ..table.eachName(python,lambda(k) owner > k){
+					if(..io.exist(v)){
+						var sysVersionReg = ..string.match(k,"\d+\.\d+");
+						if(sysVersionReg 
+								&& (sysVersionReg[1] == sysVersion[1] )
+								&& (tonumber(sysVersionReg)>tonumber(sysVersion) )){
+							return v; 
+						} 
+					}	
+				}
+				
+				return null;
+			}
+		
+			return python;
+		}
+		
+		 
+		checkPath = function(){
+ 			var majorVersion,minorVersion = ..string.match(version,"(\d+)\.(\d+)");
+    	    if(majorVersion && minorVersion){
+    	    	majorVersion = tonumber(majorVersion);
+    	    	minorVersion = tonumber(minorVersion);
+    	    }
+    	    
+    	    if(majorVersion===null || minorVersion === null) error("process.python.version 指定的版本号错误",2);
+    	
+    	    var isPy35Later = (majorVersion == 3 && minorVersion>=5) || majorVersion > 3;
+    	
+    	    if(..string.cmp(self.path,"python.exe")==0){
+    	        
+    	        //如果没有安装 Python ，Win10 直接调用 Python.exe 会跳到应用商店。
+    	        var path = getInstallPath(version,win32);
+    	        if(!path){
+    	            var downUrl = cdnUrl
+						+ version+"/python-"+version  + ((_WIN_64 && !self.win32) ? ((!isPy35Later)?".amd64":"-amd64"):"") 
+						+((!isPy35Later)?".msi":".exe");
+						
+					var http = ..inet.http();
+					if( !http.head(downUrl) ){
+						downUrl = "https://www.python.org/ftp/python/"
+							+ version+"/python-"+version  + ((_WIN_64 && !self.win32) ? ((!isPy35Later)?".amd64":"-amd64"):"") 
+							+((!isPy35Later)?".msi":".exe");
+					}	
+					http.close();
+					
+    	        	import inet.installer;
+    				if(!inet.installer.asInvoker("Python",downUrl,"/passive /norestart") ) {
+						return;
+					}
+				
+					path = getInstallPath(version,win32);
+					if(!path){
+						error("Python "+version + " 无可下载的安装包，请更改版本号");
+					}
+    	        }
+
+    	    	return path;
+    		}
+    	    else{
+    	        ..string.setenv("PYTHONUSERBASE",userBase);
+    	        
+    	        if( !..io.exist(self.path) ){
+    	        	if(!isPy35Later) error("process.python.version 指定的版本号过低，Python 3.5 才有嵌入版（embed 版）",2);
+    	        	
+    	        	var pyRoot = ..io.splitpath(..process.python.path).dir;
+    	        	
+    	        	var downUrl = cdnUrl
+						+ version+"/python-"+version+"-embed-"
+						+ ((_WIN_64 && !self.win32) ? "amd64":"win32") +".zip"
+							
+					var http = ..inet.http();
+					if( !http.head(downUrl) ){
+						downUrl = "https://www.python.org/ftp/python/"
+							+ version+"/python-"+version+"-embed-"
+							+ ((_WIN_64 && !self.win32) ? "amd64":"win32") +".zip"
+					}	
+					http.close();
+						
+					..zlib.httpFile.download(downUrl,
+						"正在下载必须组件：Python",..io.joinpath(pyRoot,"/~download~aardio"),pyRoot);
+						
+					..fsys.delete(..io.joinpath(pyRoot,"/~download~aardio")); 
+					if(!..io.exist(..process.python.path)){
+						error('process.python.version 指定的版本号未提供二进制版本下载，请更换版本号!');
+					}
+					
+					// embed 版 python 忽略环境变量等设置，需要在 _pth 文件中添加模块搜索路径。
+					..fsys.enum( pyRoot, "*._pth",
+						function(dirname,filename,fullpath,findData){ 
+							if(filename){
+				       			if( ..fsys.replace(fullpath,"\N+\s*import\s+site",'../pip\r\n./Lib\r\nimport site') ){
+				       				return false;
+				       			}
+							} 
+						},false
+					);
+				}
+				
+				return self.path;
+			} 
+    	};
+    	
+		script = exec;//@Deprecated
+        load = execfile;//@Deprecated
+    }
+}
+
+string.setenv("PYTHONIOENCODING","utf-8");
+
+//如果 process.python.path == "python.exe"，可使用 PYTHONPATH 环境变量添加模块搜索路径
+{
+	var pyPath = ..string.getenv("PYTHONPATH");
+	if( pyPath ) pyPath = ..io.fullpath("/py") + ";" + pyPath;
+	else  pyPath = ..io.fullpath("/py");
+	
+	..string.setenv("PYTHONPATH",pyPath); 
+}
+
+/**details(必读)
+要特别注意如果 process.python.path 的值为 "python.exe"，
+则调用系统安装的 Python.exe （即使没有添加到环境变量也可以支持）。
+系统安装的Python.exe 主版本必须与 process.python.version 相同，且版本等于或大于 process.python.version 。
+如果系统未安装符合条件的 Python ，则会自动安装 process.python.version 指定版本的 Python。
+
+如果 process.python.path 为其他值，则表示使用嵌入版（embed）版 Python。
+嵌入版 Python 完全独立，与系统安装的 Python 不相关，也不会共用模块。
+嵌入版 Python 可方便的与 EXE 一起发布 （32位 Python 可转换并嵌入独立 EXE 文件）。
+
+如果嵌入版 Python.exe 存在于 process.python.path 指定的路径，
+则直接调用，不会检测 Python.exe 的版本，如果在指定路径找不到 python.exe，
+aardio 也会自动下载 process.python.version 指定版本的嵌入版 Python 。
+
+process.python.version 指定下载或安装 Python 时使用的版本。
+process.python.win32 指定在 64 位系统是否下载 32 位 Python。
+
+不是所有版本都提供嵌入发行版或者安装包，
+指定版本前请先到以下网站检查一下：
+https://npmmirror.com/mirrors/python/ 
+https://www.python.org/ftp/python
+可使用 python.process.cdnUrl 修改默认下载地址。
+
+当然，如果程序自带 Python ，就不用考虑下载的问题了。
+end details**/
+
+/**intellisense()
+process.python = 用于调用任意版本 python.exe，支持 32 位、64位 Python\n\n此支持库已导入 web.json，\n可直接使用返回 Python 进程的 json,jsonAll,jsonWite 等函数
+process.python(__) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n可以用一个字符串参数指定多个启动参数，用空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+end intellisense**/
+
+/**intellisense(process.python)
+getInstallPath(.() = 查找系统安装的 Python.exe 路径。\n如果不指定参数则返回一个表，键为版本，值为路径。
+getInstallPath(.(sysVersion,win32) = 搜索系统安装的 系统安装的 Python，\n查找等于或大于 @sysVersion 指定版本的 Python.exe 路径。\n\n@sysVersion 参数至少要包含两个数值且仅使用这两个数值，例如"3.8"，\n如果 @win32 为 true，则优先返回 32 位 Python 路径。\n如果没有找到指定的版本，则返回大于指定版本的 Python.exe 路径。\n\n返回 Python.exe 版本号的第一位数值必须要与参数相同。\n找不到符合条件的 Python.exe 则返回 null
+command( = 创建 Python 进程运行 Python 代码
+command(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@code 指定要执行的 Python 代码。\n如果代码开始为 aardio 模板标记，则启用模板语法： chm://the%20language/template_syntax.html 。\n参数 @2 可以用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+test(.(code,->->->) = 执行 @code 指定的 Python 代码。\n成功返回 true，否则返回 null 或 false。\n\n参数 @2 可以用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+module( = 创建 Python 进程运行 Python 模块
+module(.(name,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@name 指定要执行的 Python 模块名称。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+execfile( = 创建 Python 进程运行 Python 代码文件
+execfile(.(path,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@path 指定要执行的 Python 代码文件（*.py）路径。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+exec( = 创建 Python 进程运行 Python 代码。\n此函数在写入 Python 代码以后会自动关闭 Python 标准输入。\n改用 process.python.command 函数不会关闭标准输入
+exec(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。\n@code 指定要执行的 Python 代码，用进程的标准输入写入代码。\n如果代码开始为 aardio 模板标记，则启用模板语法： chm://the%20language/template_syntax.html 。\n@code 也可以指定一个包含 *.aardio 代码文件，支持模板语法。\n@code 也可以指定指定 *.py 文件。\n@code 可指定资源文件，注意这是内存加载 Python 代码，\nPython 并不知道文件路径。\n如果希望 Python 直接加载文件，请改用 execfile 函数。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+jsonRpc( = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象
+jsonRpc(.(code,->->->) = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象。\n@code 参数可以指定 *.py 文件路径、Python 模块名称、Python 代码都行。\n如果指定 *.aardio 路径，则以模板语法解析并内存执行返回的 Python 代码。\n\n函数执行成功返回 process.rpc.jsonClient 对象
+jsonRpc() = !process_rpcJsonClient.
+command() = !process_popen.
+module() = !process_popen.
+execfile() = !process_popen.
+exec() = !process_popen.
+codepage = 代码页，默认为 65001（UTF-8 编码）\nPython 2.x 需要改为 0，Python 3.x 不用修改
+checkPath() = 检查 Python.exe 路径。\n如果未找到 Python.exe 则尝试自动安装。\n成功则返回 Python.exe 路径
+path = python.exe 路径，\n默认为 "/py/python.exe"。\n如果路径不存在会自动下载 process.python.version\n指定版本号的 Python 绿色版，\n64位系统默认下载 64 位 Python
+version = 默认 Python 版本。\n\n如果指定 "python.exe"，则调用系统安装的 Python，\n如果系统未安装 Python ，则会自动安装 process.python.version 指定的版本。\n\n如果指定其他路径则表示 embed 嵌入版，embed 版完全独立。\n如果指定的路径不存在，则会自动下载 embed 版 Python 到指定的位置。\nprocess.python.version 指定要下载的 Python 版本。\n\n此属性的默认值为 "/py/python.exe"\n路径首字符的单个斜杆表示应用程序根目录。\naardio 工程会对 "/py" 目录提供优先支持。
+win32 = 在 64 位系统是否也默认下载 32 位 Python。\n如果发布后需要转换为独立EXE 程序，则必须设置此属性为 true。
+cdnUrl = 下载镜像，如果镜像失效会自动跳转到 Python 官网下载
+userBase = 自定义使用 embed 版 Python 的 PYTHONUSERBASE 环境变量值，\n process.python.path 的值为 "python.exe" 时此属性无效
+workDir = 工作目录
+end intellisense**/

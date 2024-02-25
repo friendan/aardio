@@ -1,0 +1,65 @@
+//JSON 参数
+
+import golang;
+var go = golang()
+  
+go.main = /**********
+package main
+ 
+import "C" 
+import ( 
+	"encoding/json" 
+	"fmt" 
+	"time"
+)
+ 
+/*
+Go 结构的 JSON 字段要大写首字母，
+每个字段可以在类型名后面额外添加 tag 字符串声明在 JSON 中的字段名。 
+*/
+type QueryParam struct {
+	Service             string           `json:"service"`   
+	Domain              string           `json:"domain"`   
+	Timeout             time.Duration    `json:"timeout"`     
+}
+
+//export Query 
+func Query(jsonParam *C.char) { 
+	
+	//C 字符串指针转换为 Go 字符串
+	var jsonStr = C.GoString( jsonParam )
+	
+	//再次转换为 Go 字节数组
+	var jsonBytes = []byte( jsonStr )
+	
+	//创建结构体
+    var queryParam = QueryParam{} 
+    
+    //解析 JSON 到结构体
+    err := json.Unmarshal( jsonBytes, &queryParam)
+	if err != nil { 
+		fmt.Println( err.Error() )
+	} else { 
+		jsonBytes,_ = json.Marshal( queryParam ) 
+		fmt.Println( string(jsonBytes))
+	}
+}
+
+func main(){}
+**********/
+go.buildShared("/.go/jsonTest.go");
+
+var dll = raw.loadDll("/.go/jsonTest.dll",,"cdecl");
+
+import web.json;
+var $ = web.json.stringify;
+
+dll.Query($({
+	service = "_services._dns-sd._udp";
+	domain = "local";
+	timeout = 1000;
+}))
+
+console.pause(true);
+
+ 

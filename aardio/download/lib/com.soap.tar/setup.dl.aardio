@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\com\");
+fsys.copy( "\soap","~\lib\com\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("com.soap 扩展库已安装成功!","aardio- com.soap扩展库安装程序")

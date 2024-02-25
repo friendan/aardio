@@ -1,0 +1,56 @@
+﻿//chart 图表(chart.js)
+import web.sciter;
+
+namespace web.sciter.compatibility.chart{};
+
+web.sciter.preloadScript(` 
+ 
+class MutationObserver {
+   constructor(callback) {}
+   observe(target, options) {}
+   disconnect() {}
+   takeRecords() { return []; }
+}
+
+globalThis.MutationObserver = MutationObserver;
+
+// primitive version of ResizeObserver, supports only single element per instance
+class ResizeObserver {
+   #callback;
+   #element;
+   constructor(callback) { 
+      console.assert(typeof callback == "function");
+      this.#callback = callback; 
+   }
+
+   observe(element) {
+      this.#element = element;
+      element.onsizechange = () => {
+      element.timer(20ms,() => this.notify()); };
+      element.onsizechange();
+   }
+
+   unobserve(element) {
+     if(this.#element === element) {
+       element.onsizechange = null;
+       this.#element = null;
+     }
+   }
+
+   disconnect() {
+      this.unobserve(this.#element);
+   }
+
+   notify() {
+      let [x,y,width,height] = this.#element.state.box("xywh","inner");
+      this.#callback([{contentRect:{x,y,width,height}}]);
+   }
+
+}
+
+globalThis.ResizeObserver = ResizeObserver;
+`);
+
+/**intellisense()
+web.sciter.compatibility.chart = 导入此库可自动兼容 chart.js
+end intellisense**/

@@ -1,0 +1,13 @@
+ 
+import fsys;
+var libDir = "~\lib\gnu\"
+
+fsys.createDir(libDir)
+fsys.copy( "/crypt",libDir ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("gnu.crypt扩展库已安装成功","aardio - gnu.crypt扩展库安装程序",1000)
+

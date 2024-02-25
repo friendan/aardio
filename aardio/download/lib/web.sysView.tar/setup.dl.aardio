@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\");
+fsys.copy( "\sysView","~\lib\web\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.sysView 扩展库已安装成功!","aardio- web.sysView扩展库安装程序")

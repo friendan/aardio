@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\sys\");
+fsys.copy( "\openHardwareMonitor","~\lib\sys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("sys.openHardwareMonitor 扩展库已安装成功!","aardio- sys.openHardwareMonitor扩展库安装程序")

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\dotNet\");
+fsys.copy( "\audio","~\lib\dotNet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dotNet.audio 扩展库已安装成功!","aardio- dotNet.audio扩展库安装程序")

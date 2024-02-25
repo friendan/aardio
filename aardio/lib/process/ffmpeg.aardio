@@ -1,0 +1,63 @@
+﻿//ffmpeg 音视频工具
+import string.cmdline;
+import process.popen;
+ 
+namespace process;
+
+class ffmpeg {
+	ctor( workDir,... ){
+		var ffmpegPath = getPath();
+		if( !ffmpegPath ) return;
+		
+		this = ..process.popen( ffmpegPath
+			, ..string.cmdline.arguments(...)
+			, { workDir=workDir:..io.fullpath("/") }
+			);
+			
+		if(this){
+			this.codepage = 65001;
+		}
+	};
+}
+
+
+namespace ffmpeg {
+
+	getPath = function(){ 
+		if(self.path) return self.path;
+		
+	 	var path = ..io.appData("/aardio/ffmpeg-static/" + cdnVersion + "/" + cdnFilename);
+		if(! ..io.exist(path) ){
+			install();
+		}
+		
+		return ..io.exist(path);
+	};
+	
+	setPath = function(path){
+		self.path = ..io.exist(path);
+	};
+	
+	cdnFilename = _WIN_64 ? "win32-x64" : "win32-ia32";
+	cdnVersion = "5.0.1";
+	cdnUrl = "https://npmmirror.com/mirrors/ffmpeg-static/";
+	
+	install = function(name){ 
+		import zlib.httpFile;
+		if( zlib.httpFile.download("https://npmmirror.com/mirrors/ffmpeg-static/b"+cdnVersion+"/"+cdnFilename+".gz"
+			,"正在下载本程序必须组件：FFmpeg",..io.appData("/aardio/ffmpeg-static/" + cdnVersion) )) {
+			return getPath(name);
+		}
+	} 
+}
+
+/**intellisense()
+process.ffmpeg = 调用 ffmpeg.exe，返回 process.popen 管道对象
+process.ffmpeg(.(workDir,->->->) = 调用 ffmpeg.exe，返回 process.popen 管道对象\n@workDir 参数指定工作目录，传入空值则默认设为"/"。\n可传入一个或多个启动命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号
+process.ffmpeg() = !process_popen.
+setPath(__) = 自定义 ffmpeg.exe 路径。\n参数 @1 指定文件路径
+process.ffmpeg.getPath() = 返回 ffmpeg.exe 路径。\n如果找不到路径则会自动安装
+process.ffmpeg.cdnFilename = 默认下载的 ffmpeg 文件名。\n64位系统默认为 "win32-x64"，32位默认为 "win32-ia3"
+process.ffmpeg.cdnVersion = 默认下载的 ffmpeg 版本。\n当前为 "5.0.1"
+process.ffmpeg.cdnUrl = ffmpeg.exe 默认下载地址
+end intellisense**/

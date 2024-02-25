@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\process\");
+fsys.copy( "\maya","~\lib\process\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("process.maya 扩展库已安装成功!","aardio- process.maya扩展库安装程序")

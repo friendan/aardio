@@ -1,0 +1,28 @@
+﻿//tls 启用 TLS
+import sys.reg;
+namespace inet.tls{
+    if( _WIN7_LATER && (!_WIN10_LATER) ){
+    	..sys.reg.setValue("SecureProtocols",0xA80,"Software\Microsoft\Windows\CurrentVersion\Internet Settings"/*,_HKEY_CURRENT_USER*/);
+    	/*
+		8 SSL 2.0  
+		0x20 SSL 3.0   
+		0x80 TLS 1.0 
+		0x200  TLS 1.1 
+		0x800 TLS 1.2  
+		0x2000 TLS 1.3 (Win11)
+		
+		实际上现在所有网站的最低要求是 TLS 1.2 。
+		
+		Win10,Win11 不用改。
+		新版 Win10,Win11 默认值为 0x2000 | 0x800
+		老版 Win10 默认值为 0x800
+		
+		有些软件错误地修改了 Win10,Win11 这个注册表值，
+		会导致 inet.http 返回 12157 错误。
+		*/
+    } 
+}
+
+/**intellisense()
+inet.tls =  在 WIN7 系统上为 inet.http 以及 web.form 启用 TLS 1.2。\n自动忽略 WIN7以外的系统（WIN 10 默认已启用）。\ninet.http,web.form 已默认导入此库
+end intellisense**/

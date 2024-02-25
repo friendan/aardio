@@ -1,0 +1,14 @@
+﻿//chm 帮助文档
+import process;
+namespace process;
+
+class chm {
+	ctor( chmPath,htmlPath ){
+		..process.execute("hh.exe","mk:@MSITStore:" 
+			+ ..io.fullpath(chmPath) + "::" + htmlPath );
+	}; 
+}
+
+/**intellisense()
+process.chm(.(chmPath,htmlPath) = 打开 CHM 帮助文档。\m@chmPath 指定 chm 文件路径，\n@htmlPath 指定页面路径
+end intellisense**/

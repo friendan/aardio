@@ -1,0 +1,109 @@
+//DLL 交互
+import golang;
+var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 DLL 不需要 ）。 
+
+/*
+Go 语言文档教程 
+https://quickref.me/golang 
+https://learnxinyminutes.com/docs/zh-cn/go-cn
+https://pkg.go.dev/builtin
+https://go.dev/play
+*/
+
+//Go 与 aardio 一样，源码与字符串默认为 UTF-8 编码
+go.main = /**********
+package main
+
+import "C" //单独导入这句启用 CGO
+import "fmt" //https://pkg.go.dev/fmt
+import "unsafe" //https://pkg.go.dev/unsafe
+
+//函数前加上下面的注释声明为 DLL 导出函数
+//export SayHello
+func SayHello(pStr *C.char) {
+	
+	//aardio 字符串转换为 Go 字符串
+	var str = C.GoString(pStr);
+	
+	//Go 包公开的函数首字母必须是大写。
+    fmt.Printf("Go says: %s!\n", str) 
+}
+
+//声明结构体
+type Point struct { 
+  x    int  
+  y    int   
+}
+
+//export SetPoint 
+func SetPoint(p uintptr) {  
+	// aardio 结构体转换为 Go 结构体
+	point := (*Point)(unsafe.Pointer(p)) 
+	point.x = 1
+	point.y = 2  
+	
+	/*
+	Go 用 fmt.Println 打印变量很方便，可传入多个任意类型的参数。
+	*/
+	fmt.Println( "在 Go 中打印结构体：",point );
+}
+
+//初始化函数，可以重复写多个
+func init() { }
+
+//必须写个空的入口函数，实际不会执行
+func main() {} 
+**********/
+
+//上面的 go.main 会自动保存到文件，然后编译 Go 源码生成同名 DLL 文件
+go.buildShared("/.go/hello.go");
+
+//------------------下面调用 DLL-----------------------
+
+import console.int;
+
+//加载 Go 编译的 DLL，注意要指定 cdecl 调用约定。 
+var goDll = raw.loadDll("/.go/hello.dll",,"cdecl");
+//如果已经生成 DLL，上面可以改为 $"/hello.dll" 实现内存加载（发布后不需要带 DLL 文件）。
+
+/*
+直接就可以调用 DLL 里的函数，不用声明
+
+相关文档：《 aardio 用户手册 / 函数库 / 核心库 / raw 库 / 不声明调用 API 》
+相关范例：「 aardio 范例 / 调用其他语言 / C语言 」
+*/
+goDll.SayHello( "这是 aardio 字符串，UTF-8 编码");
+ 
+//声明静态结构体，也可以用 point = ::POINT();
+var point = {
+	int x;
+	int y;
+}
+
+//调用 Go 函数，传结构体（结构体总是传址）
+goDll.SetPoint(point);
+
+//打印结构体
+console.dumpJson(point); 
+
+/*
+调用 Go 写的 DLL 请注意：
+
+1、 加载 Go 写的 DLL 然后迅速（几秒以内）退出，Go 程序可能会崩溃。
+这不是因为你写的代码有任何问题，而是 Go 需要额外启动运行时，无法应付这种快速退出的情况。
+这时在后面加一句 thread.delay(2000) 就可以解决。
+
+实际上除了写测试代码，一般也不会打开一个程序就在几秒内退出。
+所以稍加注意一下，避免这个问题并不难。
+
+只有 Go 写的 DLL 有这个问题，其他语言写的 DLL 没这种问题。
+
+2、在同一个进程内， Go 写的同一个 DLL 应当只加载一次。
+当然在 DLL 没有卸载前，反复调用 raw.loadDll() 只是增加引用计数，不会重复加载 DLL。
+
+如果多线程内存加载同一个 Go 写的 DLL 就会加载多个不同的副本。
+这时候务必在 raw.loadDll("go.dll","共享名称") 的第 2 个参数指定共享名称，以避免重复加载。
+
+3、要注意在 aardio 中 DLL 不应当作为线程参数传递，实际上也没必要这样做。
+只要用 raw.loadDll() 加载同名 DLL (或加载相同共享名称的内存 DLL) 是不会重复加载的。
+*/

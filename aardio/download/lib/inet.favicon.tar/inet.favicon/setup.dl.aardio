@@ -1,0 +1,8 @@
+import fsys; 
+fsys.copy( "\favicon.aardio","~\lib\inet\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("inet.favicon扩展库已安装成功!","aardio - inet.favicon扩展库安装程序")

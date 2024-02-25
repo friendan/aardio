@@ -1,0 +1,25 @@
+//获取 Cookies
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="获取 Cookies / CDP 协议";right=759;bottom=469;bgcolor=16777215)
+winform.add()
+/*}}*/
+
+import web.view;
+var wb = web.view(winform); 
+winform.show();
+
+//打开页面
+wb.go("http://bbs.aardio.com");
+
+//等待页面打开（通过等待 CSS 选择器指定的节点实现）
+wb.waitEle("body")
+
+//CDP:获取 Cookies，应当等页面打开再取
+var result = wb.cdp("Page.getCookies");
+
+import console;
+console.dumpJson(result.cookies);
+ 
+winform.show();
+win.loopMessage();

@@ -1,0 +1,80 @@
+//一键安装
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="安卓子系统一键安装";right=903;bottom=583)
+winform.add(
+btnGetWsaUrl={cls="button";text="获取 WSA 并下载";left=728;top=41;right=865;bottom=77;dr=1;dt=1;z=2};
+btnRun={cls="button";text="设置安卓子系统";left=562;top=506;right=838;bottom=560;color=14120960;disabled=1;font=LOGFONT(h=-14);note="正在检测 ......";z=4};
+edit={cls="edit";left=40;top=90;right=867;bottom=500;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;z=3};
+editUrl={cls="edit";left=39;top=42;right=712;bottom=76;dl=1;dr=1;dt=1;edge=1;multiline=1;z=1}
+)
+/*}}*/
+
+import sys.wsa;
+winform.btnGetWsaUrl.oncommand = function(id,event){
+	if(sys.wsa.isInstalled()){
+		return winform.msgboxErr("您已经安装了安卓子系统，没必要重复安装。") 
+	}
+	
+	winform.btnGetWsaUrl.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}
+	thread.invoke( 
+		function(winform){ 
+			import web.rest.htmlClient 
+			var htmlDoc = web.rest.htmlClient.post("https://store.rg-adguard.net/api/GetFiles",{
+				type: "ProductId",
+				url: "9P3395VX91NR",
+				ring: "WIS",
+				lang: "zh"
+			})
+			
+			var ele = htmlDoc ? htmlDoc.queryEle(tagName="a",innerText="\.msixbundle$")
+			
+			if(ele){
+				winform.editUrl.text = ele.href;
+				winform.downloadWsa(ele.href)
+			}
+			else {
+				winform.msgboxErr("下载 WSA 失败。")
+				winform.btnGetWsaUrl.disabledText = null;
+			} 
+			
+		},winform
+	)
+}
+
+import inet.downBox;
+winform.downloadWsa = function(url){
+	var downBox = inet.downBox(winform,"下载安卓子系统（WSA）",1);
+	var wsaPath = downBox.download(url,"/download/wsa")
+	if(wsaPath){
+		import process.popen;
+		var ps = process.popen.ps(`-command`,`&{Add-AppxPackage "`+wsaPath+`"}`);
+		ps.logResponse(winform.edit);
+		thread.delay(2000) 
+		
+		winform.btnRun.disabledText = null; 
+		winform.btnGetWsaUrl.disabledText = null;
+		
+		if(sys.wsa.isInstalled()){
+			winform.btnRun.note = "已安装 WSA"; 
+		}
+		else {
+			winform.btnRun.note = "未安装 WSA";
+		}  
+	}
+}
+
+if(sys.wsa.isInstalled()){
+	winform.btnRun.note = "已安装 WSA";
+	winform.btnRun.disabled = false;
+}
+else {
+	winform.btnRun.note = "未安装 WSA";
+}
+
+winform.btnRun.oncommand = function(id,event){ 
+	sys.wsa.settings();
+}
+
+winform.show();
+win.loopMessage();

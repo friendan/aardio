@@ -1,0 +1,52 @@
+﻿//qrCode 扫码配对
+import qrencode.bitmap;
+
+namespace process.adb;
+ 
+class qrCode{
+	ctor(winform,name,code,version,level,casesensitive){
+		if(!name) name = ..string.random(20);
+		if(!code) code = ..string.random(10); 
+		
+		..thread.invoke( 
+        	function(winform,name,code){
+        	    import golang.mdns;
+        	    import process.adb; 
+        	    
+        	    do{
+        	    	var serviceInfos = ..golang.mdns.query(
+						name = name;
+						service="_adb-tls-pairing._tcp"; 
+						timeout = 3000;
+					)    
+					
+					if(#serviceInfos){
+						var serviceInfo = serviceInfos[1]
+						var guid = process.adb.pair(serviceInfo.addr + ":" + serviceInfo.port,code) 
+						
+						if(guid){ 
+							var ret = winform.onAdbPair({
+								guid = guid;
+								addr = serviceInfo.addr;
+								addrV6 = serviceInfo.addrV6;
+								host = serviceInfo.host;
+							});
+							
+							if(!ret) break; 
+						}
+						
+					}
+ 
+        	    } while(winform.onAdbPair())
+        	},winform,name,code
+        )
+
+		return ..qrencode.bitmap( "WIFI:T:ADB;S:"+name+";P:"+code+";;",version,level,casesensitive);
+	}; 
+}
+
+/**intellisense()
+process.adb.qrCode = 生成自动配对二维码
+process.adb.qrCode(.(winform,name,code,version,level,casesensitive) = 生成自动配对二维码，返回 qrencode.bitmap 对象。\n如果 winform 参数不是 null，配对成功或失败回调 winform.onAdbPair 函数。\n配对成功则回调参数 @1 为设备信息的表对象，否则为 null。\n如果 winform.onAdbPair 返回 true 则继续等待扫码配对。\n无论有没有扫码，winform.onAdbPair 都会数秒回调一次\n\n可选用 @name 指定 mDNS 查询名称，可选用 code 指定配对码，\n不指定则自动生成随机字符串。\n\n其他参数可省略，用法参考 qrencode.bitma
+process.adb() = !libqrencodebitmap.
+end intellisense**/

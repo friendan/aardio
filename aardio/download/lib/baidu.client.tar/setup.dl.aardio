@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\baidu\");
+fsys.copy( "\client.aardio","~\lib\baidu\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("baidu.client扩展库已安装成功!","aardio- baidu.client扩展库安装程序")

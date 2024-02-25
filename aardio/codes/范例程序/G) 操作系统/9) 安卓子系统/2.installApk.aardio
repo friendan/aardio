@@ -1,0 +1,36 @@
+//安装启动 APK
+import console.int;
+import process.adb;
+import sys.wsa;
+
+//启动安卓子系统
+if( ! sys.wsa.start() ){
+	return console.log("当前系统未安装安卓子系统！")
+}
+
+//查找指定的 WSA 应用是否安装 
+if(sys.wsa.findPackage("com.ss.android.article.news")){
+	//运行 WSA 应用，也可以直接写 raw.execute("wsa://com.ss.android.article.news")
+	return sys.wsa.launch("com.ss.android.article.news"); 
+}
+
+/*
+打开安卓子系统设置界面，启用『开发人员模式』。
+『开发人员模式』从禁用切换到启用时，会显示连接端口，默认为 58526。
+*/
+var ret,err = process.adb.connect("127.0.0.1:58526",true)
+if(err){
+	console.log(err)
+	console.log("首次连接，请在 WSA 弹出的确认对话框中通过验证")
+	console.log("如果仍然连接失败，在 WSA 设置中禁用启用『开发人员模式』，禁用启用『USB调试』一次") 
+ 
+	return sys.wsa.settings();
+} 
+
+console.showLoading("正在安装安卓应用");
+
+//下载并安装应用，较大的 APK 可用 inet.downBox 或 inet.httpFile 下载。
+process.adb.installUrl("https://d.toutiao.com/PqXU");
+ 
+//运行安装好的 WSA 应用，也可以在 Windows 开启菜单直接打开
+sys.wsa.launch("com.ss.android.article.news");

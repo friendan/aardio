@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\string\");
+fsys.copy( "\words","~\lib\string\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("string.words 扩展库已安装成功!","aardio- string.words扩展库安装程序")

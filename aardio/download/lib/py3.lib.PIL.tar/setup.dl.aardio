@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\py3\lib\");
+fsys.copy( "\PIL","~\lib\py3\lib\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("py3.lib.PIL 扩展库已安装成功!","aardio- py3.lib.PIL扩展库安装程序")

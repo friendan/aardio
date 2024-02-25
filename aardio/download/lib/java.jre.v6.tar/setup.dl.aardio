@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\java\jre\");
+fsys.copy( "\v6","~\lib\java\jre\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("java.jre.v6 扩展库已安装成功!","aardio- java.jre.v6扩展库安装程序")

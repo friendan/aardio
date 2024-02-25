@@ -1,0 +1,243 @@
+﻿//jsonClient RPC客户端
+import wsock.tcp.client;
+import web.json;
+
+namespace wsock.tcp;
+
+class jsonClient{
+	ctor( ip,port ){
+		this.rpc = {
+			url = url;
+			client = ..wsock.tcp.client();
+			charset = "UTF-8"; 
+			version = "2.0";
+			endCallback = {};
+			varargs = true; 
+			postData = function( reqData ){
+				owner.lastResponseData = null;
+				owner.lastStatusCode = null;
+				
+				var jsonData = ..web.json.stringify(reqData); 
+				if(!owner.client.write( jsonData,'\n')){
+					return null,"服务端已断开";
+				};
+				
+				var isTransaction = ( #reqData && owner.transaction);
+				if( reqData.id === null){
+					 
+					if(!isTransaction){
+						return;
+					}
+					else {
+						var rep;
+						for(i,v in reqData){
+							if(v.id){
+								rep = true;
+								break;
+							}
+						} 
+						
+						if(!rep){
+							return;
+						}
+					}
+				}
+				
+				var repData;
+				var len = 100;
+				var slp = ..win ? ..win.delay : sleep;
+				var json = "";
+				var inputCodepage;
+				if(!utf8) inputCodepage = 0;
+				
+				while( slp(10) ){
+					var c,err = owner.client.peek(len);
+					if( err ){
+						owner.client.close();
+						return null,"服务端已断开";
+					}
+					
+					if(#c){
+						owner.client.read(#c);
+						json = json ++ c;
+						
+						repData = ..web.json.tryParse(json,,inputCodepage);  
+						if( (repData[["id"]] == reqData.id)
+	    					|| ( isTransaction && type(repData)=="table" && repData[1][["id"]]) 
+	    					|| repData[["error"]] ){
+	    					owner.lastResponseData = json;
+	    					break;		    
+	    				}
+					}
+				}
+				
+				if( repData ) {   
+					
+					if(isTransaction){
+						if(#repData){
+							for(i=1;#repData;1){
+								if(repData[i].id){
+									var cb = owner.endCallback[repData[i].id];
+    								if(cb){
+    									owner.endCallback[repData[i].id] = null;
+    									if( cb.end ){
+    										cb.end( repData[i].result,repData[i].error )
+    									}
+    								};
+    							}
+							}
+						}
+						return true;
+					} 
+					
+					if(repData[["error"]]){
+						return repData,..web.json.stringify(repData[["error"]],true);
+					}
+					return repData;
+				}
+			}; 
+			notify = function(method,...){  
+				var reqData = {
+					jsonrpc = owner.version;
+					method = method;
+				}
+				
+				if( owner.varargs ){
+					reqData.params = {...};
+				}
+				else {
+					reqData.params = ...;
+				}
+				
+				if( owner[["beforeRequest"]] ){
+					reqData = owner.beforeRequest(reqData);
+				}; 
+				
+				if( owner[["transaction"]]  ){ 
+					..table.push(owner.transaction,reqData);
+					return;
+				};
+				
+				var _,err = owner.postData( reqData );
+				if(!err) return true;
+			};
+			xcall = function(method,...){   
+				
+				var reqData = {
+					jsonrpc = owner.version;
+					method = method;
+					id = method;
+				}
+				
+				if( owner.varargs ){
+					reqData.params = {...};
+				}
+				else {
+					reqData.params = ...;
+				}
+				
+				if( owner[["beforeRequest"]] ){
+					reqData = owner.beforeRequest(reqData);
+				}; 
+				
+				if( owner[["transaction"]]  ){
+					var cb = {};
+					cb.method = method; 
+					reqData.id = ..table.push(owner.endCallback,cb);
+					
+					..table.push(owner.transaction,reqData);
+					return cb;
+				} 
+				return owner.postData( reqData );
+			}; 
+			beginTrans = function(){
+				owner.transaction = {};
+				owner.endCallback = {};
+			};
+			commitTrans = function(){
+				return owner.postData(owner.transaction);
+			};
+			rollbackTrans = function(){
+				owner.transaction = null;
+				owner.endCallback = null;
+			}; 
+			lastStatusMessage = function(){
+				if(owner.lastStatusCode)return ..inet.httpStatusCode[owner.lastStatusCode],owner.lastStatusCode;
+			};
+			lastResponse = function(){ 
+				var s = owner[["lastResponseData"]];
+				if( ..console && _STUDIO_INVOKED ) ..console.log(s) else ..io.print(s);
+				return s;
+			};
+			close = function(){
+				if(owner.client){
+					owner.client.close();
+					owner.client = null;
+				} 
+			};
+		};
+		
+		if( ! this.rpc.client.connect( ip,port ) ){
+			return null,"连接服务端失败";
+		}
+	};
+	
+	@_meta
+}
+
+namespace jsonClient { 
+ 
+	_meta = {
+  	
+    	_get = function(k){
+        	
+    		if( type(k) == type.string ){
+    			
+    			if( owner[["method"]] ){
+    				k = owner[["method"]] + "." + k;
+    			}
+    			
+    			owner[[k]] = {
+    				rpc = owner[["rpc"]];
+    				method = k;
+    				@_meta;
+    			}
+    			return owner[[k]];
+    		}
+    	} 
+    	_call = function( ... ){ 
+				return owner.rpc.xcall( owner.method, ...) ;
+		}
+	}
+}
+ 
+ 
+/**intellisense()
+wsock.tcp.jsonClient = JSON-RPC 2.0 客户端\naardio 输出的请求 JSON 不包含换行并以换行符'\n'结束。\n服务器应答 JSON 对象的 id 字段必须与请求 id 一致，\n在批量请求时应答数组应当包含 id 一致的对象（不需要返回空数组）\n[关于 JSON-RPC 2.0](http://www.jsonrpc.org/specification)
+wsock.tcp.jsonClient(.(主机,端口) = 创建REST客户端\n也可以在第一个参数中使用冒号分隔主机与端口
+wsock.tcp.jsonClient() = !wsock_rpcJsonClient.
+!wsock_rpcJsonClient.? = 远程对象名或远程方法名字。\n远程函数调用成功则第一个返回值为表对象，\n└── 该对象的 result 字段为返回值，error 为错误对象，两个字段不会同时存在。\n└── error 对象的 message 为错误信息，code 为错误代码，data 为错误附加数据。\n└── 如果存在 error 对象，则第 2 个返回值为 error 对象的 JSON 文本格式。\n调用失败第一个返回值为 null ，第二个返回值为错误信息\n\n如果调用 rpc.beginTrans 函数开始一个批量调用，\n则返回一个可以指定 end 成员函数的对象，服务器应答时自动回调此 end 函数\n!wsock_rpcJsonClient.
+!wsock_rpcJsonClient.rpc = RPC本地客户端对象\n所以本地函数放在这个对象里面\n用户不得添加、删除、修改此对象的任何成员
+!wsock_rpcJsonClient.process = 如果使用 process.rpc.tcpJsonClient 创建对象，\n则此属性为 process.popen 对象，否则为空。\n!process_popen.
+end intellisense**/ 
+
+/**intellisense(!wsock_rpcJsonClient.rpc)
+setAuth(.("用户名","密码") = 设置HTTP登录用户名,密码 
+lastStatusCode = 获取最近一次请求返回的HTTP状态码\n100 ~ 101 为信息提示\n200 ~ 206 表示请求成功\n300 ~ 305 表示重定向\n400 ~ 415 表求客户端请求出错\n500 ~ 505 表示服务端错误
+lastStatusMessage() = 获取最近返回的HTTP状态码文本描述\n第二个返回值为状态码
+lastResponse() = 获取最后一次服务器返回的原始数据,\n如果控制台已打开或在开发环境中导入console库则在控制台输出数据\n下载文件时该值为空
+client = 用于执行请求的 wsock.tcp.client 对象\n!stdtcpclient.
+close() = 关闭RPC客户端并释放资源
+beginTrans() = 开始批量调用\n批量调用时单次调用的返回值是一个表\n可对返回值指定end成员函数，\nend函数会在commitTrans提交批量调用成功后被触发
+commitTrans() = 完成批量调用 
+rollbackTrans() = 撤消尚未提交的批量调用
+notify(.("函数名",参数) = 发送通知,服务器不返回值,\n如果 varargs 属性指定为 true 时将不定个数参数合为数组，\nvarargs 为 false 时直接发送参数\n\n成功返回 true，失败返回 null,错误信息
+xcall(.("函数名",参数) = 调用远程函数。\n如果 varargs 属性指定为 true 时将不定个数参数合为数组，\nvarargs 为 false 时直接发送参数\n\n远程函数调用成功则第一个返回值为表对象，\n└── 该对象的 result 字段为返回值，error 为错误对象，两个字段不会同时存在。\n└── error 对象的 message 为错误信息，code 为错误代码，data 为错误附加数据。\n└── 如果存在 error 对象，则第 2 个返回值为 error 对象的 JSON 文本格式。\n调用失败第一个返回值为 null ，第二个返回值为错误信息\n\n如果调用 rpc.beginTrans 函数开始一个批量调用，\n则返回一个可以指定 end 成员函数的对象，服务器应答时自动回调此 end 函数
+charset = 获取或修改编码,默认为"UTF-8",\n因为 JSON 规定了 Unicode 编码方案，所以不建议也不应该修改这个值\n\n如果指定为除"UTF-8"之外的值，则按本机默认代码页转换服务端编码
+version = 值为 JSON-RPC 协议版本："2.0"\n不应该修改这个值
+varargs = 默认值为 true,\n值为 true 时将不定个数的参数放入数组发送给服务端\n值为false时直接将单个参数发送给服务端\n\nJSON-RPC 2.0 一个会制造混乱的地方：\n如果 params 是一个数组，并没有规定是展开为一个参数，还是作为一个数组参数。\n\n目前aardio的RPC服务端会负责展开数组作为多个参数，\n但客户端需要在这里手动设置
+beforeRequest(请求数据) = @.beforeRequest = function(reqData){
+	__/*此回调事件在发送请求前触发\nreqData.params是即将发送的参数*/
+	return reqData;
+}
+end intellisense**/ 

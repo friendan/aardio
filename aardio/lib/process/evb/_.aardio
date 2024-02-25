@@ -1,0 +1,47 @@
+﻿import process.popen;
+import inet.installer;
+import win.reg;
+
+namespace process;
+
+class evb{
+	ctor( evbPath ){
+		var exePath = path();
+		if(!exePath){
+ 			..inet.installer("Enigma Virtual Box"
+ 				,_WINXP?"http://enigmaprotector.com/assets/files/enigmavb.exe":"https://enigmaprotector.com/assets/files/enigmavb.exe"
+ 				,"/SP- /SILENT /SUPPRESSMSGBOXES /NOCANCEL /NORESTART")
+		}
+		
+		exePath = path();
+		if(!exePath) return;
+		
+		if(!evbPath){
+			return ..process.execute(exePath); 
+		}
+		
+		var pathInfo = ..io.splitpath(exePath);
+		pathInfo.name = "enigmavbconsole";
+		exePath = tostring(pathInfo);
+		
+		return ..process.popen(exePath,'"' + ..io.fullpath(evbPath) + '"');
+	}; 
+}
+
+	
+namespace evb{
+
+	path = function(){
+		var path = ..win.reg.query("HKEY_CLASSES_ROOT\Enigma Virtual Box\shell\open\command","")
+		if(path){
+			return ..string.match(path,`\"(.+?)\"`);
+		}			
+	}
+}
+
+/**intellisense()
+process.evb = Enigma Virtual Box 独立 EXE 封包工具\n生成的独立 EXE 默认不会在运行时释放临时文件\n\n仅支持 32 位程序，现在知道 32 位程序香了吧！
+process.evb(.(evbPath) = 如果用 @evbPath 指定 evb 工程文件路径，\n则创建并返回进用于生成独立 EXE 并返回 process.popen 对象。\n否则打开 Enigma Virtual Box 图形界面
+process.evb() = !process_popen.
+end intellisense**/
+

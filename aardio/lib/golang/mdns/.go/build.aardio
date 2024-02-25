@@ -1,0 +1,209 @@
+import golang;
+var go = golang()
+
+/*
+go.setProxy("http://127.0.0.1:1082",true); 
+go.mod("init golang/mdns")
+go.get("github.com/miekg/dns")
+go.get("github.com/hashicorp/mdns")
+
+*/
+
+go.main = /**********
+package main
+
+/* 
+#include <stdlib.h> 
+*/
+import "C"
+
+import (
+	"github.com/hashicorp/mdns"
+	"time"
+	"net" 
+	"encoding/json" 
+	"aardio"
+	"unsafe"
+	"io/ioutil"
+    "log"
+)
+
+type ServiceInfo struct {
+	Name       string    `json:"name"`
+	Host       string    `json:"host"`
+	AddrV4     net.IP    `json:"addr"`
+	AddrV6     net.IP	 `json:"addrV6"`
+	Port       int		 `json:"port"`
+	Info       string    `json:"info"`
+	InfoFields []string  `json:"infoFields"`
+}
+
+type QueryParam struct {
+	Service             string           `json:"service"`    // Service to lookup
+	Domain              string           `json:"domain"`     // Lookup domain, default "local"
+	Timeout             time.Duration    `json:"timeout"`    // Lookup timeout, default 1 second 
+	Interface           string           `json:"interface"`  // Multicast interface to use
+	WantUnicastResponse bool     `json:"wantUnicastResponse"`// Unicast response desired, as per 5.4 in RFC
+}
+/**intellisense()
+
+end intellisense**/
+
+//export Query 
+func Query(jsonParamPtr *C.char,chanSize int,fnCallback uintptr) { 
+    queryParam := QueryParam{} 
+    err := json.Unmarshal( []byte(C.GoString( jsonParamPtr )), &queryParam)
+	if err != nil { return; } 
+	
+	var serviceInfos []*ServiceInfo
+	ch := make(chan *mdns.ServiceEntry, chanSize)
+	defer close(ch) 
+	
+	go func() {
+		for e := range ch {
+			info := ServiceInfo{
+				Name: e.Name,
+				Host: e.Host,
+				Port: e.Port, 
+				AddrV4: e.AddrV4,
+				AddrV6: e.AddrV6,
+				InfoFields: e.InfoFields,
+			} 
+			serviceInfos = append(serviceInfos, &info)  
+		}
+	} ()
+	
+  	mdnsQueryParams := &mdns.QueryParam{
+		Service:             queryParam.Service,
+		Domain:              queryParam.Domain,
+		Timeout:             queryParam.Timeout * time.Millisecond,
+		Entries:             ch,
+		WantUnicastResponse: queryParam.WantUnicastResponse,
+		DisableIPv4:         false,
+		DisableIPv6:         true,
+	}
+
+	if(queryParam.Interface != ""){
+		mdnsQueryParams.Interface,_ = net.InterfaceByName(queryParam.Interface)
+	}
+	err = mdns.Query(mdnsQueryParams)
+
+	if err != nil {
+		aardio.CallJson( fnCallback,false,err.Error() )
+	} else {
+		aardio.CallJson( fnCallback,true,serviceInfos )
+	} 
+}
+
+//export Lookup 
+func Lookup(servicePtr *C.char,chanSize int,fnCallback uintptr) {
+ 
+	var serviceInfos []*ServiceInfo
+	ch := make(chan *mdns.ServiceEntry, chanSize)
+	defer close(ch) 
+	
+	go func() {
+		for e := range ch {
+			info := ServiceInfo{
+				Name: e.Name,
+				Host: e.Host,
+				Port: e.Port, 
+				AddrV4: e.AddrV4,
+				AddrV6: e.AddrV6,
+				InfoFields: e.InfoFields,
+			} 
+			serviceInfos = append(serviceInfos, &info)  
+		}
+	} () 
+
+	var err = mdns.Lookup(C.GoString(servicePtr) ,ch) 
+	
+	if err != nil {
+		aardio.CallJson( fnCallback,false,err.Error() )
+	} else {
+		aardio.CallJson( fnCallback,true,serviceInfos )
+	} 
+}
+
+type NewServiceParam struct {
+	Instance string `json:"instance"`
+	Service  string `json:"service"`
+	Domain   string `json:"domain"`
+	Host     string `json:"host"` 
+	Ips []   string `json:"ips"` 
+	Txt []   string `json:"Txt"` 
+	Port     int    `json:"port"` 
+}
+
+var server *mdns.Server;
+ 
+//export StartService
+func StartService(serviceParamPtr *C.char) *C.char {
+	if server != nil { 
+		server.Shutdown()
+		server = nil;
+	} 
+	 
+    newServiceParam := NewServiceParam{} 
+    err := json.Unmarshal( []byte(C.GoString( serviceParamPtr )), &newServiceParam)
+	if err != nil { 
+		return C.CString(err.Error()) 
+	} 
+	
+	var ips []net.IP 
+	size := len(newServiceParam.Ips)  
+	for i := 0; i < size; i++ {
+		ip :=  net.ParseIP(newServiceParam.Ips[i]);
+		if(ip != nil){
+			ips = append(ips,ip);
+		} 
+	}
+
+ 	var service *mdns.MDNSService
+	service, err = mdns.NewMDNSService(newServiceParam.Instance,newServiceParam.Service,newServiceParam.Domain, newServiceParam.Host,newServiceParam.Port,ips,newServiceParam.Txt)
+	if err != nil { 
+		return C.CString(err.Error()) 
+	} 
+ 
+	server, err = mdns.NewServer(&mdns.Config{Zone: service})
+	if err != nil { 
+		return C.CString(err.Error()) 
+	} 
+
+	return nil;  
+}
+
+//export StopService
+func StopService() {
+	if(server!=nil){
+ 		server.Shutdown()
+ 		server = nil		
+	} 
+}
+
+//export FreeCString
+func FreeCString(p unsafe.Pointer) {
+ 	C.free(p) 
+} 
+
+//export GetInterfaces
+func GetInterfaces(fnCallback uintptr){
+	it,err := net.Interfaces()
+	if(err!=nil) {
+		aardio.CallJson(fnCallback,0,err.Error())
+	} else {
+		aardio.CallJson(fnCallback,it,0);
+	}
+}
+ 
+func init(){
+    log.SetOutput(ioutil.Discard) //禁止打印日志
+}  
+func main(){}
+
+**********/
+go.buildShared("/mdns.go");
+
+console.pause(true);
+
+ 

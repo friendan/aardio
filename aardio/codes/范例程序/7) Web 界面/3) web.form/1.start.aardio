@@ -1,0 +1,122 @@
+//入门
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="web.form 入门";right=1151;bottom=745;parent=...;scroll=1)
+winform.add()
+/*}}*/
+
+//web.form 使用系统自带的 IE 内核,生成的EXE体积很小，
+//注意 Win10/11 自带 IE11， Win7 已逐渐退出市场一般没必要再考虑
+//即使 WIN10 删除 IE 浏览器，IE 内核浏览器控件仍作为操作系统组件被保留。
+
+import web.form;
+var wb = web.form( winform );//参数 @1 指定嵌入窗口（可以是 winform 或 static,custom 等控件对象）。
+
+import console;
+wb.external={
+	tab = {abc=1;b=2};
+	getAardioArray = function(){
+		return wb.jsArray({12;23;34}); 
+	};
+	log = function(...){
+		console.log(...)
+	} 
+} 
+import console;
+
+wb.html = /**
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+	<script type="text/javascript">
+
+	$enum = function(obj,callback,thisObj){
+	 
+		if( obj instanceof Array ){
+			for(var i=0;i<obj.length;i++){
+				callback.call(thisObj||window,i,obj[i],obj);  
+			}
+		}
+		else if( obj instanceof Object ){
+			for( k in obj){
+				callback.call(thisObj||window,k,obj[k],obj); 
+			}
+		}
+		else{
+			if(typeof(obj)=="unknown"){
+				var array = new VBArray(obj).toArray() //注意多维 aardio 数组转换为 JScript 会转换为单维数组，改用 JSON 传输参数可支持更多 JS 对象
+				for (var i = 0; i < array.length; i++) {
+					callback.call(thisObj||window,i,array[i],array );
+				}
+			}
+			else if( obj ) { 
+				var e = new Enumerator(obj);  
+				var k;
+				if(!e)
+					return;
+				
+				for   (;!e.atEnd();e.moveNext()){ 
+					k = e.item(); 
+					callback.call(thisObj||window,k,obj[k],obj); 
+				} 
+			}
+		} 
+	}  
+	</script>
+	
+	<script type="text/javascript">
+	//其他Js代码
+	
+	</script>
+	
+	<style type="text/css">
+    body { 
+        font: 10.5pt/1.3;
+    }
+    </style> 
+</head>
+<body>
+	<button id="myId">  
+		点这里试试
+	</button>
+</body>
+</html>
+**/
+  
+var js = /**
+	external.log( "Hello,Aardio!" )
+	external.log( "Welcome to Aardio!",event.srcElement.id );
+	//枚举js数组
+	$enum(
+		[1,2,3],
+		function(v,i){
+			external.log(v,i)
+		}
+	)
+	//枚举js对象
+	$enum(
+		{a:123,b:456},
+		function(k,v){
+			external.log(k,v)
+		}
+	)
+	//枚举aardio数组
+	$enum(
+		external.getAardioArray(),
+		function(k,v){
+			external.log(k,v)
+		}
+	)
+	//枚举aardio对象
+	$enum(
+		external.tab,
+		function(k,v){
+			external.log(k,v)
+		}
+	)
+**/
+wb.eventScript(js,"myId","onclick")
+
+winform.show();
+win.loopMessage(); 

@@ -1,0 +1,19 @@
+menu.context>li[command="edit:undo"]>label  {  
+	content:"撤销";  
+}  
+          
+menu.context>li[command="edit:cut"]>label {  
+	content:"剪切";  
+}  
+          
+menu.context>li[command="edit:copy"]>label {  
+	content:"复制";  
+}  
+          
+menu.context>li[command="edit:paste"]>label {  
+	content:"粘贴";  
+}  
+          
+menu.context>li[command="edit:selectall"]>label {  
+	content:"全选";  
+}  

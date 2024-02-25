@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\dotNet\");
+fsys.copy( "\merge","~\lib\dotNet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dotNet.merge 扩展库已安装成功!","aardio- dotNet.merge扩展库安装程序")

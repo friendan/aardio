@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\sqlite\");
+fsys.copy( "\aes128","~\lib\sqlite\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("sqlite.aes128 扩展库已安装成功!","aardio- sqlite.aes128扩展库安装程序")

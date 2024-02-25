@@ -1,0 +1,106 @@
+﻿//errorMessage 错误码
+namespace inet
+
+errorMessage = {
+[12111/*_ERROR_FTP_DROPPED*/] = "FTP操作未完成，因为会话已中止。";
+[12112/*_ERROR_FTP_NO_PASSIVE_MODE*/] = "被动模式在服务器上不可用。";
+[12110/*_ERROR_FTP_TRANSFER_IN_PROGRESS*/] = "请求的操作不能在FTP会话句柄上执行，因为操作已在进行中。";
+[12137/*_ERROR_GOPHER_ATTRIBUTE_NOT_FOUND*/] = "无法找到请求的属性。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12132/*_ERROR_GOPHER_DATA_ERROR*/] = "从 Gopher 服务器接收数据时检测到错误。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12133/*_ERROR_GOPHER_END_OF_DATA*/] = "已到达数据末尾。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12135/*_ERROR_GOPHER_INCORRECT_LOCATOR_TYPE*/] = "对于此操作，定位符的类型不正确。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12134/*_ERROR_GOPHER_INVALID_LOCATOR*/] = "提供的定位符无效。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12131/*_ERROR_GOPHER_NOT_FILE*/] = "必须为文件定位符发出请求。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12136/*_ERROR_GOPHER_NOT_GOPHER_PLUS*/] = "请求的操作只能针对 Gopher+ 服务器或指定 Gopher+ 操作的定位符进行。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12130/*_ERROR_GOPHER_PROTOCOL_ERROR*/] = "分析从 Gopher 服务器返回的数据时检测到错误。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12138/*_ERROR_GOPHER_UNKNOWN_LOCATOR*/] = "定位符类型未知。备注仅 Windows XP 和 Windows Server 2003 R2 及更早版本。";
+[12162/*_ERROR_HTTP_COOKIE_DECLINED*/] = "服务器拒绝 了HTTP Cookie。";
+[12161/*_ERROR_HTTP_COOKIE_NEEDS_CONFIRMATION*/] = "HTTP Cookie 需要确认。备注仅 Windows Vista 和 Windows Server 2008 及更早版本。";
+[12151/*_ERROR_HTTP_DOWNLEVEL_SERVER*/] = "服务器未返回任何标头。";
+[12155/*_ERROR_HTTP_HEADER_ALREADY_EXISTS*/] = "无法添加标头，因为它已存在。";
+[12150/*_ERROR_HTTP_HEADER_NOT_FOUND*/] = "无法找到请求的标头。";
+[12153/*_ERROR_HTTP_INVALID_HEADER*/] = "提供的标头无效。";
+[12154/*_ERROR_HTTP_INVALID_QUERY_REQUEST*/] = "向 HttpQueryInfo 发出的请求无效。";
+[12152/*_ERROR_HTTP_INVALID_SERVER_RESPONSE*/] = "无法分析服务器响应。";
+[12160/*_ERROR_HTTP_NOT_REDIRECTED*/] = "HTTP请求未重定向。";
+[12156/*_ERROR_HTTP_REDIRECT_FAILED*/] = "重定向失败，因为方案已更改(例如 HTTP 到 FTP )，或者尝试重定向失败(默认值为5次尝试)。";
+[12168/*_ERROR_HTTP_REDIRECT_NEEDS_CONFIRMATION*/] = "重定向需要用户确认。";
+[12047/*_ERROR_INTERNET_ASYNC_THREAD_FAILED*/] = "应用程序无法启动异步线程。";
+[12166/*_ERROR_INTERNET_BAD_AUTO_PROXY_SCRIPT*/] = "自动代理配置脚本中出错。";
+[12010/*_ERROR_INTERNET_BAD_OPTION_LENGTH*/] = "为 InternetQueryOption 或 InternetSetOption 提供的选项的长度对于指定的选项类型不正确。";
+[12022/*_ERROR_INTERNET_BAD_REGISTRY_PARAMETER*/] = "找到所需的注册表值，但类型不正确或值无效。";
+[12029/*_ERROR_INTERNET_CANNOT_CONNECT*/] = "尝试连接到服务器失败。";
+[12042/*_ERROR_INTERNET_CHG_POST_IS_NON_SECURE*/] = "应用程序正在发布并尝试在不安全的服务器上更改多行文本。";
+[12044/*_ERROR_INTERNET_CLIENT_AUTH_CERT_NEEDED*/] = "服务器正在请求客户端身份验证。";
+[12046/*_ERROR_INTERNET_CLIENT_AUTH_NOT_SETUP*/] = "未在此计算机上设置客户端授权。";
+[12030/*_ERROR_INTERNET_CONNECTION_ABORTED*/] = "已终止与服务器的连接。";
+[12031/*_ERROR_INTERNET_CONNECTION_RESET*/] = "已重置与服务器的连接。";
+[12175/*_ERROR_INTERNET_DECODING_FAILED*/] = "WinINet无法对响应执行内容解码。有关详细信息，请参阅内容编码主题。";
+[12049/*_ERROR_INTERNET_DIALOG_PENDING*/] = "另一个线程正在进行密码对话框。";
+[12163/*_ERROR_INTERNET_DISCONNECTED*/] = "Internet连接已丢失。";
+[12003/*_ERROR_INTERNET_EXTENDED_ERROR*/] = "从服务器返回扩展错误。这通常是包含详细错误消息的字符串或缓冲区。调用 InternetGetLastResponseInfo 以检索错误文本。";
+[12171/*_ERROR_INTERNET_FAILED_DUETOSECURITYCHECK*/] = "由于安全检查，函数失败。";
+[12032/*_ERROR_INTERNET_FORCE_RETRY*/] = "该函数需要重做请求。";
+[12054/*_ERROR_INTERNET_FORTEZZA_LOGIN_NEEDED*/] = "请求的资源需要 Fortezza 身份验证。";
+[12036/*_ERROR_INTERNET_HANDLE_EXISTS*/] = "请求失败，因为句柄已存在。";
+[12039/*_ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR*/] = "由于重定向，应用程序正从非 SSL 迁移到 SSL 连接。";
+[12052/*_ERROR_INTERNET_HTTPS_HTTP_SUBMIT_REDIR*/] = "提交到 SSL 连接的数据将重定向到非 SSL 连接。";
+[12040/*_ERROR_INTERNET_HTTPS_TO_HTTP_ON_REDIR*/] = "应用程序由于重定向而从 SSL 移动到非 SSL 连接。";
+[12027/*_ERROR_INTERNET_INCORRECT_FORMAT*/] = "请求的格式无效。";
+[12019/*_ERROR_INTERNET_INCORRECT_HANDLE_STATE*/] = "无法执行请求的操作，因为提供的句柄未处于正确的状态。";
+[12018/*_ERROR_INTERNET_INCORRECT_HANDLE_TYPE*/] = "此操作提供的句柄类型不正确。";
+[12014/*_ERROR_INTERNET_INCORRECT_PASSWORD*/] = "无法完成连接和登录 FTP 服务器的请求，因为提供的密码不正确。";
+[12013/*_ERROR_INTERNET_INCORRECT_USER_NAME*/] = "无法完成连接和登录 FTP 服务器的请求，因为提供的用户名不正确。";
+[12004/*_ERROR_INTERNET_INTERNAL_ERROR*/] = "发生了内部错误。";
+[12045/*_ERROR_INTERNET_INVALID_CA*/] = "该函数不熟悉生成服务器的证书的证书颁发机构。";
+[12016/*_ERROR_INTERNET_INVALID_OPERATION*/] = "请求的操作无效。";
+[12009/*_ERROR_INTERNET_INVALID_OPTION*/] = "对 InternetQueryOption 或 InternetSetOption 的请求指定了无效的选项值。";
+[12033/*_ERROR_INTERNET_INVALID_PROXY_REQUEST*/] = "对代理的请求无效。";
+[12005/*_ERROR_INTERNET_INVALID_URL*/] = "URL无效。";
+[12028/*_ERROR_INTERNET_ITEM_NOT_FOUND*/] = "无法找到请求的项。";
+[12015/*_ERROR_INTERNET_LOGIN_FAILURE*/] = "连接到FTP服务器并登录的请求失败。";
+[12174/*_ERROR_INTERNET_LOGIN_FAILURE_DISPLAY_ENTITY_BODY*/] = "MS-Logoff 摘要标头已从网站返回。此标头专门指示摘要包清除关联领域的凭据。仅当已设置 INTERNET_ERROR_MASK_LOGIN_FAILURE_DISPLAY_ENTITY_BODY 选项时，才会返回此错误;否则，将返回 ERROR_INTERNET_LOGIN_FAILURE。";
+[12041/*_ERROR_INTERNET_MIXED_SECURITY*/] = "内容并不完全安全。正在查看的某些内容可能来自不安全的服务器。";
+[12007/*_ERROR_INTERNET_NAME_NOT_RESOLVED*/] = "无法解析服务器名称。";
+[12173/*_ERROR_INTERNET_NEED_MSN_SSPI_PKG*/] = "目前尚未实现。";
+[12034/*_ERROR_INTERNET_NEED_UI*/] = "已请求用户界面或其他阻止操作。备注仅 Windows Vista 和 Windows Server 2008 及更早版本。";
+[12025/*_ERROR_INTERNET_NO_CALLBACK*/] = "无法发出异步请求，因为尚未设置回调函数。";
+[12024/*_ERROR_INTERNET_NO_CONTEXT*/] = "无法发出异步请求，因为提供了零个上下文值。";
+[12023/*_ERROR_INTERNET_NO_DIRECT_ACCESS*/] = "目前无法进行直接网络访问。";
+[12172/*_ERROR_INTERNET_NOT_INITIALIZED*/] = "尚未初始化 WinINet API。指示尚未调用更高级别的函数（如 InternetOpen ）。";
+[12020/*_ERROR_INTERNET_NOT_PROXY_REQUEST*/] = "无法通过代理发出请求。";
+[12017/*_ERROR_INTERNET_OPERATION_CANCELLED*/] = "该操作已取消，通常是因为操作完成后关闭请求的句柄。";
+[12011/*_ERROR_INTERNET_OPTION_NOT_SETTABLE*/] = "无法设置请求的选项，仅查询。";
+[12001/*_ERROR_INTERNET_OUT_OF_HANDLES*/] = "目前无法再生成句柄。";
+[12043/*_ERROR_INTERNET_POST_IS_NON_SECURE*/] = "应用程序将数据发布到不安全的服务器。";
+[12008/*_ERROR_INTERNET_PROTOCOL_NOT_FOUND*/] = "无法找到请求的协议。";
+[12165/*_ERROR_INTERNET_PROXY_SERVER_UNREACHABLE*/] = "无法访问指定的代理服务器。";
+[12048/*_ERROR_INTERNET_REDIRECT_SCHEME_CHANGE*/] = "该函数无法处理重定向，因为方案（例如 HTTP 更改为 FTP ）。";
+[12021/*_ERROR_INTERNET_REGISTRY_VALUE_NOT_FOUND*/] = "找不到所需的注册表值。";
+[12026/*_ERROR_INTERNET_REQUEST_PENDING*/] = "由于一个或多个请求处于挂起状态，因此无法完成所需的操作。";
+[12050/*_ERROR_INTERNET_RETRY_DIALOG*/] = "应重试对话框。";
+[12038/*_ERROR_INTERNET_SEC_CERT_CN_INVALID*/] = "例如，输入 www.server.com 的 SSL 证书公用名(主机名字段)不正确，并且证书上显示 www.different.com 公用名。";
+[12037/*_ERROR_INTERNET_SEC_CERT_DATE_INVALID*/] = "从服务器收到的 SSL 证书日期不正确。证书已过期。";
+[12055/*_ERROR_INTERNET_SEC_CERT_ERRORS*/] = " SSL 证书包含错误。";
+[12056/*_ERROR_INTERNET_SEC_CERT_NO_REV*/] = " SSL 证书未吊销。";
+[12057/*_ERROR_INTERNET_SEC_CERT_REV_FAILED*/] = " SSL 证书吊销失败。";
+[12170/*_ERROR_INTERNET_SEC_CERT_REVOKED*/] = " SSL 证书已吊销。";
+[12169/*_ERROR_INTERNET_SEC_INVALID_CERT*/] = " SSL 证书无效。";
+[12157/*_ERROR_INTERNET_SECURITY_CHANNEL_ERROR*/] = "应用程序在加载 SSL 库时遇到内部错误。请检查注册表项 HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings 的 SecureProtocols 字段值是否是否为正确的值：0x2800 。细节请参考 aardio 标准库 inet.tls 的源代码。";
+[12164/*_ERROR_INTERNET_SERVER_UNREACHABLE*/] = "指示的网站或服务器无法访问。";
+[12012/*_ERROR_INTERNET_SHUTDOWN*/] = "WinINet支持正在关闭或卸载。";
+[12159/*_ERROR_INTERNET_TCPIP_NOT_INSTALLED*/] = "未加载所需的协议堆栈，应用程序无法启动 WinSock。";
+[12002/*_ERROR_INTERNET_TIMEOUT*/] = "请求已超时。";
+[12158/*_ERROR_INTERNET_UNABLE_TO_CACHE_FILE*/] = "函数无法缓存文件。";
+[12167/*_ERROR_INTERNET_UNABLE_TO_DOWNLOAD_SCRIPT*/] = "无法下载自动代理配置脚本。设置了 INTERNET_FLAG_MUST_CACHE_REQUEST 标志。";
+[12006/*_ERROR_INTERNET_UNRECOGNIZED_SCHEME*/]="无法识别 URL 方案，或不受支持";
+}
+
+/*
+WinINet 错误代码说明
+https://learn.microsoft.com/windows/win32/wininet/wininet-errors
+*/
+
+/**intellisense()
+inet.errorMessage = inet.http 错误代码表。\n键为错误代码，值为错误信息。\n服务端错误代码请改用 inet.httpStatusCode
+end intellisense**/

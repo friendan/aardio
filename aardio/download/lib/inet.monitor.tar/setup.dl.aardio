@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\inet\");
+fsys.copy( "\monitor.aardio","~\lib\inet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("inet.monitor扩展库已安装成功!","aardio- inet.monitor扩展库安装程序")

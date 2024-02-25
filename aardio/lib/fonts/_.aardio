@@ -1,0 +1,71 @@
+﻿import gdip.privateFontCollection;
+import gdi;
+
+namespace fonts;
+
+_privateGdipFamilies = {};//for gdip.font;
+addFamily = function(fontData,fontName){
+	if(!#fontData) return;
+	
+	if(#fontData<0x410/*_MAX_PATH_U8*/ ){
+		var fontPath = ..io.exist(fontData);
+		if( fontPath ){
+			if( ::Gdi32.AddFontResourceEx( fontPath,0x10/*FR_PRIVATE*/,0 ) ) {
+				::PostMessage( 0xFFFF/*_HWND_BROADCAST*/,0x1D/*_WM_FONTCHANGE*/,0,0); 
+			} 
+				
+			var f = ..gdip.privateFontCollection.createFamily(fontPath,fontName); 
+			if(f) _privateGdipFamilies[ f.getName() ] = f; 
+			return f;
+		}
+		else {
+			fontData = ..string.loadBuffer(fontData) : fontData;
+		}
+	}
+
+	if( #fontData ){
+		var cFonts ={INT value}
+		var hnd  = ::Gdi32.AddFontMemResourceExP( fontData,#fontData,null,cFonts); 
+		if( hnd) {
+			::PostMessage( 0xFFFF/*_HWND_BROADCAST*/,0x1D/*_WM_FONTCHANGE*/,0,0); 
+		}
+		
+		var f =  ..gdip.privateFontCollection.createFamily(fontData,fontName); 
+		if(f) _privateGdipFamilies[ f.getName() ] = f; 
+		return f;
+	}
+}
+
+getFamilyNames = function(){
+	return ..table.map(_privateGdipFamilies,function(v,k,result){
+		..table.push(result,k);
+	})
+}
+
+getFamilyByName = function(k){
+	return _privateGdipFamilies[k];
+}
+
+/**intellisense()
+fonts.addFamily( = 加载并注册嵌入字体,\n加载的字样会添加到共享缓存,请不要删除返回的字样对象，\n字样可以用于创建不同样式的同名字体，\n\n在这里注册的嵌入字体，GDI,GDI+，普通控件，plus 控件等都可以自动支持
+fonts.addFamily(.(fontData) = fontData指定字体路径或者内存字体数据,\n加载并注册嵌入字体文件中的第一个字样，\n普通控件、plus 控件、gdi,gdip 等都可以自动支持内存字体,\n但部分组件(例如web.form)不支持内存字体,可参考 fonts.fontAwesome 源码运行时保存到 appData 加载
+fonts.addFamily(.(fontData,fontName) = 加载并注册嵌入字体文件中指定名称的字样，\nfontName 指定字体名，必须是字体文件中存在的字体名称，并且大小写一致。\n推荐尽可能在参数 @2 中明确指定字体名称。\n\n注册成功的嵌入字体,gdi,gdip,普通窗口控件,\nplus 控件等将自动支持。\nweb.form 等不支持直接内存加载的字体,可调用 io.appData 将内存数据转换为本地路径后加载
+fonts.getFamilyNames() = 获取已加载的嵌入字体名数组
+fonts.getFamilyByName(__) = 在已加载的嵌入字体中查找指定名字的 gdip.family 对象
+fonts.addFamily() = !gdipfamily.
+fonts.getFamilyByName() = !gdipfamily.
+end intellisense**/
+
+/**details(必读)
+
+可在aardio标准库、用户库视图"/fonts"目录上右键菜单中点“粘贴文件...”
+aardio会在 fonts 名字空间自动生成字体加载库（如果库已经存在则忽略不操作），
+
+并自动复制字体到对应的字体资源目录：
+
+1、标准库图标字体资源目录 '~/lib/fonts/.res/'
+2、工程用户库图标字体资源目录 '/lib/fonts/.res/'
+
+注意：
+aardio 不会搜索其他目录内的字体（图标浏览器工具、窗体设计器、扩展库发布工具都遵守这一规则）。
+end details**/

@@ -1,0 +1,7 @@
+﻿
+namespace web.npPlugin.vlc;
+..io.appData("aardio\std\np-plugin\plugins\npvlc.dll",$"~\lib\web\npPlugin\vlc\.res\npvlc.dll")
+
+/**intellisense()
+web.npPlugin.vlc = VLC 播放器 NPAPI 插件,\n支持 web.kit 扩展库
+end intellisense**/

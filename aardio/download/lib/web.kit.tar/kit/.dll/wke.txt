@@ -1,0 +1,8 @@
+/*
+ * 
+ * BlzFans@hotmail.com 
+ * http://www.github.com/BlzFans/wke
+ * licence LGPL
+ */
+
+wke.dll 使用 https://github.com/aardio/wke 改进版

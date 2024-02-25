@@ -1,0 +1,156 @@
+﻿import fsys;
+import process.evb;
+namespace process.evb;
+
+class project{
+	ctor(){
+		this.mapExecutableWithTemporaryFile = true;
+		this.allowRunningOfVirtualExeFiles = true;
+		this.files = {};
+	};
+	addSubFile = function(srcPath,dstName,wildcard,proc,enumSubdir){
+		if(!dstName) dstName = "%DEFAULT FOLDER%";
+		if(!this.files[dstName]) this.files[dstName] = {}
+		
+		if( ..fsys.isDir(srcPath)){ 
+			..table.push(this.files[dstName], this.dirToXml(srcPath,wildcard,proc,enumSubdir));
+			return true;
+		}
+	};
+	addFile = function(srcPath,dstName,wildcard,proc,enumSubdir){
+		if(!this.output){
+			error("请先指定 output 属性",2);
+		}
+		..io.remove(this.output);
+ 
+		
+		if(!dstName) dstName = "%DEFAULT FOLDER%";
+		if(!this.files[dstName]) this.files[dstName] = {}
+		
+		if( ..fsys.isDir(srcPath)){
+			var xml = "<File>
+		<Type>3</Type>
+		<Name>" + ..io.splitpath(srcPath).file + "</Name>
+		<Action>0</Action>
+		<OverwriteDateTime>false</OverwriteDateTime>
+		<OverwriteAttributes>false</OverwriteAttributes>
+		<Files>" +this.dirToXml(srcPath,wildcard,proc,enumSubdir)+ "</Files>
+		</File>"
+			
+			..table.push(this.files[dstName], xml);
+			return true;
+		}
+		
+		if(..io.exist(srcPath)){ 
+			if(!this.main &&  ..string.endWith(srcPath,".exe",true)){
+				this.main = srcPath;
+			}
+					
+			..table.push(this.files[dstName], "<File>
+<Type>2</Type>
+<Name>" +..io.splitpath(srcPath).file+ "</Name>
+<File>" +srcPath+ "</File>
+<ActiveX>false</ActiveX>
+<ActiveXInstall>false</ActiveXInstall>
+<Action>0</Action>
+<OverwriteDateTime>false</OverwriteDateTime>
+<OverwriteAttributes>false</OverwriteAttributes>
+<PassCommandLine>false</PassCommandLine>
+</File>");
+		}
+		return;
+	}; 
+	dirToXml = function(srcPath,wildcard,proc,enumSubdir){
+	 
+		if(enumSubdir === null ) enumSubdir = true;
+		
+		var outXml = {};
+		..fsys.enum( srcPath, wildcard,
+			function(dirname,filename,fullpath,findData){ 
+				if(filename){ 
+					if(!this.main &&  ..string.endWith(filename,".exe",true)){
+						this.main = fullpath;
+					}
+					
+		          	..table.push(outXml, "<File>
+<Type>2</Type>
+<Name>" +filename+ "</Name>
+<File>" +fullpath+ "</File>
+<ActiveX>false</ActiveX>
+<ActiveXInstall>false</ActiveXInstall>
+<Action>0</Action>
+<OverwriteDateTime>false</OverwriteDateTime>
+<OverwriteAttributes>false</OverwriteAttributes>
+<PassCommandLine>false</PassCommandLine>
+</File>");
+				}
+			},
+			function(dirpath,dirname){
+				if(enumSubdir) {
+				
+				..table.push(outXml,"<File>
+<Type>3</Type>
+<Name>" +dirname+ "</Name>
+<Action>0</Action>
+<OverwriteDateTime>false</OverwriteDateTime>
+<OverwriteAttributes>false</OverwriteAttributes>
+<Files>" +this.dirToXml(dirpath,wildcard,proc,enumSubdir)+ "</Files>
+</File>")
+				}
+				return false; 
+			} 
+		);
+		
+		return ..string.join(outXml);
+	}
+	generate = function(evbPath){
+		if(!this.main){
+			error("请先指定 main 属性",2);
+		}
+		this.main = ..io.fullpath(this.main);
+		
+		if(!this.output){
+			error("请先指定 output 属性",2);
+		}
+		this.output = ..io.fullpath(this.output);
+		
+		this.xmlFiles = {};
+		for(dirName,xmlFiles in this.files){
+				..table.push(this.xmlFiles,"<File>
+<Type>"+(dirName[#dirName]==':'#?'1':'3')+"</Type>
+<Name>"+dirName+"</Name>
+<Action>0</Action>
+<OverwriteDateTime>false</OverwriteDateTime>
+<OverwriteAttributes>false</OverwriteAttributes>
+<Files>"+..string.join(xmlFiles)+"</Files>
+</File>")
+		}
+		
+		this.xmlFiles = ..string.join(this.xmlFiles);
+		var xmlData = ..string.loadcode($"~\lib\process\evb\project\#projectTemplate.aardio",this);
+		..string.save(evbPath,xmlData)
+	}; 
+}
+
+/**intellisense()
+process.evb.project = 用于自动创建 Enigma Virtual Box 独立 EXE 封包工程文件\n生成的独立 EXE 默认不会在运行时释放临时文件\n仅支持 32 位程序，现在知道 32 位程序香了吧！
+process.evb.project() = 创建 Enigma Virtual Box 独立 EXE 封包工程生成工具\n!processEvbProject.
+end intellisense**/
+
+/**intellisense(!processEvbProject)
+addFile( = 添加文件或目录
+addFile(.(srcPath,dstName,wildcard,proc,enumSubdir) = 添加文件或目录\n参数 @srcPath 指定要添加的文件或目录\n可选参数 @dstName 指定目标目录，默认为 "%DEFAULT FOLDER%"\n可选参数 @wildcard 在添加目录时指定通配符，默认为 "*.*"\n可选参数 @proc 在添加目录时指定文件回调函数，用法参考此函数源码\n可选参数 @enumSubdir 指定是否递归添加子目录，默认为 true
+addSubFile( = 添加目录下的文件，不添加目录自身
+addSubFile(.(dirPath,dstName,wildcard,proc,enumSubdir) = 添加文件或目录\n参数 @dirPath 指定要添加下级文件的目录。\n可选参数 @dstName 指定目标目录，默认为 "%DEFAULT FOLDER%"\n可选参数 @wildcard 在添加目录时指定通配符，默认为 "*.*"\n可选参数 @proc 在添加目录时指定文件回调函数，用法参考此函数源码\n可选参数 @enumSubdir 指定是否递归添加子目录，默认为 true
+generate(.(evbPath) = 创建 Enigma Virtual Box 独立 EXE 封包工程文件\n@evbPath 参数指定输出路径\n\n注意输出文件使用 UTF-8 编码，\n在 Enigma Virtual Box 界面中加载时中文会乱码，\n但可以正常使用 process.evb 生成独立 EXE
+evbProject.main = 指定启动 EXE 文件路径
+evbProject.output = 指定要生成的独立 EXE 文件路径 
+deleteExtractedOnExit = 是否在退出时删除释放的文件，\n如果没有文件设置为释放就不用管
+compressFiles = 压缩文件，没必要设置
+mapExecutableWithTemporaryFile = 使用临时文件映射可执行文件\n一般没必要设置
+allowRunningOfVirtualExeFiles = 允许运行虚拟可执行文件\nmapExecutableWithTemporaryFile 为 true 时有效\n一般没必要设置
+shareVirtualSystem = 将虚拟系统共享到子进程\nmapExecutableWithTemporaryFile 为 true 时有效\n一般没必要设置
+main = 需要封包的启动 EXE 文件路径\n不指定则自动设为已添加文件中的第一个 EXE 文件
+output = 生成的独立 EXE 文件
+end intellisense**/
+

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\");
+fsys.copy( "\ruffle","~\lib\web\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.ruffle 扩展库已安装成功!","aardio- web.ruffle扩展库安装程序")

@@ -1,0 +1,113 @@
+﻿//selection 文本选区
+import win;
+import winex;
+import win.ui.ctrl.edit;
+import win.ui.ctrl.richedit;
+import win.clip;
+import key;
+
+namespace winex.selection;
+
+var edit = ..win.ui.ctrl.edit();
+var richedit = ..win.ui.ctrl.richedit();
+var getByEdit = function(copyText){
+	var hFocus = ..winex.getFocus(,true);
+	if(hFocus){
+		var cls = ..win.getClass(hFocus);
+		if(cls=="Edit" ){
+			edit.hwnd = hFocus;
+			return edit.selText,hFocus;
+		}
+		elseif( ..string.find(cls,"@@richedit") ){
+			richedit.hwnd = hFocus;
+			return richedit.selText,hFocus;
+		}
+		
+		if(copyText){
+			var ret;
+			var orig = ..win.clip.read();
+			var origBmp = ..win.clip.readBitmap();
+			
+			..key.combine("CTRL","C");
+			..thread.delay(10);
+			
+			var str = ..win.clip.read();
+			if( #str && str!=orig){
+				ret = str;
+			}
+			
+			..win.clip.write(orig:""); 
+			
+			if(origBmp){
+				..win.clip.writeBitmap(origBmp,true,false);
+			}
+			
+			return ret;
+		}
+	}
+}
+
+if(_WINXP){
+	get = getByEdit;
+	return;
+}
+
+import System.Windows.Automation.3;
+Automation = System.Windows.Automation;
+PropertyCondition = Automation.PropertyCondition;
+AutomationElement = Automation.AutomationElement;
+var TextPatternPattern = Automation.TextPattern.Pattern;
+var NativeWindowHandleProperty = AutomationElement.NativeWindowHandleProperty
+
+get = function(copyText){
+	if(::GetAsyncKeyState( 1/*_VK_LBUTTON*/ ) < 0) return;
+	
+	var hwnd = ..winex.getFocus()
+	var focusedEle = AutomationElement.RootElement.FocusedElement;
+	if(!focusedEle) {
+		return getByEdit(copyText);
+	}
+	
+	var textPattern,selections;
+	try{
+		textPattern = focusedEle.GetCurrentPattern(TextPatternPattern);
+		selections = textPattern.GetSelection();
+		com.Release(textPattern);
+	}
+	catch(e){
+		if(textPattern) com.Release(textPattern);
+	}
+	 
+	var ret;
+	if(selections){
+		if(selections.Length){
+			ret = {}
+			for(i=1;selections.Length;1){
+				var txtRange = selections[i];
+				var str = txtRange.GetText(-1);
+				if(#str) ..table.push(ret,str);
+				
+				..com.Release(txtRange); 
+			}
+			ret = ..string.join(ret,'\r\n'); 
+		} 
+		
+		..com.Release(selections);		
+	}
+	else {
+		ret = getByEdit(copyText);
+	}
+	
+	var hFocus = focusedEle.GetCurrentPropertyValue(NativeWindowHandleProperty);
+	..com.Release(focusedEle);
+	
+	if(!#ret){
+		return getByEdit(copyText);
+	}
+	return ret,hFocus;
+}
+
+/**intellisense()
+winex.selection = 用于获取当前焦点窗口文本选区
+winex.selection.get(true) = 如果鼠标左键是放开状态，获取焦点窗口选区文本。\n成功返回文本,焦点窗口句柄。\n仅适用于支持 UIA 选区接口的窗口。\n\n参数 @1 为 true 则允许使用剪贴板复制选区文本，\n在获取选区文本失败才会使用剪贴板，\n用后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
+end intellisense**/

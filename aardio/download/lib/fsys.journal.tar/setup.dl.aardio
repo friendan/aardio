@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\fsys\");
+fsys.copy( "\journal","~\lib\fsys\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fsys.journal扩展库已安装成功!","aardio- fsys.journal扩展库安装程序")

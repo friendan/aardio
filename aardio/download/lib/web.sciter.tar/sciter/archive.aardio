@@ -1,0 +1,84 @@
+﻿//archive 解包
+import web.sciter;
+
+/*details(说明)
+这是「扩展库而不是修改库」的一个演示。
+实现这个扩展库并不需要改动或影响原来的 web.sciter 。
+
+这个包格式确实很适合一些不支持自动打包的编程语言。
+但这种格式没有加密的作用，公共工具打包，公共 API 提取资源，明文释放到内存。
+如果真的很介意别人看界面 HTML 这种事，那么这个库可以作为心理安慰剂使用。
+
+一般桌面软件的界面资源不会加密，很多软件是直接扔到硬盘。
+Sciter 也只是用来做界面，不像 Eletron 的程序也是用 JavaScript 实现。
+所以提取 Sciter 的 HTML 资源基本是无意义的。
+
+aardio 已经有自动打包资源文件的功能，不需要多写任何代码，不需要任何多余的操作。
+一般没有必要使用这个 web.sciter.archive 。
+end details*/
+
+class web.sciter.archive{
+	ctor( buf ){ 
+		if(!(buf[1]=0x53 && buf[2]=0x41 && buf[3]=0x72 ) ){
+			buf = ..string.loadBuffer(buf);
+		}
+		
+		this.handle = ::Sciter.OpenArchive(buf, #buf); 
+		..table.gc(this,"close");
+		
+	};
+ 	get = function(path){
+ 		path = ..string.replace(path,"@\","/");
+ 		
+ 		if(this.base ? ..string.startWith(path,this.base) ){
+        	path = ..string.right(path,-(#this.base+1))
+        }
+		if(path[1]=='/'#)path = ..string.right(path,-2); 
+		var ok,data,size = ::Sciter.GetArchiveItem(this.handle , ..string.toUnicode(path), {ptr p}, {INT v})
+ 
+		if(data.p && size.v &&ok){ 
+		 	return ..raw.buffer(size.v,data.p);
+		}
+	};
+	close = function(){
+		if(this.handle){
+        	::Sciter.CloseArchive(this.handle);
+        	this.handle = null;
+    	}
+	} 
+}
+
+namespace web.sciter.archive{
+	
+	var archive;
+	load = function(path,base,release){
+		if(release && _STUDIO_INVOKED) return;
+		
+		if(archive) archive.close();
+		
+		archive = ..web.sciter.archive(path);
+		
+		if(base){
+			base = ..string.replace(base,"@\","/");
+		}
+		archive.base = base;
+		
+		..web.sciter.setLoader(
+			function(path){
+				return archive.get(path);
+			}	
+		)
+	}
+}
+
+/**intellisense(web.sciter)
+archive() = 创建解包器\naardio 已经有自动打包资源文件的功能，不需要多写任何代码，不需要任何多余的操作。\n一般没有必要使用这个 web.sciter.archive\n!webSciterArchive.
+archive.load(.(path,base,release) = 加载 packfolder 生成的包,\n参数 @path 可以是包数据,也可以是包路径,支持资源路径,\n在包路径字符串前加$操作符可以编译文件到程序内,\n如果使用包含操作符，则不应重复包含该文件到资源目录,\n可选使用 @base 参数指定基目录，设置后将从访问路径前面自动移除基目录，\n如 @release 为 true ，则此函数调用仅在发布后生效。
+end intellisense**/
+
+/**intellisense(!webSciterArchive)
+get(.(path) = 解包并返回数据,参数指定相对路径
+close() = 关闭对象
+base = 基目录,\n必须以正斜杆开始并使用斜杆分隔目录\n所有访问路径会移除基目录
+end intellisense**/
+

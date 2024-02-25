@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\java\");
+fsys.copy( "\ffdec","~\lib\java\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("java.ffdec 扩展库已安装成功!","aardio- java.ffdec扩展库安装程序")

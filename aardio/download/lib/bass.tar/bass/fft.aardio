@@ -1,0 +1,60 @@
+﻿import gdip.solidBrush;
+import gdip.pen;
+
+namespace bass;
+
+class fft{
+	ctor( fftPane,brushColor,penColor ){
+		this.brush = ..gdip.solidBrush(0xFF8B0000);
+		this.pen = ..gdip.pen( 0xFF540000, 1, 2/*_GdipUnitPixel*/ );
+		this.fftPane = fftPane;
+		
+		this.fftPane.onDrawBackground = function(graphics,rc,bkColor,foreColor){
+  			// 画频谱函数参考武斌提供的豆瓣FM客户端源码
+    		var fftData = this.fftData;
+    		if(!fftData) return;
+    		
+    		var fftNum = 66;
+    		var peacks = {};
+    		var fallOff = {};
+    		for(i=1;..math.floor(fftNum/2)+1;1) {
+        		peacks[i] = 0;
+    		}
+    		
+    		var x,y,cx,cy = rc.xywh();
+    		var fftHeight = 120;
+    		var w = 8;
+		
+    		var j = 1;
+    		for(i=1;fftNum;2) {
+        		if(!fftData[i]) return;
+        		fallOff[j] = 0;
+        		
+        		var di = ..math.floor((fftData[i]+fftData[i+1])/2*900);
+        		if(di > fftHeight) di = fftHeight;
+        		if(di >= peacks[j]) peacks[j] = di else peacks[j] = peacks[j] -3;
+        		if(di >= fallOff[j]) fallOff[j] = di else fallOff[j] = fallOff[j] - 5;
+        		
+        		if((fftHeight - peacks[j]) > fftHeight) peacks[j] = 0;
+        		if((fftHeight - fallOff[j]) > fftHeight) fallOff[j] = 0;
+        		if(peacks[j]<1) peacks[j] = 1;
+        		if(fallOff[j]<0) fallOff[j] = 0;
+        		
+        		graphics.fillRectangle(this.brush, j * (w + 1), fftHeight - fallOff[j], w, fallOff[j] );
+        		graphics.drawLine(this.pen, j * (w + 1), fftHeight - peacks[j], j * (w + 1) + w-1, fftHeight - peacks[j]);
+        		j++;
+    		}	
+		}
+	};
+	draw = function(fftData){
+		this.fftData = ..table.map(fftData,..math.abs);
+		this.fftPane.redrawTransparent();
+	}; 
+}
+
+/**intellisense()
+bass.fft = 用于绘制频谱，用法参考 bass 扩展库范例
+bass.fft(.(fftPane,brushColor,penColor) = 创建频谱绘图对象。\n@fftPane 指定 plus 控件\n@brushColor 指定填充颜色,@penColor 指定边线颜色，\n颜色使用 0xAARRGGBB 格式
+bass.fft() = !bassFft.
+!bassFft.draw(__) = 绘图\n@fftData 指定绘图数据
+end intellisense**/

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\py3\");
+fsys.copy( "\4","~\lib\py3\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("py3.4 扩展库已安装成功!","aardio- py3.4扩展库安装程序")

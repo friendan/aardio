@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\com\");
+fsys.copy( "\ffmpegOcx","~\lib\com\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("com.ffmpegOcx 扩展库已安装成功!","aardio- com.ffmpegOcx扩展库安装程序")

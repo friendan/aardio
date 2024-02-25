@@ -1,0 +1,40 @@
+﻿//zip 链接
+
+namespace table{
+		
+	class zip{
+		ctor(args,...){
+			if(!args) error("参数 @1 类型错误",2);
+			if(args === true ) {
+				var a,b = ...;
+				if(!(a&&b)) error("参数类型错误",2); 
+				for(k,v in a) this[v] = b[k];
+				return this;
+			}
+			
+			if(...) args = {args,...};
+			 
+			var idx = 0;
+			var push = ..table.push;
+			while(true){
+				idx++;
+				var cur = {};
+				for(i=1;#args;1){
+					var v = args[i][idx];
+					if( v === null ) break 2;
+					
+					push(cur,v);
+				
+				}
+				
+				push(this,cur);
+			} 
+		}; 
+	}
+}
+
+/**intellisense()
+table.zip = 链接数组，需导入
+table.zip(.(->->->) = 参数指定多个数组时，\n将所有数组相同索引的元素链接为数组，并返回包含这些数组的数组。\n\n如果仅指定 1 个数组，\n则将数组中的所有成员数组作为参数进行链接，\n所有成员数组相同索引的元素链接为新的数组，\n返回包含这些数组的数组\n\n此函数至少需要一个参数，否则会抛出异常
+table.zip(.(true,keys,values) = 返回一个新的表，\n以 @keys 中元素为键，以 @values 中相同索引的数组元素为值
+end intellisense**/

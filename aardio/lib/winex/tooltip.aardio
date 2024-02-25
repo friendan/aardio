@@ -1,0 +1,88 @@
+﻿//tooltip 屏幕提示
+import win.ui.tooltip;
+import process;
+
+namespace winex;
+
+class tooltip{
+	ctor(form,close,balloon){
+		this = ..win.ui.tooltip.tracking(form,close,balloon);
+	};
+	onHyperlinkClick = function(href,title){
+		..process.openUrl(href);  
+	};
+ 	wndproc = {
+		[0x201/*_WM_LBUTTONDOWN*/]=function(hwnd,message,wParam,lParam){
+			if(!this.ptInClientRect(lParam)){
+				this.popup(false); 
+			} 
+		} 
+	}; 
+	trackPopupEx = function(text,x,y,timeout){
+        if(text && !(x&&y)) {
+            var pt = ::POINT();
+        	::User32.GetCursorPos(pt);
+        	x,y = pt.x,pt.y;
+        }
+        
+        if(type.isString(text)){
+        	var title,msg = ..string.match(text,"(\N+)\n+(.+)");
+        	if(title){
+        		this.setInfo(title);
+        		text = msg;
+        	}
+        	else {
+        		this.setInfo("");
+        	} 
+        }
+        
+    	this.trackPopup(text,x,y);
+    	
+    	if(text){
+    		this.capture = true;
+    		if(timeout){
+    			..win.setTimeout(
+    				function(){
+    					this.popup(false);
+    				},timeout
+    			)
+    		}
+    	}
+    } 
+}
+
+namespace tooltip{
+    
+    var default;
+    popup = function(text,x,y,timeout){
+        if(!default) default = ..winex.tooltip(,,false);
+        return default.trackPopupEx(text,x,y,timeout));
+    }
+    
+    var defaultBalloon;
+    balloon = function(text,x,y,timeout){
+        if(!defaultBalloon) defaultBalloon = ..winex.tooltip();
+        return defaultBalloon.trackPopupEx(text,x,y,timeout));
+    }
+   
+    //@Deprecated
+    trackPopup = balloon;
+}
+
+/**intellisense()
+winex.tooltip = 创建手动控制坐标、显示的提示控件，\n只能用于界面线程
+winex.tooltip( = 创建提示控件,默认使用默认手动跟踪模式，\n返回 win.ui.tooltip 对象
+winex.tooltip(.(ownerForm,hasCloseButton,balloon) =  创建提示控件,默认使用默认手动跟踪模式。\n@ownerForm 参数指定所有者窗口，省略则默认置顶窗口，\n@hasCloseButton 参数指定是否显示关闭按钮,可省略默认值为 true \n@balloon 参数指定是否启用汽泡外观,可省略默认值为 true\n如果未指定所有者窗口、或未设置提示标题，提示中的超链接可能无法点击 
+winex.tooltip() = !winUiTooltip.
+end intellisense**/
+
+/**intellisense(winex.tooltip)
+balloon( = 在屏幕任意坐标显示简单气泡提示，\n在提示窗口外部点击自动隐藏。\n\n只能用于界面线程
+balloon(.(true,x,y,timeout) = 弹出简单气泡提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
+balloon(.(text,x,y,timeout) = 弹出简单气泡提示 @text 指定文本内容的提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
+balloon(.(false) = 隐藏简单提示
+popup( = 在屏幕任意坐标显示简单提示，\n在提示窗口外部点击自动隐藏。\n\n只能用于界面线程
+popup(.(true,x,y,timeout) = 弹出简单提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
+popup(.(text,x,y,timeout) = 弹出简单提示 @text 指定文本内容的提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
+popup(.(false) = 隐藏简单提示
+end intellisense**/

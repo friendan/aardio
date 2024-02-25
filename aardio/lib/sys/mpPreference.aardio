@@ -1,0 +1,159 @@
+﻿//mpPreference 安全设置
+import dotNet.ps;
+import fsys.path;
+import win.reg;
+
+namespace sys.mpPreference;
+
+set = function(p){ 
+	return ..dotNet.ps.command("Set-MpPreference",p) 
+}
+
+get = function(p){ 
+	return ..dotNet.ps.json(`Get-MpPreference | ConvertTo-Json `)	
+}
+
+remove = function(p){ 
+	return ..dotNet.ps(`Remove-MpPreference`,p)	
+}
+
+add = function(p){ 
+	return ..dotNet.ps(`Add-MpPreference`,p)	
+}
+
+getThreatDetection = function(){
+	return ..dotNet.ps.json(`Get-MpThreatDetection | ConvertTo-Json `)	
+}
+
+getThreat = function(){
+	return ..dotNet.ps.json(`Get-MpThreat | ConvertTo-Json `)	
+}
+
+getExclusionPaths = function(paths){
+    if(!_WIN10_LATER) return;
+	var ret,err = ..dotNet.ps("Get-MpPreference  | Select-Object -ExpandProperty ExclusionPath");
+	//HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions
+	
+	if(ret!==null) {
+		var exclusionPaths = ..string.splitEx(..string.trim(ret));
+		if(!exclusionPaths){
+			return null,err;
+		}
+			
+		if(#exclusionPaths==1 && !..io.exist(exclusionPaths[1])){
+			return null,exclusionPaths[1]
+		}
+		
+		for(k,path in paths){
+			path = ..fsys.path.removeBackslash(path);  
+			
+			if(!..table.find(exclusionPaths,lambda(v,k) ..fsys.path.cmp(v,path)===0 || ..fsys.path.ischild(v,path) ) ){
+				..table.push(exclusionPaths,path); 
+			} 
+		}
+		
+		return exclusionPaths;	
+	}
+}
+
+isExclusionPath = function(path){
+	path = ..fsys.path.removeBackslash(path);
+	
+	var exclusionPaths = getExclusionPaths() : {};
+	if(!..table.find(exclusionPaths,path) ){
+		..table.push(exclusionPaths,path); 
+	}
+	
+	for(k,e in exclusionPaths){
+		if(..fsys.path.cmp(e,path)){
+			return true;
+		}
+		
+		if(..fsys.path.ischild(e,path) ){
+			return true;
+		}
+	}
+}
+
+addExclusionPath = function(path){
+    if(!_WIN10_LATER) return;
+    
+    import ..dotNet.ps;
+	path = ..fsys.path.removeBackslash(path); 
+	
+	var exclusionPaths = getExclusionPaths() : {};
+	if(!..table.find(exclusionPaths,path) ){
+		..table.push(exclusionPaths,path); 
+	}
+	
+	return ..dotNet.ps.command("Set-MpPreference",{ExclusionPath=#exclusionPaths?exclusionPaths:""})
+}
+
+setExclusionPaths = function(exclusionPaths){
+    if(!_WIN10_LATER) return;
+    
+    for(k,v in exclusionPaths){
+    	exclusionPaths[k] = ..fsys.path.removeBackslash(v); 
+    }
+    
+    exclusionPaths = ..table.unique(exclusionPaths);
+	return ..dotNet.ps.command("Set-MpPreference",{ExclusionPath=#exclusionPaths?exclusionPaths:""})
+}
+
+isTamperProtection = function(){
+	return 4 != ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Features","TamperProtection");
+}
+
+isRealtimeMonitoring = function(){
+	return 1 != ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Real-Time Protection","DisableRealtimeMonitoring");
+}
+
+disableRealtimeMonitoring = function(disabled){
+	if(isTamperProtection()) return false;
+	
+	..dotNet.ps.command("Set-MpPreference",{DisableRealtimeMonitoring=!!disabled})
+	return !isRealtimeMonitoring();
+}
+
+/**intellisense()
+sys.mpPreference = Windows Defender 设置，\n注意修改 Defender 设置需要管理权限。\n请参考相关扩展库 process.mpCmdRun
+end intellisense**/
+
+/**intellisense(sys.mpPreference)
+get(__) = 调用 Get-MpPreferenc 获取 Windows Defender 设置，\n返回包含配置项名值对的表
+set(__) = 调用 Set-MpPreferenc 修改 Windows Defender 设置，\n参数 @1 指定包含配置项名值对的表，配置项名称前不必加短横线。\n可用配置项参考 https://docs.microsoft.com/en-us/powershell/module/defender/set-mppreference
+remove(__) = 调用 Remove-MpPreference 移除 Windows Defender 设置，\n参数 @1 指定包含配置项名值对的表，配置项名称前不必加短横线。\n可用配置项参考 https://docs.microsoft.com/en-us/powershell/module/defender/remove-mppreference
+add(__) = 调用 Add-MpPreference 修改 Windows Defender 设置，\n参数 @1 指定包含配置项名值对的表，配置项名称前不必加短横线。\n可用配置项参考 https://docs.microsoft.com/en-us/powershell/module/defender/add-mppreference
+getExclusionPaths() = 获取例外目录列表，返回路径数组,\n可选在参数中指定要添加到返回列表中的路径,\n如果参数中传入的目录或该目录的父目录已经在排除列表中，则自动排除
+addExclusionPath(__) = 添加一个路径到例外目录列表
+setExclusionPaths(__) = 修改例外目录列表，参数传入路径数组,\n此函数自动除重
+isExclusionPath(__) = 参数指定的路径是否属于例外目录
+disableRealtimeMonitoring(true) = 关闭实时保护。\n需要用 thread.trustedInstaller 扩展库获取权限。\n需要事先关闭 Tamper Protection，\n可用 sys.mpPreference.isTamperProtection 函数检测该设置。\nTamper Protection 只能手动关闭，\n可调用 raw.execute("windowsdefender://ThreatSettings") 打开设置页
+isTamperProtection() = 是否关闭 Tamper Protection\nTamper Protection 只能手动关闭，\n可调用 raw.execute("windowsdefender://ThreatSettings") 打开设置页
+isRealtimeMonitoring() = 当前是否开启实时保护
+getThreat() = 返回检测到的威胁的历史记录
+getThreatDetection() = 返回所有检测到的威胁明细
+end intellisense**/
+
+/**details(打开 Defender 设置)
+raw.execute("windowsdefender://Threat");               # Virus & Threat Protection
+raw.execute("windowsdefender://ThreatSettings");       # Virus & Threat Protection Settings
+raw.execute("windowsdefender://Account");              # Account Protection
+raw.execute("windowsdefender://Network");              # Firewall & network Protection
+raw.execute("windowsdefender://Hardware");             # Device Security
+raw.execute("windowsdefender://DeviceSecurity");       # Device Security
+raw.execute("windowsdefender://Family");               # Family Option
+raw.execute("windowsdefender://AppBrowser");           # App & Browser Control
+raw.execute("windowsdefender://Settings");             # Manage Notifications
+raw.execute("windowsdefender://History");              # Protection History
+raw.execute("windowsdefender://RansomwareProtection"); # Ransomware Protection
+raw.execute("windowsdefender://ProtectedFolders");     # Ransomware Protection
+raw.execute("windowsdefender://SecurityProcessor");    # Security Processor Details
+raw.execute("windowsdefender://SecurityProcessorTroubleshooting"); #  Security Processor Troubleshooting
+raw.execute("windowsdefender://SmartScreenPua");       # Smart Screen (Reputation Based Protection)
+raw.execute("windowsdefender://AccountProtection");    # Account Protection
+raw.execute("windowsdefender://ExploitProtection");    # Exploit Protection
+raw.execute("windowsdefender://exclusions");           # exclusions
+raw.execute("windowsdefender://fullscan");             # Select fullscan
+raw.execute("windowsdefender://quickscan");            # Start quickscan 
+end details**/

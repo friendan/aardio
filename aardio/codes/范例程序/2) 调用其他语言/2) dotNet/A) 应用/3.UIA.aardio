@@ -1,0 +1,56 @@
+﻿//UI Automation
+//相关范例：自动化 > UIA
+//探测工具 http://download.aardio.com/v10.files/tool/Inspect.7z
+import win.dlg.message;
+import process; 
+process.executeWaitInput("notepad.exe",io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS"));
+ 
+//导入 .NET 类  https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6
+import System.Windows.Automation;
+//改为 import System.Windows.Automation.3 可支持 TextPattern2 等接口，下面的代码不必更改。
+
+//访问 .NET 类的静态成员
+Automation = System.Windows.Automation;
+PropertyCondition = Automation.PropertyCondition;
+AutomationElement = Automation.AutomationElement;
+
+TreeScope = Automation.TreeScope; 
+
+//合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
+var condNotepad = Automation.AndCondition({
+	//指定记事本窗口的类名
+	 PropertyCondition(AutomationElement.ClassNameProperty,"Notepad"),
+	 //指定记事本窗口的窗口类型
+	 PropertyCondition(AutomationElement.ControlTypeProperty,Automation.ControlType.Window)
+})
+
+//查找记事本窗口
+var notepad = AutomationElement.RootElement.FindFirst(TreeScope.Descendants, condNotepad) 
+
+//合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
+var condEdit = Automation.OrCondition({
+	//记事本的编辑框的类名
+	PropertyCondition(AutomationElement.ClassNameProperty,"Edit"),
+	// Windows 11 记事本的编辑框的类名
+	PropertyCondition(AutomationElement.ClassNameProperty,"RichEditD2DPT") 
+})
+
+//查找记事本的编辑框 
+var editBox = notepad.FindFirst( TreeScope.Descendants, condEdit); 
+var hwnd = editBox.GetCurrentPropertyValue(AutomationElement.NativeWindowHandleProperty);
+
+//获取记事本内的文本 
+//https://learn.microsoft.com/en-us/dotnet/api/system.windows.automation.textpattern?view=netframework-4.0
+var textPattern;
+try {
+	//获取 Pattern 失败会抛出异常
+	textPattern = editBox.GetCurrentPattern(Automation.TextPattern.Pattern);
+}
+
+if(textPattern){
+	var text = textPattern.DocumentRange.GetText(50);
+	win.dlg.message().info(text + " ……");
+}	
+else{
+	return win.dlg.message().info("记事本文本框句柄：" + hwnd)	
+}

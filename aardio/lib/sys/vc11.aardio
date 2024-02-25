@@ -1,0 +1,14 @@
+﻿//vc11 运行时（VC2012）
+namespace sys.vc11{
+	var module = ::Kernel32.LoadLibraryExP("MSVCR110.dll",,2/*_LOAD_LIBRARY_AS_DATAFILE*/ );
+	
+	if(!module){
+		import inet.installer; 
+		inet.installer("VC 2012","https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe"
+			,"/install /quiet /norestart");	
+	} 
+}
+
+/**intellisense()
+sys.vc11 = 引用此库可检查 VC11( VC2012 ) 运行库是否安装，\n如果未安装则自动下载安装
+end intellisense**/

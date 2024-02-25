@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\process\");
+fsys.copy( "\v","~\lib\process\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("process.v 扩展库已安装成功!","aardio- process.v扩展库安装程序")

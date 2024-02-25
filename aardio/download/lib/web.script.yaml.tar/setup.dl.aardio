@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\script\");
+fsys.copy( "\yaml.aardio","~\lib\web\script\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.script.yaml 扩展库已安装成功!","aardio- web.script.yaml扩展库安装程序")

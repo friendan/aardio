@@ -1,0 +1,6 @@
+LIBRARY CreateWindowExHook.dll
+
+EXPORTS
+_CreateWindowExHook@48
+_hookSetWindowPos@28
+hookSet

@@ -1,0 +1,45 @@
+//5)Python 元组
+
+import console;
+console.setTitle("Python元组");
+
+import py3;
+
+var pyCode = /***
+
+def func():
+	print("python可以用tuple(元组) 返回多个值,元组可以理解为只读的数组");
+	return (1,2,3);#这里的括号实际上可以省略
+
+print( func() );
+
+#连续赋值 
+(a,b,c) = 1,2,3 #这里a,b,c外面的括号也是可以省略的，省略就与aardio的语法一样了
+print( a ) #上面序列的成员也可以作为普通变量使用
+
+#一个序列可以给另一个序列
+(d,e,f) = (a,b,c)
+print (d,e,f) #这里是一个序列,括号不是表示函数调用
+
+#一个数组也可以赋值给一个序列
+(x,y,z) = [7,8,9]
+print( x );
+***/
+
+py3.exec(pyCode);
+
+/*
+Python 中的元组在 aardio 中即 py.tuple 对象，
+在 aardio 中可以用下面的代码创建 Python 元组。
+*/
+var pyTuple = py3.tuple({"字符串",123});
+
+//pyTuple 转换为 aardio 对象
+console.dump( pyTuple.parseValue() );
+
+console.pause();
+
+/*
+Python 元组起的作用类似于 aardio 中的多返回值，
+区别是 aardio 中多返回值表示为多个变量，而 Python 元组更像一个数组。
+*/

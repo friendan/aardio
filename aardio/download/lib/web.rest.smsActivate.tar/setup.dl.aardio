@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\rest\");
+fsys.copy( "\smsActivate","~\lib\web\rest\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.rest.smsActivate 扩展库已安装成功!","aardio- web.rest.smsActivate扩展库安装程序")

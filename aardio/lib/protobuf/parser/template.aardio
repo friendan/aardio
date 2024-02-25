@@ -1,0 +1,159 @@
+﻿//template 代码模板
+
+import string.template;
+
+namespace protobuf.parser.template
+
+classDefine = ..string.template();
+classDefine.template =  /*
+class ${className} {
+	ctor(reader){
+		this = ..protobuf.message(reader);
+		
+${fileds}  
+	} 
+	@_metaProperty ;
+}
+*/
+
+classNamespace = ..string.template();
+classNamespace.template = /*
+
+namespace ${className} {
+${subClasses}  
+${subEnums}  
+	_metaProperty  = ..util.metaProperty(
+		_keys = { ${fieldKeys} }
+		_tostring = function(){
+			return owner.serializeToString();
+		};
+		eachName = function(){
+			return ..table.eachName(owner); 
+		};	
+${fieldMetas}   
+	)
+}
+*/
+
+enum = ..string.template();
+enum.template = /*
+class ${name}  {
+	ctor(...){
+		this = ..protobuf.type.enum(...)
+	}
+}   
+namespace ${name} ${body}
+*/	
+
+field = ..string.template();
+field.template = /*
+	this.fieldTypes[${idx}] = "${typeName}";
+	this.fieldValues[${idx}] = ${value};
+	this.fieldNames[${idx}] = "${varName}";
+ */
+ 
+fieldOneOf = ..string.template();
+fieldOneOf.template = /*
+	this.fieldTypes[${idx}] = "${typeName}";
+	this.fieldValues[${idx}] = ${value};
+	this.fieldNames[${idx}] = "${varName}";
+	this.fieldOneOf[${idx}] = "${oneof}";
+ */
+
+fieldMap = ..string.template();
+fieldMap.template = /*
+	this.fieldTypes[${idx}] = "${typeName}";
+	this.fieldValues[${idx}] = ${value};
+	this.fieldNames[${idx}] = "${varName}";
+	this.fieldMapKeyValueType[${idx}] = {${mapKeyType};${mapValueType}};
+ */
+  
+fieldArray = ..string.template();
+fieldArray.template = /*
+	this.fieldTypes[${idx}] = "${typeName}";
+	this.fieldValues[${idx}] = ${value};
+	this.fieldNames[${idx}] = "${varName}";
+	this.fieldIsArray[${idx}] = true;
+*/
+ 
+fieldPackedArray = ..string.template();
+fieldPackedArray.template = /*
+	this.fieldTypes[${idx}] = "${typeName}";
+	this.fieldValues[${idx}] = ${value};
+	this.fieldNames[${idx}] = "${varName}";
+	this.fieldIsArray[${idx}] = true;
+	this.fieldIsPacked[${idx}] = true;
+ */
+ 
+fieldMeta = ..string.template();
+fieldMeta.template = /*
+	${varName} = {
+		_get = function(){ 
+			return owner.getFieldValue(${fieldIndex});
+		};
+		_set = function( value ){
+			return owner.setFieldValue(${fieldIndex}, value);
+		}; 	
+	}; 
+ */
+ 
+fieldOneOfMeta = ..string.template();
+fieldOneOfMeta.template = /*
+	${oneof} = {
+		_get = function(){ 
+			for(k,v in owner.fieldOneOf){
+				if(v=="${oneof}" && owner.fieldValues[k]!==null){
+					return owner.fieldNames[k];
+				}
+			
+			}
+		}; 	
+	}; 
+ */
+ 
+fieldTimeMeta = ..string.template();
+fieldTimeMeta.template = /*
+	${varName} = {
+		_get = function(){ 
+			return owner.getFieldTime(${fieldIndex},"%Y-%m-%d %H:%M:%S");
+		};
+		_set = function( value ){
+			return owner.setFieldTime(${fieldIndex}, value,"%Y-%m-%d %H:%M:%S");
+		};	
+	}; 
+ */
+ 
+fieldArrayMeta = ..string.template();
+fieldArrayMeta.template =  /*
+	${varName} = {
+    	_get = function(ownerCall,thisMeta){ 
+    	    if(ownerCall) return thisMeta._call;
+    		return owner.getFieldArray(${fieldIndex}); 
+    	}; 
+    	_set = function(v){ 
+    		return owner.setFieldArray(${fieldIndex},v); 
+    	};
+    	_call = function(index,value){ 
+    		if(value!==null)return owner.setFieldArrayItem(${fieldIndex},index,value); 
+    		return owner.getFieldArrayItem(${fieldIndex},index); 
+    	}; 	
+    }; 
+	${varName}Length = {
+		_get = function(){ 
+			return owner.getFieldArraySize(${fieldIndex});
+		}; 	
+	};
+ */
+ 
+fieldMapMeta = ..string.template();
+fieldMapMeta.template =  /*
+ 
+	${varName} = {
+    	_get = function(){ 
+    		return owner.getFieldMap(${fieldIndex}); 
+    	}; 
+    	_set = function(v){ 
+    		return owner.setFieldMap(${fieldIndex},v); 
+    	}; 	
+    };   
+ */

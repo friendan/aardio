@@ -1,0 +1,285 @@
+//jsonClient 客户端
+import web.json;  
+import process.popen;
+import string.encoding;
+import process.job.limitKill;
+
+namespace process.rpc; 
+ 
+class jsonClient {
+	ctor( process,... ) { 
+		if( type.isString(process)){
+			var err;
+			process,err = ..process.popen(process,...);
+			if(!process) return null,err;
+			
+			process.codepage = 65001;
+			..process.job.limitKill.assignProcess(process);
+		}
+		
+		this.rpc = { 
+			process = process;
+			stillActive = lambda() process.stillActive();
+			
+			charset = "UTF-8"; 
+			version = "2.0";
+			endCallback = {};
+			varargs = true;
+			
+			postData = function( reqData ){
+				owner.lastResponseData = null;
+				owner.lastStatusCode = null;
+				
+				var jsonData = ..web.json.stringify(reqData);
+				if( owner.afterJsonStringify ) {
+					jsonData = owner.afterJsonStringify(jsonData);
+					if(!jsonData) return;
+				};
+				
+				if(!process.write(jsonData,'\n')){
+					return null,"目标进程已关闭标准输入";
+				}
+				
+				var isTransaction = ( #reqData && owner.transaction);
+				
+				if( reqData.id === null){
+					if(!isTransaction)return;
+					else {
+						var rep;
+						for(i,v in reqData){
+							if(v.id){
+								rep = true;
+								break;
+							}
+						} 
+						
+						if(!rep) return;
+					}
+				}
+				
+				var repData;
+				var stdout,stderr = "";   
+				
+				if(owner.beforeJsonParse){
+					var pattern = isTransaction?"%[]\r*\n":"%{}\r*\n";
+					repData,stderr = process.expect(pattern);
+					
+					if(repData){
+						owner.lastResponseData = repData;
+						repData = owner.beforeJsonParse(repData);
+						if(!#repData) return;
+					 
+						repData,err = ..web.json.tryParse(repData);
+						if(!repData) return null,err;
+					} 
+				}
+				else{
+					var pattern = isTransaction?"\[.+\]\s*":"\{.+\}\s*";
+					
+					for( all,out,err in process.each() ){
+	    				if( #out ){
+	    					stdout = stdout ++ out;
+	    					json = ..string.match(stdout,pattern);
+	    					
+	    					if(json){
+	    						repData = ..web.json.tryParse(json);
+	    						
+	    						if( (repData[["id"]] == reqData.id)
+	    							|| ( isTransaction && type(repData)=="table" && repData[1][["id"]]) 
+	    							|| repData[["error"]] ){
+	    							
+	    						    owner.lastResponseData = json; 
+	    							break;
+	    						}
+	    					} 
+	    				}
+	    				elseif(#err){
+	    			    	stderr = err; 
+	    			    	if( this.rpc.onError ) 	this.rpc.onError( stderr ); 
+	    			    	if(!process.stillActive()){
+	    			    		break;
+	    			    	}
+	    				}
+					}
+				}
+		
+				if( repData ) {  
+					if(isTransaction){
+						if(#repData){
+							for(i=1;#repData;1){
+								if(repData[i].id){
+									var cb = owner.endCallback[repData[i].id];
+    								if(cb){
+    									owner.endCallback[repData[i].id] = null;
+    									if( cb.end ){
+    										cb.end( repData[i].result,repData[i].error )
+    									}
+    								};
+    							}
+							}
+						}
+						return true;
+					} 
+					
+					if(repData[["error"]]){
+						return repData,..web.json.stringify(repData[["error"]],true);
+					}
+					return repData;
+				}
+				else {
+					owner.lastResponseData = stderr; 
+					return null,stderr : "未知错误";
+				}
+			}; 
+			notify = function(method,...){  
+				var reqData = {
+					jsonrpc = owner.version;
+					method = method;
+				}
+				
+				if( owner.varargs ){
+					reqData.params = {@{_type="array"};...};
+				}
+				else {
+					reqData.params = ...;
+				}
+				
+				if( owner[["beforeRequest"]] ){
+					reqData = owner.beforeRequest(reqData);
+				}; 
+				
+				if( owner[["transaction"]]  ){ 
+					..table.push(owner.transaction,reqData);
+					return;
+				}; 
+				
+				var _,err = owner.postData( reqData );
+				if(!err) return true;
+			};
+			xcall = function(method,...){   
+				
+				var reqData = {
+					jsonrpc = owner.version;
+					method = method;
+					id = method;
+				}
+				
+				if( owner.varargs ){
+					reqData.params = {@{_type="array"};...};
+				}
+				else {
+					reqData.params = ...;
+				}
+				
+				if( owner[["beforeRequest"]] ){
+					reqData = owner.beforeRequest(reqData);
+				}; 
+				
+				if( owner[["transaction"]]  ){
+					var cb = {};
+					cb.method = method; 
+					reqData.id = ..table.push(owner.endCallback,cb);
+					
+					..table.push(owner.transaction,reqData);
+					return cb;
+				} 
+				return owner.postData( reqData );
+			}; 
+			beginTrans = function(){
+				owner.transaction = {};
+				owner.endCallback = {};
+			};
+			commitTrans = function(){
+				var ok,err = owner.postData(owner.transaction);
+				owner.transaction = null;
+				owner.endCallback = null;
+				return ok,err;
+			};
+			rollbackTrans = function(){
+				owner.transaction = null;
+				owner.endCallback = null;
+			}; 
+			lastResponse = function(){ 
+				var s = owner[["lastResponseData"]];
+				if( ..console && _STUDIO_INVOKED ) ..console.log(s) else ..io.print(s);
+				return s;
+			};
+			close = function(){
+				if(process){
+					process.close();
+					process = null;
+				} 
+			};
+		};
+	}
+	@_meta
+}
+
+namespace jsonClient {  
+ 
+	_meta = {
+  	
+    	_get = function(k){
+        	
+    		if( type(k) == type.string ){
+    			
+    			if( owner[["method"]] ){
+    				k = owner[["method"]] + "." + k;
+    			}
+    			
+    			owner[[k]] = {
+    				rpc = owner[["rpc"]];
+    				method = k;
+    				@_meta;
+    			}
+    			return owner[[k]];
+    		}
+    	} 
+    	_call = function( ... ){ 
+				return owner.rpc.xcall( owner.method, ...) ;
+		}
+	}
+	
+	charset2Codepage = ..string.encoding.getCodepage;
+}
+
+/**intellisense()
+process.rpc.jsonClient = 基于进程管道通过读写进程标准输入输出实现的 JSON-RPC 客户端。\n用法参考『范例 / 调用其他语言 / Go / RPC』，或 process.r 扩展库范例。\n\n规则说明：\n1、 所有 JSON-RPC 消息必须置于 { } 或 [ ] 内，aardio 输出 JSON 时以换行符结束。\n2、\naardio 读取进程输出时获取第一个能成功解析为响应对象的 JSON，\n└── 单次调用的响应对象应当是 { } 包含的对象且包含 id 字段。\n└── 批量调用的响应对象应当是 [ ] 包含的非空数组且数组元素存在 id 字段。\n响应对象 JSON 不要求以换行符结束，忽略进程的其他输出。\n客户端总是在发送请求后再读取回复（应答对象的 id 字段必须与请求对象的 id 字段相同）。\n\n关于 [ JSON-RPC 2.0](http://www.jsonrpc.org/specification)
+process.rpc.jsonClient( = 创建 JSON-RPC 2.0 客户端，兼容 JSON-RPC 1.0 。\n用法请参考『范例 / 调用其他语言 / Go / RPC』，\n或 process.r 扩展库范例
+process.rpc.jsonClient(.(进程管道) = 创建 JSON-RPC 客户端。\n参数 @1 必须指定 process.popen 对象
+process.rpc.jsonClient(.(执行文件,命令行参数,STARTUPINFO) = 启动目标进程，并返回 JSON-RPC 客户端。\n目标进程自动绑定作业对象 process.job.limitKill 。\n进程管道默认编码设为 UTF-8。\n\n命令行参数可以是一个数组、一个或多个字符串参数,\n\n数组或多个命令行参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+process.rpc.jsonClient() = !process_rpcJsonClient. 
+!process_rpcJsonClient.? = 远程对象名或远程方法名字。\n远程函数调用成功则第一个返回值为表对象，\n└── 该对象的 result 字段为返回值，error 为错误对象，两个字段不会同时存在。\n└── error 对象的 message 为错误信息，code 为错误代码，data 为错误附加数据。\n└── 如果存在 error 对象，则第 2 个返回值为 error 对象的 JSON 文本格式。\n调用失败第一个返回值为 null ，第二个返回值为错误信息\n\n如果调用 rpc.beginTrans 函数开始一个批量调用，\n则返回一个可以指定 end 成员函数的对象，服务器应答时自动回调此 end 函数\n!process_rpcJsonClient.
+!process_rpcJsonClient.rpc = RPC 本地客户端对象\n所以本地函数放在这个对象里面\n用户不得添加、删除、修改此对象的任何成员
+end intellisense**/ 
+
+/**intellisense(!process_rpcJsonClient.rpc)
+stillActive() = 目标进程是否仍然运行
+lastResponse() = 获取最后一次服务器返回的原始数据,\n如果控制台已打开或在开发环境中导入 console 库则在控制台输出数据\n下载文件时该值为空
+beginTrans() = 开始批量调用，注意服务器并不一定支持批量调用。\n批量调用时单次调用的返回值是一个表\n可对返回值指定end成员函数，\nend 函数会在 commitTrans 提交批量调用成功后被触发
+commitTrans() = 完成批量调用，注意服务器并不一定支持批量调用。
+rollbackTrans() = 撤消尚未提交的批量调用
+notify(.("函数名",参数) = 发送通知,服务器不返回值,\n如果 varargs 属性指定为 true 时将不定个数参数合为数组，\nvarargs为 false 时直接发送参数\n\n成功返回 true，失败返回 null,错误信息
+xcall(.("函数名",参数) = 调用远程函数。\n如果 varargs 属性指定为 true 时将不定个数参数合为数组，\nvarargs 为 false 时直接发送参数\n\n远程函数调用成功则第一个返回值为表对象，\n└── 该对象的 result 字段为返回值，error 为错误对象，两个字段不会同时存在。\n└── error 对象的 message 为错误信息，code 为错误代码，data 为错误附加数据。\n└── 如果存在 error 对象，则第 2 个返回值为 error 对象的 JSON 文本格式。\n调用失败第一个返回值为 null ，第二个返回值为错误信息\n\n如果调用 rpc.beginTrans 函数开始一个批量调用，\n则返回一个可以指定 end 成员函数的对象，服务器应答时自动回调此 end 函数
+charset = 获取或修改编码,此值必须为大写，默认为"UTF-8",\n因为 JSON 规定了 Unicode 编码方案,所以不建议也不应该修改这个值
+version = 值为 JSON-RPC 协议版本："2.0"\n不应该修改这个值
+varargs = 默认值为 true,\n值为 true 时将不定个数的参数放入数组发送给服务端\n值为 false 时直接将单个参数发送给服务端\n\nJSON-RPC 2.0 一个会制造混乱的地方：\n如果params是一个数组，并没有规定是展开为一个参数，还是作为一个数组参数。\n\n目前 aardio 的 RPC 服务端会负责展开数组作为多个参数，\n但客户端需要在这里手动设置
+kwargs = 是否支持 Python 命名参数（kwargs ）。\n仅适用于 process.python.jsonRpc，仅 varargs 属性为 true 时有效。\n\n调用时命名参数必须写在参数列表最前面，\n其后第一个出现的位置参数对应服务端的第一个位置参数
+beforeRequest(请求数据) = @.beforeRequest = function(reqData){
+	__/*此回调事件在发送请求前触发。\nreqData.params 是即将发送的参数。*/
+	return reqData;
+}
+beforeJsonParse = @.beforeJsonParse = function(jsonData){
+    __/*可以在这里解密服务端数据，返回 null 中止本次调用。\n定义此函数以后，服务端每次输出的 JSON 必须以换行符结束*/
+	return jsonData;
+}
+afterJsonStringify = @.afterJsonStringify = function(jsonData){
+    __/*可以在这里加密客户端JSON，返回 null 中止本次调用。*/
+	return jsonData;
+}
+onError = @.onError = function(message){
+	__/*目标进程存在标准库错误输出时触发此函数*/
+}
+process = 进程管道对象\n!process_popen.
+close() = 关闭客户端
+end intellisense**/ 

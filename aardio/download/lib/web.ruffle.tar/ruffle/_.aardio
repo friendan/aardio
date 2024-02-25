@@ -1,0 +1,22 @@
+﻿import wsock.tcp.asynHttpServer;
+
+namespace web;
+ruffle = ..wsock.tcp.asynHttpServer();
+ruffle.run( {
+	["/ruffle/78db3f28886102634739.wasm"] = $"~\lib\web\ruffle\.res\78db3f28886102634739.wasm";
+	["/ruffle/7542721250ab01f59f15.wasm"] = $"~\lib\web\ruffle\.res\7542721250ab01f59f15.wasm";
+	["/ruffle/core.ruffle.7e479ef3f72b52693aec.js"] = $"~\lib\web\ruffle\.res\core.ruffle.7e479ef3f72b52693aec.js";
+	["/ruffle/core.ruffle.ded65d7e90ac68b8b141.js"] = $"~\lib\web\ruffle\.res\core.ruffle.ded65d7e90ac68b8b141.js";
+	["/ruffle/ruffle.js"] = $"~\lib\web\ruffle\.res\ruffle.js";
+});
+	
+ruffle.defaultUrl = ruffle.getUrl("/ruffle/ruffle.js") 
+
+/**intellisense()
+web.ruffle = 单线程异步 HTTP 服务端，wsock.tcp.asynHttpServer 对象，\n可使用 defaultUrl 属性返回 "/ruffle/ruffle.js" 访问地址。\n!stdasynHttpServer.
+end intellisense**/
+
+/*
+https://ruffle.rs/#downloads
+https://github.com/ruffle-rs/ruffle/wiki/Using-Ruffle#configuration-options
+*/

@@ -1,0 +1,121 @@
+﻿//wlan 无线网络
+import win.guid;
+import string.xml;
+
+namespace sys;
+
+class wlan {
+	ctor(){
+		var client = {ptr handle}
+		var err = ::Wlanapi.WlanOpenHandle(apiVersion,null,{int ver = wlanApiVersion},client)
+		if(err !== 0)  return null,"打开无线设备接口失败";
+		
+		this.handle =  client.handle;
+
+		..table.gc(this,"close");
+	};
+	close = function(){
+		if(this.handle){
+			::Wlanapi.WlanCloseHandle(this.handle,null);	
+			this.handle = null;
+		} 
+	};
+	getInterfaces = function(){
+		var itList = {ptr ptr}
+		var err = ::Wlanapi.WlanEnumInterfaces(this.handle,null,itList);
+		if(err !== 0) return null;
+		
+		var header = ..raw.convert(itList.ptr,{
+			INT length;
+			INT index;
+		});
+
+		return ..raw.convert(itList.ptr,{
+			INT length;
+			INT index;
+			struct items[] = {
+				length = header.length;
+				{   
+					struct guid = ..win.guid();
+					WORD description[256];
+					int state;
+				}
+			};
+		}).items;
+	};
+	eachProfile = function(){
+		var profileNames = this.getProfileNames();
+		var i,p;
+		
+		return function(){
+			i,p = ..table.next(profileNames,i);
+		
+			if(p){
+				var xml = {ustring value}
+				var access = {INT value}
+				var err = ::Wlanapi.WlanGetProfileW(this.handle,p.interfaceGuid,p.name,null,xml,null,access);
+		 
+				if(err !== 0) return null;
+				return p.name,p.interfaceGuid,p.description,p.flags,access.value,..string.xml(xml.value)
+			}
+		}  
+	};
+	getProfileNames = function(guid,description){
+		if(guid===null){
+			var interfaces = this.getInterfaces();
+			var profiles = {};
+			for(i=1;#interfaces;1){
+				var it = interfaces[i]; 
+				..table.append(profiles,this.getProfileNames(it.guid,it.description));
+			}
+			return profiles;
+		}
+		var itList = {ptr ptr}
+		var err = ::Wlanapi.WlanGetProfileList (this.handle,guid,null,itList);
+		if(err !== 0) return null;
+		
+		var header = ..raw.convert(itList.ptr,{
+			INT length;
+			INT index;
+		}); 
+
+		var items = ..raw.convert(itList.ptr,{
+			INT length;
+			INT index;
+			struct items[] = { 
+				length = header.length;
+				{    	
+					WORD name[256];
+					INT flags;
+				}
+			};
+		}).items;
+		
+		items.length = null;
+		
+		for(i=1;#items;1){
+			var item = items[i]; 
+			item.interfaceGuid = guid;
+			item.description = description;
+		}
+		
+		return items;
+	}
+}
+
+namespace wlan{
+    ::Wlanapi := ..raw.loadDll("Wlanapi.dll")
+    apiVersion = _WINXP ? 1 : 2;
+}
+
+/**intellisense()
+sys.wlan = 无线网络
+sys.wlan() = 创建无线网络操作对象\n!stdSysWlan.
+end intellisense**/
+
+/**intellisense(!stdSysWlan)
+close() = 关闭对象，\n关闭对象后不能再使用其他函数。\n此函数在对象析构时会自动调用，可重复调用
+getInterfaces() = 获取所有无线网卡，返回网卡信息数组。\n数组成员为包含网卡 guid,description,state 等字段的结构体对象。\n细节请参考源码与相关 API 文档
+getProfileNames() = 获取所有无线网络配置名，返回无线配置信息数组。\n数组成员为包含网卡 name,flags,interfaceGuid,description 等字段的结构体对象。\n细节请参考源码与相关 API 文档
+eachProfile() = @for name,guid,description,flags,access,xmlProfile in ??.eachProfile(){\n	__/*遍历无线网络配置。\nxmlProfile 为包含网络配置的 string.xml 对象。\nname 为配置名\nguid 为网卡 GUID,win.guid 对象\ndescription为网卡描述\n其他参数请参考源码*/\n}\n!string_xml.
+end intellisense**/

@@ -1,0 +1,55 @@
+//Mermaid 绘图
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="Mermaid 是一个用于画流程图、状态图、时序图、甘特图的库";right=966;bottom=622)
+winform.add(
+button={cls="button";text="绘图";left=643;top=552;right=878;bottom=604;color=14120960;font=LOGFONT(h=-14);z=2};
+custom={cls="custom";text="自定义控件";left=10;top=6;right=958;bottom=535;z=1}
+)
+/*}}*/
+
+import web.view;
+var wb = web.view(winform.custom);
+
+wb.html = /**
+<!DOCTYPE html>
+<html> 
+  <body>
+    Here is one mermaid diagram:
+    <div class="mermaid">
+        graph TD 
+        A[Client] --> B[Load Balancer] 
+        B --> C[Server1] 
+        B --> D[Server2]
+    </div>
+
+    And here is another:
+   <div id="graphDivParent"><div id="graphDiv"></div></div>
+   
+   <script src="https://lib.baomitu.com/mermaid/9.1.6/mermaid.min.js"></script>
+   <script>	
+   	mermaid.init({ startOnLoad: false }); 
+   </script>
+</body>
+**/
+
+//aardio 调用 Mermaid.js 绘图
+winform.button.oncommand = function(id,event){
+	wb.xcall(`
+	(text)=>{
+	mermaid.render('graphDiv',text,(svg)=>{
+			
+			/*
+			注意 mermaid.render 会自动删除参数 1 指定 ID 的节点。 
+			这导致 Mermaid 自己提供的范例都无法运行。
+			
+			所以暂时想了一个奇葩的方法在外面包了一个 graphDivParent 。
+			*/
+			var ele = document.getElementById("graphDivParent");
+ 			ele.innerHTML = "<div id='graphDiv'>" + svg + "</div>";
+ 		});	
+	}`,'graph TB\na-->b')	
+}
+
+winform.show();
+win.loopMessage();

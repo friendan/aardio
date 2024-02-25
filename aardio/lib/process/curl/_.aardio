@@ -1,0 +1,91 @@
+﻿import string.cmdline;
+import process.popen;
+import process.wow64;
+import inet.url;
+import web.json;
+
+namespace process{
+
+	class curl{
+		ctor(param,...){
+			param = ..string.cmdline.arguments(param,...); 
+			
+			if(type(param[["-d"]]) == "table"){
+				param[["-d"]] = ..inet.url.stringifyParameters(param[["-d"]]);
+			}
+			
+			if(param[["--json"]]){
+				if(type(param[["--json"]]) == "table"){
+					param[["--json"]] = ..web.json.stringify(param[["--json"]]);
+				}
+				
+				..table.unshift(param, "--data", param[["--json"]]);
+				..table.unshift(param, "--header", "Content-Type: application/json");
+ 				..table.unshift(param, "--header",  "Accept: application/json");
+ 				
+ 				param[["--json"]] = null;
+			}
+			
+			..table.unshift(param,"-s");	
+			var prcs = ..process.popen.wow64(path,param,{workDir=workDir});
+			if(!prcs) error("请导入库 process.curl.7.81 以兼容版本低于 Win10 1803 的系统")
+			
+			var out,err,exitCode = prcs.readAll();
+			if( exitCode ) return null,exitCode,err:out;
+			
+			if((out[1]=='{'# && out[#out]=='}'# )|| 
+				(out[1]=='['# && out[#out]==']'#) ){
+				return ..web.json.tryParse(out) : out;
+			}
+			return out:""; 
+		}; 
+	}
+	
+	namespace curl{
+		
+		path = "curl.exe";
+    	workDir = "/";
+    	
+		class open{
+			ctor(param,...){
+				param = ..string.cmdline.arguments(param,...);
+				this = ..process.wow64(..process.curl.path,param,{workDir=..process.curl.workDir});
+			}; 
+		}
+		
+		class popen{
+			ctor(param,...){
+				param = ..string.cmdline.arguments(param,...);
+				..table.unshift(param,"-s");
+				
+				this = ..process.popen.wow64(..process.curl.path,param,{workDir=..process.curl.workDir});
+			}; 
+		}
+	}
+}
+
+/**details(必读与参考文档)
+默认调用系统自带的 "curl.exe"，适用于 Win10 1803 及之后操作系统。
+导入 process.curl.7.81 可兼容更低版本的操作系统。
+
+process.curl.open 会显示控制台与进度（可用 console.open 提前打开控制台，curl 就不会创建新控制台）。
+process.curl.popen 返回的是进程管道，不会显示控制台与进度。
+process.curl 直接返回进程输出，不会显示控制台与进度。
+
+如果希望直接调用 curl 的 API 接口，请改用 curl 扩展库。
+
+curl 文档：
+https://curl.se/docs/manual.html
+https://curl.se/docs/manpage.html
+end details**/
+
+/**intellisense()
+process.curl = 用于调用 curl 命令\n默认调用系统自带的 "curl.exe"，适用于 Win10 1803 及之后操作系统。\n导入 process.curl.7.81 可兼容更低版本的操作系统。\n\n如果希望直接调用 curl 的 API 接口，请改用 curl 扩展库
+process.curl.open(__) = 调用 curl 命令，返回进程对象。\n可用一个或多个字符串指定命令行参数，\n也可以用一个表参数指定一个或多个命令行参数，\n表参数可包含数组，也包含命名参数，键名首字符必须是 - 。\n所有参数调用 process.joinArguments 转换为单个参数。\n\n如果未指定 -s 或 --silent 参数则默认输出进度。\n此函数会打开控制台，适用于控制台程序（建议先调用 console.open ），\n改用 process.curl.popen 可隐藏控制台与进度
+process.curl.open() = !process.
+process.curl.popen(__) = 调用 curl 命令，\n隐藏控制台与进度，返回进程管道（process.popen 对象）。\n改用 process.curl.open 可显示控制台与进度。\n\n可用一个或多个字符串指定命令行参数，\n也可以用一个表参数指定一个或多个命令行参数，\n表参数可包含数组，也包含命名参数，键名首字符必须是 - 。\n所有参数调用 process.joinArguments 转换为单个参数
+process.curl.popen() = !process_popen.
+process.curl.path = curl.exe 路径。\n默认为 "curl.exe"，适用于 Win10 1803 及之后操作系统自带的 curl。\n改用 curl.process 可兼容更低版本的操作系统。
+process.curl.workDir = curl 工作目录。\n默认为 "/"，即 aardio 应用程序根目录
+process.curl(__) = 调用 curl 命令，不显示控制台与进度。\n可用一个或多个字符串指定命令行参数，\n也可以用一个表参数指定一个或多个命令行参数，\n表参数可包含数组，也包含命名参数，键名首字符必须是 - 。\n所有参数调用 process.joinArguments 转换为单个参数。\n\n成功返回输出结果，失败返回 null,错误退出代码，\n退出代码就参考 https://everything.curl.dev/usingcurl/returns \n如果返回输出首尾为 {} 或 [] 则尝试解析 JSON 并返回对象或数组
+end intellisense**/

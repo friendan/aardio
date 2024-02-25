@@ -1,0 +1,208 @@
+﻿import com;
+
+class com.hexEditor{
+	ctor( winform){ 
+		winform.createEmbed("{79DC5F68-61A3-42D1-8B93-F41881EA927B}",this);
+		
+		this._object.setColumns(0);
+		this._object.setFontHeight((winform.dpiScale(14)));
+		
+		winform._beforeDpiChanged = function(scaleX,scaleY,origScaleX,origScaleY){
+		 	var h = this._object.getFontHeight();
+		 	this._object.setFontHeight(h / origScaleX * scaleX );
+		};
+		
+		this.hwnd = ..win.getLeaf(winform.hwnd);
+	};
+	size = function(){
+		return this._object.GetDataSize();
+	};
+	accessData = function(callback){
+		var size = this._object.GetDataSize();
+		if(!size) return;
+		
+		var p = topointer(this._object.AccessData());
+		callback(p,size);
+		this._object.UnaccessData(); 
+	};
+	find = function(p,start){
+		var size = this._object.GetDataSize();
+		if(!size) return;
+		
+		var d = topointer(this._object.AccessData());
+		var b,e = ..raw.find(d,size,p,start);
+		this._object.UnaccessData(); 
+		
+		if(b!==null && e!==null){
+			this.setsel(b,e);
+		} 
+		return b,e;
+	};
+	findNext = function(str){
+		var startPos = this.getCaretPos();
+		var selStart,selEnd = this.getsel();
+		if(selEnd){
+			startPos = selEnd + 1;
+		}
+		
+		var b,e = this.find(str,startPos)
+		if(!e && startPos){
+			b,e = this.find(str);
+		}
+		
+		if(!e) this.deselect();
+		return b,e;
+	};
+	selectAll = function(){
+		::User32.SendMessage(this.hwnd,0x111/*_WM_COMMAND*/,0xE12A,0);
+	};
+	copy = function(){
+		::User32.SendMessage(this.hwnd,0x111/*_WM_COMMAND*/,0xE122,0);
+	};
+	cut = function(){
+		::User32.SendMessage(this.hwnd,0x111/*_WM_COMMAND*/,0xE123,0);
+	};
+	paste = function(){
+		::User32.SendMessage(this.hwnd,0x111/*_WM_COMMAND*/,0xE125,0);
+	};
+	replace = function(buffer){ 
+		if(type(buffer)!=type.buffer) {
+			if(type.isString(buffer) || buffer[["_struct"]] ) buffer = ..raw.buffer(buffer);
+			else error("参数必须为二进制字节数组（ buffer ）",2);
+		}
+		
+		return this._object.ReplaceData(buffer)
+	};
+	setBuffer = function(buffer,startAddr){
+		if(type(buffer)!=type.buffer) {
+			if(type.isString(buffer) || buffer[["_struct"]] ) buffer = ..raw.buffer(buffer);
+			else error("参数必须为二进制字节数组（ buffer ）",2);
+		}
+		 
+		return this._object.SetData(buffer,startAddr)
+	};
+	getBuffer = function(){
+		return this._object.GetData();
+	};
+	getSelBuffer = function(){
+		var b,e = this._object.GetSelStart(),this._object.GetSelEnd();
+		 
+		if(b>-1 && e >-1 && e >= b){
+			var p = topointer(this._object.AccessData()+b);
+			var buf = ..raw.buffer(e-b+1,p);
+			this._object.UnaccessData(); 
+			return buf;
+		}
+	};
+	getSelHex = function(prefix){
+		var buf = this.getSelBuffer();
+		if(#buf){
+			return ..string.hex(buf,prefix);
+		}
+	};
+	load = function(path){
+		var buf = ..string.loadBuffer(path);
+		this.setBuffer(buf:"");
+	};
+	deselect = function(){
+		this.setsel(0,0);
+	};
+	setsel = function(b,e){
+		if(b > e) b,e = e,b;
+		this._object.SetSelection(b-1,e-1);
+	};
+	getsel = function(b,e){
+		return this._object.GetSelStart()+1,this._object.GetSelEnd()+1; 
+	};
+	getCaretPos = function(){
+		return this._object.getCaretPos()+1;
+	};
+	setCodePage = function(v){
+		return this._object.setCodePage(v);
+	};
+	getCodePage = function(v){
+		return this._object.getCodePage();
+	};
+	setForeColor = function(v){
+		return this._object.setForeColor(v)
+	};
+	setBackColor = function(v){
+		return this._object.setBackColor(v)
+	};	 
+	setAppearance = function(v){
+		return this._object.setAppearance(v) //1为3d,0为扁平
+	}; 
+	setShowAddress = function(v){
+		return this._object.setShowAddress(v)
+	};
+	setShowAscii = function(v){
+		return this._object.setShowAscii(v)
+	};
+	setColumns = function(v){
+		return this._object.setColumns(v) //0 为自适应
+	};
+	setFontHeight = function(v){
+		return this._object.setFontHeight(v)
+	};
+	getFontHeight = function(v){
+		return this._object.getFontHeight()
+	};
+	setDigitsInAddress = function(v){
+		return this._object.setDigitsInAddress(v)
+	};
+	setAllowChangeSize = function(v){
+		return this._object.setAllowChangeSize(v)
+	};
+	getDataModified = function(){
+		return this._object.getDataModified()
+	};
+}
+
+import com.activeX;
+namespace com.hexEditor{ 
+	..com.activeX.appData("aardio/std/com/hexEditor.ocx",$"~\lib\com\hexEditor\.res\HexEdit.ocx");
+}
+
+/**intellisense()
+com.hexEditor(.(winform) = 创建十六进制编辑器\n参数为窗口或控件对象
+com.hexEditor() = !stdhexEditor.
+end intellisense**/
+
+/**intellisense(!stdhexEditor)
+replace( = 替换当前选区数据
+replace(.(数据) = 替换当前选区数据，\n数据可以是字符串、buffer类型数据等
+setBuffer( = 加载数据
+setBuffer(.(数据,开始地址) = 数据可以是字符串、buffer类型数据等,\n数据总是从开始显示，开始地址参数仅用于左侧栏显示地址的开始值
+getBuffer() = 获取修改后的数据\n返回值为buffer类型字节数组,\n返回值不会自动更新数据,必须调用getBuffer()函数才能得到最新的修改后的数据
+load(__) = 加载文件，\n参数 @1 指定文件路径，支持资源文件
+deselect() = 取消选区
+setsel( = 设置选区
+setsel(.(开始位置,结束位置) = 设置选区,\n参数以字节为单位，1 表示第 1 个字节。\n参数指定的位置超出长度或小于 1 时不执行任何操作
+setForeColor(__) =	设置文本颜色,数值 Text color	 
+setBackColor(__) =	设置背景颜色,数值 color	 
+setAppearance(__) =	0为扁平相式，1为2D边框
+setShowAddress(__) = 设为 true 显示地址栏
+setShowAscii(__) = 设为 true 显示 ASCII 字符
+setColumns(__) = 显示的列数，设为0时根据控件宽度自动计算列数
+setFontHeight(__) =	 设置字体大小,默认为 14 
+getFontHeight() = 返回字体大小
+setDigitsInAddress(__) = 设置地址栏显示的数位,默认为 4 
+setAllowChangeSize(__) = 是否允许改变长度,默认值为false
+getDataModified() = 数据是否已被用户修改 
+setCodePage(__) = 设置代码页,\n默认值为 65001（UTF-8 编码）,0 为系统 ANSI 编码
+getCodePage() = 返回代码页
+size() = 获取当前编辑的数据长度
+accessData(callback) = @.accessData( function(dataPtr,size){\n	__/*获取当前编辑的数据指针，\ndataPtr 为数据指针, size 为数据长度。\n不可保存 dataPtr 指针并在回调函数外部使用 */\n})
+find( = 查找并选中数据
+find(.(模找模式串,开始位置) = 查找并选中数据。\n参数 @1 支持模式匹配语法，\n开始位置以字节计数 
+findNext(.(模找模式串) = 查找下一个并选中数据。\n参数 @1 支持模式匹配语法，
+selectAll() = 全选
+copy() = 复制选区
+cut() = 剪切选区
+paste() = 粘贴数据
+onCaretPositionChanged = @\nimport win.debounce;\n??.onCaretPositionChanged = win.debounce(function(caretPos,selStart,selEnd){\n	__/*光标或选区变更时触发此事件。\ncaretPos 为光标位置，selStart 为选区开始位置，\nselEnd 为选区结束位置*/\n});
+getSelBuffer() = 获取选区数据，\n如果选区非空返回 buffer 对象。\n否则返回 null
+getSelHex() = 如果选区非空，\n返回选区数据的 16 进制编码文本。\n可选用参数 @1 指定编码前缀，默认为 \x
+getsel() = 返回选区开始位置,结束位置\n0 为无选区
+getCaretPos() = 返回光标位置
+end intellisense**/

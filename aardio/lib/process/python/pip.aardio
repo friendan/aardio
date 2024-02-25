@@ -1,0 +1,143 @@
+﻿import console;
+import process.python;
+
+namespace process.python;
+
+class pip {
+	ctor( ... ){
+		if( ..string.cmp(..process.python.path,"python.exe")!=0 ){
+			
+			var pyRoot = ..io.splitpath(..process.python.path).dir;
+			if(!(
+				..io.exist(..io.joinpath(pyRoot,"\pip\pip\__init__.py"))
+				|| ..io.exist("\pip\pip\__init__.py")	
+			)){
+				
+				..console.showLoading("正在下载 Python 模块安装工具：pip");
+		 	
+				import inet.http;
+				var http = inet.http();
+				
+				var pyCode = http.get("https://bootstrap.pypa.io/get-pip.py");
+				if(!#pyCode){
+					pyCode = http.get("https://mirrors.aliyun.com/pypi/get-pip.py");
+				}
+				
+				if(!#pyCode){
+					error("pip 下载失败！");
+				}
+				else {
+					..console.log("已下载完成，正在安装 pip ……"); 
+				}  
+		 	
+				var python = ..process.python.exec(pyCode,"--no-warn-script-location")
+				python.logResponse();
+				python.close();
+				
+				if(..process.python.path=="/py/python.exe"){
+					..fsys.enum( pyRoot, "*._pth",
+						function(dirname,filename,fullpath,findData){ 
+							if(filename){
+				       			if( ..fsys.replace(fullpath,"\N+\s*import\s+site",'../pip\r\n./Lib\r\nimport site') ){
+				       				return false;
+				       			}
+							} 
+						},false
+					);
+					
+					if(..io.exist(..io.joinpath(pyRoot,"\Lib\site-packages\pip\__init__.py"))){
+						..fsys.delete("\pip\");
+						..fsys.move(..io.joinpath(pyRoot,"\Lib\site-packages") ,"\pip\" );	
+					} 	
+				}
+				else {
+					..fsys.enum( pyRoot, "*._pth",
+						function(dirname,filename,fullpath,findData){ 
+							if(filename){
+				       			if( ..fsys.replace(fullpath,"\N+\s*import\s+site",'./pip\r\n./Lib\r\nimport site') ){
+				       				return false;
+				       			}
+							}  
+						},false
+					);
+					
+					if(..io.exist(..io.joinpath(pyRoot,"\Lib\site-packages\pip\__init__.py"))){
+						..fsys.delete(..io.joinpath(pyRoot,"\pip\") );
+						..fsys.move(..io.joinpath(pyRoot,"\Lib\site-packages") ,..io.joinpath(pyRoot,"\pip\") );	
+					}
+				}
+				
+				..fsys.delete("\py\Scripts");
+			}
+		}
+		
+		..console.open();
+		
+		var args = ..string.cmdline.arguments(...);
+		
+		if(args[1]=="install"){
+			var target;
+			var pip;
+			for(i=1;#args;1){
+				if(args[i]=="pip"){
+					pip = true;
+				}
+				elseif(args[i]=="-t" || args[i]=="--target" ){
+					if(args[i+1]){
+						args[i+1] = ..io.fullpath(args[i+1]);
+						break;
+					}
+					
+					target = true;
+				} 
+			}
+			 
+			if(pip){
+				..table.push(args,"-t",..io.fullpath(..io.joinpath(pyRoot,"\pip\")));
+			} 
+			elseif(self.target) {
+				..table.push(args,"-t",..io.fullpath(self.target));
+			} 
+		}
+		
+		..table.unshift(args,"pip");
+		var python = ..process.python.module(args);
+		python.logResponse();
+		python.close();
+	}; 
+}
+
+namespace pip{
+    
+    setIndexUrl = function(url){
+    	if(url){
+    	    if(url=="aliyun") url = "https://mirrors.aliyun.com/pypi/simple/";
+    	    elseif(url=="tsinghua") url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+    	    elseif(url=="tencent") url = "http://mirrors.cloud.tencent.com/pypi/simple"
+    	    elseif(url=="douban") url = "http://pypi.douban.com/simple/"
+    	    
+    		..process.python.pip(" config set global.index-url " + url);
+    	}
+    	else {
+    	   ..process.python.pip(" config set global.index-url https://pypi.org/simple");
+    	}
+    }
+    
+   	upgrade = function(){
+    	..process.python.pip("install --upgrade pip");
+    }
+    
+    require = function(name){
+    	if(!..process.python.test("import "+name)){
+			..process.python.pip("install "+name);
+		}	
+    } 
+}
+
+/**intellisense()
+process.python.pip = Python 模块安装工具。\n\n如果 process.python.path 的值为 "python.exe" 则调用系统安装的 pip，\n否则自动安装 pip 到 python.exe 所在目录的 pip 目录下,请不要改为其他名称。\n在安装 pip 时会修改 python.exe 所在目录的 *._pth 文件。\n如果已安装 pip 则自动跳过。\n\n此工具可用于发布后的程序
+process.python.pip("install","__/*模块名称*/") = 执行 pip 命令，只能在开发环境单独运行。\n可用一个字符串参数指定多个 pip 参数，空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n\n默认安装模块到 "/py/site-packages" 目录下\n\n如果不指定任何参数，直接返回 pip 模块对象。\n可用一个字符串数组指定 pip.main 函数的启动参数
+process.python.pip.setIndexUrl("aliyun") = 设置镜像源。\n参数指定源网址，支持常用镜像源缩写。\n"aliyun" 表示阿里云源，\n"tsinghua" 表示清化源，\n"tencent" 表示腾讯源，\n"douban" 表示豆瓣源
+process.python.pip.require("__") = 如果没有安装指定的模块，则调用 pip 安装
+process.python.pip.target = 指定安装模块的目录，\n此目录仅用于安装，不会被添加到 process.python 的模块搜索路径
+end intellisense**/

@@ -1,0 +1,57 @@
+﻿//api 全局 WinAPI
+
+namespace win.api{}
+
+/*intellisense(::)*/ 
+::GetSystemMetrics = ::User32.api("GetSystemMetrics","int(int)") 
+::SystemParametersInfo = ::User32.api("SystemParametersInfo","int(INT act, INT param, struct& pvParam,INT winIni)"); 
+::CreateWindowEx = ::User32.api( "CreateWindowExW", " int(INT exStyle,ustring className,ustring windowName,INT style,int x,int y,int width,int height,addr hwndParent,addr hMenu,pointer hlnstance,ptr lpParam)" )  
+::DestroyWindow = ::User32.api( "DestroyWindow", "int(addr hwnd )" );	
+::DefWindowProc  = ::User32.api( "DefWindowProc", "int(addr hwnd,INT msg,ADDR wParam,addr lParam) " );		 
+::CallWindowProc = ::User32.api("CallWindowProc","int(ptr lpPrevWndFunc,addr hwnd,INT Msg,ADDR wParam,addr lParam)" )
+::SetWindowPointer = ::User32.api("SetWindowLong","ptr(addr hwnd,int nIndex,ptr ptrNew)" ) 
+::SetWindowLong = ::User32.api("SetWindowLong","int(addr hwnd,int nIndex,int dwNewLong)" )
+::GetWindowLong = ::User32.api("GetWindowLong","int(addr hwnd,int nIndex)" )
+::UpdateWindow = ::User32.api( "UpdateWindow", "bool(addr) " ) 
+::InvalidateRect = ::User32.api( "InvalidateRect", " int(addr hwnd,struct rect,bool erase) " )  
+::RedrawWindow = ::User32.api("RedrawWindow","bool(addr hwnd,struct lprcUpdate,ptr hrgnUpdate,INT flags)");
+::GetWindowRect = ::User32.api( "GetWindowRect", " int(addr hwnd,struct &lpRect ) " )
+::GetClientRect = ::User32.api( "GetClientRect", " int(addr hwnd,struct &lpRect ) " )
+::ScreenToClient = ::User32.api( "ScreenToClient", " int(addr hwnd,struct &lpPoint ) " )
+::ClientToScreen = ::User32.api( "ClientToScreen", " int(addr hwnd,struct &lpPoint ) " )
+::MapWindowPoints = ::User32.api( "MapWindowPoints", "int(addr from,addr to,struct &points,INT len)");
+::PtInRect = ::User32.api( "PtInRect", "int(struct, int, int)" );
+::MoveWindow = ::User32.api( "MoveWindow", "int( addr hwnd, int x,int y,int w,int h,bool repaint)" )  
+::SetWindowPos = ::User32.api("SetWindowPos","boolean(addr hwnd,addr hwndlnsertAfter,int X,int Y,int cx,int cy,int Flags)")
+::BeginDeferWindowPos = ::User32.api( "BeginDeferWindowPos", "ptr(int numWins)" )  
+::DeferWindowPos = ::User32.api( "DeferWindowPos", "ptr(PTR hWinPo,addr hwnd,addr instAffer,int x,int y, int cx, int Cy,INT fags)" )  
+::EndDeferWindowPos = ::User32.api( "EndDeferWindowPos", "bool(PTR hWinPos)" )   
+::RegisterWindowMessage = ::User32.api("RegisterWindowMessageW","INT(ustring)");
+::PostMessage = ::User32.api("PostMessageW","addr(addr hwnd,INT msg,ADDR wParam,addr lParam)")
+::PostThreadMessage = ::User32.api("PostThreadMessageW","addr(int idThread,INT msg,ADDR wParam,addr lParam)"); 
+::SendMessage = ::User32.api("SendMessageW","addr(addr hwnd,INT msg,ptr wParam,ptr lParam)")
+::SendMessageInt = ::User32.api("SendMessageW","addr(addr hwnd,INT msg,ADDR wParam,addr lParam)")
+::SendMessageByInt = ::User32.api("SendMessageW","addr(addr hwnd,INT msg,int &wParam,int &lParam)")
+::SendMessageByString = ::User32.api("SendMessageW","addr(int,INT,int,string &lParam)")
+::SendMessageByStr = ::User32.api("SendMessageW","addr(int,INT,int,ustring &lParam)")
+::SendMessageByStruct = ::User32.api("SendMessageW","addr(int,INT,int,struct &lParam)") 
+::SendMessageTimeout = ::User32.api("SendMessageTimeoutW","addr(addr hwnd,INT msg,ptr wParam,ptr lParam,INT flags,INT timeout,int & resultult)") 
+::LoadImage = ::User32.api("LoadImageW", "ptr(ptr hInst,ustring name,INT uType,int cxDesired,int CyDesire,INT fuLoad)") 
+::CopyImage = ::User32.api("CopyImageW", "ptr(ptr hlmage, INT uType,int cx,int cy,INT flags)") 
+::LoadBitmap = ::User32.api("LoadBitmapW", "ptr(ptr,ustring)")  
+::LoadIcon = ::User32.api("LoadIconW", "ptr(ptr,ustring)")      
+::LoadCursor = ::User32.api("LoadCursorW", "ptr(ptr,ustring)") 
+::GetCursor = ::User32.api("GetCursor","ptr()")
+::SetCursor = ::User32.api("SetCursor","int(ptr hCur)")
+::DestroyIcon = ::User32.api("DestroyIcon","int(ptr hIcon)")
+::DestroyCursor = ::User32.api("DestroyCursor","int(ptr hCursor)")
+::GetClassInfoEx = ::User32.api("GetClassInfoEx", "int(ptr,utf16,struct&)")
+::RegisterClassEx = ::User32.api( "RegisterClassEx", " word(struct wc) " )  
+/*end intellisense*/
+
+::GetAsyncKeyState := ::User32.api("GetAsyncKeyState","word(int vKey)" );
+::GetKeyState := ::User32.api("GetKeyState","word(int vKey)" );
+
+/**intellisense()
+win.api = 用于声明 win 用到的全局 WinAPI
+end intellisense**/

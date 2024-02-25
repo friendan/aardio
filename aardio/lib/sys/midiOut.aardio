@@ -1,0 +1,415 @@
+﻿//midiOut 音乐输出
+namespace sys;
+
+class midiOut{
+	ctor(deviceId,callback,flags){
+		
+		if(deviceId === null) deviceId = -1/*_MIDI_MAPPER*/;
+		
+		if(type(deviceId)=="number"){
+			this.callback = callback;
+			if(flags === null ){
+				var tc = type(callback);
+				if( tc === "function" ){
+					this.callback = ..raw.tostdcall(callback,"void(ptr hmo,INT msg,INT instance,INT param1,INT param2)",this)
+					flags = 0x30000/*_CALLBACK_FUNCTION */;
+				}
+				elseif( tc === "number" ){
+					flags = 0x10000/*_CALLBACK_WINDOW*/;
+				}
+				elseif( tc === "table" ){
+					flags = 0x50000/*_CALLBACK_EVENT*/;
+				}
+			}
+		
+			var handle = {ptr value}
+			var err = ::Winmm.midiOutOpen(handle, deviceId,this.callback, 0,flags);
+			this.handle = handle.value;	
+			
+			if(!this.handle) {
+				if(err){
+					var buf = ..raw.buffer(1024);
+					if(0==::Winmm.midiOutGetErrorTextW(err,buf,512))
+						return null,..string.fromUnicode(buf);
+				}
+				return null; 
+			}
+		}
+		elseif(deviceId@==_meta) {
+			this.handle = deviceId.handle; 
+		}
+		else {
+			this.handle = deviceId;
+		}
+		
+		this.velocity = 127;
+	};
+	note = function(pitch,velocity,channel){
+		if(pitch<0) return this.noteOff(-1-pitch,channel);
+		else this.noteOn(pitch,velocity,channel);
+	};
+	noteOn = function(pitch,velocity,channel){
+		channel = (channel:this.channel:0);
+		if(this.onNote) this.onNote(pitch,velocity,channel);
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(velocity << 16 ) | (pitch << 8 ) | 0x90 | channel );
+	};
+	noteOff = function(pitch,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(pitch << 8 ) | 0x80 | (channel:this.channel:0)) );
+	};
+	changeInstrument = function(i,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(i << 8 ) | 0xC0 | (channel:this.channel:0)) );
+	};
+	afterTouch = function(pitch,touch,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(touch << 16 ) | (pitch << 8 ) | 0xA0 | (channel:this.channel:0)) );
+	};
+	channelPressure = function(pressure,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(pressure << 8 ) | 0xD0 | (channel:this.channel:0)) );
+	};
+	cc = function(number,value,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(value << 16 ) | (number << 8 ) | 0xB0 | (channel:this.channel:0)) );
+	};
+	pitchBend  = function(value,channel){
+		value = value * 16383;
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(( (value>>7) & 2#1111111 ) << 16)| ((value & 2#1111111 ) << 8 ) | 0xE0 | (channel:this.channel:0)) );
+	};
+	pitchBend2  = function(value,channel){
+		return ::Winmm.midiOutShortMsg(this.handle
+			,(( (value>>7) & 2#1111111 ) << 16)| ((value & 2#1111111 ) << 8 ) | 0xE0 | (channel:this.channel:0)) );
+	};
+	shortMsg = function(status,data1,data2){
+		if(data1!==null){
+			status = ((data2:0) << 16 ) | (data1 << 8 ) | status
+		}
+		return ::Winmm.midiOutShortMsg(this.handle,status);
+	};
+	msg = function(msg,dw1,dw2){
+		::Winmm.midiOutMessage(this.handle,msg,dw1,dw2);
+	};
+	delay = function(ms){
+		..thread.delay(ms);
+	};
+	log = function(){};
+	xcall = function(v){
+		var t = type(v);
+		if(t==="table"){
+			this[v[1]](..table.unpack(v,2)); 
+		}
+		elseif( t == "string"){
+			this.log(v);
+		}
+		elseif( t == "number"){
+			if(v>127) ..thread.delay(v);
+			else this.note(v,this.velocity); 
+		}
+		else {
+			return false;
+		}
+	};
+	play = function(notes,duo,delay){
+		if(type.isString(notes)){
+			notes = parseNotes(notes,duo,delay);
+		}
+		
+		for(k,pitch in notes){
+			this.xcall(pitch);
+		} 
+	};
+	setVelocity = function(v){
+		this.velocity = v;
+	};
+	setVolume = function(v){
+		::Winmm.midiOutSetVolume(this.handle,v);
+	};
+	getVolume = function(msg){
+		var v = {INT value}
+		if(0==::Winmm.midiOutSetVolume(this.handle,v)){
+			return v.value;
+		}
+	}; 
+	reset = function(){
+		::Winmm.midiOutReset(this.handle);
+	};
+	close = function(){
+		if(this.handle){
+			::Winmm.midiOutClose(this.handle);
+			this.handle = null;
+		}
+	};
+	@_meta;
+}
+
+namespace midiOut{
+	
+	_meta = {
+		_serialize = function(kernelCall){
+			if(kernelCall) return ..string.format("global.import('sys.midiOut') : sys.midiOut(topointer(0x%p))",owner.handle );;
+		}
+	}
+	
+    ::Winmm := ..raw.loadDll("Winmm.dll");
+
+    numDevice = lambda() ::Winmm.midiOutGetNumDevs();
+	eachDevice = function(){
+		var max = ::Winmm.midiOutGetNumDevs();
+		var idx = -1;
+		return function(){
+			idx++;
+			if(idx<max){
+				var caps = {
+  					WORD manufacturerId;
+  					WORD producId;
+  					INT driverVersion;
+  					WORD productName[32];
+  					WORD technology;
+  					WORD voices;//最大声音数量
+  					WORD notes;//最大音符数
+  					WORD channelMask;
+  					INT support;
+				} 
+				if(0===::Winmm.midiOutGetDevCapsW(idx,caps,..raw.sizeof(caps))){
+					return idx,caps;
+				}
+			}
+		} 
+	}
+	
+	notes = {
+		_ = 250;//毫秒
+		REST = {"reset"},//休止符
+		
+		//noteOn
+		C=0;Cs=1;D=2;Ds=3;E=4;F=5;Fs=6;G=7;Gs=8;A=9;As=10;B=11;
+		C0=12;C0s=13;D0=14;D0s=15;E0=16;F0=17;F0s=18;G0=19;G0s=20;A0=21;A0s=22;B0=23;
+		C1=24;C1s=25;D1=26;D1s=27;E1=28;F1=29;F1s=30;G1=31;G1s=32;A1=33;A1s=34;B1=35;
+		C2=36;C2s=37;D2=38;D2s=39;E2=40;F2=41;F2s=42;G2=43;G2s=44;A2=45;A2s=46;B2=47;
+		C3=48;C3s=49;D3=50;D3s=51;E3=52;F3=53;F3s=54;G3=55;G3s=56;A3=57;A3s=58;B3=59;
+		//简谱开始的 1=C 用哪一个八度的 C 都可以，但一般指 C4(中央C，等价于 HPN 的 c' ，或小字1组 c1)
+		C4=60;C4s=61;D4=62;D4s=63;E4=64;F4=65;F4s=66;G4=67;G4s=68;A4=69/*440Hz*/;A4s=70;B4=71;
+		C5=72;C5s=73;D5=74;D5s=75;E5=76;F5=77;F5s=78;G5=79;G5s=80;A5=81;A5s=82;B5=83;
+		C6=84;C6s=85;D6=86;D6s=87;E6=88;F6=89;F6s=90;G6=91;G6s=92;A6=93;A6s=94;B6=95;
+		C7=96;C7s=97;D7=98;D7s=99;E7=100;F7=101;F7s=102;G7=103;G7s=104;A7=105;A7s=106;B7=107;
+		C8=108;C8s=109;D8=110;D8s=111;E8=112;F8=113;F8s=114;G8=115;G8s=116;A8=117;A8s=118;B8=119;
+		C9=120;C9s=121;D9=122;D9s=123;E9=124;F9=125;F9s=126;G9=127;
+		
+		//noteOff
+		c=-1;cs=-2;d=-3;ds=-4;e=-5;f=-6;fs=-7;g=-8;gs=-9;a=-10;as=-11;b=-12;
+		c0=-13;c0s=-14;d0=-15;d0s=-16;e0=-17;f0=-18;f0s=-19;g0=-20;g0s=-21;a0=-22;a0s=-23;b0=-24;
+		c1=-25;c1s=-26;d1=-27;d1s=-28;e1=-29;f1=-30;f1s=-31;g1=-32;g1s=-33;a1=-34;a1s=-35;b1=-36;
+		c2=-37;c2s=-38;d2=-39;d2s=-40;e2=-41;f2=-42;f2s=-43;g2=-44;g2s=-45;a2=-46;a2s=-47;b2=-48;
+		c3=-49;c3s=-50;d3=-51;d3s=-52;e3=-53;f3=-54;f3s=-55;g3=-56;g3s=-57;a3=-58;a3s=-59;b3=-60;
+		c4=-61;c4s=-62;d4=-63;d4s=-64;e4=-65;f4=-66;f4s=-67;g4=-68;g4s=-69;a4=-70;a4s=-71;b4=-72;
+		c5=-73;c5s=-74;d5=-75;d5s=-76;e5=-77;f5=-78;f5s=-79;g5=-80;g5s=-81;a5=-82;a5s=-83;b5=-84;
+		c6=-85;c6s=-86;d6=-87;d6s=-88;e6=-89;f6=-90;f6s=-91;g6=-92;g6s=-93;a6=-94;a6s=-95;b6=-96;
+		c7=-97;c7s=-98;d7=-99;d7s=-100;e7=-101;f7=-102;f7s=-103;g7=-104;g7s=-105;a7=-106;a7s=-107;b7=-108;
+		c8=-109;c8s=-110;d8=-111;d8s=-112;e8=-113;f8=-114;f8s=-115;g8=-116;g8s=-117;a8=-118;a8s=-119;b8=-120;
+		c9=-121;c9s=-122;d9=-123;d9s=-124;e9=-125;f9=-126;f9s=-127;g9=-128;
+	}
+	
+	parseNotes = function(exp,duo,delay){ 
+		exp = ..string.replace(exp,"[ \t]+","");
+		exp = ..string.replace(exp,"<’>|<＇>","'");
+		exp = ..string.replace(exp,"，",",");
+		
+		exp = ..string.crlf(exp,'\n');
+		var items = ..string.split(exp,',|\n');
+	 	
+		if(delay===null) delay=250;
+		if(type(duo)=="string") duo = ..sys.midiOut.notes[duo];
+		if(!duo) duo = ..sys.midiOut.notes.C4;
+		
+		var numNotes = {
+			["1"] = duo;
+			["#1"] = duo+1;
+			["2"] = duo+2;
+			["#2"] = duo+3;
+			["3"] = duo+4;
+			["#3"] = duo+5;
+			["4"] = duo+5;
+			["#4"] = duo+6;
+			["5"] = duo+7;
+			["#5"] = duo+8;
+			["6"] = duo+9;
+			["#6"] = duo+10;
+			["7"] = duo+11;
+			["#7"] = duo+12;
+		}
+		
+		var repeat = ..string.repeat;
+		var octaves = {};
+		
+		//允许在数字音符前增加最多 5 个单引号
+		for(i=1;5;1){
+			
+			for(k,v in numNotes ){
+				if(#k==1){
+					octaves[repeat(i,"'")++k]=v-(12*i)
+				}
+				elseif(#k==2){
+					octaves["#"+repeat(i,"'")++k[[2]] ]=v-(12*i)
+				}
+			} 
+		}
+		
+		//允许在数字音符后增加最多 5 个单引号
+		for(i=1;5;1){
+			for(k,v in numNotes ){
+				if(#k==1){
+					octaves[k++repeat(i,"'")]=v+(12*i)
+				}
+				elseif(#k==2){
+					octaves["#"+k[[2]] ++ repeat(i,"'")]=v+(12*i)
+				}
+			} 
+		}
+		
+		..table.assign(numNotes,notes,octaves);
+		numNotes["0"] = {"reset"};
+		
+		var ret = {};
+		var methodParams;
+		for(k,v in items){
+			if(!#v) continue;
+			
+			if(methodParams){
+				methodParams = methodParams + "," + v;
+				var method,args = ..string.match(methodParams,"^(\w+)(%())$");
+				if(method && args){
+					try{
+						..table.push(ret,{method,eval(..string.trim(args,"()"))});
+					}
+					catch(e){
+						..table.push(ret,e);
+					}
+					methodParams = null;
+				}
+			}
+			elseif(numNotes[v] && v!="_") ..table.push(ret,numNotes[v]);
+			elseif( v[1]='-'#) {
+				v = ..string.right(v,-2);
+				if(numNotes[v]) ..table.push(ret,-(numNotes[v]+1));
+				else {
+					var pitch,delays = ..string.match(v,"^(#?[\d']+)(_+)$");
+					if(pitch && delays){ 
+						if(!numNotes[pitch]) {
+							..table.push(ret,v);
+						}
+						else{
+							var d = delay * #delays;
+							..table.push(ret,pitch!="0"?-(numNotes[pitch]+1):numNotes[pitch],d<=127 ? {"delay",d} : d);
+						}
+					} 
+					else {
+						var pitch = ..string.match(v,"^(#?[\d']+)‗$");
+						if(pitch && numNotes[pitch]){
+							..table.push(ret,pitch!="0"?-(numNotes[pitch]+1):numNotes[pitch],{"delay",delay/2});
+						}
+						else {
+							..table.push(ret,"_"+v);
+						} 
+					}
+				}
+			}
+			else{
+				
+				if(..string.find(v,"^_+$")){
+					var d = delay * #v;
+					..table.push(ret,d<=127 ? {"delay",d} : d); 
+				}
+				else {
+					var pitch,delays = ..string.match(v,"^(#?[\d']+)(_+)$");
+					if(pitch && delays){
+						if(!numNotes[pitch]) ..table.push(ret,v);
+						else{
+							var d = delay * #delays;
+							..table.push(ret,numNotes[pitch],d<=127 ? {"delay",d} : d);
+						}
+					}
+					else{
+						var pitch = ..string.match(v,"^(#?[\d']+)‗$");
+						if(pitch && numNotes[pitch]){
+							..table.push(ret,numNotes[pitch],{"delay",delay/2});
+						}
+						else{
+							var d = tonumber(v);
+							if(d)..table.push(ret,d);
+							else{
+								var method,args = ..string.match(v,"^(\w+)(%())$"); 
+								if(method && args){
+									try{
+										..table.push(ret,{method,eval(..string.trim(args,"()"))});
+									}
+									catch(e){
+										..table.push(ret,e);
+									}
+								}
+								elseif(v=="‗"){
+									..table.push(ret, {"delay",delay/2} );
+								}
+								elseif(#v) {
+									methodParams = ..string.match(v,"^\w+\([^\)]+");
+									if(!methodParams)..table.push(ret,v);
+								} 
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return ret;
+	};
+}
+
+/**intellisense()
+sys.midiOut = MIDI 音乐输出设备操作\n[教程链接](https://mp.weixin.qq.com/s/Feq3dT7r7G6F0cXlpXpRZQ)
+sys.midiOut( = 打开 MIDI 音乐输出设备。\n成功返回设备对象，失败返回 null,错误信息。\n返回的设备对象可传到其他线程，或复制多个副本对象，\n副本对象可指定不同的 channel 属性，\n并可调用 changeInstrument 函数切换不同的乐器，\n可实现多线程多乐器多通道合奏\n\n在同一进程中如果未关闭设备则不能重复打开，\n不同进程可以打开同一设备
+sys.midiOut(.(deviceId,callback,flags) = 打开 MIDI 输出设备。\n所有参数都可以省略，一般不需要了解，用法细节请查看源码。\n\n可选用 @deviceId 指定设备 ID\n设备 ID 从 0 开始且小于 sys.midiOut.numDevice 函数返回值，\n省略则为默认值 -1，也就是 _MIDI_MAPPER
+sys.midiOut(.(sysMidiOutObject) = 参数指定其他 sys.midiOut 对象，\n返回复制的副本对象。\n副本对象可指定不同的 channel 属性，\n并可调用 changeInstrument 函数切换不同的乐器
+sys.midiOut.eachDevice() =  @for deviceId,capabilities in sys.midiOut.eachDevice(){
+	__/*循环遍历所有 MIDI 输出设备，\ndeviceId 为设备 ID,capabilities 为 MIDIOUTCAPS 结构体*/
+}
+sys.midiOut() = !sysMidiOut.
+sys.midiOut.notes = 定义了全部音符的名字空间，\n键为 SPN 音名，值为音高（pitch）。\n音名中的 -1 省略，升号 ♯（Sharp） 用小写 s 替代。\n例如：C-1♯ 略写为 Cs\n\n可用 namespace sys.midiOut.notes { } 语句打开此名字空间使用音名\n\n此名字空间还包含所有音名的小写音名，\n小写音名为对应音高取负并减 1。\n正值作为音符参数传给 note 函数演奏该音符，\n负值作为音符参数传给 note 函数停止演奏对应音符\n\n此名字空间的下划线 _ 的值为 250，\n传入 note,xcal 等函数可延时 250 毫秒
+sys.midiOut.parseNotes( = 解析字符串格式乐谱并返回 play 函数支持的音符数组，\n所有音符或指令使用逗号、竖线、换行之一分开，忽略空格与制表符。\n不符合格式要求的项一律作为字幕传给 log 函数输出
+sys.midiOut.parseNotes(.(notes,do,delay) = 解析字符串格式乐谱并返回 play 函数支持的音符数组。\n参数 @notes 指定一个字符串，\n在字符串中所有音符或指令使用逗号、竖线、换行之一分开，忽略空格与制表符。\n除了支持 sys.midiOut.notes 定义的全部音名，\n也可以使用简谱记号 1,2,3,4,5,6,7 表示音符，\n数字音符后加 N（小于 5 ）个单引号表示提高 N 个八度音，\n数字音符前加 N（小于 5 ）个单引号表示降低 N 个八度音。\n数字音符前再加 # 号表示升高半个音，0 为休止符。\n下划线则表示一个延时单位，其他数值也表示延时（毫秒），\n前面的音符（或下划线）与后面的下划线可以连起来写。\n双下划线 ‗ 表示 _ 的延时取半，多个 ‗ 不能连着写。\n支持函数语法，例如 "1,delay(120)" \n\n如果 @notes 为字符串，可选用 @duo 参数指定 1 音的音高，默认为"C4"，\n可选用 @delay 参数指定下划线表示的延时单位，默认 250 毫秒
+end intellisense**/
+
+/**intellisense(!sysMidiOut)
+channel = 默认通道，可指定 0~16 范围的值。\n如果将 sys.midiOut 传入不同的线程，\n或以 sys.midiOut 为构造参数复制对象，\n则可指定不同的 channel 属性，切换不同的乐器，\n实现多通道合奏
+shortMsg( = 发送短消息
+shortMsg(.(status,data1,data2) = 发送短消息。\n@status 指定数值，0xC0 为切换乐器，0x90 为发送音符。\n@data1,@data2 可选指定数值
+msg(.(msg,dw1,dw2) = 发送消息，\n@msg 指定消息 ID，其他参数为数值
+setVolume(__) = 指定音量，0xFFFF 为最大值，0 为静音
+getVolume() = 获取音量，0xFFFF 为最大值，0 为静音
+reset() = 关闭所有音符
+close() = 关闭所有线程的同一设备对象，\n不应关闭在其他线程已关闭的对象。\n对象回收时不会自动调用此函数。\n\n在同一进程中如果未关闭设备则不能重复打开，\n不同进程可以打开同一设备
+noteOn( = 演奏音符
+noteOn(.(pitch,velocity,channel) = 演奏音符。\n@pitch 可用 0~127 范围的值指定音高，相邻为半音，隔一为全音。\n@velocity 指定按键速度（音量强度），可指定 0~127 范围的值。\n@channel 可用 0~16 范围的值指定通道，省略则默认为 0
+noteOff( = 停止演奏音符
+noteOff(.(pitch,velocity,channel) = 停止演奏音符\n@pitch 可用 0~127 范围的值指定音高。\n@channel 可用 0~16 范围的值指定通道，省略则默认为 0
+note( = 演奏或停止演奏
+note(.(pitch,velocity,channel) = 演奏或停止演奏\n@pitch 如果指定 0~127 范围的值指定音高，则演奏指定音符。\n如果指定 -1~-128之间的值，则取正数并减一，然后停止演奏音高的音符。\n@velocity 指定按键速度（音量强度），可指定 0~127 范围的值。\n@channel 可用 0~16 范围的值指定通道，省略则默认为 0
+changeInstrument(.(instrument,channel) = 切换乐器,\n@instrument 指定乐器编号，可选编号为 0~127 范围的值。\n乐器编号就搜索 MIDI 资料。\n@channel 可用 0~16 范围的值指定通道，省略则默认为 0
+afterTouch(.(pitch,touch,channel) = 触后效果，\n指击键后通过改变对键盘的压力来改变音色符\n@pitch 可用 0~127 范围的值指定音高。\n@channel 可用 0~16 范围的值指定通道，省略则默认为 0
+channelPressure(.((pressure,channel) = 触后通道压力\n@pressure 指定压力，\n可选用 @channel 指定通道
+cc(.(number,value,channel) = 发送 CC（Continuous controller） 消息\n@number 指定编号，@value 指定值，\n可选用 @channel 指定通道
+pitchBend(.(value,channel) = 调整弯音轮\n@value 用一个小数指定音高弯曲比例。\n0 ~ 0.5 表示向下弯曲，0.5 ~ 1 表示向上弯曲
+pitchBend2(.(value,channel) = 调整弯音轮\n@value 用 14 位整数指定 0~16383 范围的音高弯曲值。\n0表示向下弯曲2个半音，16383表示向上弯曲2个半音
+delay(__) = 延迟参数 @1 指定的毫秒数
+setVelocity(__) = 使用参数 @1 设置 xcall,play 函数默认按键速度（音量），\n参数可指定 0~127 范围的值
+velocity = xcall,play 函数默认按键速度（音量），\n参数可指定 0~127 范围的值
+log = 用于输出字幕，默认是一个空函数。\n可指定为其他可输出内容的函数。\n此函数仅接受一个要输出的字符串参数
+xcall(__) = 如果参数指定一个数组，\n则数组的第 1 个元素指定要调用的成员函数名，\n其他元素为调用参数\n\n例如： {"pitchBend",0.3}\n\n如果参数指定一个大于 127 的数值，则延时指定的时间，\n如果为 0~127 间的数值则按下指定音符。\n如果为 -1 到 -128 的数值则消音指定的音符。\n按下音符与消音可以使用 sys.midiOut.notes 名字空间的音名表示。\n如果为字符串则调用 log 函数输出。\n\n指定上述参数函数返回 true，指定其他数值返回 null，\n参数为其他数据类型会报错
+play( = 解析并播放所有音符与指令，\n如果参数 @1 传入字符串格式的乐谱，\n则所有音符或指令使用逗号、竖线、换行之一分开，忽略空格与制表符。\n不符合格式要求的项一律作为字幕传给 log 函数输出
+play(.(notes,do,delay) = 解析并播放所有音符。\n如果参数 @note 是一个数组，则循环调用 xcall 函数解析并播放音符。\n如果参数 @notes 是一个字符串，\n则首先调用 sys.midiOut.parseNotes 解析为音符数组，\n在字符串中所有音符或指令使用逗号、竖线、换行之一分开，忽略空格与制表符。\n除了支持 sys.midiOut.notes 定义的全部音名，\n也可以使用简谱记号 1,2,3,4,5,6,7 表示音符。\n数字音符后加 N（小于 5 ）个单引号表示提高 N 个八度音，\n数字音符前加 N（小于 5 ）个单引号表示降低 N 个八度音。\n数字音符前再加 # 号表示升高半个音，0 为休止符。\n下划线则表示一个延时单位，其他数值也表示延时（毫秒），\n前面的音符（或下划线）与后面的下划线可以连起来写。\n双下划线 ‗ 表示 _ 的延时取半，多个 ‗ 不能连着写。\n支持函数语法，例如 "1,delay(120)" \n\n如果 @notes 为字符串，可选用 @duo 参数指定 1 音的音高，默认为"C4"，\n可选用 @delay 参数指定下划线表示的延时单位，默认 250 毫秒
+onNote = @.onNote = function(pitch,velocity,channel){
+	__/*演奏指定音符时回调此函数，\n回调参数为 noteOn 函数的调用参数。\n这里最好不要阻塞线程，可用 thread.command 异步调用界面线程函数*/
+}
+end intellisense**/

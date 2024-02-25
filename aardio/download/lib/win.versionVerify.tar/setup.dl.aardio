@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\win\");
+fsys.copy( "\versionVerify.aardio","~\lib\win\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("win.versionVerify 扩展库已安装成功!","aardio- win.versionVerify扩展库安装程序")

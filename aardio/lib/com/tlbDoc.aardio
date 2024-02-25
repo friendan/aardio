@@ -1,0 +1,145 @@
+﻿//tlbDoc 控件文档
+import com;
+namespace com;
+    
+class tlbDoc{
+    ctor( ... ){
+        var tlb;
+        if(..com.IsObject(...)){
+            var ti = ..com.GetTypeInfo(...);
+        	tlb = ti && ti.GetTypeLib();
+        }
+        else {
+        	tlb = ..com.LoadTypeLibrary( ... );
+        }
+        
+		if(!tlb) return;
+		
+		var output = {}
+		for(i=1;tlb.GetTypeInfoCount();1){
+			var typeinfo = tlb.GetTypeInfo(i);
+			var typeattr = typeinfo.GetTypeAttr();
+			
+			var member ={};
+			for(i=1;typeattr.Funcs;1){
+				var func = typeinfo.GetFuncDesc(i)
+				if(!func) continue ;
+				if(!member[func.name]) member[func.name]= {};
+		 		member[func.name][func.invkind] = func; 
+			} 
+			
+			var push = ..table.push;
+			for(i=1;typeattr.Funcs;1){
+				var func = typeinfo.GetFuncDesc(i)
+				if(!func) continue;
+				if(!func.type) func.type = "";
+				
+				
+				if( func.invkind == "_get" ){
+					push( output,"DISPID：",func.memid,func.memid==0?' 默认属性\n':'\n' );
+					if(#func.parameters) {
+						push( output,"读属性函数：" + getFunction(func),'\n' );
+						if(#func.description)push( output,"描述：",func.description,'\n' );
+						push( output,getParameters(func),'\n' )
+					}
+					else {
+						push( output,"读属性名：" + func.name  + " 返回类型:" +func.type,'\n'  );
+						if(#func.description)push( output,"描述：",func.description,'\n' );
+						
+					}
+				}
+				elseif( func.invkind == "_set" ){
+					push( output,"DISPID：",func.memid,func.memid==0?' 默认属性\n':'\n' );
+					if(#func.parameters) {
+						push( output,"写属性函数：" + getFunction(func),'\n' ); 
+						if(#func.description)push( output,"描述：",func.description,'\n' );
+						push( output,getParameters(func),'\n' )
+					}
+					else {
+						push( output,"写属性名：" + func.name  + " 写入类型:" +func.type,'\n'  );
+						if(#func.description)push( output,"描述：",func.description,'\n' );
+					}
+				}
+				elseif( func.invkind == "function" ){
+					push( output,"DISPID：",func.memid,func.memid==0?' 默认方法\n':'\n' );
+					push( output,"函数：" + getFunction(func),'\n' ); 
+					if(#func.description)push( output,"描述：",func.description,'\n' );
+					push( output,getParameters(func),'\n' );
+				} 
+				
+				push( output,'\n' );
+			} 
+		
+		}
+		
+		return ..string.join(output,'')
+    }; 
+}
+
+namespace tlbDoc {
+    
+	getFunction = function(func){
+		var output = func.name;
+		if( func.invkind == "_set" ){
+			output = "set" + func.name;
+		}
+		elseif( func.invkind == "_get" ){
+			output = "get" + func.name;
+		}
+		
+		output = output +"(";
+		
+		var len = #func.parameters;
+		for(i=1;#func.parameters;1){
+			var p = func.parameters[i];
+			if( i > 1) output =  output +",";
+			
+			var t = p.type:"unknow"; 
+			if(t=="pointer/*VARIANT*/") t = "variant";
+			if(t=="pointer/*VARIANT*/[]") t = "variant[]";
+			else t = ..string.replace(t,"/\*.+\*/","")
+			
+			if( (i == len) && (func.ParamsOpt==-1) ) {
+				t = ..string.replace(t,"\[\]","");
+				output =  output ++ t ++ " ";
+				output =  output ++ p.name ++ "...";
+			}
+			else {
+				output =  output ++ t ++ " ";
+				output =  output ++ p.name;
+			} 
+		}
+		
+		output = output +")";
+		return output;
+	}
+	
+	getParameters = function(func){
+		var output =  '	返回值类型：' + func.type;
+		
+		var len = #func.parameters;
+		for(i=1;len;1){
+			var p = func.parameters[i];
+			output =  output ++  '\r\n	参数名:' + p.name + " 参数类型:" + (p.type:"unknow")
+			if( p.in ) output =  output ++ " 输入参数";
+			if( p.out ) output =  output ++ " 输出参数";
+			if( p.opt ) output =  output ++ " 可选参数";
+			if( (i == len) && (func.ParamsOpt==-1) ) output =  output ++ " 不定个数参数";
+		}  
+		return output;
+	}
+	
+	dump = function(...){
+		if(_STUDIO_INVOKED) global.import("console")
+
+		if(..console){
+			..console.log(..com.tlbDoc(...));
+		}
+	}
+}
+
+/**intellisense()
+com.tlbDoc = 生成类型库文档
+com.tlbDoc(.("->tlb") = 加载类型库,\n并返回一个包含类型库文档的字符串值。\n失败返回 null。\n参数可以是CLSID、COM 对象、类型库路径、或包含类型库资源的组件路径
+com.tlbDoc.dump(__) = 参数可指定COM 对象、CLSID、类型库路径、或包含类型库资源的组件路径。\n\n如果导入了 console，以文档格式在控制台输出 COM 类型库。\n在开发环境下可自动导入 console 库。\n\n将 COM 对象作为参数调用 console.dump 可输出简化版类型信息
+end intellisense**/

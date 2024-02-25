@@ -1,0 +1,689 @@
+//adb 安卓设备管理
+import wsock;
+import wsock.tcp.client;
+import process.popen;
+import process.job.limitKill;
+import string.cmdline;
+import process.cmdline;
+import inet.http;
+
+namespace process;
+
+class adb{
+	ctor( param,... ){
+		var args = ..string.cmdline.arguments(param,... )
+		if( defaultArguments ) args = ..table.append({},defaultArguments,args);
+
+		this = ..process.popen( "~/lib/process/adb/.res/adb.exe",args,{workDir=workDir});
+		this.assignToJobObject(..process.job.limitKill);
+		this.codepage = 65001;
+		
+		if( !this ) return;
+		
+		if( param == "shell" && !... ){
+			this.expect("\N+([\$#]) $",3000);
+			this.__close__ = this.close;
+			this.close = function(){
+				if( this.stdIn ){ 
+					this.print('exit');
+					sleep(10);
+					this.__close__();
+				}
+			}
+		} 
+	};
+	
+}
+
+namespace adb{ 
+	
+	workDir = "/";
+	
+	get = function(...){ 
+		var adb,err = ..process.adb( ...);
+		if(!adb) return null,err;
+		
+		var out = adb.read(-1); 
+		var err = adb.readErr(-1);
+		adb.close();
+
+		if(#err) return null,err;
+		
+		if(#out){
+			out = ..string.trim(out);
+			err = ..string.match(out,"^adb\:?\s+error\:(.+)") 
+			if(err) return null,err;	 
+		} 
+		
+		return out;  
+	}
+	
+	shell = function(...){
+		return ..process.adb("shell",...);
+	}
+	
+	shellGet = function(...){
+		var adb,err = ..process.adb.shell(...);
+		if(!adb) return null,err;
+		
+		var out = adb.read(-1); 
+		var err = adb.readErr(-1);
+		adb.close();
+		 
+		if(#out) return ..string.trim(out);
+		if(#err)return null,err
+		return out;
+	}
+	
+	startCall = function(phone){
+		return shellGet("am start -a android.intent.action.CALL -d tel:"+phone); 
+	}
+	
+	startUrl = function(url){
+		return shellGet("am start -a android.intent.action.VIEW -d '"+url+"'"); 
+	}
+	
+	screenCap = function(path){
+		var filename = "adb_"+..io._exefile + "_screen.png";
+		var out,err = shellGet("screencap -p $EXTERNAL_STORAGE/"+filename+" && echo $EXTERNAL_STORAGE/"+filename); 
+	 	if(#err) return null,err; 
+	 	
+		if(out) {
+			out,err = pullGet(out,..io.localpath(path)||path); 
+		}
+		shellGet("rm $EXTERNAL_STORAGE/"+filename);  
+		
+		if(#err) return null,err;
+		return true;
+	}
+	 
+	push = function(local,remote,...){
+		if(!remote) remote = "/mnt/sdcard/";
+		var adb = ..process.adb("push",..io.localpath(local)||local,remote,... );
+		adb.logResponse( logger || print );
+		adb.close(); 
+	}
+	
+	pull = function(remote,local,...){ 
+		var adb = ..process.adb("pull",remote,..io.localpath(local)||local,... );
+		
+		adb.logResponse( logger || print ); 
+		adb.close(); 
+	}
+	
+	pushGet = function(local,remote,...){
+		if(!remote) remote = "/mnt/sdcard/";
+		return get("push",..io.localpath(local)||local,remote,... ); 
+	}
+	
+	pullGet = function(remote,local,...){ 
+		return get("pull",remote,..io.localpath(local)||local,... );
+	}
+	
+	install = function(local,...){ 
+		var adb = ..process.adb("install",..io.fullpath(local),... );
+		adb.logResponse( logger || print );
+		adb.close(); 
+	}
+	
+	userAgent = "Mozilla/5.0 (Linux; U; Android 12; ) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.127 Mobile Safari/537.36";
+	
+	installUrl = function(url,...){
+		if(..io.exist(url)){
+			return install(url);
+		}
+		 
+		var path = ..thread.invokeAndWait(
+			function(url,userAgent){
+				import inet.http;
+				var http = inet.http(userAgent);
+				
+				var apk = http.get(url);
+				if(apk && ..string.left(apk,4) =='\x50\x4b\x03\x04'){ 
+					var path = ..io.tmpname("adb",".apk");
+					..string.save(path,apk);
+					return path;
+				}
+				elseif(apk) {  
+					var apkUrl = ..string.match(apk,"https?\://[^\s\""']+arm64[^\s\""']+\.apk") || ..string.match(apk,"https?\://[^\s\""']+.apk");
+					if(apkUrl){
+						var apk = http.get(apkUrl);
+						if(apk && ..string.left(apk,4) =='\x50\x4b\x03\x04'){ 
+							var path = ..io.tmpname("adb",".apk");
+							..string.save(path,apk);
+							return path;
+						}	
+					}
+				}
+			},url,userAgent
+		)
+
+		if( path ){
+			install(path,...);
+			..io.remove(path); 
+		}
+	}
+	
+	uninstall = function(app,...){ 
+		var adb = ..process.adb("uninstall",app,... ) 
+		adb.logResponse( logger || print ) 
+		adb.close(); 
+	} 
+	
+	getSerialNo = function(){ 
+		return get("get-serialno" ) 
+	}
+	
+	setSerialNo = function(device){
+		..string.setenv("ANDROID_SERIAL",device);
+		return device;
+	}
+	 
+	getState = function(){ 
+		return get("get-state")  
+	}
+	
+	version = function(android){
+		if(android) return getProp("ro.build.version.release");
+		return get("--version")   
+	}
+	
+	
+	findDevice = function(usb){
+		var devices = getDevices();
+		if(#devices){
+			if(#devices==1){
+				setSerialNo(null); 
+				return devices[1].serialNo
+			}
+			
+			if(usb){
+				if(type.isString(usb)){
+					for(i,dev in devices){
+						if(dev.serialNo == usb){
+							return setSerialNo(dev.serialNo); 
+						}
+					} 	
+				}
+				else {
+					for(i,dev in devices){
+						if(!..string.find(dev.serialNo,":")){
+							return setSerialNo(dev.serialNo); 
+						}
+					} 	
+				} 	
+			} 
+			
+			return setSerialNo(devices[1].serialNo); 
+		}
+	}
+	
+	getDevices = function(offline){ 
+		var adb = ..process.adb( "devices","-l" )
+		var out  = adb.read(-1);
+		adb.close();
+		if(out) {
+			var ret = {}
+			for dev in ..string.lines(..string.trim(out),,"\s+",3){
+				if(#dev==3 && dev[2]=="device" || (dev[2]=="offline" && offline) ){
+					var info = {};
+					for k,v in ..string.gmatch(dev[3],"(\S+)\:(\S+)") { 
+		    			info[k] = v;
+					}
+					..table.push(ret,{serialNo=dev[1];state=dev[2];info=info});
+				} 
+			}
+			
+			return ret;
+		}
+	} 
+	
+	waitForDevice = function(){ 
+		return get( "wait-for-device" );
+	}
+	
+	startServer = function(){
+		port = findServerPort();
+		if(port){
+			..string.setenv("ANDROID_ADB_SERVER_PORT",port);
+			return true; 
+		}
+		else {
+			port = "5037";
+			if(..wsock.tcp.client.test("127.0.0.1",5037)){
+				port = tostring(..wsock.getFreePort());
+			} 
+			
+			..string.setenv("ANDROID_ADB_SERVER_PORT",port);
+		} 
+		
+		var adb = ..process.popen( "~/lib/process/adb/.res/adb.exe",param,"start-server"); 
+		var out,err = adb.expect("daemon started successfully",3000)
+		adb.close();
+		
+		if( out ) return true,out;
+		if( err ) return false,err;
+		return true;
+	}
+	
+	killServer = function(){ 
+		var adb = ..process.adb( "kill-server" )
+		adb.waitOne();
+		adb.close(); 
+	}
+	
+	findServerPort = function(){ 
+		for processEntry in ..process.each( "adb\.exe" ) { 
+			var cmdline = ..process.cmdline(processEntry.th32ProcessID);
+			if(cmdline){
+				var argv = ..string.cmdline.argv(cmdline);
+				if(argv.L && argv["reply-fd"] && ..table.indexOf(argv,"fork-server") ){
+					var port = ..string.match(argv.L,"tcp\:(\d+)")
+					if(port){
+						return port;		
+					} 
+				}  
+			} 
+		} 
+	}
+	
+	startServer();
+	
+	pair = function(addr,code){
+		var prcs = ..process.adb("pair",addr);
+		if( prcs.expect("Enter\s+pairing\s+code\:") ){
+			prcs.print(code)
+		}
+
+		var r,e = prcs.expect("Successfully\s+paired\s+to\s+.+\[(.+)\]");
+		prcs.close();
+		
+		return r,e;
+	}
+	 
+	connect = function(addr,changeSerialNo){
+		var r,e = ..process.adb("connect",addr).readAll(); 
+		if(r){
+			var r2 = ..string.match(r,"connected\s+to\s+\S+")
+			if(r2) {
+				if(changeSerialNo)setSerialNo(addr);
+				return r2;
+			}
+			
+			return null,r;
+		}
+		
+		return r,e; 
+	}
+	
+	tcpip = function(port){
+		return ..process.adb("tcpip",port).readAll();  
+	}
+
+	key = λ(code) shellGet("input keyevent "+code); 
+	
+	/*intellisense(process.adb)*/ 
+	keyUnknown = λ() key(0);
+	keySoftLeft = λ() key(1);
+	keySoftRight = λ() key(2);
+	keyHome = λ() key(3);
+	keyBack = λ() key(4);
+	keyCall = λ() key(5);
+	keyEndcall = λ() key(6);
+	key0 = λ() key(7);
+	key1 = λ() key(8);
+	key2 = λ() key(9);
+	key3 = λ() key(10);
+	key4 = λ() key(11);
+	key5 = λ() key(12);
+	key6 = λ() key(13);
+	key7 = λ() key(14);
+	key8 = λ() key(15);
+	key9 = λ() key(16);
+	keyStar = λ() key(17);
+	keyPound = λ() key(18);
+	keyDpadUp = λ() key(19);
+	keyDpadDown = λ() key(20);
+	keyDpadLeft = λ() key(21);
+	keyDpadRight = λ() key(22);
+	keyDpadCenter = λ() key(23);
+	keyVolumeUp = λ() key(24);
+	keyVolumeDown = λ() key(25);
+	keyPower = λ() key(26);
+	keyCamera = λ() key(27);
+	keyClear = λ() key(28);
+	keyA = λ() key(29);
+	keyB = λ() key(30);
+	keyC = λ() key(31);
+	keyD = λ() key(32);
+	keyE = λ() key(33);
+	keyF = λ() key(34);
+	keyG = λ() key(35);
+	keyH = λ() key(36);
+	keyI = λ() key(37);
+	keyJ = λ() key(38);
+	keyK = λ() key(39);
+	keyL = λ() key(40);
+	keyM = λ() key(41);
+	keyN = λ() key(42);
+	keyO = λ() key(43);
+	keyP = λ() key(44);
+	keyQ = λ() key(45);
+	keyR = λ() key(46);
+	keyS = λ() key(47);
+	keyT = λ() key(48);
+	keyU = λ() key(49);
+	keyV = λ() key(50);
+	keyW = λ() key(51);
+	keyX = λ() key(52);
+	keyY = λ() key(53);
+	keyZ = λ() key(54);
+	keyComma = λ() key(55);
+	keyPeriod = λ() key(56);
+	keyAltLeft = λ() key(57);
+	keyAltRight = λ() key(58);
+	keyShiftLeft = λ() key(59);
+	keyShiftRight = λ() key(60);
+	keyTab = λ() key(61);
+	keySpace = λ() key(62);
+	keySym = λ() key(63);
+	keyExplorer = λ() key(64);
+	keyEnvelope = λ() key(65);
+	keyEnter = λ() key(66);
+	keyDel = λ() key(67);
+	keyGrave = λ() key(68);
+	keyMinus = λ() key(69);
+	keyEquals = λ() key(70);
+	keyLeftBracket = λ() key(71);
+	keyRightBracket = λ() key(72);
+	keyBackslash = λ() key(73);
+	keySemicolon = λ() key(74);
+	keyApostrophe = λ() key(75);
+	keySlash = λ() key(76);
+	keyAt = λ() key(77);
+	keyNum = λ() key(78);
+	keyHeadsethook = λ() key(79);
+	keyFocus = λ() key(80);
+	keyPlus = λ() key(81);
+	keyMenu = λ() key(82);
+	keyNotification = λ() key(83);
+	keySearch = λ() key(84);
+	keyMediaPlayPause = λ() key(85);
+	keyMediaStop = λ() key(86);
+	keyMediaNext = λ() key(87);
+	keyMediaPrevious = λ() key(88);
+	keyMediaRewind = λ() key(89);
+	keyMediaFastForward = λ() key(90);
+	keyMute = λ() key(91);
+	keyPageUp = λ() key(92);
+	keyPageDown = λ() key(93);
+	keyPictsymbols = λ() key(94);
+	keySwitchCharset = λ() key(95);
+	keyButtonA = λ() key(96);
+	keyButtonB = λ() key(97);
+	keyButtonC = λ() key(98);
+	keyButtonX = λ() key(99);
+	keyButtonY = λ() key(100);
+	keyButtonZ = λ() key(101);
+	keyButtonL1 = λ() key(102);
+	keyButtonR1 = λ() key(103);
+	keyButtonL2 = λ() key(104);
+	keyButtonR2 = λ() key(105);
+	keyButtonThumbl = λ() key(106);
+	keyButtonThumbr = λ() key(107);
+	keyButtonStart = λ() key(108);
+	keyButtonSelect = λ() key(109);
+	keyButtonMode = λ() key(110);
+	keyEscape = λ() key(111);
+	keyForwardDel = λ() key(112);
+	keyCtrlLeft = λ() key(113);
+	keyCtrlRight = λ() key(114);
+	keyCapsLock = λ() key(115);
+	keyScrollLock = λ() key(116);
+	keyMetaLeft = λ() key(117);
+	keyMetaRight = λ() key(118);
+	keyFunction = λ() key(119);
+	keySysrq = λ() key(120);
+	keyBreak = λ() key(121);
+	keyMoveHome = λ() key(122);
+	keyMoveEnd = λ() key(123);
+	keyInsert = λ() key(124);
+	keyForward = λ() key(125);
+	keyMediaPlay = λ() key(126);
+	keyMediaPause = λ() key(127);
+	keyMediaClose = λ() key(128);
+	keyMediaEject = λ() key(129);
+	keyMediaRecord = λ() key(130);
+	keyF1 = λ() key(131);
+	keyF2 = λ() key(132);
+	keyF3 = λ() key(133);
+	keyF4 = λ() key(134);
+	keyF5 = λ() key(135);
+	keyF6 = λ() key(136);
+	keyF7 = λ() key(137);
+	keyF8 = λ() key(138);
+	keyF9 = λ() key(139);
+	keyF10 = λ() key(140);
+	keyF11 = λ() key(141);
+	keyF12 = λ() key(142);
+	keyNumLock = λ() key(143);
+	keyNumpad0 = λ() key(144);
+	keyNumpad1 = λ() key(145);
+	keyNumpad2 = λ() key(146);
+	keyNumpad3 = λ() key(147);
+	keyNumpad4 = λ() key(148);
+	keyNumpad5 = λ() key(149);
+	keyNumpad6 = λ() key(150);
+	keyNumpad7 = λ() key(151);
+	keyNumpad8 = λ() key(152);
+	keyNumpad9 = λ() key(153);
+	keyNumpadDivide = λ() key(154);
+	keyNumpadMultiply = λ() key(155);
+	keyNumpadSubtract = λ() key(156);
+	keyNumpadAdd = λ() key(157);
+	keyNumpadDot = λ() key(158);
+	keyNumpadComma = λ() key(159);
+	keyNumpadEnter = λ() key(160);
+	keyNumpadEquals = λ() key(161);
+	keyNumpadLeftParen = λ() key(162);
+	keyNumpadRightParen = λ() key(163);
+	keyVolumeMute = λ() key(164);
+	keyInfo = λ() key(165);
+	keyChannelUp = λ() key(166);
+	keyChannelDown = λ() key(167);
+	keyZoomIn = λ() key(168);
+	keyZoomOut = λ() key(169);
+	keyTv = λ() key(170);
+	keyWindow = λ() key(171);
+	keyGuide = λ() key(172);
+	keyDvr = λ() key(173);
+	keyBookmark = λ() key(174);
+	keyCaptions = λ() key(175);
+	keySettings = λ() key(176);
+	keyTvPower = λ() key(177);
+	keyTvInput = λ() key(178);
+	keyStbPower = λ() key(179);
+	keyStbInput = λ() key(180);
+	keyAvrPower = λ() key(181);
+	keyAvrInput = λ() key(182);
+	keyProgRed = λ() key(183);
+	keyProgGreen = λ() key(184);
+	keyProgYellow = λ() key(185);
+	keyProgBlue = λ() key(186);
+	keyAppSwitch = λ() key(187);
+	keyButton1 = λ() key(188);
+	keyButton2 = λ() key(189);
+	keyButton3 = λ() key(190);
+	keyButton4 = λ() key(191);
+	keyButton5 = λ() key(192);
+	keyButton6 = λ() key(193);
+	keyButton7 = λ() key(194);
+	keyButton8 = λ() key(195);
+	keyButton9 = λ() key(196);
+	keyButton10 = λ() key(197);
+	keyButton11 = λ() key(198);
+	keyButton12 = λ() key(199);
+	keyButton13 = λ() key(200);
+	keyButton14 = λ() key(201);
+	keyButton15 = λ() key(202);
+	keyButton16 = λ() key(203);
+	keyLanguageSwitch = λ() key(204);
+	keyMannerMode = λ() key(205);
+	key3dMode = λ() key(206);
+	keyContacts = λ() key(207);
+	keyCalendar = λ() key(208);
+	keyMusic = λ() key(209);
+	keyCalculator = λ() key(210);
+	keyZenkakuHankaku = λ() key(211);
+	keyEisu = λ() key(212);
+	keyMuhenkan = λ() key(213);
+	keyHenkan = λ() key(214);
+	keyKatakanaHiragana = λ() key(215);
+	keyYen = λ() key(216);
+	keyRo = λ() key(217);
+	keyKana = λ() key(218);
+	keyAssist = λ() key(219);
+	keyBrightnessDown = λ() key(220);
+	keyBrightnessUp = λ() key(221);
+	keyMediaAudioTrack = λ() key(222);
+	keySleep = λ() key(223);
+	keyWakeup = λ() key(224);
+	keyPairing = λ() key(225);
+	keyMediaTopMenu = λ() key(226);
+	key11 = λ() key(227);
+	key12 = λ() key(228);
+	keyLastChannel = λ() key(229);
+	keyTvDataService = λ() key(230);
+	keyVoiceAssist = λ() key(231);
+	keyTvRadioService = λ() key(232);
+	keyTvTeletext = λ() key(233);
+	keyTvNumberEntry = λ() key(234);
+	keyTvTerrestrialAnalog = λ() key(235);
+	keyTvTerrestrialDigital = λ() key(236);
+	keyTvSatellite = λ() key(237);
+	keyTvSatelliteBs = λ() key(238);
+	keyTvSatelliteCs = λ() key(239);
+	keyTvSatelliteService = λ() key(240);
+	keyTvNetwork = λ() key(241);
+	keyTvAntennaCable = λ() key(242);
+	keyTvInputHdmi1 = λ() key(243);
+	keyTvInputHdmi2 = λ() key(244);
+	keyTvInputHdmi3 = λ() key(245);
+	keyTvInputHdmi4 = λ() key(246);
+	keyTvInputComposite1 = λ() key(247);
+	keyTvInputComposite2 = λ() key(248);
+	keyTvInputComponent1 = λ() key(249);
+	keyTvInputComponent2 = λ() key(250);
+	keyTvInputVga1 = λ() key(251);
+	keyTvAudioDescription = λ() key(252);
+	keyTvAudioDescriptionMixUp = λ() key(253);
+	keyTvAudioDescriptionMixDown = λ() key(254);
+	keyTvZoomMode = λ() key(255);
+	keyTvContentsMenu = λ() key(256);
+	keyTvMediaContextMenu = λ() key(257);
+	keyTvTimerProgramming = λ() key(258);
+	keyHelp = λ() key(259);
+	keyNavigatePrevious = λ() key(260);
+	keyNavigateNext = λ() key(261);
+	keyNavigateIn = λ() key(262);
+	keyNavigateOut = λ() key(263);
+	keyStemPrimary = λ() key(264);
+	keyStem1 = λ() key(265);
+	keyStem2 = λ() key(266);
+	keyStem3 = λ() key(267);
+	keyDpadUpLeft = λ() key(268);
+	keyDpadDownLeft = λ() key(269);
+	keyDpadUpRight = λ() key(270);
+	keyDpadDownRight = λ() key(271);
+	keyMediaSkipForward = λ() key(272);
+	keyMediaSkipBackward = λ() key(273);
+	keyMediaStepForward = λ() key(274);
+	keyMediaStepBackward = λ() key(275);
+	keySoftSleep = λ() key(276);
+	keyCut = λ() key(277);
+	keyCopy = λ() key(278);
+	keyPaste = λ() key(279);
+	keySystemNavigationUp = λ() key(280);
+	keySystemNavigationDown = λ() key(281);
+	keySystemNavigationLeft = λ() key(282);
+	keySystemNavigationRight = λ() key(283);
+	keyAllApps = λ() key(284);
+	keyRefresh = λ() key(285);
+	/*end intellisense*/
+	
+	getProp = function(name){
+		return shellGet("getprop",name)
+	}
+	
+	listPackages = function(p,...){
+		var o,e;
+		if(...){
+			o,e = shellGet("pm","list","packages",p,...)
+		}
+		else {
+			o,e = shellGet("pm list packages " + (p:""))
+		}
+		
+		if(!e && o){
+			return ..string.splitEx(o);
+		}
+		
+		return null,o;
+	} 
+}
+
+/**intellisense()
+process.adb = 使用管道调用 adb\n[关于 adb](http://developer.android.com/tools/help/adb.html)\n调用 process.adb.startServer 函数启动 adb 服务端，\n该函数会重用已启动的 adb 服务端而不会重复启动。\n该函数启动的 adb 服务端为驻留进程，不会随程序退出，\n\n发送其他 adb 指定则启动 adb 客户端。\n此扩展库启动的所有 adb 客户端在执行结束或程序退出时自动关闭。
+process.adb( = 执行 adb 命令，返回 process.popen 进程管道对象。
+process.adb(.(->->->) = 执行 adb 命令，返回 process.popen 进程管道对象。\n可传入一个或多个启动命令行参数（字符串）。\n传入单个字符串参数时，可用空格分开多个命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n也可用一个数组传入多个参数
+process.adb.get(.(->->->) = 执行 adb 命令。\n成功返回进程输出，出错返回 null，错误信息 。\n\n可传入一个或多个启动命令行参数（字符串）。\n传入单个字符串参数时，可用空格分开多个命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n也可用一个数组传入多个参数
+process.adb.shellGet(.(->->->) = 执行 adb shell 命令。\n成功返回进程输出，出错返回 null，错误信息 。\n\n可传入一个或多个启动命令行参数（字符串）。\n传入单个字符串参数时，可用空格分开多个命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n也可用一个数组传入多个参数
+process.adb.shell(__) = 启动 adb 客户端并返回  process.popen 对象,\n指定参数则直接执行参数指定的命令后关闭进程。\n\n不指定参数则进入 shell 命令交互模式,\n交互模式下可使用 expect 函数检测并等待进程输出。\n\n更多用法请参考 process.popen 库函数文档
+process.adb() = !process_popen.
+process.adb.shell() = !process_popen. 
+process.adb.workDir = 工作目录，默认为 "/"（应用程序根目录）;
+end intellisense**/
+
+/**intellisense(process.adb)
+version() = 返回 ADB 版本信息。
+version(true) = 返回手机设备 Android 版本。
+defaultArguments = 可用一个数组指定添加到所有 ADB 命令的默认参数，默认为 null。\n默认参数会添加到其他参数前面。\n\n如果默认参数添加了 {"-s","设备序号"} 以发送到特定设备，\n则覆盖 setSerialNo 函数指定的目标设备
+logger = 设置 push,pull,install,uninstall 等命令的默认回显对象。\n此对象用于 process.popen 的 logger 对象，\n可以设为函数或文本框控件，如果引入了 console 库则会默认回显到控制台。
+push( = 上传文件到手机\n此函数调用 process.adb.logger 显示进程输出。\n如果要直接返回结果，请改用 pushGet 函数
+push(.("本地路径","/mnt/sdcard/",->->->) = 上传文件到手机。\n注意本地当前目录为 process.adb.workDir 指定的目录，默认为"/"。\n\n如果进程输出 Permission Denied 无权限，\n建议请打开手机 USB 调试模式,尝试 root 修改目录权限。\n可用 process.adb.logger 预先设置进程回显对象
+pull( = 自手机下载文件。\n此函数调用 process.adb.logger 显示进程输出。\n如果要直接返回结果，请改用 pullGet 函数
+pull(.("/mnt/sdcard/my->txt","本地路径",->->->) = 自手机下载文件。\n注意本地当前目录为 process.adb.workDir 指定的目录，默认为"/"。\n\n如果进程输出 Permission Denied 无权限，\n建议请打开手机 USB 调试模式,尝试 root 修改目录权限。\n可用 process.adb.logger 预先设置进程回显对象
+pushGet( = 上传文件到手机。\n成功返回 true ，失败返回 null, 错误信息。\n此函数不会调用 process.adb.logger 输出
+pushGet(.("本地路径","/mnt/sdcard/",->->->) = 上传文件到手机。\n注意本地当前目录为 process.adb.workDir 指定的目录，默认为"/"
+pullGet( = 自手机下载文件。\n成功返回 true ，失败返回 null, 错误信息。\n此函数不会调用 process.adb.logger 输出
+pullGet(.("/mnt/sdcard/my->txt","本地路径",->->->) = 自手机下载文件。\n注意本地当前目录为 process.adb.workDir 指定的目录，默认为"/"
+install( = 安装应用到手机。
+install(.("apk文件路径",->->->) = 安装应用到手机。\n可用 process.adb.logger 预先设置进程回显对象
+installUrl( = 自指定的网址下载 APK 并安装到手机。
+installUrl(.("apk文件网址,->->->) = 自指定的网址下载 APK 并安装到手机。\n如果参数 @1 指定 HTML 页面，则自动自 HTML 页面提取 apk 下载链接。\n参数 @1 也可以指定本地 APK 文件路径。\n\n可用 process.adb.logger 预先设置进程回显对象。\n\n如果 APK 文件太大，建议改用 inet.downBox 或者 inet.httpFile 下载
+uninstall(.("应用名") = 卸载应用。\n可用 process.adb.logger 预先设置进程回显对象
+uninstall(.("应用名","-k") = 卸载应用,但保留配置和缓存
+getSerialNo() = 返回当前连接的设备串号，\n出错返回 null，错误信息。\n\n如果当前连接了多个设备，且未用 setSerialNo 函数指定设备，\n此函数返回 null 值，错误信息
+setSerialNo(__/*设备串号*/) = 指定设将命令发送至特定设备。\n参数 @1 指定设备序号，设为 null 则不指定特定设备。\n此函数返回参数 @1 。\n\n如果 process.adb.defaultArguments 添加了 {"-s","设备序号"} 以发送到特定设备，\n则覆盖 setSerialNo 函数指定的目标设备
+getState() = 成功返回设备状态，"device" 为连接成功。\n出错返回 null，错误信息
+getDevices() = 返回所有连接设备。\n如果参数 @1 为 true ，则允许返回离线设备。\n返回值为一个数组，数组元素为设备信息。\n设备信息的 serialNo 字段为设备串号，\nstate 字段为连接状态，"device" 为已连接，"offline" 表示离线。\ninfo 为设备信息，其中 product 为产品代号，model 为设备型号
+waitForDevice() = 等待设备连接
+startServer() = 启动 adb 服务端,成功返回 true ，\n\n此函数如果找到之前已启动的服务端会直接重用该服务并返回 true 。\n 失败返回 false, 错误信息 。\n\nadb 服务端为驻留进程用于接收命令并向手机转发指令\n而 adb 客户端进程在向服务端发送完指令后退出\n\n这个函数会在程序启动时自动调用一次
+killServer() = 停止 adb 服务端,无返回值,\n adb 服务端为驻留进程用于接收命令并向手机转发指令,\n注意所有 adb 客户端共用也只能共用一个服务端
+findServerPort() = 查找已运行的 adb 服务端端口
+pair( = 无线配对手机设备\nAndroid 11 及更高版本支持
+pair(.("IP:端口","配对码") = 无线配对手机设备\n参数 @1 示例 "192.168.1.103:35151"。\n请打开『手机开发者设置/无线调试/使用配对码配对设备』获取IP端口与配对码。\n注意配对端口与连接端口是不一样的。\n\n成功返回包含设备guid 的字符串，\n失败返回 null，错误信息
+pairQr(.("IP:端口","配对码") = 扫描二维码后无线配对手机设备\n请打开『手机开发者设置/无线调试/使用二维码配对设备』扫描二维码。\n请调用 process.adb.qrCode 并传入相同参数生成二维码。\n注意配对端口与连接端口是不一样的。\n\n成功返回包含设备 guid 的字符串，\n失败返回 null，错误信息
+connect( = 无线连接手机设备，\n需要先调用 pair 函数配对。
+connect(.("IP:端口",默认设备) = 无线连接手机设备。\n可选参数 @2 设为 true 则连接成功自动调用 setSerialNo 函数设为默认设备。\n请打开『手机开发者设置/无线调试』获取IP端口\n成功返回进程输出字符串，失败返回 null，错误信息。\n\n需要先调用 pair 函数配对。\n注意配对端口与连接端口不一样
+tcpip(__) = USB 调试模式下修改无线连接端口。\n参数@1 使用数值或字符串指定端口号。\n返回进程输出，错误输出，退出代码
+findDevice() = 查找已连接设备，并自动设置一个默认设备。\n如果当前仅连接一个设备，则不限定默认设备。\n如果参数 @1 为 true，则优先选择有线连接设备。\n如果参数为设备序号，优先选择指定设备。\n成功返回选择的默认设备序号
+startCall(.(phone) = 拔打指定电话，需要在手机开发者选项中打开权限
+startUrl(.(url) = 用浏览器打开参数 @url 指定的网址
+userAgent = 用于下载 APK 的 Android 设备 User-Agent 
+screenCap() = 手机截屏到指定文件。\n成功返回 true ，失败返回 null，错误信息
+key(__) = 模拟手机按键。\n需要在手机开发者设置中打开模拟按键权限。\n可以使用其他 key 前缀的函数发送指定键码
+getProp( = 获取属性。\n成功返回字符串类型的属性值，\n失败返回 null, 错误信息
+getProp(.("ro->build->version->release") = @.getProp("ro.build.version.release")__/*返回 android 系统版本，\n成功返回一个字符串类型的数值*/
+listPackages() = 列出所有应用。\n可选指定一个或多个字符串参数，\n"-s" 参数指定只返回系统应用，"-3"参数限定返回第三方应用。\n成功返回一个数组，不指定"-f","-i"参数时数组元素为包名。
+end intellisense**/

@@ -1,0 +1,119 @@
+﻿import process.popen;
+import wsock.tcp.simpleHttpServer;
+import win.path;
+import win.reg;
+import fsys;
+
+class process.php{
+	ctor( path,documentRoot,cgiPath,iniPath ){
+    	if(!cgiPath)cgiPath=self.cgiPath;
+    	if(!iniPath)iniPath=self.iniPath;
+    	
+ 		if( ! ..io.exist(cgiPath) ){
+ 			error("请先指定 process.php.cgiPath")
+ 		}
+ 		
+ 		..wsock.tcp.simpleHttpServer.customErrors = self.customErrors;
+ 		..wsock.tcp.simpleHttpServer.threadNum = self.threadNum;
+ 		..wsock.tcp.simpleHttpServer.startPort = self.startPort;
+ 		..wsock.tcp.simpleHttpServer.startIp = self.startIp;
+ 		..wsock.tcp.simpleHttpServer.defalutDocument = "index.php";
+ 		
+ 		..wsock.tcp.simpleHttpServer.threadGlobal = ..table.assign(threadGlobal,{
+ 			phpCgiPath = cgiPath;
+ 			phpIniPath = iniPath;
+ 			httpHandle = httpHandle;
+ 		})
+ 		
+ 		return ..wsock.tcp.simpleHttpServer.startUrl(path,documentRoot,self.app); 
+	}; 
+}
+
+namespace process.php;
+
+notify = function(url){
+	..thread.invoke( 
+		function(url){
+			import inet.http;
+			inet.http().location(url);
+		},..process.php(url)
+	)
+}
+
+cgiPath = ..io.exist("/php/php-cgi.exe");
+
+if( !..io.exist(cgiPath) ){
+	cgiPath = ..string.getenv("PHP_CGI_EXE_PATH")
+}
+ 
+if( !..io.exist(cgiPath) ){
+	cgiPath = ..win.path.search("php-cgi.exe")
+}
+
+if( ! ..io.exist(cgiPath) ){
+	var reg = ..win.regReader("HKEY_LOCAL_MACHINE\SOFTWARE\PHP")
+	if(reg){
+		var dir = reg.queryValue("InstallDir")	
+		if(dir){
+			cgiPath = ..io.joinpath(dir,"php-cgi.exe")
+		}
+	}
+}
+
+if( ( ! ..io.exist(cgiPath) ) && ..io.exist("C:\Program Files\PHP")){
+	..fsys.enum( "C:\Program Files\PHP", "php-cgi.exe",
+		function(dir,filename,fullpath,findData){ 
+			if(filename){ 
+	           	cgiPath = fullpath
+	           	return false;
+			} 
+		}  
+	);
+} 
+
+if( !..io.exist(cgiPath) ){
+	cgiPath = "~\lib\php\.dll\php-cgi.exe";
+}
+
+app = function(response,request,session){
+	if(  httpHandle && httpHandle[request.path] ){
+		return httpHandle[request.path](response,request,session);
+	}
+	
+	import process.php.cgi;
+	if( string.endWith(request.path,".php",true) ){
+		process.php.cgi(response,request,phpCgiPath,phpIniPath);		
+	}
+	else {
+		response.loadcode( request.path );
+	}
+}
+
+
+/**intellisense(process.php)
+cgiPath = 可选指定php-cgi.exe路径,\n不指定则自动搜索，搜索顺序： \n1、\php\php-cgi.exe \n2、环境变量 PHP_CGI_EXE_PATH 指定的位置\n3、path 环境变量指定的目录下查找 php-cgi.exe\n4、自注册表搜索\n5、C:\Program Files\PHP 目录下搜索\n6、~\lib\php\.dll\php-cgi.exe
+iniPath = 可选指定php.ini路径,\n不指定则在php-cgi.exe目录下查找
+threadNum = 设置服务器线程数，默认为2个线程
+startPort = 设置服务器端口,默认自动分配空闲端口
+startIp = 设置服务器端IP,\n默认为"127.0.0.1"
+customErrors = @.customErrors = {\n    [404] = function(response){\n		response.status = "404 Not Found";\n		response.write("404 Not Found"); __/*自定义错误页*/\n	} \n}
+
+httpHandle = @.httpHandle = {
+	["/path"] = function(response,request,session){
+		response.write(web.json.stringify({a:123}));
+		__/*可在此用一个表自定义 HTTP 服务端处理程序\n键为请求路径，值为处理函数\n在 PHP 中发起 HTTP 请求 aardio 处理的例子：\nfile_get_contents('http://'.$_SERVER['HTTP_HOST'].'/path')\nPHP 也可以如上直接请求工程中的 aardio 代码文件*/
+	}
+}
+
+threadGlobal = @.threadGlobal = {
+	__/*此表内的键值对将复制为所有处理 HTTP 请求的线程环境全局变量\nphpCgiPath,phpIniPath,httpHandle 为保留名称，请勿使用*/
+}
+
+notify("/__->php") = 通知指定的 PHP 页面运行，不阻塞当前线程。\n发送请求后关闭连接，不获出页面输出数据。\n\n参数指定 PHP 页面路径，不支持内嵌资源路径。\n放 *.php 文件的工程目录「内嵌资源」属性必须为 false。\n\n用法请参考：范例 > 调用其他语言 > php > CGI 回显
+end intellisense**/
+
+/**intellisense()
+process.php = 基于 wsock.tcp.simpleHttpServer 启动 PHP CGI 服务端，\nHTTP 服务端默认自动分配空闲端口，当前线程结束时，HTTP 服务端会自动退出\n当前进程退出时，即使 PHP CGI 进程仍然运行也会自动退出
+process.php( =  查找可用端口创建 PHP/CGI 服务器，返回返回完整URL。\n此服务端限制使用本机IP 127.0.0.1 访问,并随机分配端口不会出现端口冲突\n如果 PHP/CGI 服务器已启动则直接返回URL而不是重复启动服务器,\n注意当前线程结束时,此服务器线程会自动退出
+process.php(.(path,documentRoot) = 查找可用端口创建 PHP/CGI 服务器，返回返回完整URL。\n如果 PHP/CGI 服务器已启动则直接返回 URL 而不是重复启动服务器,\n省略参数返回首页 URL,尾部不包含斜杠\n\n可选用 @path 参数指定请求目标文件的相对路径。\n└── 因 PHP 不支持内嵌资源路径，\n└── 放 *.php 文件的工程目录「内嵌资源」属性必须为 false。\n\n可选使用参数 @documentRoot 指定网站根目录,默认为"/"
+end intellisense**/

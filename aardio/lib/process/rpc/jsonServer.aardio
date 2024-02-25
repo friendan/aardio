@@ -1,0 +1,293 @@
+﻿//jsonServer 服务端
+import web.json;
+import string.aasdl;
+
+namespace process.rpc;
+
+class jsonServer{
+	ctor(external){};
+	rpc = {
+		external = external;
+		_rpcResponse = function(reqData){
+	 	
+			if( ! reqData  ){
+				return { 
+					error = {
+						code = -32700;
+						message = "Invalid JSON was received by the server." 
+					};
+				};  
+			};
+		  	
+			if( ! (reqData[["method"]] ) ){
+				return { 
+					id = reqData[["id"]];
+					error = {
+						code = -32600;
+						message = "Invalid Request	The JSON sent is not a valid Request object."
+					};
+				}
+			};
+			
+			if(!owner.external){
+				return {
+					id = reqData[["id"]];
+					error = {
+						code = -32601;
+						message = "The method does not exist / is not available.."
+					};
+				}
+			}
+			
+			var method = reqData[["method"]];
+			if(method=="?"){
+				if(!owner.aasdl){
+					owner.aasdl = ..string.aasdl(owner.external);
+				}
+				
+				return {
+					result = owner.aasdl;
+					id = reqData.id;
+				}
+			}
+			
+			var success,result,err; 
+			var ns,m = ..string.match(method,"(.+)\.([^.]+)$");
+			if( ns && m ){
+				var obj = ..table.getByNamespace(ns,owner.external);
+				if( (type(obj) == type.table ) && obj[m] ){
+					if(reqData.params) success,result,err = call(obj[m],obj,..table.unpackArgs(reqData.params) );
+					else success,result,err= call(obj[m],obj);
+				}
+				else {
+					return {
+						id = reqData[["id"]];
+						error = {
+							code = -32601;
+							message = "The method does not exist / is not available.."
+						};
+					}
+				}
+				
+			}
+			else {
+				if(owner.external[method] ){
+					if(reqData.params) success,result,err = call(owner.external[method],owner.external,..table.unpackArgs(reqData.params) );
+					else success,result,err = call(owner.external[method],owner.external);
+				}
+				else {
+					return {
+						id = reqData[["id"]];
+						error = {
+							code = -32601;
+							message = "The method does not exist / is not available.."
+						};
+					}
+				}	
+			} 
+			
+			if(!success){
+				err = result;
+			}
+			
+			if((result === null) && (err!==null)){ 
+				if( type(err) == type.string ){
+					err = {
+						code =-32603;
+						message = err;
+					} 
+				}
+				elseif( type(err) == type.number ){
+					err = {
+						code = err;  
+						message = (err == -32602 ? "Invalid params" : "Server error");
+					} 
+				}	
+				elseif( err[["code"]] || err[["message"]] ){
+				 	
+				}
+				else {
+					err = {
+						code =-32603;  
+						message = "Internal error";
+					}
+				} 
+			}
+			else {
+				err = null;
+			}
+			
+			
+			return {
+				@{ _defined = (err === null ? {"result"} : null); _type="object"};
+				error = err;
+				result = result;
+				id = reqData.id;
+			}
+		}
+		_beginRpcResponse = function(){
+		
+			if(!owner.external) owner.external=this;
+			
+			var reqData;
+			owner.lastRequstData = null;
+			if(owner.beforeJsonParse){ 
+				while( var json =  stdin.read() ) { 
+					owner.lastRequstData = json;
+					json = owner.beforeJsonParse(json);
+					reqData = ..web.json.tryParse(json);
+	    			if(reqData && type(reqData)=="table"){
+	    			    if(reqData[["id"]] || reqData[1][["id"]]) break; 
+	    			}
+				}	
+			}
+			else{
+				var json,jsonEnd,jsonEndStr;
+				while( var c =  stdin.read(1) ){
+					if(c=="[") {
+						json = "[";
+						jsonEnd =']'#;
+						jsonEndStr =']';
+						break;
+					}
+					else if(c=="{") {
+						json = "{";
+						jsonEnd = '}'#;
+						jsonEndStr ='}';
+						break;
+					}
+				}
+				
+				if(json){
+					while( var block =  stdin.readTo(jsonEnd)) {
+				 	
+						json = json ++ block ++ jsonEndStr;
+						
+						owner.lastRequstData = json;
+						reqData = ..web.json.tryParse(json);
+					
+	    				if(reqData[["id"]]
+	    					|| ( type(reqData)=="table" && reqData[1][["id"]]) ) {
+	    			    	break; 
+	    				}
+					}	
+				}
+			}
+			
+			if( ! reqData  ){
+				if(owner.lastRequstData){
+					return owner._write({error = {
+						code = -32700;
+						message = ..string.concat("Invalid JSON was received by the server.");
+					}});	
+				}
+				
+				return;
+			};
+			
+			if(#reqData){
+				var transaction = ..table.array();
+				for(i=1;#reqData;1){
+					var repData  = owner._rpcResponse(reqData[i]);
+					if( reqData[i].id ) {
+						repData.id = reqData[i].id;
+						repData.jsonrpc =  "2.0";
+						..table.push(transaction,repData); 
+					};
+				}
+				
+				if(#transaction){
+					return owner._write(transaction);
+				};
+				return true;
+			};
+			
+			var repData = owner._rpcResponse(reqData); 
+			if(reqData.id!=null) {
+				repData.id = reqData.id;
+				return owner._write(repData);
+			}
+		};
+		_write = function(repData){
+			repData.jsonrpc =  "2.0";
+			
+			var jsonData = ..web.json.stringify(repData);
+			if( owner.afterJsonStringify ) {
+				jsonData = owner.afterJsonStringify(jsonData);
+				if(!jsonData) return true;
+			}
+			
+			var ok,err,errno = stdout.write(jsonData,'\n');
+			if(ok){
+				return stdout.flush();
+			}
+			
+			return ok,err,errno;
+		}; 
+		run = function(){
+			if( stdout.type() != 0x3/*_FILE_TYPE_PIPE*/ ) return;
+			
+			var this = owner;
+
+		 	var ok,err,errno;
+		 	do{
+		 		try{
+		 			ok,err,errno = this._beginRpcResponse()
+		 		}
+		 		catch(e){
+		 			if( this.onError ) {
+						this.onError(e,this.lastRequstData);
+					}
+					
+					ok,err,errno = this._write({
+						error = {
+							code = -32603/*_JSONRPC_INTERNAL_ERROR*/; 
+							message = ..string.concat( "Internal JSON-RPC Error:",e);
+						};
+					})	
+		 		}
+		 	}while(ok)
+		 	
+		 	return ok,err,errno;
+		}
+		
+	}
+}
+
+namespace jsonServer{ 
+    stdout = ..io.stdout;
+    stderr = ..io.stderr;  
+    stdin = ..io.stdin; 
+}
+
+
+/**intellisense()
+process.rpc.jsonServer = 基于进程管道实现的 JSON-RPC 2.0 服务端，\n对应的客户端实现为 process.rpc.jsonClient 。\n\n规则如下：\n1、客户端不应当向服务端发送任何不符合 JSON-RPC 规范的内容。\n2、客户端应当仅将包含 jsonrpc 字段的对象解析为 JSON-RPC 响应对象。\n在批量调用时，应当仅将包含上述对象的非空数组解析为 JSON-RPC 响应对象。\n客户端应当允许服务端进程的存在其他输出或错误输出。\n3、服务端在发送每个 JSON-RPC 响应对象不会包含换行且在尾部添加换行符'\n'。\n\n[关于JSON-RPC 2.0](http://www.jsonrpc.org/specification)
+process.rpc.jsonServer() = 创建 JSON-RPC 2.0 服务端\n可选在构造参数中指定监听客户端调用的监听器对象\n如果不指定参数,保用对象自身监听客户端调用\n!processRpcJsonServer.
+!processRpcJsonServer.? = 客户端可以调用的远程对象名或远程方法名字,\n客户端传过来的params参数必须是数组\n服务端会展开此数组作为函数的调用参数\n函数第一个返回值指定为客户端获取的result返回值\n函数的第二个返回值指定为客户端error错误对象\n错误对象可以是数值，字符串、或符合JSON-RPC2.0协议的表对象,\n!web_rpcJsonClient.
+end intellisense**/
+
+/**intellisense(!processRpcJsonServer)
+rpc.run() = 运行JSON-RPC服务端响应用户请求
+rpc.external = 指定包含客户端可以调用的远程函数的表对象,可嵌套子表,\n如果创建服务端对象的构造参数中没有指定表,\n这个对象默认指向对象自身\n可在调用run函数之前更改此对象
+rpc.onError = @.onError = function(err,requestData){
+	__/*服务器内部错误时触发此事件\nerr为抛出的异常对象,一般为错误信息\nrequestData为客户端发送的请求数据*/
+} 
+rpc.aasdl = 指定自定义的aasdl\n如果不指定,服务端会根据external自动生成aasdl\n如果客户端请求的方法名为"?"时,返回此属性,\n[关于aasdl](http://bbs.aardio.com/doc/aasdl)
+rpc.beforeJsonParse = @.beforeJsonParse = function(jsonData){
+    __/*可以在这里解密客户端数据,返回null中止本次调用*/
+	return jsonData;
+}
+rpc.afterJsonStringify = @.afterJsonStringify = function(jsonData){
+    __/*可以在这里加密服务端JSON,返回null中止本次调用*/
+	return jsonData;
+}
+end intellisense**/
+
+ /**intellisense()
+_JSONRPC_PARSE_ERROR=@-32700/*_JSONRPC_PARSE_ERROR*/
+_JSONRPC_INVALID_REQUEST=@-32600/*_JSONRPC_INVALID_REQUEST*/
+_JSONRPC_METHOD_NOTFOUND=@-32601/*_JSONRPC_METHOD_NOTFOUND*/
+_JSONRPC_INVALID_PARAMS=@-32602/*_JSONRPC_INVALID_PARAMS*/
+_JSONRPC_INTERNAL_ERROR=@-32603/*_JSONRPC_INTERNAL_ERROR*/
+end intellisense**/

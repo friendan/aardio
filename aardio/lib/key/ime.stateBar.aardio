@@ -1,0 +1,346 @@
+﻿//ime.stateBar 输入状态栏
+import win.ui;
+import key.ime;
+import winex.caret;
+import sys.locale;
+import win.ui.orphanPlus;
+
+namespace key.ime;
+class stateBar{
+	ctor(form){{
+ 		this = ..win.ui.orphanPlus(form); 
+		this.background = 0xE5A6CAF0;  
+		this.offsetY = 0;
+		this.offsetX = 30;
+		this.timeout = 2;
+		this.lineHeight = 50;
+		this.editorClasses = {
+			["AVL_AVView"]=1;["ConsoleWindowClass"]=1;
+		};
+		
+		this.closedModeLangId = {[0x804] = 0x409;[0x404] = 0x409;[0xC04] = 0x409;[0x1404] = 0x409;[0x412] = 0x409;[0x0411] = 0x409} 
+		
+		var userLangId = ::Kernel32.GetUserDefaultLangID();
+		this.closedModeLangId[0] = this.closedModeLangId[userLangId] : userLangId;
+		
+		var getCaret = ..winex.caret.get;
+		var getImeState = ..key.ime.state;
+		var getCapital = ..key.ime.capital;
+		var tick = ..time.tick;
+		
+		var lastFocusWnd,lastFocusClass; 
+		this.checkImeState = function(){
+			
+			var hForeground = ..win.getForeground();
+			if(!hForeground) return;
+			
+			var caret,hFocus = getCaret(hForeground);
+			var prev = this.imePrevState;
+			var topChanged = 0; 
+			
+			if(!caret) {
+				if(!prev) prev = {};
+				hFocus = hFocus : hForeground;
+				
+				var cls;
+				if(hFocus = lastFocusWnd) cls = lastFocusClass;
+				else {
+					cls = ..win.getClass(hFocus);
+					lastFocusClass = cls;
+					lastFocusWnd = hFocus;
+				}
+			 
+				if(this.editorClasses[cls]){
+					caret = ::RECT();
+					::User32.GetCursorPos(caret);
+					
+					var x,y,cx,cy = ..win.getPos(hFocus,true); 
+					if(!(cx&&cy)) x,y,cx,cy = ..win.getPos(hForeground,true); 
+					if( (caret.left>=x) && (caret.left<=x+cx) && (caret.top>=y) && (caret.top<=y+cy) ){
+						caret.hwnd = hFocus; 
+					}
+					else {
+						caret = null;
+					}
+				} 
+					
+				if(!caret){
+					if(!this.hide){
+						 this.hide = true; 
+					}
+					prev.hwndCaret = hForeground;
+					return; 
+				}
+			}
+			else{
+				lastFocusWnd = null;
+				
+				if(!prev) prev = {}; 
+				else {
+					//遇到喜欢耍酷的光标了
+					if( caret.bottom && prev.top 
+						&& (prev.top != caret.top)) { 
+						topChanged = ..math.abs(caret.top - prev.top)
+						if (topChanged < 3) caret.top = prev.top; //别跳了！
+					}
+				} 	
+			}
+			this.imePrevState = prev;
+			
+			var imeX,imeY = caret.left,caret.top - this.height;
+			if(this.offsetX){
+				imeX = imeX + this.offsetX * ( this.dpiScaleX : 1) 
+			}
+			
+			if(this.offsetY){
+				imeY = imeY + this.offsetY * ( this.dpiScaleY : 1) 
+			} 
+			
+			if(imeY < 0 && caret.top > 0){
+				imeY = 0;
+				var w =  30 * ( this.dpiScaleY : 1);
+				if(imeX >= caret.left && imeX < (caret.left + w) ){
+					imeX = imeX + w;
+				}
+			}
+
+			var cap = getCapital();
+			var openNative,symbolMode,langId,convMode = getImeState(hFocus : hForeground);
+			
+			var dispLangId = langId;
+			if(!openNative){
+				dispLangId = this.closedModeLangId[langId] : langId;
+			}
+			elseif((!symbolMode) || ( this.quirksMode && (symbolMode != 3) && (langId == 0x804) ) ) {
+				if(this.closedModeLangId[langId]){
+					dispLangId = this.closedModeLangId[langId];
+					openNative = false;
+				}
+			}
+			
+			if( prev.openNative == openNative
+				&& prev.symbolMode == symbolMode
+				&& prev.cap == cap
+				&& prev.hwndCaret == caret.hwnd
+				&& prev.langId == langId
+				){
+
+				var swp = 0x10/*_SWP_NOACTIVATE*/|8/*_SWP_NOREDRAW*/|0x200/*_SWP_NOREPOSITION*/|0x200/*_SWP_NOOWNERZORDER*/|1/*_SWP_NOSIZE*/|0x400/*_SWP_NOSENDCHANGING*/;
+				if(this.hide)  {
+					if(this.timeout){ 
+					 
+						if( (topChanged < this.lineHeight * ( this.dpiScaleY : 1) )  ){
+							prev.top = caret.top;
+							return;
+						}	
+					}
+					
+					if( ::GetAsyncKeyState( 0x1/*_VK_LBUTTON*/ ) < 0 ){
+						if(prev.lbDownBeginTime === null ) prev.lbDownBeginTime = tick();
+						return;
+					}
+					
+					prev.top = caret.top;  
+					if(prev.lbDownBeginTime && ( tick() - prev.lbDownBeginTime > 400 ) ){
+						prev.lbDownBeginTime = null;
+						return;
+					}
+					
+					prev.lbDownBeginTime = null;
+					if(this.ignoredWindow == caret.hwnd ) return;
+					
+					swp = swp | 0x40/*_SWP_SHOWWINDOW*/;
+					prev.showTime  = tick(); 
+				}
+				else { 
+					if( ::GetAsyncKeyState( 0x1/*_VK_LBUTTON*/ ) < 0 ){
+						if(prev.lbDownBeginTime === null ) prev.lbDownBeginTime = tick();
+						elseif(prev.lbDownBeginTime && ( tick() - prev.lbDownBeginTime > 400 ) ){
+							if(!this.hide) this.hide = true;  
+						} 
+						return;
+					}
+					
+					prev.top = caret.top; 
+					prev.lbDownBeginTime = null;
+					
+					if( this.timeout  && ((tick() - prev.showTime ) > ( this.timeout * 1000) ) ){
+						this.hide = true; 
+						return;
+					} 
+				} 
+				
+				this.setPos(imeX,imeY,,,-1/*_HWND_TOPMOST*/,swp);
+				return;	
+			} 
+			
+			if( ( prev.hwndCaret != caret.hwnd )
+				&& (::GetAsyncKeyState( 0x1/*_VK_LBUTTON*/ ) < 0 ) ){
+				if(prev.lbDownBeginTime === null ) prev.lbDownBeginTime = tick();
+				return;
+			}
+			prev.lbDownBeginTime = null;
+			 
+			if(openNative!==prev.openNative && this.openStyle){ 
+				..table.assign(this,this.openStyle[openNative?1:0]);
+			}
+		
+			prev.langId = langId;
+			prev.openNative = openNative;
+			prev.symbolMode = symbolMode;
+			prev.cap = cap;
+			prev.hwndCaret = caret.hwnd;
+			prev.top = caret.top; 
+			prev.showTime  = tick(); 
+			
+			var text = this.tipChars[dispLangId];
+			if(!text){
+				text = ..sys.locale.getCountryName(dispLangId);
+				this.tipChars[dispLangId] = text;
+			}
+			
+			if(dispLangId==0x411){
+				if(convMode && (convMode & 2/*_IME_CMODE_KATAKANA*/) ){
+					if(this.tipChars.katakana) text = this.tipChars.katakana;
+				}
+			}
+			 
+			var iconText;
+			if(cap) iconText = this.tipChars.capital;
+			elseif(!symbolMode) iconText = this.tipChars.close;
+			elseif(symbolMode == 1/*_IME_SYMBOLMODE_HALFSHAPE*/) iconText =  this.tipChars.halfShape;
+	 		elseif(symbolMode == 2/*_IME_SYMBOLMODE_FULLSHAPE*/) iconText =  this.tipChars.fullShape;
+	 		elseif(symbolMode == 3/*_IME_SYMBOLMODE_SYMBOL*/) iconText =  this.tipChars.symbol;
+	 		
+	 		if(this.iconText != iconText ) this.iconText = iconText; 
+	  		if(this.text != text) this.text = text;
+	  		
+	  		if(this.onImeStateChange){
+	  			if( ! this.onImeStateChange(caret.hwnd,imeX,imeY,openNative,symbolMode,text,iconText) ){
+	  				this.ignoredWindow = caret.hwnd;
+	  				return;
+	  			}
+	  		}
+	  		
+	  		var swp = 0x10/*_SWP_NOACTIVATE*/|8/*_SWP_NOREDRAW*/|0x200/*_SWP_NOOWNERZORDER*/|1/*_SWP_NOSIZE*/|0x400/*_SWP_NOSENDCHANGING*/;
+	  		if(this.hide) swp = swp | 0x40/*_SWP_SHOWWINDOW*/;
+			this.setPos(imeX,imeY,,,-1/*_HWND_TOPMOST*/,swp);	
+		}
+		
+		this.imeSkin = function(cfg){
+			if(cfg.embeddingFontData){ 
+				var fontFamily = ..fonts.addFamily(cfg.embeddingFontData);
+				if(fontFamily) cfg.embeddingFontName = fontFamily.getName(); 
+			}
+			 
+			this.background = null;
+			this.foreground = null;
+			this.linearGradient = null;
+			this.paddingLeft = cfg.paddingLeft : 0;
+			this.paddingRight = cfg.paddingRight : 0;
+			this.paddingTop = cfg.paddingTop : 0;
+			this.paddingBottom = cfg.paddingBottom : 0; 
+		
+			..table.assign(this,cfg);
+			
+			if(cfg.iconStyle) this.iconStyle = ..table.clone(cfg.iconStyle); 
+			else this.iconStyle = null;
+			
+			if(cfg.openStyle) this.openStyle = ..table.clone(cfg.openStyle);
+			else this.openStyle = null;
+			
+			if(cfg.border) this.border = ..table.clone(cfg.border);
+			else this.border = null;
+			
+			if(cfg.textPadding) this.textPadding = ..table.clone(cfg.textPadding); 
+			else this.textPadding = null;
+			
+			if(cfg.tipChars) { 
+				this.tipChars = ..table.assign({
+					[0x411] = "あ";[0x412] = "가";[0x804]="中";[0x409]="En";katakana = "カ";hanja="漢"
+				},cfg.tipChars);
+			}
+			
+			this.paddingBottom = cfg.paddingBottom:0;
+	 		this.paddingLeft = cfg.paddingLeft:0;
+	 		this.paddingRight = cfg.paddingRight:0;
+	 		this.paddingTop = cfg.paddingTop:0;
+			
+			if(cfg.width) this.width = this.dpiScale(cfg.width); 
+			if(cfg.height) this.height = this.dpiScale(cfg.height);
+	  		
+			this.imeWatch();	
+		}
+		
+		this.imeWatch = function(enabled){
+			if(enabled===null){
+				if(!this.imeWatchingTimerId) return;
+				enabled = true;
+			}
+			
+			this.paused = !enabled;
+			if(this.imeWatchingTimerId){
+				this.clearInterval(this.imeWatchingTimerId);
+				this.imePrevState = null;
+			}
+			
+			this.show(false);
+			this.predraw();
+			
+			if(enabled){
+				
+				var userLangId = ::Kernel32.GetUserDefaultLangID();
+				this.closedModeLangId[0] = this.closedModeLangId[userLangId] : userLangId;
+				
+				if(this.tipChars) { 
+					var userLangId = ::Kernel32.GetUserDefaultLangID();
+					
+					if(userLangId == 0x804
+						|| userLangId = 0x404/*zh-TW*/
+						|| userLangId = 0x0C04/*zh-HK*/ 
+						|| userLangId = 0x1404/*zh-MO*/
+						|| userLangId = 0x1004/*zh-SG*/){ 
+						if(!this.tipChars[userLangId]) {
+							this.tipChars[userLangId] = this.tipChars[0x804] : "中";
+						}
+						
+						this.tipChars[0] = this.tipChars[userLangId];
+					} 
+					else {
+						this.tipChars[0] = this.tipChars[0x804];
+					}
+				}
+			
+				this.imeWatchingTimerId = this.setInterval( this.checkImeState,this.interval : 50 );
+			}
+		}
+		
+		this.imeSkin({
+			width=49;
+			height=29;
+			offsetX=23;
+			offsetY=-5;	
+			background=0xFF0347A7;
+			argbColor=0xFFE3FAF9;
+			iconColor=0xFFBFFFB5;
+			iconStyle={font={h=-12;name="Segoe UI";weight=700};align="right";valign="center";padding={top=3;right=6;left=0;bottom=0}};
+			iconTextRenderingHint=5;
+			tipChars={[0x409]="En";[0x804]="中";capital="A";fullShape="〇";close='╳';halfShape='◑';symbol="。"};
+			align="left";
+			valign="center";
+			textPadding={top=7;right=0;left=7;bottom=7};
+			textRenderingHint=5;
+			font={h=-14;name="Segoe UI";weight=700};
+			border={color=0xB4D2F9F8;radius=18;width=2};
+		});
+		
+		this.imeWatch(true);
+	}};
+}
+
+/**intellisense()
+key.ime.stateBar = 通用输入法状态跟踪提示，\n可跟踪输入光标或鼠标文本指针位置并即时显示输入法状态。\n详细说明与用法请参考开源软件 ImTip
+key.ime.stateBar( = 创建输入法状态栏，返回 plus 控件
+key.ime.stateBar(.(winform) = 参数 @winform 指定所有者窗体，不可省略
+key.ime.stateBar() = !ui_ctrl_plus.
+end intellisense**/

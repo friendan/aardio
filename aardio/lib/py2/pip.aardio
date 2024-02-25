@@ -1,0 +1,137 @@
+﻿//pip 安装模块
+if(!_STUDIO_INVOKED) error("py2.pip 只能用于开发环境",2)
+
+import console;
+console.setTitle("aardio - Python 模块自动安装工具");
+
+import ide;
+import process;
+import fsys;
+import string.cmdline;
+import py2;
+	
+namespace py2;
+
+class pip{
+	ctor( ... ){
+		if(!..io.exist("~\lib\py2\.res\pip\Lib\site-packages")){
+			
+			//pip 安装程序结束会自动结束进程，所以新建一个进程
+			var pid = ..ide.createProcess(,`
+			
+				//附加到父进程控制台
+				::Kernel32.AttachConsole(`+..process.getId() +`)
+				
+				//打开控制台再导入 py2 扩展库，Python 才能在控制台输出
+				import console;
+				console.showLoading("正在下载 Python 模块安装工具：pip");
+				
+				import inet.http;
+				var pyCode = inet.http.get("https://bootstrap.pypa.io/get-pip.py");
+				
+				console.log("已下载完成，正在安装 pip ……");
+				
+				import py2;
+				
+				//设置启动参数，注意第 1 个参数设为启动程序路径，Python 从第 2 个参数开始取参数是
+				py2.setArgv(..io._exepath,"--no-warn-script-location");
+				py2.exec( pyCode ) 
+			`); 
+			
+			if(!pid) return; 
+
+			var prcs = ..process(pid);
+			prcs.waitOne();
+			prcs.free();
+			
+			if( !..io.exist("~\lib\py2\.res\DLLs\Lib\site-packages") ){
+				return false;	
+			}
+			
+			if( !..io.exist("~\lib\py2\.res\DLLs\Scripts") ){
+				return false;	
+			}
+			
+			..fsys.delete("~\lib\py2\.res\pip\Scripts");
+			..fsys.move("~\lib\py2\.res\DLLs\Scripts","~\lib\py2\.res\pip\Scripts");
+			
+			..fsys.delete("~\lib\py2\.res\pip\Lib\site-packages")
+			..fsys.move("~\lib\py2\.res\DLLs\Lib\site-packages","~\lib\py2\.res\pip\Lib\site-packages");
+		}	
+
+		var args = ..string.cmdline.arguments(...);
+		
+		//将 "pip -t /py" 命令中的 /py 路径转换为完整路径 
+		if(args[1]=="install"){
+			var target;
+			for(i=1;#args;1){
+				if(args[i]=="-t" || args[i]=="--target" ){
+					if(args[i+1]){
+						args[i+1] = ..io.fullpath(args[i+1]);
+						break;
+					}
+					
+					target = true;
+				} 
+			}
+			
+			if(!target){
+				..table.push(args,"-t",..io.fullpath("/py/site-packages"));
+			}	
+		}
+				
+		//pip 出错会自动结束进程，所以新建一个进程		
+		var pid = ..ide.createProcess(,`
+		
+			//附加到父进程控制台
+			::Kernel32.AttachConsole(`+..process.getId() +`)
+			
+			//打开控制台再导入 py2 扩展库，Python 才能在控制台输出
+			import console;
+			console.open();
+				
+			import win.path; 
+			win.path.add("~\lib\py2\.res\pip\Scripts");
+			
+			import py2;
+			py2.appendPath("~\lib\py2\.res\pip\Lib\site-packages");
+			
+			py2.run("-m","pip",..table.unpack(`+..table.tostring(args)+`)); 
+		`); 
+		
+		if(!pid) return; 
+		
+		var prcs = ..process(pid);
+		prcs.waitOne();
+	};
+}
+
+namespace pip{
+    setIndexUrl = function(url){
+    	if(url){
+    	    if(url=="aliyun") url = "https://mirrors.aliyun.com/pypi/simple/";
+    	    elseif(url=="tsinghua") url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+    	    elseif(url=="tencent") url = "http://mirrors.cloud.tencent.com/pypi/simple"
+    	    elseif(url=="douban") url = "http://pypi.douban.com/simple/"
+    	    
+    		..py2.pip(" config set global.index-url " + url);
+    	}
+    	else {
+    	   ..py2.pip(" config unset global.index-url");
+    	}
+    }
+}
+
+..subscribe("beforeUnload",function(){
+	..console.pause();
+} );
+
+/**details(参考文档)
+https://pip.pypa.io/en/stable/cli/pip_install/
+end details**/
+
+/**intellisense()
+py2.pip = aardio 自带绿色版 Python 模块安装工具，\n只能在开发环境中使用
+py2.pip("install","__/*模块名称*/") = 执行 pip 命令，只能在开发环境单独运行。\n可以用一个字符串参数指定多个 pip 参数，用空格分格多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分格参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n\n默认安装模块到 "/py/site-packages" 目录下。
+py2.pip.setIndexUrl("aliyun") = 设置镜像源。\n参数指定源网址，支持常用镜像源缩写。\n"aliyun" 表示阿里云源，\n"tsinghua" 表示清化源，\n"tencent" 表示腾讯源，\n"douban" 表示豆瓣源
+end intellisense**/

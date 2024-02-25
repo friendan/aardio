@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\java\");
+fsys.copy( "\yuiCompressor","~\lib\java\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("java.yuiCompressor 扩展库已安装成功!","aardio- java.yuiCompressor扩展库安装程序")

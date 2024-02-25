@@ -1,0 +1,6 @@
+Python2.7官方版必须安装VC9运行库，因为VC9使用WinSxS加载技术不便于绿色打包,
+所以这里引用的是基于VC10编译的Python2.7版本,并精简了删除了部分模块，如果需要其他的模块，请到这里下载：
+
+https://download.aardio.com/v10/pages/download-python2-libs/
+下载后删除 *.pdb, *_d.dll, *_d.pyd 这些用于调试的文件，参考扩展库 py2.lib.numpy 的源代码引入该模块(注意修改扩展库目录下的「发布触发器」- 即 /.build/main.aardio )
+ 

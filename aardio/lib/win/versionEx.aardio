@@ -1,0 +1,70 @@
+﻿//versionEx 扩展版本信息
+import win.reg;
+import win.version;
+
+win.versionEx = win.version;
+namespace win.versionEx{ 
+	
+	var reg = ..win.regReader("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion")
+	updateBuildRevision = reg.queryValue("UBR") : 0;
+	
+	productName = reg.queryValue("ProductName");
+	if(isWin11Later){
+		productName = ..string.replace(productName,"Windows\s+10","Windows 11");
+	}
+	
+	editionId = reg.queryValue("EditionID");
+	displayVersion = reg.queryValue("DisplayVersion") ||  reg.queryValue("ReleaseId");
+  
+	//https://docs.microsoft.com/en-us/windows/release-health/release-information
+	var win10ReleaseId = {
+		[10240] = "1507";
+		[10586] = "1511";
+		[14393] = "1607";//SERVER 2016
+		[15063] = "1703";
+		[16299] = "1709";
+		[17134] = "1803";
+		[17763] = "1809";//SERVER 2019
+		[18362] = "1903";
+		[18363] = "1909";
+		[19041] = "2004";//20H1
+		[19042] = "2009";//20H2 自该版本已不再更新 Release ID
+	}	
+	if(isWin10Later){
+		releaseId = win10ReleaseId[buildNumber]
+		if(!releaseId) releaseId = reg.queryValue("ReleaseId");  
+		displayVersion = reg.queryValue("DisplayVersion") : releaseId; 
+	} 
+	else {
+		displayVersion = (majorVersion +"." + minorVersion);
+	}
+	
+	isWin10ReleaseLater = function(releaseId){ 
+		if(isWin11Later) return true; 
+		
+		if( isWin10Later ) {
+			if(buildNumber>=19042) return true; //Win10 20H2 已废弃 Release ID
+			
+			if(releaseId){
+				return tonumber(self.releaseId) >= tonumber(releaseId)
+			}
+			
+			for(build,releaseVersion in win10ReleaseId){
+				if(releaseVersion==releaseId){
+					return self.buildNumber >= build;
+				}
+			}
+		}
+	}
+}
+
+/**intellisense(!winVersion)
+productName = 产品名称,例如"Windows 10 Pro","Windows Server (R) 2008 Standard"等等\n需要导入win.versionEx此属性才可用
+editionId = 版本ID，例如 "Professional","ServerStandard"等等\n需要导入win.versionEx此属性才可用
+updateBuildRevision = 更新小版本号\n需要导入 win.versionEx 此属性才可用
+isWin10ReleaseLater(__) = 参数指定 Win10 Release ID,\nRelease ID 前 2 位为年份，后 2 位为发行月份,\n因为最后一个使用 Release ID 的系统为 Win10 2009（20H2）,\nWin10 20H2 以及之后的系统总是返回 true\n\n需要导入 win.versionEx 此函数才可用
+end intellisense**/
+
+/**intellisense()
+win.versionEx = 导入后 win.versionEx 指向 win.version 并进行扩展,\n增加 productName,editionId,updateBuildRevision 等字段,\n增强 format 函数,以及改变 displayVersion 为 Win10,Win11 格式\n\naardio 内建以下全局常量也可用于检测系统版本：\n_WINXP,_WIN7_LATER,_WIN10_LATER,_WINE,\n_WIN_VER_MAJOR,_WIN_VER_MINOR,_WIN_VER_BUILD 等\n!winVersion.
+end intellisense**/

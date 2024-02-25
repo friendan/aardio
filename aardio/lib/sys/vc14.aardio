@@ -1,0 +1,98 @@
+﻿//vc14 运行时（VC2015~2022）
+import inet.installer;
+import win.reg;
+
+namespace sys.vc14;
+
+isInstalled = function(minorVersion,buildNumber,architecture){
+    architecture = architecture === "x64" ? architecture:"x86";
+    
+	if(type.isString(minorVersion) ){
+	
+		if(minorVersion=="2015"){
+			minorVersion = null;	
+		}
+		elseif(minorVersion=="2017"){
+			minorVersion = 13;
+			if( !buildNumber || (buildNumber<26020) ) buildNumber = 26020;	
+		}
+		elseif(minorVersion=="2019"){ 
+			minorVersion = 20;
+			if( !buildNumber || (buildNumber<27820) ) buildNumber = 27820;
+		}
+		elseif(minorVersion=="2022"){ 
+			minorVersion = 30;
+			if( !buildNumber || (buildNumber<30401) ) buildNumber = 30401;
+		}
+	}
+	
+	var module = ::Kernel32.LoadLibraryExP("VCRUNTIME140.dll",,2/*_LOAD_LIBRARY_AS_DATAFILE*/ );
+	if(!module) return;
+	::Kernel32.FreeLibrary(module);
+	
+	if(buildNumber === null && minorVersion === null && architecture === "x86"){
+		return true;
+	}
+	
+	//也就是 vcruntime140.dll 的版本号
+	var reg = ..win.regReader("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\"+architecture);
+	if(!reg) return;
+
+	var installed = reg.queryValue("Installed");
+
+	if(installed){
+		if(minorVersion){
+			installed = reg.queryValue("Minor")>=minorVersion;	
+		}
+		
+		if(buildNumber){
+			installed = reg.queryValue("Bld")>=buildNumber;	
+		}
+	}
+	
+	reg.close();
+	
+	return installed;
+}
+
+isInstalled64 = function(minorVersion,buildNumber,architecture){
+    return isInstalled(minorVersion,buildNumber,"x64"); 
+}
+
+require = function(minorVersion,buildNumber,architecture){
+    architecture = architecture === "x64" ? architecture:"x86";
+    
+    if(isInstalled(minorVersion,buildNumber,architecture)){
+    	return true;
+    }
+
+	return !!..inet.installer("VC++ 2015~2022 支持组件"
+		,"https://aka.ms/vs/17/release/vc_redist."+architecture+".exe"
+		,`/install /quiet /norestart /log "%temp%\Install_vc_redist_14.log"`
+	)	
+}
+
+require64 = function(minorVersion,buildNumber,architecture){
+    return require(minorVersion,buildNumber,"x64"); 
+}
+
+/**intellisense(sys.vc14)
+isInstalled( = 是否安装 VC++14 运行时\n注意 VC2015、2017、2019、2022 都是使用同一运行库\n检测 VS 开发环境安装信息请使用库 process.vswhere
+isInstalled(.(minorVersion,buildNumber)  =  可选在参数中指定最低 C++ 运行时版本的 minorVersion 或 buildNumber,\n也可以直接在 minorVersion 中用字符串指定"2019","2017","2015"
+isInstalled(.() = 是否安装 VC2015 运行时
+isInstalled(.("2017") = 是否安装 VC2015 运行时
+isInstalled(.("2022") = 是否安装 VC2022 运行时
+isInstalled(.("2019") = 是否安装 VC2019 运行时
+isInstalled64(.() = 是否安装 VC2015 64位运行时
+isInstalled64(.("2017") = 是否安装 VC2017 64位运行时
+isInstalled64(.("2019") = 是否安装 VC2019 64位运行时
+isInstalled64(.("2022") = 是否安装 VC2022 64位运行时
+require( = 如果未安装 VC++14（VC2015、2017、2019） 运行时，则安装，\n注意VC2015、2017、2019都是使用同一运行库
+require(.(minorVersion,buildNumber)  = 可选在参数中指定最低 minorVersion 或 buildNumber,\n也可以直接在 minorVersion 中用字符串指定"2019","2017","2015"
+require(.() = 如果未安装 VC++14（VC2015） 运行时，则安装
+require(.("2017") = 如果未安装 VC++14（2017） 运行时，则安装
+require(.("2019") = 如果未安装 VC++14（2019） 运行时，则安装
+require64(.() = 如果未安装 VC++14（VC2015） 64位运行时，则安装
+require64(.("2017") = 如果未安装 VC++14（2017） 64位运行时，则安装
+require64(.("2019") = 如果未安装 VC++14（2019） 64位运行时，则安装
+end intellisense**/

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\npPlugin\");
+fsys.copy( "\vlc","~\lib\web\npPlugin\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.npPlugin.vlc 扩展库已安装成功!","aardio- web.npPlugin.vlc扩展库安装程序")

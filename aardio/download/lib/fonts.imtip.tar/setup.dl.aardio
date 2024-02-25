@@ -1,0 +1,13 @@
+import fsys; 
+fsys.createDir("~\lib\fonts\");
+fsys.copy( "\imtip.aardio","~\lib\fonts\" ); 
+fsys.copy("\imtip.ttf","~\lib\fonts\.res\imtip.ttf");
+
+import ide;
+ide.loadPrivateFont("~\lib\fonts\.res\imtip.ttf")
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("fonts.imtip 扩展库已安装成功!","aardio- fonts.imtip扩展库安装程序")

@@ -1,0 +1,25 @@
+//access
+//下面的代码仅使用系统组件,不需要安装 Access 软件
+
+var txt = /*
+Name,Starred,Contact_Id
+"孟轲","0",0
+"张九龄","1",1 
+*/ 
+string.save("/Contact.csv",..string.fromto(txt) ); //创建测试的TXT数据库，必须是 ANSI 编码。
+
+//指定分隔符,不是逗号就要在这里改
+import fsys.ini;
+var schema = fsys.ini("/schema.ini");
+schema.write("Contact.csv","Format","Delimited(,)"); 
+
+import console;
+import access;
+
+var txtDb = access( "/" ); //参数指定 CSV 所在目录就可以了 
+for(rs in txtDb.each("SELECT * FROM [Contact.csv] " ) ){ 
+     console.log( rs("Name").value,rs("Starred").value    );  
+}
+
+txtDb.close(); 
+console.pause();

@@ -1,0 +1,7 @@
+﻿import process.php; 
+process.php.cgiPath = "~\lib\php\.dll\php-cgi.exe";
+process.php["5"] = {["2"]={}}
+
+if(_STUDIO_INVOKED && !..io.exist(process.php.cgiPath)){
+	import php; 
+}

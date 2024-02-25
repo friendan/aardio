@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\typeScript\");
+fsys.copy( "\compiler","~\lib\typeScript\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("typeScript.compiler 扩展库已安装成功!","aardio- typeScript.compiler扩展库安装程序")

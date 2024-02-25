@@ -1,0 +1,52 @@
+﻿//htmlClient 客户端
+import string.html;
+import web.rest.client;
+namespace web.rest; 
+
+class htmlClient{
+	ctor( ... ){
+		this = ..web.rest.client( ... );
+		 
+		this.parseResponseResult = function(s){
+			var t = this._http.responseContentType;
+			if( t &&  ..string.match( t,"[\w\/]*<@@xml@>![\W]"  ) )
+				return  ..string.html( s );
+				
+			s = ..string.trim(s);
+			if( s[1] == '<'# ){
+				return  ..string.html( s );
+			}
+			return;
+		}
+		this.acceptType = "application/xml,text/xml,*/*";
+	}; 
+}
+
+namespace htmlClient{
+    
+    var http = ..web.rest.htmlClient();
+    get = http.get;
+    post = http.post;
+    delete = http.delete;
+    put = http.put;
+    patch = http.patch;
+}
+
+ 
+/**intellisense()
+web.rest.htmlClient = REST 客户端\n普通表单请求,返回数据为 string.html 文档对象。\n\n简单读取并解析网页 HTML \n也可以直接使用 string.html.getUrl 函数
+web.rest.htmlClient() = 创建 REST 客户端,\n!web_restClient.
+end intellisense**/
+
+/**intellisense(web.rest.htmlClient)
+get(.(网址,参数表) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
+post(.(网址,参数表) = 使用该POST方法提交请求,新增或修改资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
+delete(.(网址,参数表) = 使用该DELETE方法提交请求,删除资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
+put(.(网址,参数表) = 使用该PUT方法提交请求,替换或更新资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
+patch(.(网址,参数表) = 使用该PATCH方法提交请求,更新资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
+get() = !string_xml.
+post() = !string_xml.
+delete() = !string_xml.
+put() = !string_xml.
+patch() = !string_xml.
+end intellisense**/

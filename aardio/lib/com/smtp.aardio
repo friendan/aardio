@@ -1,0 +1,286 @@
+//smtp 邮件发送
+import com;
+import util.metaProperty;
+
+namespace com; 
+
+var _configUrl = "http://schemas.microsoft.com/cdo/configuration/";
+
+class smtp{
+	ctor(){
+		this.objEmail = ..com.CreateObject("CDO.Message"); 
+		this.objEmail.Configuration = ..com.CreateObject("CDO.Configuration");
+		
+		with( this.objEmail.Configuration.Fields ) {
+			Item(_configUrl + "smtpserverport").Value = 25;
+			Item(_configUrl + "sendusing").Value  = 2;
+			Item(_configUrl + "smtpauthenticate").Value  = 1;//cdoAuthentication.cdoBasic
+		}
+	};
+	@_metaProperty;
+}
+
+namespace smtp{  
+	
+    _metaProperty = ..util.metaProperty(
+		get = function(k){
+			return owner[["objEmail"]][k];
+		};
+		set = function(k,v){
+			owner[["objEmail"]][k] = v;
+		}; 
+		from = {
+			_get = function(){  
+				return owner[["objEmail"]].From;
+			}
+			_set = function( value ){  
+		  
+				owner[["objEmail"]].From =  value; 
+			} 	
+		};
+		sender = {
+			_get = function(){  
+				return owner[["objEmail"]].Sender;
+			}
+			_set = function( value ){  
+		  
+				owner[["objEmail"]].Sender =  value; 
+			} 	
+		};
+		reply = {
+			_get = function(){  
+				return owner[["objEmail"]].ReplyTo;
+			}
+			_set = function( value ){  
+		  
+				owner[["objEmail"]].ReplyTo =  value; 
+			} 	
+		};
+		to = {
+			_get = function(){  
+				return owner[["objEmail"]].To;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].To =  value; 
+			} 	
+		};
+		cc = {
+			_get = function(){  
+				return owner[["objEmail"]].Cc;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].Cc =  value; 
+			} 	
+		};
+		bcc = {
+			_get = function(){  
+				return owner[["objEmail"]].Bcc;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].Bcc =  value; 
+			} 	
+		};
+		subject = {
+			_get = function(){  
+				return owner[["objEmail"]].Subject;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].Subject =  value; 
+			} 	
+		};
+		text = {
+			_get = function(){  
+				return owner[["objEmail"]].Textbody;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].Textbody =  value; 
+				if(value)owner[["objEmail"]].TextBodyPart.Charset = "utf-8"
+			} 	
+		};
+		html = {
+			_get = function(){  
+				return owner[["objEmail"]].HTMLBody;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].HTMLBody =  value;  
+				if(value)owner[["objEmail"]].BodyPart.Charset = "utf-8";
+			} 	
+		};
+		addfile = function(...){
+			var t = {...}
+			for(i,attachfile in t){
+				owner[["objEmail"]].AddAttachment( ..io.fullpath(attachfile) )
+			}
+		
+		}
+		gethtml = function(url){
+			if(url[1]=="/" || url[1]=="\")
+				url = ..io.fullpath(url)
+				
+			if(url[2]==':'#)
+				url = "file://"+url;
+				
+			return owner[["objEmail"]].CreateMHTMLBody( url,31 ) 
+		}; 
+		account = {
+			_get = function(){ 
+				return owner.getConfig("smtpaccountname");
+			}
+			_set = function( value ){
+				owner.setConfig("smtpaccountname",value); 
+			} 	
+		};
+		username = {
+			_get = function(){ 
+				return owner.getConfig("sendusername");
+			}
+			_set = function( value ){
+				owner.setConfig("sendusername",value); 
+			} 	
+		};
+		password = {
+			_get = function(){  
+				return owner.getConfig("sendpassword");
+			}
+			_set = function( value ){
+				owner.setConfig("sendpassword",value);
+			} 
+		};
+		ssl = { 
+			_get = function(){  
+				return owner.getConfig("smtpusessl");
+			}
+			_set = function( value ){
+				owner.setConfig("smtpusessl",value); 
+			}  
+		}
+		tls = { 
+			_get = function(){  
+				return owner.getConfig("sendtls");
+			}
+			_set = function( value ){
+				owner.setConfig("sendtls",value); 
+			}  
+		}
+		server = {  
+			_get = function(){  
+				return owner.getConfig("smtpserver");
+			}
+			_set = function( value ){
+				owner.setConfig("smtpserver",value);
+			} 
+		}
+		port = {  
+			_get = function(){  
+				return owner.getConfig("smtpserverport");
+			}
+			_set = function( value ){
+				assert(type(value)==type.number,"端口必须是一个整数值")
+				owner.setConfig("smtpserverport",value); 
+			} 
+		}
+		authenticate = {  
+			_get = function(){  
+				return owner.getConfig("smtpauthenticate");
+			}
+			_set = function( value ){ 
+				owner.setConfig("smtpauthenticate",value); 
+			}
+		}
+		timeout = {   
+			_get = function(){  
+				return owner.getConfig("smtpconnectiontimeout");
+			}
+			_set = function( value ){ 
+				owner.setConfig("smtpconnectiontimeout",value); 
+			} 
+		}
+		sendusing = {   
+			_get = function(){  
+				return owner.getConfig("sendusing");
+			}
+			_set = function( value ){ 
+				owner.setConfig("sendusing",value);
+			}
+		} 
+		getConfig = function(k){  
+			return owner[["objEmail"]].Configuration.Fields.Item(_configUrl  + k ).Value ; 
+		};
+		setConfig = function(k,v){ 
+			owner[["objEmail"]].Configuration.Fields.Item(_configUrl  + k ).Value = v; 	
+		}; 
+		updateConfig = function(){
+			owner[["objEmail"]].Configuration.Fields.Update();
+			return owner;
+		}; 
+		setMailHeader = function(tHeader){
+			var f = owner[["objEmail"]].Fields;
+			for(k,v in tHeader){
+				f.Item("urn:schemas:mailheader:"+k).Value = v; 
+			};
+			owner[["objEmail"]].Fields.Update();
+		}; 
+		send = function( updateConfig=true ){ 
+			if(updateConfig) 
+				owner[["objEmail"]].Configuration.Fields.Update();
+				
+    		return owner[["objEmail"]].Send();
+		}; 
+		charset = {
+			_get = function(){
+				return owner["objEmail"].BodyPart.Charset;
+			}
+			_set = function( value ){
+				owner[["objEmail"]].BodyPart.Charset = value;
+			}
+		};
+		textCharset = {
+			_get = function(){
+				return owner["objEmail"].TextBodyPart.Charset;
+			}		
+			_set = function( value ){
+				owner[["objEmail"]].TextBodyPart.Charset = value;
+			}
+		}
+
+	) 
+}
+
+/**intellisense()
+!com_smtp.sender = 实际发件人邮件地址，例如：\n`sender@example.com` 或者 `"Sender" <sender@example.com>`
+!com_smtp.from = 发件人邮件地址，例如：\n`sender@example.com` 或者 `"Sender" <sender@example.com>`
+!com_smtp.to = 收件人邮件地址
+!com_smtp.reply = 应答邮件地址，例如：\n "Another" <another@example.com>
+!com_smtp.server = smtp服务器
+!com_smtp.account = SMTP 账户名
+!com_smtp.username = 发送邮件用户名
+!com_smtp.password = 发送邮件密码
+!com_smtp.textCharset = 文本编码
+!com_smtp.charset = 编码
+!com_smtp.subject = 邮件标题
+!com_smtp.html = HTML 邮件内容
+!com_smtp.text = 文本邮件内容
+!com_smtp.gethtml("__/*请输入html文件地址*/")  = html邮件内容
+!com_smtp.addfile("__") = 添加附件,支持多参数
+!com_smtp.Attachments = 已添加的附件
+!com_smtp.Attachments.Delete(1) = //删除附件,参数指定索引,起始索引为1
+!com_smtp.Attachments.DeleteAll() = 删除全部附件
+!com_smtp.getConfig(.(k) = 返回 @k 指定名称的属性值
+!com_smtp.setConfig(.(k,v) = 修改 @k 指定名称的属性值为 @v
+!com_smtp.Configuration.Fields.Item(.("配置名") = 配置属性
+!com_smtp.Configuration.Fields.Item().Value = 配置值
+!com_smtp.Fields.Item(.("配置名") = 配置属性
+!com_smtp.Fields.Item().Value = 配置值 
+!com_smtp.port = SMTP 端口,默认明文发送端口 25，\n使用 SSL 端口 465 请同时指定 ssl 属性为 true，\n使用 TLS 端口 587 请同时指定 tls 属性为 true
+!com_smtp.authenticate = 认证设置\n默认值为com.smtp.cdoAuthentication.cdoBasic
+!com_smtp.timeout = 超时值,以秒为单位
+!com_smtp.sendusing = 发送方式
+!com_smtp.send() = 发送邮件,\n可选使用一个false参数禁止更新配置参数
+!com_smtp.cc = 抄送
+!com_smtp.bcc = 密送
+!com_smtp.ssl = 是否启用 SSL，默认端口 465
+!com_smtp.tls = 是否启用 TLS，默认端口 587
+!com_smtp.setMailHeader = @.setMailHeader(\n	["return-receipt-to"] = "回执电邮地址";\n	["disposition-notification-to"] = "回执电邮地址";\n) 
+!com_smtp.updateConfig() = 更新配置\n!com_smtp.
+com.smtp() = 使用CDO.Message创建SMTP邮箱发送客户端\n[CDO.Message]( https://learn.microsoft.com/en-us/previous-versions/office/developer/exchange-server-2003/ms872547%28v%3Dexchg.65%29 )\n!com_smtp.
+end intellisense**/

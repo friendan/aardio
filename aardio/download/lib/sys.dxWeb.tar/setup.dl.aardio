@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\sys\");
+fsys.copy( "\dxWeb.aardio","~\lib\sys\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("sys.dxWeb 扩展库已安装成功!","aardio- sys.dxWeb扩展库安装程序")

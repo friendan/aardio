@@ -1,0 +1,36 @@
+﻿//tcpJsonClient 客户端
+import process.popen;
+import process.job.limitKill;
+import wsock.tcp.jsonClient;
+
+namespace process.rpc;
+
+class tcpJsonClient{
+	ctor( ... ){
+		var prcs,err,errCode = ..process.popen(...);
+		if(!prcs) return null,err,errCode;
+		
+		prcs.codepage = 65001 
+		prcs.assignToJobObject( ..process.job.limitKill );
+		
+		while( var url = prcs.read()  ) {
+			if(..string.find(url,"<127.0.0.1>|<localhost>\:\d+")  ){
+				var client = ..wsock.tcp.jsonClient(url);
+				client[["process"]] = prcs;
+				return client;
+			}
+		}
+		
+		var err = prcs.readErr(-1);
+		prcs.close();
+		
+		return null,err;
+	}; 
+}
+
+/**intellisense()
+process.rpc.tcpJsonClient = 调用启动 JSON-PRC 服务端的目标程序
+process.rpc.tcpJsonClient( = 调用启动 JSON-PRC 服务端的目标程序，\n创建管道并隐藏子进程的控制台黑窗口。\n自进程输出读取 "127.0.0.1:端口" 或 "localhost:端口" 格式地址，\n并创建 JSON-RPC 客户端连接该地址。\n\n成功返回 wsock.tcp.jsonClient 客户端，\n失败返回 3 个值：null,错误信息,错误代码
+process.rpc.tcpJsonClient(.(执行文件,命令行参数,STARTUPINFO) = 调用启动 JSON-PRC 服务端的目标程序。\n命令行参数可以是一个数组、一个或多个字符串参数,\n\n数组或多个命令行参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+process.rpc.tcpJsonClient() = !wsock_rpcJsonClient.
+end intellisense**/

@@ -1,0 +1,35 @@
+﻿import fsys;
+import java;
+import string.cmdline;
+
+namespace java;
+
+class ffdec { 
+	ctor( ... ){
+		var args = {
+			"-Xmx1024m",
+			"-Djna.nosys=true",
+			"-Dsun.java2d.uiScale=1.0", 
+			"-jar",jarPath 
+		}
+		
+		..table.append( args, ..string.cmdline.arguments(...))
+	
+		//为避免父进程被关闭,使用 java.popenProcess() 创建一个子进程,并用管道读取控制台输出
+		return ..java.popenProcess( args,{workDir=..io.fullpath( self.workDir : "/")} );  
+	}
+}
+
+namespace ffdec{
+    jarPath = ..io.appData("\aardio\std\java\ffdec\ffdec.jar");
+    
+	if(!..io.exist(path)){
+		import sevenZip.lzma.tar;
+		sevenZip.lzma.tar($"~\lib\java\ffdec\.res\ffdec.tar.lzma",..io.appData("aardio\std\java\") )
+	} 
+}
+
+/**intellisense()
+java.ffdec(->->->) = 启动 SWF 反编译工具 JPEXS Free Flash Decompiler,\n可选指定一个或多个启动参数,\n可用参数:\nhttps://github.com/jindrapetrik/jpexs-decompiler/wiki/Commandline-arguments\n需要 JRE 1.8 或 1.8 以上版本,\naardio 查找JRE的顺序请参考 aardio 调用 JAVA 范例\n支持系统安装的JRE或者用环境变量 JRE_HOME 指定 JRE 路径
+java.ffdec() = !process_popen.
+end intellisense**/

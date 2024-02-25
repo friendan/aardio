@@ -1,0 +1,91 @@
+﻿//notification 事件通知
+import win.guid;
+namespace sys.power;
+
+class notification{
+	ctor(winform,guid,dataStruct){
+		if( type.isString(guid) ) guid = ..win.guid(guid);
+		if( !dataStruct ) dataStruct = {INT value};
+		
+		if(guid){
+			this.handle = ::User32.RegisterPowerSettingNotificationP(winform.hwnd,guid,0);	
+		}
+		
+		var powerSetting = {struct setting = ..win.guid(); INT len};
+		var sizePowerSetting = ..raw.sizeof(powerSetting);
+		
+		winform.wndproc = {
+			[0x218/*_WM_POWERBROADCAST*/] = function(hwnd,message,wParam,lParam){ 
+				if(wParam == 0x8013){
+					if(this.onPowerSettingChange){
+						var ptr = topointer(lParam);
+						var set = ..raw.convert(ptr,powerSetting);
+						
+						if(dataStruct){
+							var st = ..table.assign({},dataStruct);
+							if(st && ..raw.sizeof(st)==set.len) {
+								..raw.convert(ptr,st,sizePowerSetting);
+								this.onPowerSettingChange(tostring(set.setting),st[["value"]] === null ?  st : st[["value"]]);
+								return;
+							}
+						}
+						 
+						var data = ..raw.buffer(set.len,topointer( lParam,sizePowerSetting));
+						this.onPowerSettingChange(tostring(set.setting),data);
+					}
+				}
+				elseif(wParam == 0xA){
+					if(this.onPowerStatusChange){
+						var status = {
+  							BYTE acLineStatus;
+  							BYTE batteryFlag;
+  							BYTE batteryLifePercent;
+  							BYTE systemStatusFlag;
+  							INT batteryLifeTime;
+  							INT batteryFullLifeTime;
+						} 
+						
+						if( ::Kernel32.GetSystemPowerStatus(status)	) {
+							this.onPowerStatusChange(status)
+						} 
+					}
+				}
+				elseif(wParam == 0x7){
+					if(this.onResuming ){
+						this.onPowerResuming(false) //手动
+					}
+				}
+				elseif(wParam == 0x12){
+					if(this.onResuming){
+						this.onPowerResuming(true) //自动
+					}
+				}
+			}
+		}
+	};
+	close = function(){
+		if(this.handle){
+			::User32.UnregisterPowerSettingNotification(this.handle);
+			this.handle = null;
+		}
+	};
+}
+
+/**intellisense()
+sys.power.notification = 用于注册接收电源设置或状态变更事件的通知窗体
+sys.power.notification( = 注册接收电源设置或状态变更事件的通知窗口，\n相关文档： https://docs.microsoft.com/en-us/windows/win32/power/power-setting-guids
+sys.power.notification(.(winform,guid,dataStruct) = 参数 @winform 必须指定父窗口,\n参数 @guid 可用字符串或 win.guid 对象指定事件 GUID，\n可选用参数 @dataStruct 指定解析回调参数值的结构体。\n如果结构体包含 value 字段，则回调参数值为 value 字段值。\n不指定 @dataStruct 则默认为 {INT value}
+sys.power.notification() = !sysPowerNotification.
+end intellisense**/
+
+/**intellisense(!sysPowerNotification)
+onPowerResuming = @onPowerResuming = function(automatic){
+	__/*自低耗电恢复触发此事件，\n系统自动恢复则 automatic 参数为 true，\n用户操作恢复则在数为 false*/
+}
+onPowerStatusChange = @onPowerStatusChange = function(systemPowerStatus){
+	__/*电源状态变更，\n参数为 SYSTEM_POWER_STATUS 结构体，\n请参考该结构体相关资料*/  
+}
+onPowerSettingChange = @onPowerSettingChange = function(guid,data){
+	__/*电源设置或设置状态变更，\n参数为 guid 为设置 GUID，\ndata 为参数值*/  
+}
+end intellisense**/

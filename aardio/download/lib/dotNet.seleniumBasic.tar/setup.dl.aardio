@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\dotNet\");
+fsys.copy( "\seleniumBasic","~\lib\dotNet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dotNet.seleniumBasic 扩展库已安装成功!","aardio- dotNet.seleniumBasic扩展库安装程序")

@@ -1,0 +1,9 @@
+﻿//customCtrl 自定义控件
+namespace ide.customCtrl{
+	vlistview = "listview";
+	close = "plus";
+	ipaddress = "edit";
+	syslink = "static";
+}
+
+__IDE_CUSTOMCTRL = ide.customCtrl;

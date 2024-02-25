@@ -1,0 +1,180 @@
+﻿//adapterInfo 适配器配置
+import wsock;
+namespace inet.adapterInfo;
+
+::IpHlpApi := ..raw.loadDll("IPHlpApi.dll")
+GetAdaptersAddresses = ::IpHlpApi.api("GetAdaptersAddresses","int(INT family,INT flags,ptr reserved,pointer adpAddresses,INT& size)")
+
+class IP_ADAPTER_ADDRESS{
+    INT cbSize;
+    INT flags; 
+    ptr next;
+    struct address = {
+    	ptr lpSockaddr;
+    	INT length;
+    }
+    
+	Next = function(){
+		if( owner.next ){
+			var addr = IP_ADAPTER_ADDRESS();
+			 ..raw.convert(owner.next,addr); 
+			return addr,tostring(addr);
+		}
+	};
+	each = function(){
+		return function(cur){
+			if( !cur ) return owner,tostring(owner);
+			return cur.Next(); 
+		},owner
+	};
+	
+	@_meta; 
+}
+
+IP_ADAPTER_ADDRESS. _meta = {
+    _tostring = function(){
+    	return ..wsock.sockaddrStringify(owner.address.lpSockaddr,owner.address.length);
+    } 
+} 
+IP_ADAPTER_ADDRESS.IP_ADAPTER_ADDRESS = IP_ADAPTER_ADDRESS; 
+
+class IP_ADAPTER_ADDRESSES {
+  INT cbSize;
+  INT ifIndex;
+  ptr next;
+  string adapterName;
+  ptr firstUnicastAddress;
+  ptr firstAnycastAddress;
+  ptr firstMulticastAddress;
+  ptr firstDnsServerAddress;
+  ustring dnsSuffix;
+  ustring description;
+  ustring netConnectionId;
+  BYTE physicalAddress[8];
+  INT physicalAddressLength;
+  INT flags;
+  INT mtu;
+  INT ifType;
+  INT operStatus;
+  INT ipv6IfIndex;
+  INT zoneIndices[16];
+  ptr firstPrefix;  
+  @_meta;
+}  
+
+IP_ADAPTER_ADDRESSES._meta = {
+	_get = {
+  		eachUnicastAddress = function(){
+  			if(!owner.firstUnicastAddress) return function(){};
+  			if(!owner.unicastAddress) owner.unicastAddress = ..raw.convert(owner.firstUnicastAddress,IP_ADAPTER_ADDRESS())
+  			return owner.unicastAddress.each();
+  		};
+  		eachAnycastAddress = function(){
+  			if(!owner.firstAnycastAddress) return function(){};
+  			if(!owner.anycastAddress) owner.anycastAddress = ..raw.convert(owner.firstAnycastAddress,IP_ADAPTER_ADDRESS())
+  			return owner.anycastAddress.each();
+  		};
+  		eachMulticastAddress = function(){
+  			if(!owner.firstMulticastAddress) return function(){};
+  			if(!owner.multicastAddress) owner.multicastAddress = ..raw.convert(owner.firstMulticastAddress,IP_ADAPTER_ADDRESS())
+  			return owner.multicastAddress.each();
+  		};
+  		eachDnsServerAddress = function(){
+  			if(!owner.firstDnsServerAddress) return function(){};
+  			if(!owner.dnsServerAddress) owner.dnsServerAddress = ..raw.convert(owner.firstDnsServerAddress,IP_ADAPTER_ADDRESS())
+  			return owner.dnsServerAddress.each();
+  		};	
+	}
+}
+
+//迭代遍历所有网卡
+each = function(family,flags){
+	if(family===null) family = 0/*_AF_UNSPEC*/;
+	if(flags===null) flags = 0x10/*_GAA_FLAG_INCLUDE_PREFIX*/;
+	
+	var ret,size = GetAdaptersAddresses(family,flags,,,0 );
+	if( ret != 111/*_ERROR_BUFFER_OVERFLOW*/ ) return function(){ };
+
+	var pBuf = ..raw.buffer( size );
+	ret = GetAdaptersAddresses(family,flags,,pBuf,size )
+	if( ret  ) error(..string.format("GetAdaptersAddresses Faild! errCode:%0d",ret) ,2  )
+ 
+	var ptr =  pBuf; 
+	
+	return function(){ 
+		if( !ptr){
+			pBuf = null;
+			return null;
+		}
+		
+		var info = IP_ADAPTER_ADDRESSES();
+		..raw.convert(ptr,info);
+		 
+		if(info.physicalAddressLength==6){ 
+			info.mac =  ..string.format("%02X-%02X-%02X-%02X-%02X-%02X",..string.unpack(info.physicalAddress));  
+		}  
+		
+		info.operStatusUp = !!(info.operStatus&1) 
+		info.ifTypeLoopback = info.ifType==24;
+	    info.ifTypeWireless = info.ifType==71;
+	 
+		ptr = info.next; 
+		return info; 
+	};
+}
+
+get = function(name){
+	for adpt in each(){
+		if(adpt.adapterName == name){
+			return adpt;
+		} 
+	} 
+}
+
+/**intellisense()
+inet.adapterInfo = 用于获取网络适配器与配置信息（不含禁用的网卡）。\n比 inet.adapter 获取到的信息更多一些。\nsys.networkCards 则用于获取网卡硬件信息（含禁用网卡）。\n\n可使用 com.wmi 查询 Win32_NetworkAdapter 得到网卡信息,\n com.wmi 查询 Win32_NetworkAdapterConfiguration 得到网络适配器连接配置
+inet.adapterInfo.each(family,flags) =  @//遍历所有连接\nfor adapterInfo in inet.adapterInfo.each() { \n	__/*adapterInfo 为包含网络适配器与 IP 配置信息的结构体*/\n} 
+inet.adapterInfo.each() = !net_adapterAddress.
+inet.adapterInfo.get( = 查找并返回网络适配器与配置信息
+inet.adapterInfo.get(.(adapterName) = 查找并返回网络适配器与配置信息。\n@adapterName 用字符串指定 GUID 格式适配器
+inet.adapterInfo.get() = !net_adapterAddress.
+end intellisense**/
+
+/**intellisense(!net_adapterAddress)
+adapterName = 适配器名称， GUID 格式。\n用 netConnectionId 字段可以获取显示名称\n\nadapterName 是永久性的，用户无法修改。\nnetConnectionId 则可以改动
+netConnectionId = 连接友好名称，\n也就是控制面板里显示的网络连接名
+address  = MAC地址,数值格式
+description = 连接描述
+dnsSuffix = DNS 后缀名
+flags = 数值表示的设置选项
+ifType = 适配器类型
+operStatus = 由多个表示不同网卡操作状态的数值按位或得到的值 ）
+operStatusUp = 网卡为可用的活动状态
+ifTypeLoopback = 适配器类型为软件实现的回环网卡
+ifTypeWireless = 适配器类型为无线网卡
+ifIndex = 网卡索引
+ipv6IfIndex = IPv6 网卡索引
+mtu = 最大传输单元大小
+mac = MAC地址,文本格式
+eachUnicastAddress() = @for addr,strAddr in ??.eachUnicastAddress(){
+	__/*遍历单播地址，strAddr 为字符串格式 IP 地址。\naddr 为当前 IP_ADAPTER_ADDRESS 结构体，不用管。*/
+}
+eachAnycastAddress() = @for addr,strAddr in ??.eachAnycastAddress(){
+	__/*遍历任播地址，strAddr 为字符串格式 IP 地址。\naddr 为当前 IP_ADAPTER_ADDRESS 结构体，不用管。*/
+}
+eachMulticastAddress() = @for addr,strAddr in ??.eachMulticastAddress(){
+	__/*遍历多播地址，strAddr 为字符串格式 IP 地址。\naddr 为当前 IP_ADAPTER_ADDRESS 结构体，不用管。*/
+}
+eachDnsServerAddress() = @for addr,strAddr in ??.eachDnsServerAddress(){
+	__/*遍历 DNS 服务器地址，strAddr 为字符串格式 IP 地址。\naddr 为当前 IP_ADAPTER_ADDRESS 结构体，不用管。*/
+}
+end intellisense**/
+
+/**details(参考文档)
+inet.adapterInfo.each(family,flags) 返回的为 IP_ADAPTER_ADDRESSES 结构体。
+
+关于 family,flags 参数的用法与 IP_ADAPTER_ADDRESSES 结构体的详细说明请参考：
+https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
+
+结构体字段首字母在 aardio 中需要改为小写。
+end details**/

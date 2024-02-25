@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\com\");
+fsys.copy( "\cube3","~\lib\com\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("com.cube3 扩展库已安装成功!","aardio- com.cube3扩展库安装程序")

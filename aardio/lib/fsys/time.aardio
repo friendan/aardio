@@ -1,0 +1,149 @@
+//time FILETIME结构
+import util.metaProperty;
+namespace fsys;
+
+class time{
+	ctor(fileTime,format){
+		if(type(fileTime)=="string") format,fileTime = fileTime;
+		
+		this = ::FILETIME();
+		this.format = format || "!%c";
+		
+		if(fileTime!==null){ 
+			var t = type(fileTime);
+			if(t=="table") ..table.assign(this,fileTime);
+			else ..raw.convert({LONG ftm = fileTime},this);
+		
+			if(format) this.format = format;
+		}
+	}; 
+	@_metaProperty;
+}
+
+namespace time{
+	_metaProperty = ..util.metaProperty(
+		toGmtTime = function(){
+			var tm = ..time.gmt();
+			if( (owner.dwLowDateTime===null) && (owner.dwHighDateTime===null) ) return  tm;
+			var ok,tm = FileTimeToSystemTime(owner,tm );
+			if(ok) return tm;
+		};
+		toSystemTime = function(){
+			var tm = ..time( ,owner.format)
+			if( (owner.dwLowDateTime===null) && (owner.dwHighDateTime===null) ) return  tm;
+			var ok,tm = FileTimeToSystemTime(owner,tm );
+			if(ok)return tm;
+		};
+		fromSystemTime = function(tm){
+			if( tm === null) tm = ..time(,owner.format);
+			if( !..time.istime(tm) ) error("不是合法的time对象",2)
+			owner.format = tm.format;
+			if( SystemTimeToFileTime(tm,owner) ) return owner;
+		}; 
+		toDosTime = function(){
+			if( (owner.dwLowDateTime===null) && (owner.dwHighDateTime===null) ) return 0,0;
+			var ok,fatDate,fatTime = FileTimeToDosDateTime(owner,0,0);
+			if(ok)return (fatDate << 16)|fatTime,fatDate,fatTime;
+		};
+		fromDosTime = function(fatDate,fatTime){
+			if(!fatTime){
+				var dosDate = fatDate;
+				fatDate = ( dosDate >>> 16 ) & 0xFFFF
+				fatTime = dosDate & 0xFFFF
+			};
+
+			if( DosDateTimeToFileTime(fatDate,fatTime,owner) ) return owner;
+		};
+		copy = function(){
+			var tm = ..fsys.time(,owner.format);
+			tm.dwLowDateTime = owner.dwLowDateTime;
+			tm.dwHighDateTime = owner.dwHighDateTime;
+			return tm;
+		};
+		local = function(copy){
+			if(owner.format[1]!='!'#){
+				if(!copy) return owner;
+				return owner.copy();
+			}
+			
+			var tm = ..fsys.time(,"%c");
+			FileTimeToLocalFileTime(owner,tm);
+			if( copy ){
+				return tm;
+			}
+			else {
+				owner.dwLowDateTime = tm.dwLowDateTime
+				owner.dwHighDateTime = tm.dwHighDateTime
+				owner.format = "%c";
+				return owner;
+			} 
+		};
+		utc = function(copy){
+			if(owner.format[1]=='!'#){
+				if(!copy) return owner;
+				return owner.copy();
+			}
+			
+			var tm = ..fsys.time(,"!%c");
+			LocalFileTimeToFileTime(owner,tm);
+			if( copy ){
+				return tm;
+			}
+			else {
+				owner.dwLowDateTime = tm.dwLowDateTime
+				owner.dwHighDateTime = tm.dwHighDateTime
+				owner.format = "!%c";
+				return owner;
+			} 
+		}; 
+		now = function(){
+			::Kernel32.GetSystemTimeAsFileTime(owner);
+			return owner;
+		};
+		stamp = function(str){
+			var t = owner.size64() / 10000 - 11644473600000
+			if(str) return tostring(t);
+			return tonumber(t);
+		};
+		size64 = function(){
+			return ..raw.convert(owner,{LONG ftm = ..math.size64()}).ftm;
+		} 
+		_tostring = function(...){
+			return tostring( owner.toSystemTime(),... );
+		} 
+		_tonumber = function(){
+			return ..raw.convert(owner,{LONG ftm}).ftm;
+		} 
+	) 
+	
+	FileTimeToSystemTime = ::Kernel32.api("FileTimeToSystemTime","bool(struct filetime,struct& time)")
+	SystemTimeToFileTime = ::Kernel32.api("SystemTimeToFileTime","bool(struct tm,struct& filetime)")  
+	DosDateTimeToFileTime = ::Kernel32.api("DosDateTimeToFileTime","bool(WORD wFatDate,WORD wFatTime,struct &fileTime)") 
+    FileTimeToDosDateTime = ::Kernel32.api("FileTimeToDosDateTime","bool(struct fileTime,WORD &wFatDate,WORD &wFatTime)")  
+	FileTimeToLocalFileTime = ::Kernel32.api("FileTimeToLocalFileTime","bool(struct ftm,struct &ftmLocal)")  
+	LocalFileTimeToFileTime = ::Kernel32.api("LocalFileTimeToFileTime","bool(struct ftmLocal,struct &ftm)")  
+}
+
+/**intellisense()
+fsys.time = 与 ::FILETIME 兼容的结构体，扩展了更多函数。\n用于存储自 1601年1月1日 开始以 100纳秒 为间隔的数值。\n100纳秒 也就是 0.0001毫秒
+fsys.time( = 创建 ::FILETIME 兼容结构体。\n\nfsys.time 对象可传入 tostring 转换为文本格式时间，\n可转换为文本的时间范围与 time 对象相同。\n\nfsys.time 对象传入 tonumber 函数返回存储 64 位无符号时间值的浮点数。\n使用 size64 函数可得到 64位 无符号数表示的时间值。\n该时间值为自 1601年1月1日 开始以 100纳秒 为间隔的数值
+fsys.time(.(fileTime,format) = 创建 FILETIME 结构\n\n@fileTime 参数可选传入以下类型参数：\n1、省略，null 值，注意这不会导致初始化为当前时间。\n2、::FILETIME 结构体或结构体的部分字段\n3、需要复制的 fsys.time 对象\n4、普通数值，应为存储 64位 无符号时间值的浮点数。\n5、存储无符号 64 位整数的 math.size64 对象\n此 64 位整数表示自 1601年1月1日 开始以 100纳秒 为间隔的时间值。\n\n可选用 @format 参数指定格式化串，语法与 time 对象相同。\n注意 format 首字符为 "!" 表示存储 UTC 时间。\n默认使用 UTC 时间格式 "!%c"
+fsys.time() = !fsys_time.
+!fsys_time.dwLowDateTime = 时间值低位
+!fsys_time.dwHighDateTime = 时间值高位
+!fsys_time.format = 格式化串，语法与 time 对象相同
+!fsys_time.copy() = 复制对象
+!fsys_time.local() = UTC 时间转换为本地时间,返回自身
+!fsys_time.local(true) = UTC 时间转换为本地时间,\n不修改自身,返回本地时间副本
+!fsys_time.utc() = 本地时间转换为 UTC 时间,返回自身
+!fsys_time.utc(true) = 本地时间转换为 UTC 时间,\n不修改自身,返回本地时间副本
+!fsys_time.toGmtTime() = 返回 time.gmt 对象。\n即 RFC1123 格式时间，HTTP 协议使用该格式。\n如果对象的时间值为 null，此函数会返回当前时间。\n!time.
+!fsys_time.toSystemTime() = 返回 time 对象。\n如果对象的时间值为 null，此函数会返回当前时间。\n!time.
+!fsys_time.fromSystemTime(.(time对象) = 标准时间对象转换为 FILETIME 对象\n省略参数则调用 time.now 函数获取当前时间\n!fsys_time.
+!fsys_time.toDosTime() = 成功返回 dosTime,高位,低位
+!fsys_time.fromDosTime(.(fatDate,fatTime) = DOS 时间格式转换为 FILETIME 格式\n如果省略第二个参数,则取第一个参数的高位作为参数二
+!fsys_time.size64() = 转换为存储无符号 64 位整数的 math.size64 对象。\n此整数表示自 1601年1月1日 开始以 100纳秒 为间隔的时间值
+!fsys_time.now() = 获取当前时间，返回自身。\n!fsys_time.
+!fsys_time.stamp() = 以数值类型返回 Unix 时间戳，以毫秒为单位。\n时间戳 0 表示 ISO8601 时间 1970-01-01T00:00:00Z
+!fsys_time.stamp(true) = 以字符串类型返回 Unix 时间戳，以毫秒为单位。\n时间戳 0 表示 ISO8601 时间 1970-01-01T00:00:00Z
+end intellisense**/

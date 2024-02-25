@@ -1,0 +1,27 @@
+import fsys;
+import ide; 
+
+var publisDir = ide.getPublisDir();
+if(!#publisDir)return; 
+
+var py3PubDir =  fsys.joinpath(publisDir,"\lib\py3\10\.res\DLLs\" ); 
+if( ! io.exist(py3PubDir) ){ 
+	io.createDir( fsys.joinpath(publisDir,"\lib\py3\10\.res\" ) );
+	
+	var libPath,libDir = io.libpath("py3.10")
+	..fsys.copy( fsys.joinpath(libDir,"\.res\DLLs\") ,py3PubDir,0x10/*_FOF_NOCONFIRMATION*/  | 0x200/*_FOF_NOCONFIRMMKDIR*/); 
+}
+
+var py3PubDir =  fsys.joinpath(publisDir,"\lib\py3\10\.res\Lib.zip" ); 
+if( ! io.exist(py3PubDir) ){ 
+	var libPath,libDir = io.libpath("py3.10")
+	..fsys.copy( fsys.joinpath(libDir,"\.res\Lib.zip") ,py3PubDir,0x10/*_FOF_NOCONFIRMATION*/  | 0x200/*_FOF_NOCONFIRMMKDIR*/); 
+}
+
+var projPyLibDir = io.joinpath(ide.getProjectDir(),"/py"); 
+if( io.exist(projPyLibDir) ){
+	var pubPyLibDir = io.joinpath(publisDir,"/py");
+	if(!..io.exist(pubPyLibDir)){
+		fsys.copy(projPyLibDir,pubPyLibDir,0x10/*_FOF_NOCONFIRMATION*/  | 0x200/*_FOF_NOCONFIRMMKDIR*/);
+	}
+}

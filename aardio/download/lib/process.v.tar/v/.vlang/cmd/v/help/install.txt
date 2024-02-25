@@ -1,0 +1,10 @@
+Usage:
+  v install [MODULE...]
+    Installs each MODULE.
+
+    If no MODULEs, the modules listed in the `v.mod` file are installed instead.
+
+Options:
+  -help         - Show usage info.
+  -v            - Print more details about the performed operation.
+  -server-url   - When doing network operations, use this vpm server. Can be given multiple times.

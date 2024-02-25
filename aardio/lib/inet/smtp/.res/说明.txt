@@ -1,0 +1,4 @@
+CSmtp.dll完整源码请到这里下载：
+http://www.codeproject.com/Articles/98355/SMTP-Client-with-SSL-TLS
+这里仅提供改动过的几个源码文件
+

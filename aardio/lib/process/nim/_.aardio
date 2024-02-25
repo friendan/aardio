@@ -1,0 +1,62 @@
+﻿import win.path;
+import zlib.httpFile;
+import process;
+import process.gcc;
+import console;
+
+namespace process;
+
+class nim {
+	ctor( ... ){
+		
+		var nimPath = install();
+		if(!nimPath) return null;
+		
+		var parameters = {...} 
+		if(#parameters==1) parameters = ...;
+		
+		..console.open();
+		var prcs,err = ..process( nimPath,parameters,{workdir=..io.fullpath(self.workDir)});
+		if(prcs){
+			prcs.waitOne();
+			..console.more(1);
+		}
+	}; 
+}
+
+namespace nim;
+
+workDir = ..io.fullpath("/")
+path = ..io.appData("aardio/std/nim/nim-1.6.8/bin/nim.exe")
+if(!..io.exist(path)){
+	path = ..win.path.search("nim.exe");
+}
+	
+install = function(url){
+	path = ..io.appData("aardio/std/nim/nim-1.6.8/bin/nim.exe")
+	if(!..io.exist(path))  {
+		path = ..win.path.search("nim.exe");
+		if(!path){
+			if(!..zlib.httpFile.download("https://nim-lang.org/download/nim-1.6.8_x32.zip"
+				,"正在下载 Nim",..io.appData("aardio/std/nim/down"),..io.appData("aardio/std/nim"))){
+				return;
+			}	
+			
+			path = ..io.appData("aardio/std/nim/nim-1.6.8/bin/nim.exe") 
+		}
+	}
+	
+	if(..io.exist(path)) {
+    	..win.path.add(..io.splitpath(path).dir);
+    	..process.gcc.check();
+
+    	return path; 
+    }
+}
+
+/**intellisense()
+process.nim =  用于调用 Nim 语言编译器\n如果系统未安装 Nim 会自动下载
+process.nim.workDir = 工作目录，默认为  io.fullpath("/")
+process.nim("c --app:lib -d:release -r test.nim") = 编译 Nim 代码,\n示例参数用于生成 DLL 文件
+end intellisense**/
+

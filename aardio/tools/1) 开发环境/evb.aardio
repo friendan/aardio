@@ -1,0 +1,86 @@
+//独立 EXE
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="转换为独立 EXE 文件（基于虚拟化技术，不需要释放临时文件）";right=759;bottom=469;border="dialog frame";max=false)
+winform.add(
+button={cls="button";text="转换为独立 EXE";left=451;top=401;right=691;bottom=455;color=14120960;db=1;dr=1;font=LOGFONT(h=-14);note="点这里将 EXE 转换为独立 EXE";z=2};
+checklist={cls="checklist";left=15;top=51;right=739;bottom=384;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;items={};vscroll=1;z=1};
+edit={cls="edit";left=16;top=52;right=739;bottom=385;edge=1;hide=1;multiline=1;z=4};
+static={cls="static";text="请勾选需要封包到独立 EXE 内的文件与目录：";left=25;top=14;right=420;bottom=46;dl=1;dt=1;transparent=1;z=3};
+static2={cls="static";text="纯 aardio 程序本就可以直接生成独立 EXE，不需要此工具。
+调用 Python 等不能生成独立 EXE 的外部组件时，可用此工具转换。";left=16;top=399;right=452;bottom=456;transparent=1;z=5}
+)
+/*}}*/
+
+import ide; 
+if(!io.exist(ide.getPublishPath())){
+	error("请先打开 aardio 工程并生成 EXE 文件！",2)
+}
+
+var files,dirs = fsys.list(ide.getPublisDir());
+
+for(i=1;#dirs;1){
+	var hItem = winform.checklist.addItem(dirs[i]);
+	if((dirs[i]=="lib")
+		|| (dirs[i]=="java")
+		|| (dirs[i]=="py")
+		){
+		winform.checklist.setChecked(hItem,true)
+	}
+}
+
+for(i=1;#files;1){
+	var hItem = winform.checklist.addItem(files[i]);
+	if(string.endWith(files[i],".exe",true) || string.endWith(files[i],".dll",true)){
+		winform.checklist.setChecked(hItem,true)
+	}
+}
+
+import fsys;
+import process.evb;
+import process.evb.project; 
+winform.button.oncommand = function(id,event){
+	var files = winform.checklist.checked;
+	if(#files<=1){
+		winform.msgboxErr("至少需要勾选 2 个文件");
+		return;
+	}
+	
+	var evbProject = process.evb.project()
+	evbProject.main = ide.getPublishPath();
+	evbProject.output = ide.getPublishPath() + ".evb.dat";
+	
+	for(i,idx in files){
+		var name = winform.checklist.getItemText(idx);
+		evbProject.addFile(io.joinpath(ide.getPublisDir(),name));
+	} 
+	
+	evbProject.generate("/app.evb");
+ 	
+	import process.evb; 
+	var evb = process.evb("/app.evb");
+	evb.logger = winform.edit;
+	winform.button.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}
+	
+	winform.edit.hide = false;
+	winform.checklist.hide = true;
+	evb.logResponse();
+ 	
+	io.remove("/app.evb"); 
+	fsys.move(evbProject.output,ide.getPublishPath());
+	winform.edit.print("已完成");
+	
+	winform.setTimeout( 
+		function(){
+			winform.edit.hide = true;
+			winform.checklist.hide = false;	
+			winform.button.disabledText = null;
+			
+			process.exploreSelect(ide.getPublishPath());
+			winform.close();
+		},2000
+	);
+}
+
+winform.show();
+win.loopMessage();

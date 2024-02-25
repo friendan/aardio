@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\golang\");
+fsys.copy( "\mdns","~\lib\golang\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("golang.mdns 扩展库已安装成功!","aardio- golang.mdns扩展库安装程序")

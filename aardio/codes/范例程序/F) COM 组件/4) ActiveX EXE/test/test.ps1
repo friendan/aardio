@@ -1,0 +1,1 @@
+(New-Object -ComObject aardioTestControl.Sample).Add(12,3)

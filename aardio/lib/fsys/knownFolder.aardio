@@ -1,0 +1,30 @@
+﻿//knownFolder 已知文件夹
+import win.guid;
+
+namespace fsys;
+
+class knownFolder{
+	ctor( rfid,path,flags,token ){
+		if( #rfid != 16 ) rfid = ..win.guid(rfid);
+		
+		var ret = {usting path};
+		if(0/*_S_OK*/ != ::Shell32.SHGetKnownFolderPath(rfid,flags,token,ret) ){
+			return null;
+		}
+			
+		return path ? ..io.joinpath(ret.path,path) : ret.path;
+	};
+}
+
+namespace knownFolder{
+	default = function(rfid,path,flags){
+		return ..fsys.knownFolder(rfid,path,flags,-1);
+	}
+} 
+
+/**intellisense()
+fsys.knownFolder = 用于获取已知的特殊文件夹\n作用类似 fsys.getSpecial 函数\n不支持 XP，支持 XP 以后的系统
+fsys.knownFolder( = 获取已知的特殊文件夹
+fsys.knownFolder(.(guid,path,flags,token) = 返回 @guid 参数指定 GUID 的 已知文件夹，\nGUID 可以是 16 字节的字符串，也可以是 win.guid 支持的格式。\n可选用 @path 参数指定要拼接的子路径。\n@flags,@token 为可选参数，\n用法请参考 ::Shell32.SHGetKnownFolderPath 函数文档
+fsys.knownFolder.default(.(guid,path,flags) = 返回默认用户由 @guid 参数指定 GUID 的 已知文件夹，\n参数用法与 fsys.knownFolder 相同
+end intellisense**/

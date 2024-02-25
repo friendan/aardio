@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\com\");
+fsys.copy( "\hexEditor","~\lib\com\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("com.hexEditor 扩展库已安装成功!","aardio- com.hexEditor扩展库安装程序")

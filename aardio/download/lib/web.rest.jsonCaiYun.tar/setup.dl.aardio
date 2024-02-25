@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\rest\");
+fsys.copy( "\jsonCaiYun.aardio","~\lib\web\rest\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.rest.jsonCaiYun 扩展库已安装成功!","aardio- web.rest.jsonCaiYun扩展库安装程序")

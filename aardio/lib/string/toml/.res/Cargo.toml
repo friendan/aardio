@@ -1,0 +1,13 @@
+[package]
+name = "toml_rs"
+version = "0.1.0"
+authors = ["aardio"]
+
+[dependencies]
+toml = "0.5.8"
+serde = "1.0.126"
+serde_json = {version = "1.0.64", features = ["preserve_order"]}
+
+[lib]
+name = "toml_rs" 
+crate-type = ["cdylib"]

@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\thunder\");
+fsys.copy( "\aPlayer","~\lib\thunder\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("thunder.aPlayer 扩展库已安装成功!","aardio- thunder.aPlayer扩展库安装程序")

@@ -1,0 +1,18 @@
+﻿//cmdline 命令行参数
+import string.cmdline;
+namespace thread;
+
+class cmdline{
+	ctor(){{
+		var p = ::Kernel32.GetCommandLineP();
+		if(p){
+			p = ..raw.str(p,true);
+			this = ..string.cmdline.argv(p);
+		}
+	}}; 
+}
+
+/**intellisense()
+thread.cmdline() = 获取主进程启动命令行参数，\n并由 string.cmdline.argv 函数解析后返回数组。\n命令行解析规则请参考标准库中 string.cmdline 的源码。\n\n返回的数组对象也包含按下列规则解析的键值对:\n以斜杠或短横线开始的前导参数作为键（键名移除一个或多个相同的前导字符,区分大小写），\n如果前导参数包含等号,则以等号拆分为键值对,等号前后不应有空格,\n否则检查下一参数如果没有相同的首字符则设为此键对应的值，\n如果一个前导参数没有指定值,则默认值为空字符串（逻辑值为true）\n\n当前线程如果是主线程，请直接使用 _ARGV 。\n!threadCmdline.
+!threadCmdline.? = 请输入命令行参数中以斜杠或短横线开始的前导参数名
+end intellisense**/

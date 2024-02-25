@@ -1,0 +1,95 @@
+//cache 运行路径缓存 
+import fsys;
+import fsys.version;
+import process.file;
+import fsys.lnk;
+import win.reg;
+
+namespace process.cache{
+
+	list = function(filePattern,namePattern){
+		var lst = {};
+		
+		var regPaths; 
+		if(_WIN10_LATER){
+			regPaths = {
+				"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store";
+			 	"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched";
+				"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Persisted";
+				"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache";
+			}
+		}
+		else{
+			regPaths = {
+				_WINXP ? "HKEY_CURRENT_USER\Software\Microsoft\Windows\ShellNoRoam\MUICache"
+					: "HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
+			}
+		}
+		
+		for(i=1;#regPaths;1){
+			var reg = ..win.reg(regPaths[i],true);
+			if(!reg) continue;
+			
+			for(fullpath,unusedValue,t in reg.eachValue()) {
+				fullpath = ..string.match(fullpath,"([a-zA-Z].+\.<@@exe@>)");
+				if(fullpath) lst[fullpath] = true; 
+			}
+			reg.close();
+		}
+		
+		var ret = {}; 
+		for(k,v in lst) ..table.push(ret,k); 
+		return ret;	
+	}
+	
+	each = function(){
+		var lst = list();
+
+		var k,v;
+		return function(){
+			k,v =  ..table.next(lst,k);
+			return v;
+		};
+	}
+	
+	find = function(filePattern,namePattern,searchLnk){
+		var paths = list(e); 
+		
+		for(i=1;#paths;1){
+			var cPath = paths[i];
+			
+			if( ( filePattern && !..string.cmpMatch( ..io.splitpath(cPath).file ,filePattern ) ) ) continue ;
+			if( ..string.find(cPath,"<@@install@>|<@@setup@>") ) continue;
+			
+			if(!..io.exist(cPath)) continue;
+			
+			if(namePattern){
+				var ver = ..fsys.version.getInfo(cPath)
+				if( ver && ver.productName ){
+					var name = ver.productName;
+					if( ..string.match(name,"Microsoft.+Windows.+Operating.+System") ) continue;
+					if(!..string.cmpMatch( name ,namePattern ) )continue ;
+				}	
+				else {
+					continue;
+				}
+			}
+			
+			return  cPath;
+		}
+		 
+		if(searchLnk!==false){
+			return ..fsys.lnk.search(filePattern,namePattern); 
+		}
+	} 
+}
+
+/**intellisense()
+process.cache = 用于搜索运行过的程序
+process.cache.each() = @for(path in ??.each() ){
+	__/*遍历最近运行过的程序路径，\npath 为程序路径，可能为已删除的路径*/
+}
+process.cache.list() = 返回最近运行的应用程序路径数组，\n返回数组可能包含已删除的程序
+process.cache.find(.( = 查找并返回运行过并且未删除的应用程序路径，\n返回路径必须是 exe 后缀，且文件名不包含 Install,Setup 等单词
+process.cache.find(.("文件名","版本信息产品名称",是否搜索快捷方式) = 查找并返回运行过并且未删除的应用程序路径\n忽略大小写比较,并支持模式匹配语法,\n文件名与产品名称必须至少指定一个，\n越是指定严格的文件名匹配条件搜索越快。\n参数@3 为 false 不搜索快捷方式，可加快返回速度
+end intellisense**/

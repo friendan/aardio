@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\mysql\plugin\");
+fsys.copy( "\ed25519","~\lib\mysql\plugin\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("mysql.plugin.ed25519 扩展库已安装成功!","aardio- mysql.plugin.ed25519扩展库安装程序")

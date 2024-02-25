@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\win\");
+fsys.copy( "\flashBox","~\lib\win\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("win.flashBox扩展库已安装成功!","aardio- win.flashBox扩展库安装程序")

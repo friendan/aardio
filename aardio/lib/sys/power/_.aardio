@@ -1,0 +1,180 @@
+﻿//power 电源管理
+import process.popen;
+
+namespace sys.power;
+
+status = function(){
+	var status = {
+  		BYTE acLineStatus;
+  		BYTE batteryFlag;
+  		BYTE batteryLifePercent;
+  		BYTE systemStatusFlag;
+  		INT batteryLifeTime;
+  		INT batteryFullLifeTime;
+	} 
+	
+	if( ::Kernel32.GetSystemPowerStatus(status)	) return status;
+}
+
+isAcOnline = lambda() status()[["acLineStatus"]] == 1;
+
+command = function(...){
+	var prcs = ..process.popen.wow64("powercfg",...);
+	if(prcs) return prcs.readAll(,,0);
+}
+
+list = function(){
+	var prcs = ..process.popen.wow64("powercfg","-list");
+	if(!prcs) return;
+	
+	var str = prcs.readAll(); 
+	
+	var result = {};
+	for(line in ..string.lines(str)){
+		
+   		var guid,name,active = ..string.match(line,"(\x{8}-\x{4}-\x{4}-\x{4}-\x{12})\s*\((.+)\)\s*(\*?)");
+   		if(!guid) continue;
+   		
+ 		..table.push(result,{
+ 			guid = guid;
+ 			name = name;
+ 			active  = !!#active;
+ 		})
+ 		
+ 		if(#active){
+ 			result.current = guid;
+ 		}
+	}
+	
+	return result;	
+}
+
+aliases = function(){
+	if(__aliases) return __aliases;
+	
+	var prcs = ..process.popen.wow64("powercfg","-aliases");
+	if(!prcs) return;
+	
+	var str = prcs.readAll(); 
+	
+	var result = {};
+	for(line in ..string.lines(str)){
+		
+   		var guid,name = ..string.match(line,"(\x{8}-\x{4}-\x{4}-\x{4}-\x{12})\s*(\S+)");
+ 		if(name)result[name] = guid; 
+	}
+	
+	__aliases = result;
+	return result;	
+}
+
+currentScheme = function(){
+	return list()[["current"]];
+}
+
+query = function(sub,prop,scheme){
+	if(!scheme) scheme = currentScheme();
+	if(!sub) error("请指定参数@1",2)
+	
+	sub  = aliases()[[sub]] : sub;  
+	if(prop) prop  = aliases()[[prop]] : prop;  
+
+	var prcs = ..process.popen.wow64("powercfg","-query",scheme,sub);
+	if(prcs) {
+		var str = prcs.readAll(,,0);
+		if(str){ 
+			var tab = ..string.split(str,'<\r\n\r\n>');
+			var result  = {};
+			for(k,v in tab){
+				var guid,desc,strValue = ..string.match(v,".+\s+GUID\:\s+(\x{8}-\x{4}-\x{4}-\x{4}-\x{12})\s*\((.+)\)\s*(.+)" )
+				if(guid && strValue){
+					var value = {desc=desc}
+					for(line in ..string.lines(strValue) ){
+						var k,v = ..string.match(line,"\s*([^\:]+?)\:\s+(\S+)");
+						..table.push(value,{v,k});
+					}
+					
+					if(prop &&(prop==guid)){
+						return value;
+					}
+					
+					result[guid] = value;
+				} 
+			}
+			
+			return result;
+		}
+	}
+}
+
+change = function(setting,value){
+	if(!setting) error("请指定参数@1",2)
+	if(value===null) error("请指定参数@2",2)
+	
+	if(!..string.find(setting,"\-[ad]c$")){
+		setting = setting ++ (isAcOnline()?"-ac":"-dc");
+	}
+	
+	command("-change",setting,value);
+}
+
+setValueIndex = function(sub,prop,value,scheme){
+	if(!scheme) scheme = "SCHEME_CURRENT";
+	if(!sub) error("请指定参数@1",2)
+	if(!prop) error("请指定参数@2",2)
+	if(value===null) error("请指定参数@3",2)
+	
+	if(isAcOnline()){
+		command("-setacvalueindex",scheme,sub,prop,tostring(value));
+		command("-setactive",scheme);	
+	}
+	else {
+		command("-setdcvalueindex",scheme,sub,prop,tostring(value));
+		command("-setactive",scheme);	
+	}
+}
+
+setMonitorTimeout = function(v){
+	setValueIndex("SUB_VIDEO","VIDEOIDLE",v);
+}
+
+getMonitorTimeout = function(){
+	var setting = query("SUB_VIDEO","VIDEOIDLE");
+	if(#setting){
+		var v  = setting[#setting-(isAcOnline()?1:0)][[1]]
+		if(v){
+			return (tonumber(v));
+		}
+	}
+}
+
+settings = function(){
+	if(_WIN10_LATER){
+		..process.execute("ms-settings:powersleep");
+	}
+	else {
+		..process.execute("control.exe","/name Microsoft.PowerOptions /page pageGlobalSettings");
+	}
+}
+
+/**intellisense(sys.power)
+status() = 返回表示电源状态的 SYSTEM_POWER_STATUS 结构体\n结构体文档:\nhttps://docs.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-system_power_status
+isAcOnline() = 当前使用外部电源返回 true\n使用电池返回 false
+command() = 调用 powercfg 命令，返回进程输出
+list() = 返回包含所有电源方案的数组，\n数组格式请参考此函数源码，或打印输出查看。\n返回对象的 current 属性为当前使用的电源方案 GUID
+aliases() = 返回一个表，键为别名，值为对应的 GUID，\n不应修改返回表内容
+currentScheme() = 当前电源方案 GUID
+query( = 查询电源方案
+query(.(sub,setting,scheme) = 查询电源方案\n@sub 指定子组 GUID，\n@prop 指定设置别名或设置 GUID，省略返回所有设置，\n@scheme 指定电源方案，省略则为当前电源方案
+change(.(sub,setting,scheme)  = 查询电源方案\n参考 https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options#option_change
+change(.(setting,value) = 改变指定的设置值，\n@参数@1指定设置名，可省略 ac,dc 后缀，\n参数@指定设置值
+setValueIndex( = 修改方案设置值
+setValueIndex(.(sub,prop,value,scheme) = 参数@sub 指定子组 GUID，\n@prop 指定设置别名或设置 GUID，不可省略，\n@value 指定新的值，不可省略。\n@scheme 指定电源方案，省略则为当前电源方案
+setMonitorTimeout(__) = 设置显示器空闲关闭的超时值，\n参数@1 指定超时，以秒为单位，设为 0 则禁用空闲关屏
+getMonitorTimeout() = 返回显示器空闲关闭的超时值，以秒为单位
+settings() = 打开电源管理
+end intellisense**/
+
+/**intellisense()
+sys.power = 电源管理，支持除 XP 以外的所有操作系统
+end intellisense**/

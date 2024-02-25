@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\System\Windows\Automation\");
+fsys.copy( "\3","~\lib\System\Windows\Automation\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("System.Windows.Automation.3 扩展库已安装成功!","aardio- System.Windows.Automation.3扩展库安装程序")

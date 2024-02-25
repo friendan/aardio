@@ -1,0 +1,111 @@
+//lyric 简单桌面歌词
+import win.ui;
+import win.ui.menu;
+import gdip.pen; 
+import gdip.graphics;
+import gdip.family;
+import gdip.stringformat;
+import gdip.lineBrush;
+import gdip.path;
+import gdi;
+
+namespace win.util;
+class lyric{
+	ctor(parent,tParam){
+	/*DSG{{*/
+	this = ..win.form(text="aardio form";right=1267;bottom=237;border="none";exmode="toolwindow";mode="popup";parent=parent;topmost=1)
+	this.add()
+	/*}}*/
+	
+	this.transparent(true); 
+	this.center();
+	
+	this.lyricColor1 = 0xFFFFFF00/*起始颜色*/; 
+	this.lyricColor2 = 0xFF00FFFF/*结束颜色*/;
+	this.lyricBorder = 0xFF222222;
+	this.lyricFontName = "Segoe UI";
+	this.lyricFontSize = 55;
+	this.lyricOpacity = 130;
+	
+	this.popmenu = ..win.ui.popmenu(this);//创建弹出菜单 
+	this.popmenu.add('退出',function(id){ this.close() });
+	this.wndproc = {
+		[ 0xC/*_WM_SETTEXT*/ ] = function (hwnd, uMsg, wParam, lParam) {
+			if(lParam){
+				 var text = ..string.fromUnicode( topointer(lParam),,true ); 
+				 this.drawString(text);
+			}
+		};
+		[ 0x204/*_WM_RBUTTONDOWN*/ ] = function(hwnd,message,wParam,lParam){
+			this.popmenu.popup( ..win.getMessagePos(lParam) );//弹出菜单
+		}
+	}
+	
+	this.onMouseDown  = function(wParam,lParam){
+		this.hitCaption();	
+	}
+
+	};
+	drawString =function( text,fontSize,fontName,color1,color2  ){
+		if(!fontSize) fontSize = 35;
+		if(!fontName) fontName = "Verdana";
+		
+		..gdi.layeredBuffer( this.hwnd, 
+		
+    		function( hdc,hMemDc,hMemBitmap,width,height ){
+    		
+        		//创建画板
+				var graphics = ..gdip.graphics(hMemDc)  
+				
+				//加上抗锯齿功能
+				graphics.smoothingMode = 4/*_GdipSmoothingModeAntiAlias*/;  
+				
+				//创建画笔,画笔pen只能画一个轮廓(画线)
+				var pen = ..gdip.pen(this.lyricBorder, 2,2/*_GdipUnitPixel*/ );
+				
+				//创建渐变刷子 
+				var brush = ..gdip.lineBrush( 
+					::POINTF(10,10)/*渐变起始坐标*/, 
+					::POINTF(100,100) /*渐变终止坐标*/, 
+					this.lyricColor1, 
+					this.lyricColor2
+				) 
+				
+				//创建FontFamily
+				var family = ..gdip.family( this.lyricFontName ); 
+				
+				//创建 stringFormat 
+				var format = ..gdip.stringformat(); 
+				
+				//设置样式
+				format.align = 1/*_GdipStringAlignmentCenter*/; 
+				
+				//注意 GDI+ 里使用 RECT F而不是 RECT,这里的F后缀表示参数为 float 浮点数 
+				var rcLayout = ::RECTF( , ,width,height);//设置文字区域,
+				
+				var path = ..gdip.path( 0/*_GdipFillModeAlternate*/ );  //创建一个文字路径
+				
+				//添加文字到上面创建的路径中
+				path.addstring(text, family,1/*_GdipFontStyleBold*/, this.lyricFontSize * (this.dpiScaleY:1), rcLayout, format);
+	
+				graphics.fillPath( brush, path) //fillPath填充路径  
+				graphics.drawPath( pen, path) //drawPath描边
+				 	
+				//删除所有GDI+对象  
+				brush.delete();
+				pen.delete();
+				format.delete();
+				family.delete();
+				path.delete();
+				graphics.delete();  
+	
+        		// 用这个GDI 画好的 DC 代替窗体原来的图形    
+        		..gdi.updateLayeredWindow( this.hwnd,hMemDc,::SIZE(width,height) ,..gdi.blendFunction(this.lyricOpacity/*透明度*/)  ); 
+    		}
+		)  
+	}
+}
+
+/**intellisense()
+win.util.lyric() = 简单桌面歌词，仅作范例参考。\n!winform.
+end intellisense**/

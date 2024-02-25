@@ -1,0 +1,55 @@
+﻿//int 中断
+import console;
+namespace console;
+
+class int{
+	ctor( onInterrupted,thrdOwner){
+		this.interrupted = ..thread.var();
+		this.delay = ..thread.var(,100);
+		
+		..console.setCtrlHandlerThread( function(ctrlType){ 
+			if(!owner) return; //主线程已结束
+			
+			var ret = true;
+			if(owner.onInterrupted){
+				ret = invoke(owner.onInterrupted,owner.thrdOwner,ctrlType);
+			} 
+
+			owner.interrupted.set(true);
+			sleep( owner.delay.get() );
+			return ret;
+		},,{ interrupted = this.interrupted;delay = this.delay;onInterrupted = onInterrupted;thrdOwner = thrdOwner} );
+	}; 
+	setDelay = function(ms){
+		this.delay.set(ms);
+	};
+	isInterrupted = function(){
+		return !!this.interrupted.get(); 
+	};
+	run = function(callback,...){
+		while(!this.isInterrupted()){
+			if( false === callback(...) ) return;
+		}	
+	};
+}
+
+..subscribe("beforeUnload",function(){
+	..thread.lock("console.ctrlHandler{C18CF52E-FC08-44C2-BE78-67959680F1AE}"
+		,function(){
+			var hwnd = ..console.getWindow();
+			if( hwnd && ::User32.IsWindowVisible(hwnd)){
+				..console.pause();
+				..io.close();
+			}	
+		}  
+	) 	
+} );
+ 
+/**intellisense()
+console.int = 用于注册控制台中断信号触发器。\n导入此库会自动导入 console 库，并且退出线程时如果控制台\n仍在显示，则自动调用 console.pause 函数
+console.int(ctrlHandler,owner) = @.int(\n	function(ctrlType){\n		__/*控制台退出前是否触发此线程函数。\n可选用 @owner 指定线程函数的 owner 参数。\n\n使用前请先阅读多线程入门教程，了解线程函数基本规则。\n\nctrlType 为 null 表示控制台正常关闭，不可取消。\nctrlType 为 0 表示按下 Ctrl+ C。\nctrlType 为 1 表示按下 Ctrl + Break。\nctrlType 为 0 或 1 时返回 true 可阻止控制台退出。\n省略此函数时，则创建默认触发器并返回 true。\n\n在此函数内不应再使用任何控制台函数*/\n	}\n);	
+console.int() = !consoleInt.
+!consoleInt.isInterrupted() = 控制台是否已收到中断信号。\n按 Ctrl + C ，Ctrl + Break 以后，无论是否阻止退出都会返回 true
+!consoleInt.setDelay(__) = 参数 @1 指定控制台程序退出前的默认延迟，以毫秒为单位\n\n如果直接关闭窗口，\n触发器可以拦截但无法阻止关闭。\n增加延迟可增加控制台程序退出前的等待时间\n延迟之前先设置中断状态，也不会阻止当前线程向下执行
+!consoleInt.run(callback) = @.run(\n	function(){\n		__/*如果控制台程序未退出，未按下 Ctrl + C，\n则重复执行此回调函数，函数返回 false 退出循环。\n\n此函数可接收 run 函数除参数 @1 以外的余下参数 */\n	}	\n)
+end intellisense**/

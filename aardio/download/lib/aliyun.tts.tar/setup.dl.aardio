@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\aliyun\");
+fsys.copy( "\tts.aardio","~\lib\aliyun\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("aliyun.tts扩展库已安装成功!","aardio- aliyun.tts扩展库安装程序")

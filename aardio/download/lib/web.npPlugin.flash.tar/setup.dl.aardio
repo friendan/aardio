@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\npPlugin\");
+fsys.copy( "\flash","~\lib\web\npPlugin\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.npPlugin.flash 扩展库已安装成功!","aardio- web.npPlugin.flash扩展库安装程序")

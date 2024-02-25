@@ -1,0 +1,73 @@
+﻿//caret 输入光标
+import winex;
+import winex.accObject;
+
+namespace winex.caret;
+
+if(_WIN10_LATER){
+	import System.Windows.Automation.3;
+}
+var cursorInfo = {INT cbSize = 20; INT flags; pointer hCursor;struct pt = ::POINT() };
+var iBeam = ::User32.LoadCursorP(,32513/*_IDC_IBEAM*/);
+
+var cacheUiaSupported = ..table.cache();
+
+get = function(hwnd){
+	if(!hwnd) hwnd = ::User32.GetForegroundWindow();
+	if(!hwnd) return;
+			
+	var uiInfo = ..winex.getUiInfo(hwnd);
+	if(!uiInfo) {
+		caret = ..winex.accObject.getCaret(hwnd);
+		if(caret) return caret,hwnd;
+		return;
+	}
+	
+	var hFocus = uiInfo.hwndFocus;
+	var hwndTarget = hFocus : hwnd;
+	if( cacheUiaSupported[hwndTarget] ){
+		caret = ..System.Windows.Automation.GetCaret(hwndTarget); 
+		return caret,hFocus;
+	}
+	
+	var hCaret = uiInfo.hwndCaret;
+	if(hCaret && ( uiInfo.flags & 1/*_GUI_CARETBLINKING*/ ) ){
+		caret = ..win.toScreenRect(hCaret,uiInfo.rcCaret);
+		if(caret){
+			caret.hwnd = hCaret;
+			return caret,hFocus : hCaret;	
+		}
+	}
+	
+	caret = ..winex.accObject.getCaret(hwndTarget);
+	if(!caret) {
+		caret = null;
+			
+		if(hFocus){
+			
+			if(_WIN10_LATER){
+				caret = ..System.Windows.Automation.GetCaret(hwndTarget);
+				if(caret){
+					cacheUiaSupported[hwndTarget] = true; 
+					return caret,hFocus;
+				}  
+			}
+			 
+			cursorInfo.cbSize = 20; 
+			if( ::User32.GetCursorInfo(cursorInfo) && (cursorInfo.hCursor == iBeam) ){
+				caret = ::RECT();
+				::User32.GetCursorPos(caret);
+				caret.hwnd = hwndTarget;  
+			} 
+		}
+	}
+	
+	return caret,hFocus;
+}
+
+/**intellisense()
+winex.caret = 结合 winex.getUiInfo,winex.accObject.getCaret,::User32.GetCursorInfo\nSystem.Windows.Automation.3 等多种接口获取当前输入光标位置
+winex.caret.get( = 获取输入光标位置
+winex.caret.get(.(hwnd) = 在 @hwnd 指句柄的窗口获取输入光标位置，\n不指定参数则获取前台窗口输入光标。\n\n成功返回 ::RECT 结构体，失败返回 null。\n返回结构体的值使用屏幕坐标。\n如果获取到真实输入光标大小则返回结构体的 right,bottom 为非 0 值，\n如果为 I 光标位置则 right,bottom 值为 0。\n返回结构体的 hwnd 成员为输入光标所在窗口句柄。\n\n第 2 个返回值为输入焦点窗口句柄
+winex.caret.get() = !rect.
+end intellisense**/

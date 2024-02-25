@@ -1,0 +1,12 @@
+﻿import mysql.client;
+
+namespace mysql.plugin.cachingSha2Password;
+
+if(..mysql.client.pluginDir){
+	..io.updateData( $"~\lib\mysql\plugin\cachingSha2Password\.res\caching_sha2_password.dll"
+		,..mysql.client.pluginDir,"caching_sha2_password.dll");	
+}
+
+/**intellisense()
+mysql.plugin.cachingSha2Password = 在 mysql.client.pluginDir 目录下添加 caching_sha2_password.dll\n如果 mysql.client.pluginDir 为 null 则忽略不执行操作
+end intellisense**/

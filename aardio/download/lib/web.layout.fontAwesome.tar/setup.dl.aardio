@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\web\layout\");
+fsys.copy( "\fontAwesome","~\lib\web\layout\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("web.layout.fontAwesome 扩展库已安装成功!","aardio- web.layout.fontAwesome扩展库安装程序")

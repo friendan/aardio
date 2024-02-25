@@ -1,0 +1,10 @@
+﻿import fonts;
+
+namespace fonts.fontAwesomeDlg{ 
+    family = ..fonts.addFamily($"~/lib/fonts/.res/fontAwesomeDlg.ttf") 
+}
+
+/**intellisense()
+fonts.fontAwesomeDlg = 导入图标字体,\n所有图标请参考aardio工具->文本文件->图标字体\n\n此字体用于 win.dlg.message, fsys.update.simpleMain 等库
+fonts.fontAwesomeDlg.family = GDI+字样集合,可用于plus控件,gdip等库函数,\n!gdipfamily.
+end intellisense**/

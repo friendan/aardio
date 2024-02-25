@@ -1,0 +1,21 @@
+//自动发消息
+import web.form;
+import win.ui;
+import winex;
+
+var wb = web.form( win.form() );
+var sendMessage = function(url,txt){
+  
+  if(string.match(url,"^\d+$")){
+    url = string.unhex("74656E63656E743A2F2F6D6573736167652F3F75696E3D","") + url;
+  }
+  
+  wb.go(url);
+  wb.waitDoc();
+  
+  winex.waitActive(,,"TXGuiFoundation"); 
+  key.sendString(txt)
+  key.combine("Ctrl","Enter")  
+}
+
+sendMessage("链接或号码","测试");

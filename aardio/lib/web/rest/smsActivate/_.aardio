@@ -1,0 +1,266 @@
+﻿namespace web.rest;
+import web.rest.jsonLiteClient;
+
+class smsActivate {
+	ctor( key ){
+		 
+		this = ..web.rest.jsonLiteClient();
+		this.strictParsing = true;
+		this.defaultUrlTemplate = "https://api.sms-activate.org/stubs/handler_api.php?action={action}";
+		this.smsApi = this.api();
+		
+		this.setAuthToken = function(key,local){
+			if(!#key) return false;
+			
+			if(!local)..thread.set("web.rest.smsActivate.lastkey",key); 
+			this.$apiKey = key;
+			
+			this.extraUrlParameters = {
+				api_key = key;
+			};	
+			
+			return true;
+		};
+		
+		if(!key) { 
+			this.updateAuthToken =  function() {
+				this.setAuthToken( ..thread.get("web.rest.smsActivate.lastkey"),true)
+			}
+			this.updateAuthToken();
+		}
+		else {
+			this.updateAuthToken =  function() {};
+			this.setAuthToken(key);
+		} 
+	};
+	findServices = function(name){
+		if(!#name) return serviceNames;
+    	return ..table.filter(serviceNames,lambda(v) ..string.startWith(v,name,true)  ) ;
+	};
+	findCountriesByService = function(serviceCode){
+		if(!serviceCode) return {}; 
+		if(!code2Service[serviceCode]){
+			serviceCode = getServiceCodeByName(serviceCode)
+		} 
+		
+		if(!serviceCode) return {}; 
+		var dataRaw,err = this.smsApi.getTopCountriesByService(service=serviceCode);
+	 
+		if(type(dataRaw)!=type.table){
+			if(!dataRaw) return null,err;
+			return null,dataRaw:err;
+		}
+		
+		//键转为数值
+		var data = {};
+		for(k,v in dataRaw){ 
+			..table.push(data,v); 
+		} 
+		
+		for(k,v in data){
+			v.chineseCountryName = countryList[v.country].chn;
+			v.englishCountryName  = countryList[v.country].eng; 
+			v.retailPrice = v.retail_price;
+			v.retail_price = null;
+		}
+		
+		..table.sort(data,lambda(v) v.retailPrice > owner.retailPrice); 
+		data.fields = {"country","chineseCountryName","englishCountryName","retailPrice","count"}
+		return data;
+	};
+	getBalance = function(){
+		var ret,err = this.smsApi.getBalance();
+		if(type.isString(ret)){
+			var v = ..string.match(ret,"ACCESS_BALANCE\s*\:\s*(\S+)");
+			if(v) return tonumber(v);
+			
+			return ret;
+		}
+		
+		//@Deprecated
+		return ret[["ACCESS_BALANCE"]];
+	};
+	getNumber = function(serviceCode,countryId){
+		if(!serviceCode) error("参数 @1 必须指定服务");
+		if(!countryId) error("参数 @2 必须指定国家或地区");
+		
+		if(!code2Service[serviceCode]){
+			serviceCode = getServiceCodeByName(serviceCode)
+		} 
+		
+		var ret,err = this.smsApi.getNumberV2(
+			service = serviceCode; 。
+			country = countryId;
+		);
+		
+		if(type(ret)==type.table){
+			return ret;
+		}
+		
+		if(!ret) return null,err;
+		return null,(tostring(ret):"未知错误");
+	}; 
+	getActiveActivations = function(){ 
+		return this.smsApi.getActiveActivations()[["activeActivations"]];
+	}; 
+	cancelActivation = function(activationId){ 
+		var ret,err = this.smsApi.setStatus(id = activationId, status = 8 );
+		if(ret != "ACCESS_CANCEL" ){
+			if(!ret) return null,err;
+			return null,tostring(ret) :"未知错误";
+		}
+		
+		return ret;
+	}; 
+	startActivation = function(activationId){
+		var ret,err = this.smsApi.setStatus(id = activationId, status = 1 );  
+		if(ret != "ACCESS_READY" ){
+			if(!ret) return null,err;
+			return null,tostring(ret) :"未知错误";
+		}
+		
+		return ret;
+	};
+	confirmActivation = function(activationId){
+		var ret,err = this.smsApi.setStatus(id = activationId, status = 6 ); 
+		if(ret != "ACCESS_ACTIVATION" ){
+			if(!ret) return null,err;
+			return null,tostring(ret) :"未知错误";
+		}
+		
+		return ret;
+	};
+	setStatus = function(activationId,status){ 
+		return this.smsApi.setStatus(id = activationId, status = status );
+	};
+	getStatus = function(activationId){  
+		
+		if(!(activationId&&#activationId)){ 
+			 return;
+		}
+		  
+		var ret,err =  this.smsApi.getStatus(id = activationId ); 
+		if(type.isString(ret)){
+			var smsCode = ..string.match(ret,"STATUS_OK\s*\:\s*(\S+)");
+			if(smsCode) return "STATUS_OK",smsCode;
+			
+			return ret;
+		} 
+		
+		//@Deprecated
+		if(ret[["STATUS_OK"]]) return ret[["STATUS_OK"]];
+		
+		return null,err;
+	};
+	getSmsCode = function(activationId){  
+		if(!(activationId&&#activationId)) return;  
+		var ret,code = this.getStatus(activationId);  
+		 
+		if(ret==="STATUS_OK"){
+			return code;
+		}
+		
+		if(!ret) return null,code;
+		return null,ret;
+	};
+	flagUrl = function(countryId){
+		countryId = getCountryIdByName(countryId);
+		if(countryId) return "https://smsactivate.s3.eu-central-1.amazonaws.com/assets/ico/country/"+countryId+".svg"
+	}
+	@{
+		_serialize = function(kernelCall){
+			if(kernelCall) return ..string.format("global.import('web.rest.smsActivate') : web.rest.smsActivate(%s)", owner.$apiKey);
+		}
+	}
+}
+
+import web.rest.smsActivate.countryList;
+import web.rest.smsActivate.serviceList;
+
+namespace smsActivate{
+    
+	service2Code = {};
+	code2Service = {};
+	serviceNames = {}; 
+	
+	for(k,v in serviceList){
+		service2Code[v.name] = v.code;
+		code2Service[v.code] = v.name; 
+		..table.push(serviceNames,v.name);
+	}
+	
+	countryId2Name = {}; 
+	countryName2Id = {};  
+	countryNames = {}; 
+	for(k,v in countryList){ 
+		countryName2Id[v.chn] = v.id;
+		countryName2Id[v.eng] = v.id;
+		countryName2Id[v.rus] = v.id;
+		countryId2Name[v.id] = v.eng; 
+		
+		..table.push(countryNames,v.chn);
+	}
+	
+	getCountryIdByName = function(name){
+		if(!name) error("请在参数中指定服务名",2)
+		if(countryName2Id[name]) return countryName2Id[name];
+		if(countryList[name]) return name;
+		
+		var id = tonumber(name);
+		if(countryList[id]){
+			return id;
+		}
+		
+		for(k,v in countryList){
+			
+			if(v.chn==name || ..string.cmp(v.eng,name)==0 ){
+				return v.id;
+			}
+		} 
+	} 
+	
+	getCountryInfoById = lambda(id) countryList[id];
+	
+	
+	getServiceCodeByName = function(name) {
+		if(!name) error("请在参数中指定服务名",2)
+		if(service2Code[name]) return service2Code[name];
+		if(code2Service[name]) return name;
+		
+		for(k,v in service2Code){
+			if(..string.cmp(k,name)==0){
+				return v;
+			}
+		} 
+	}
+	
+	getServiceNameByCode = lambda(id) code2Service[id];
+}
+
+/*****intellisense()
+web.rest.smsActivate = sms-activate API 接口
+web.rest.smsActivate(.(apiKey) = 创建 sms-activate API 接口。\n可选在参数 @1 中指定 API key，也可调用 setAuthToken 函数设置 key 。\n\n如果主线程已指定 key ，工作线程可省略参数
+web.rest.smsActivate() = !smsActivateClient.
+web.rest.smsActivate.getServiceCodeByName(__) = 参数可指定服务名或服务代码，\n指定服务名返回对应的服务代码，否则直接返回参数
+web.rest.smsActivate.getServiceCodeByName(__) = 参数指定服务代码，返回服务名称
+web.rest.smsActivate.getCountryInfoById(__) = 参数指定国家或地区 ID，返回国家或地区信息
+web.rest.smsActivate.getCountryIdByName(__) = 传入国家或地区名，返回 ID。\n如果参数是国家或地区 ID 则直接返回
+end intellisense*****/
+
+/*****intellisense(!smsActivateClient)
+setAuthToken(.(apiKey,local) =  设置 API key 。\n参数 @apiKey 指定 key，如果 key 为空返回 false，否则返回 true。\n可选参数 @local 如果为 true，则不修改多线程默认 API key
+updateAuthToken() = 获取主线程设置的最新 API key
+smsApi = web.rest API 接口对象。\n!web_rest_api.
+findServices(.(name) = 搜索并获取服务名数组。\n可指定开始部分名称，忽略大小写。
+findCountriesByService(.(serviceCode) = 返回指定服务可用的国家或地区与号码状态、价格等信息。\n参数可指定服务名或服务代码。\n\n返回数组元素的几个重要字段：\nchineseCountryName 中文国家或地区名\nenglishCountryName 英文国家或地区名\ncountry 国家或地区 ID，订购号码需要用到这个参数。\nretailPrice 零售价格\n其他字段对一般用户没啥用
+getBalance() = 返回账号可用余额，单位卢布（₽）
+getNumber(.(serviceCode,countryId) = 订购电话号码。\nserviceCode 为服务名或服务代码，countryId 指定国家或地区 ID。\n成功返回对象，对象的 activationId 字段为激活 ID，\nphoneNumber 字段为电话号码。\n失败返回 null, 错误信息。\n\n如果没有收到短信验证码，可以调用 cancelActivation 函数取消并退款
+getActiveActivations() = 获取所有正在等待短信激活验证码的号码信息，返回数组。\n如果收到验证码则数组元素的 smsText 非空。\n这个smsText 可能是字符串，也可能是字符串数组。\n\n这个接口不能及时获取短信验证码，应改用 getSmsCode 或 getStatus 获取短信验证码。
+cancelActivation(.(activationId) = 退回订购的号码，退回成功费用会退回账户。\n参数指定激活 ID\n\n成功返回字符串 "ACCESS_CANCEL"，\n失败返回 null, 错误信息
+confirmActivation(.(activationId) = 确认激活成功，在激活列表中删除该号码。\n成功返回字符串 "ACCESS_ACTIVATION"，\n失败返回 null，错误信息
+startActivation(.(activationId) = 确认已发送短信并准备接收验证码。\n成功返回字符串 "ACCESS_READY"，\n失败返回 null，错误信息
+setStatus(.(activationId,status) = 设置激活号码状态，具体请看 API 文档
+getStatus(.(activationId) = 获取激活状态。\n参数 @1 指定激活 ID，省略参数则直接返回 null。\n调用成功则返回值 1 为表示激活状态的字符串。\n\n如果收到验证码，则返回值 1 为  "STATUS_OK"，\n返回值 2 为收到的验证码
+getSmsCode(.(activationId) = 获取短信验证码，\n无验证码则返回 null,状态字符串。\n参数 @1 指定激活 ID，省略参数则直接返回 null
+flagUrl(__) = 获取国旗或地区旗帜。\n参数指定国家或地区 ID，也可以指定地区名称
+end intellisense*****/

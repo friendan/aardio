@@ -1,0 +1,12 @@
+﻿import mysql.client;
+
+namespace mysql.plugin.ed25519;
+
+if(..mysql.client.pluginDir){
+	..io.updateData( $"~\lib\mysql\plugin\ed25519\.res\client_ed25519.dll"
+		,..mysql.client.pluginDir,"client_ed25519.dll");	
+}
+
+/**intellisense()
+mysql.plugin.ed25519 = 在 mysql.client.pluginDir 目录下添加 client_ed25519.dll\n如果 mysql.client.pluginDir 为 null 则忽略不执行操作
+end intellisense**/

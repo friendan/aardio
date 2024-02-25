@@ -1,0 +1,85 @@
+//调用 UWP 接口 
+import dotNet.uwpCompiler  
+
+/*
+如果参数@2 未指定 Windows.winmd，默认在 C:\Program Files (x86)\Windows Kits\10\UnionMetadata 
+最新版本SDK目录下查找此文件，生成的DLL程序集并不依赖 Windows.winmd 文件，仅编译时需要。
+*/
+var uwpCompiler = dotNet.uwpCompiler( "\ToastListener.dll" )//"~\lib\dotNet\ocr\.res\ocr.dll" 
+uwpCompiler.Reference("System.Linq.dll"); 
+uwpCompiler.Reference("System.Core.dll");
+uwpCompiler.Parameters.CompilerOptions = "/optimize"
+ 
+//设置待编译C#源码
+uwpCompiler.Source = /****** 
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using Windows.Foundation.Metadata;
+using Windows.UI.Notifications;
+using Windows.UI.Notifications.Management;
+
+namespace aardio  
+{ 
+	public class ToastListener
+	{
+		private UserNotificationListener listener;
+		public ToastListener(){
+			listener = UserNotificationListener.Current; 
+		}
+		
+    	public static bool IsSupported()
+    	{
+        	return ApiInformation.IsTypePresent("Windows.UI.Notifications.Management.UserNotificationListener"); 
+    	}
+    	
+    	public bool IsAllowed(){
+    	    UserNotificationListenerAccessStatus accessStatus = listener.RequestAccessAsync().GetAwaiter().GetResult();
+    	    return accessStatus == UserNotificationListenerAccessStatus.Allowed;
+    	} 
+    	
+    	
+	 	public void RemoveNotification(uint notificationId)
+    	{   
+    	    listener.RemoveNotification(notificationId);
+    	}
+    	
+    	public void ClearNotifications()
+    	{   
+    	    listener.ClearNotifications();
+    	}
+    	
+    	public string [] GetNotifications()
+    	{   
+            IReadOnlyList<UserNotification> notifs =  listener.GetNotificationsAsync(NotificationKinds.Toast).GetAwaiter().GetResult(); 
+            if(notifs.Count==0) return null;
+            
+			string [] result = new string [notifs.Count * 4 ];
+			
+			int idx = 0;
+            foreach (var n in notifs) {
+                NotificationBinding toastBinding = n.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
+
+                if (toastBinding != null)
+                {
+                    IReadOnlyList<AdaptiveNotificationText> textElements = toastBinding.GetTextElements(); 
+                    result[idx++] = n.Id.ToString();
+                    result[idx++] = textElements.FirstOrDefault().Text;
+					result[idx++] = string.Join("\n", textElements.Skip(1).Select(t => t.Text)); 
+					result[idx++] = n.CreationTime.ToString("s");
+                } 
+            }
+            
+            return result;
+ 
+    	}
+	}
+	 
+} 
+******/
+
+//编译并返回程序集  
+var assembly = uwpCompiler.CompileOrFail();
+
+import console;
+if(assembly) console.logPause("编译成功",uwpCompiler.Parameters.OutputAssembly);

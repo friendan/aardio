@@ -1,0 +1,224 @@
+﻿//grid 简单数据视图
+import win.ui.ctrl.edit;
+import win.imageList;
+
+namespace win.ui;
+
+class grid{
+	ctor( listview ){
+		this = listview; 
+		this.fullRow = 1;
+		this.gridLines = 1;
+		this.readonlyColums = {};
+		
+		var reloadImageList = function(scaleX){
+			if(this.columnImageList){
+				this.setColumnImageList(null);	
+				this.columnImageList.destroy(); 
+			}
+			
+			var w,h = 16,15; 
+		
+			if(scaleX>=3){
+				this.columnImageList = ..win.imageList(w*3,h*3);
+				this.columnImageList.add('GIF89a\x60\x00-\x00\x80\x00\x00\x80\x80\x80\xFF\x00\xFF!\xFF\x0BNETSCAPE2.0\x03\x01\x00\x00\x00!\xF9\x04\x04\x00\x00\x00\x00,\x00\x00\x00\x00\x60\x00-\x00\x00\x02u\x8C\x8F\xA9\xCB\xED\x0F\xA3\x9C\xB4\xDA\x8B\xB3\xDE\xBC\xFB\x0F\x86\xE2H\x96\xE6\x89\xA6\xEA\xCA\xB6\xEE\x0B\xC7\xF2L\xD7\xF6\x8D\xE7%\xC0\xEF\xFC\x0F\x0C\x0AW?\x9F\xF08T\x15I\xC8&\x10\xD54:{J\xA4tJ\xB42\xA7K\x13\xB7+\x8AV\xBF\xD7\xE7\x98[\x06o\xBF\xC9\x91\xDA\xCBn\x87\xA9\xA9\xB8<\xF4\xD6\xE9\xF7\xFC\xBE\xFF\x0F\x18(8HXhx\x88\x98\xA8\xB8\xC8\xD8\xE8\xF8\x08\x19)YQ\x00\x00;',0xff00ff); 	
+			}
+			elseif(scaleX>=2.0){
+				this.columnImageList = ..win.imageList(w*2,h*2);
+				this.columnImageList.add('GIF89a@\x00\x1E\x00\x80\x00\x00\x80\x80\x80\xFF\x00\xFF!\xFF\x0BNETSCAPE2.0\x03\x01\x00\x00\x00!\xF9\x04\x04\x00\x00\x00\x00,\x00\x00\x00\x00@\x00\x1E\x00\x00\x02I\x8C\x8F\xA9\xCB\xED\x0F\xA3\x9C\xB4\xDA\x8B\xB3\xDE\xBC\xFB\x0F\x86\xE2H\x96\xE6\xE9\x01\x80\xA6\xB6\xEE\x9B\xAE\xD9K\xB7\x1C\xCD\xD6j\xEC\xE6\xFA\xAD\x93ap\x9D\xA0\xF0B\xF4\x19\x8F\x96]q\xE9\x1C2Q\xD4\xAA\xF5\x8A\xCDj\xB7\xDC\xAE\xF7\x0B\x0E\x8B\xC7\xA3\x02\x00;',0xff00ff); 	
+			}
+			else{
+				this.columnImageList = ..win.imageList(w,h);
+				this.columnImageList.add('GIF89a\x20\x00\x0F\x00\x80\x00\x00\x80\x80\x80\xFF\x00\xFF!\xF9\x04\x00\x00\x00\x00\x00,\x00\x00\x00\x00\x20\x00\x0F\x00\x00\x02\x1F\x8C\x8F\xA9\xCB\xED\x0F\xA3\x9C\xB4N\xF0\x80\xDE8k\xBFA\x5C\xD7\x84\x20\x97Y\xEA\xCA\xB6\xEE\x0B\xC7F\x01\x00;',0xff00ff); 	
+			} 
+	
+			this.setColumnImageList(this.columnImageList);
+		} 
+		
+ 		reloadImageList(listview.dpiScaleX||1);
+ 		
+ 		this.__afterDpiChanged =  function(scaleX,scaleY){
+ 			if(this.columnImageList) reloadImageList(scaleX);
+ 		}
+ 		
+ 		this._onDestroy = function(){
+ 			if(this.columnImageList){
+ 				this.setColumnImageList(null);	
+				this.columnImageList.destroy(); 
+ 				this.columnImageList = null;
+ 			}
+ 		}
+ 		
+		this.addCtrl(
+            editBox = { 
+                cls="edit";font = LOGFONT( h = 12 );left = 0;top = 0;
+                right = 50;bottom = 50;autoResize = false ;hide = 1;edge = 1;
+                wndproc = function( hwnd, message, wParam, lParam ){
+                    var update;
+                    var event = owner.event;
+                    
+                    if( ( message = 0x8/*_WM_KILLFOCUS*/)  || (message == 0x101/*_WM_KEYUP*/ && wParam == 0xD/*_VK_RETURN*/ ) ) {
+                        update = true;
+                    }
+                    elseif(message == 0x201/*_WM_LBUTTONDOWN*/ ){
+                        var x,y = ..win.getMessagePos(lParam)
+                        var rc = this.editBox.getClientRect();
+                       
+                        if( ! ::PtInRect(rc,x,y) ) update = true;
+                        this.editBox.capture = !update;
+                    } 
+                    elseif(message == 0x101/*_WM_KEYUP*/){
+                    	if( wParam == 0xD/*_VK_RETURN*/ ) update = true;
+                    	elseif( wParam == 0x1B/*_VK_ESC*/){
+                    		owner.text = this.getItemText(event.iItem,event.iSubItem );
+                    		update = true;
+                    	}
+                    }
+                    
+                    if( update ){
+                    	owner.show(false);
+                        var t = this.getItemText(event.iItem,event.iSubItem );
+                        if( t!= owner.text ){
+                        	if( this.onEditChanged ) {
+	                        		if( false === this.onEditChanged(owner.text, event.iItem, event.iSubItem)) 
+	                        			return;
+                        	}
+                        		
+                        	this.setItemText( owner.text, event.iItem, event.iSubItem );
+                        }
+                        
+                        if(this.onEditEnd){
+                        	this.onEditEnd(event.iItem, event.iSubItem);
+                        }
+                    }
+                }  
+            }
+        ) 
+	};
+	beginEdit = function(iItem,iSubItem){
+		var edit = this.editBox;
+		if( ..win.isVisible(edit.hwnd) ) return; 
+		
+		var event = this.editBox.event;
+		if(iItem===null && iSubItem===null) {
+			iItem = event.iItem;
+			iSubItem = event.iSubItem;
+		}
+		else {
+			event = {
+				iItem = iItem;
+				iSubItem = iSubItem;
+			};
+			edit.event = event;
+		} 
+		
+       	if( this.readonlyColums[iSubItem] ) return; 
+        edit.text=this.getItemText(iItem,iSubItem);
+        var rc=this.getItemRect(iItem,iSubItem,,2/*_LVIR_LABEL*/ );
+        
+        rc.inflate(2,2);
+        edit.setRect(rc);
+        edit.show(); 
+        edit.setFocus();
+        edit.capture = true;
+        return true;	
+	};
+	setReadonlyColumns = function(...){
+		if(...==-1) this.readonlyColums ={@{_get = lambda() true }}
+		elseif(this.readonlyColums@) this.readonlyColums = {};
+		
+		var c = type(...) === "table" ? ... : {...}
+		for(i,idx in c) this.readonlyColums[idx] = 1;
+	};
+	prenotify = {
+		[0xFFFFFFFD/*_NM_DBLCLK*/] = function(id,code,ptr){
+			var event = this.getNotifyMessage(code,ptr);
+        	if( ! event.iItem && event.iSubItem ) return ;
+        	
+        	if(this.onDoubleClick) this.onDoubleClick(event.iItem,event.iSubItem,event);
+        	
+        	this.editBox.event = event; 
+        	this.beginEdit(); 
+		};
+		[0xFFFFFF65/*_LVN_KEYDOWN*/] = function(id,code,ptr){
+			var nmkey = ..raw.convert(ptr,{
+  				struct hdr = ::NMHDR();
+  				WORD vkey;
+  				INT flags;
+			});
+
+			var vk = nmkey.vkey;
+			var edit = this.editBox;
+			if(!edit.event) edit.event = {};
+			edit.event.iItem = this.getSelection();
+			
+			if( vk == 0x20/*_VK_SPACE*/ ){
+				if(!edit.event.iSubItem)edit.event.iSubItem=1;
+				this.beginEdit(); 
+			} 
+		};
+		[0xFFFFFF94/*_LVN_COLUMNCLICK*/] = function(id,code,ptr){
+			var nm = this.getNotifyMessage(code,ptr)
+    		var desc = this.getColumnImage(nm.iSubItem) == 0;
+    		if(this.onSortColumn){
+    			if( this.onSortColumn(nm.iSubItem,desc) ){
+    				this.clearColumnImage();
+    				this.setColumnImage(nm.iSubItem, desc ? 1 : 0);
+    			}
+    		} 
+		}; 
+	} 
+}
+
+/**intellisense()
+win.ui.grid(__) = 参数必须指定一个listview控件对象\n返回一个可编辑单元格的列表视图对象,\n\n鼠标左键单击单元格、或者按空格键开始编辑,\n回车完成编辑,ESC键撤消编辑,回车+上下方向键快速移动到其他项,\n用户完成编辑后会触发onEditChanged事件.\n!listview.
+win.ui.grid() = !win_ui_grid.
+!win_ui_grid.editBox = 实现编辑功能的edit控件\n此功能需要扩展listview并实现了编辑功能的的控件才能支持\n!edit.
+!win_ui_grid.onEditChanged(text,iItem,iSubItem) = @.onEditChanged = function(text,iItem,iSubItem){
+	__/*控件完成编辑,并且文本已变更,\ntext为改变后的文本,iItem为行号,iSubItem为列号\n此功能需要扩展listview并实现了编辑功能的的控件才能支持\n返回false可中止更新显示文本*/
+}
+!win_ui_grid.onEditEnd(iItem,iSubItem) = @.onEditChanged = function(iItem,iSubItem){
+	__/*控件完成编辑*/
+}
+!win_ui_grid.onSortColumn(column,desc) = @.onSortColumn = function(column,desc){
+	__/*点击列排序时回调此函数\n@column参数为列序号，1为首列，@desc参数指定是否倒序\n返回true排序，否则不排序*/
+	return true;
+} 
+!win_ui_grid.setTable(__) = 用listview控件显示数据表\n此函数会自动清空控件之前的所有项,\n如果没有创建任何列,则自动创建列\n\n数据表应当包含行组成的数组,\n每行的数据列必须是由列名和列值组成的键值对\n数据表应使用fields包含需要显示的列名称数组\n可以通过fields控制要显的列、以及要显示的顺序\n\n使用sqlite,access,sqlServer等数据库对象提供的getTable函数可获取符合此规格的数据表 
+!win_ui_grid.setColumns(__) = 用一个字符串数组指定要显示的列\n如果参数为空则清空所有列
+!win_ui_grid.setReadonlyColumns(__) = 可以使用一个或多个参数指定要禁止编辑的列序号，\n也可以用一个数组参数指定多个列序号。\n\n如果参数为 -1，则禁止编辑所有列
+!win_ui_grid.clear() = 清空所有行
+!win_ui_grid.clear(true) = 清空所有行,并且清空所有列
+!win_ui_grid.beginEdit(.(行,列) = 切换到编辑状态
+!win_ui_grid.onGetDispItem = @.onGetDispItem = function(item,row,col){
+	__/*处理 _LVN_GETDISPINFOW 通知消息\n参数 @item 为 LVITEM 结构体,@row 为当前行号,@col 为当前列号,\n返回 item 或包含 item 部分字段则更新 LVITEM 结构体*/
+	return {text="要显示的文本"}; 
+} 
+!win_ui_grid.onItemChanged = @.onItemChanged = function(item,subItem,nmListView){
+	__/*项目变更触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+} 
+	
+!win_ui_grid.onFocusedChanged = @.onFocusedChanged = function(item,subItem,nmListView){
+	__/*焦点项变更触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+} 
+
+!win_ui_grid.onSelChanged = @.onSelChanged = function(selected,item,subItem,nmListView){
+	__/*选中项更触发此事件。\nselected 为是否选中，item 为变更项序号，\nsubItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+}
+
+!win_ui_grid.onCheckedChanged = @.onCheckedChanged = function(checked,item){
+	__/*勾选状态变更触发此事件。\nchecked 为是否勾选，item 为变更项序号*/
+}
+
+!win_ui_grid.onRightClick = @.onRightClick = function(item,subItem,nmListView){
+	__/*右键点击项目触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+}
+
+!win_ui_grid.onClick = @.onClick = functionitem,subItem,nmListView){
+	__/*左键单击项目触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+}
+
+!win_ui_grid.onDoubleClick = @.onDoubleClick = function(item,subItem,nmListView){
+	__/*左键双击项目触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
+}
+end intellisense**/

@@ -1,0 +1,67 @@
+﻿//nuget 包管理器
+import zlib.httpFile;
+import web.rest.jsonLiteClient;
+namespace dotNet.nuget;
+
+http = ..web.rest.jsonLiteClient(); 
+
+service = function(srvType){
+	if(!srvType) srvType = "PackageBaseAddress/3.0.0";
+	
+	if(!serviceIndex){
+		var data,err = http.get("https://api.nuget.org/v3/index.json")
+		data = data[["resources"]]; 
+		if(!data) return;	
+		
+		serviceIndex = {};
+		for(i,v in data){
+			serviceIndex[v["@type"]] = http.api(v["@id"],"GET")
+		} 
+	}
+	
+	return serviceIndex[srvType]; 
+}
+
+getPackageIndex = function(package){
+	if(!package) error("请指定包名称");
+	var pba = service("PackageBaseAddress/3.0.0");
+	if(pba) return pba[..string.lower(package)]["index.json"]();
+}
+
+download = function(package,version,downloadDir,extraDir,ownerForm){
+	var packageId = ..string.lower(package);
+	
+	if(!version){
+		var versions = getPackageIndex(package)[["versions"]];
+		if(!versions) return;
+		version = versions[#versions]
+	}
+	
+	var url = service("PackageBaseAddress/3.0.0").getUrl();
+	url =  ..inet.url.append( url,packageId,version,packageId+"."+version+".nupkg");
+	
+	return ..zlib.httpFile.download(url,"正在下载 NuGet 包："+package,downloadDir,extraDir,ownerForm);
+}
+
+//https://learn.microsoft.com/nuget/api/search-query-service-resource
+query = function(param){
+	var sqs = service("SearchQueryService/3.5.0");
+	if( !sqs ) return;
+	
+	return sqs(param);
+}
+
+
+/**intellisense()
+dotNet.nuget = NuGet 接口操作 
+end intellisense**/
+
+/**intellisense(dotNet.nuget)
+download( = 下载 NuGet 包
+download(.(package,version,downDir,extraDir,ownerForm) = 下载 NuGet 包。\m@package 指定包名称。\n@version 指定包版本，不指定则下载最后一个版本。\n@downDir 可选参数，用于指定下载目录，默认为 /download。\n@extraDir 可选参数，用于指定解压目录，\n不指定则在下载目录根据包名自动生成解压目录。\n下载成功返回解压目录，失败返回 null
+service(__) = 返回 web.rest.jsonLiteClient 引入的 API 对象,\n参数指定 NuGet 服务名，省略参数则默认为 "PackageBaseAddress/3.0.0"
+service() = !web_rest_api.
+getPackageIndex(__) = 返回指定 Package 的版本信息。\n成功返回表的 versions 字段为版本数组。\n失败返回 null 与错误信息
+http = web.rest.jsonLiteClient 客户端。\n!web_restClient.
+query(__) = 搜索包。\n参数 @1 可选指定一个查询参数表。\n参数表支持的字段：\nhttps://learn.microsoft.com/nuget/api/search-query-service-resource
+end intellisense**/

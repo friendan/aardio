@@ -1,0 +1,14 @@
+﻿namespace string
+
+words = eval($"~\lib\string\words\.res\words.db")
+
+/*
+//words.db 是用下面的代码创建的二进制表
+..string.save("~\lib\string\words\.res\words.db"
+	,..table.tostring(words,true) ); 
+*/
+
+/**intellisense()
+string.words = 简单英中词典\n键为英文，值为中文，数据仅供参考
+end intellisense**/
+

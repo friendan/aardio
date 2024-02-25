@@ -1,0 +1,236 @@
+﻿import fsys.lnk;
+import fsys.path;
+import string.cmdline;
+import win.path;
+import process.popen;
+import console;
+
+namespace process;
+
+class gcc {
+	
+	ctor( workDir){ 
+		this.workDir = workDir : "\";
+	};
+	exec = function(...){ 
+		..console.open();
+		
+		::Kernel32.SetCurrentDirectory( ..io.fullpath(this.workDir+"\") );
+		
+		var path = check();
+		var params = ..string.cmdline.arguments(...);
+		if(params[1]){
+			var exe = __exe__[params[1]];
+			if(exe){
+				path = ..fsys.path.replaceFile(path,exe);
+				..table.shift(params);
+			} 
+			elseif(..string.right(params[1],4)==".exe"){
+				path = ..fsys.path.replaceFile(path,params[1]); 
+				..table.shift(params);
+			};
+		}  
+		
+		var prcs = ..process(path,params,{workDir = this.workDir});  
+		if(!prcs) error("不支持该命令行",2); 
+		
+		prcs.waitOne();
+		prcs.free();
+		
+		..console.pause(true);
+	};  
+	popen = function(...){
+		::Kernel32.SetCurrentDirectory( ..io.fullpath(this.workDir+"\") );
+		
+		var path = check();
+		var params = ..string.cmdline.arguments(...);
+		if(params[1]){
+			var exe = __exe__[params[1]];
+			if(exe){
+				path = ..fsys.path.replaceFile(path,exe);
+				..table.shift(params);
+			} 
+			elseif(..string.right(params[1],4)==".exe"){
+				path = ..fsys.path.replaceFile(path,params[1]); 
+				..table.shift(params);
+			};
+		} 
+		
+		var prcs = ..process.popen(path,params,{workDir = this.workDir});  
+		if(!prcs) error("不支持该命令行",2); 
+		return prcs;
+	}; 
+	@{
+		_set = function(k,v){
+			if(type.isString(k) && type.isString(v) ){ 
+				
+				if(..string.cmp(k,"Makefile")==0 ){
+					..string.save(..io.joinpath(this.workDir,"makefile"),v );
+					return;
+				}
+				
+				if( ..string.match(k,"^\w+$") ){
+					..string.save(..io.joinpath(this.workDir,k + ".c"),v );
+					return;
+				}
+				
+				if(..string.match(k,"^\w+\.\w+$")){
+					..string.save(..io.joinpath(this.workDir,k),v );
+					return;
+				} 
+			}
+			
+			owner[[k]] = v;	
+		} 
+	}
+}
+
+
+namespace gcc{
+	
+	__exe__ = {
+		"g++":"g++.exe",
+		"gfortran":"gfortran.exe",
+		"make":"mingw32-make.exe"
+	}
+	
+	install = function(url){
+		if(!(
+			..io.exist(..io.appData("aardio/mingw32/bin/gcc.exe")) || ..io.exist(..io.appData("aardio/mingw64/bin/gcc.exe")) 
+		) ){
+			import sevenZip.decoder2.httpFile;
+			if(!url) url = "https://jaist.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-win32/dwarf/i686-8.1.0-release-win32-dwarf-rt_v6-rev0.7z";
+			if( ..sevenZip.decoder2.httpFile.download(url,"正在下载 MinGW-w64",..io.appData("aardio/down~temp~"),..io.appData("aardio")) ){
+				var path = ..io.exist(..io.appData("aardio/mingw32/bin/gcc.exe"))
+				if(path){
+					..win.path.add(..io.appData("aardio/mingw32/bin"),,true);
+					..string.setenv("MINGW_HOME",..io.appData("aardio/mingw32"));
+					return path;	
+				}
+				
+				var path = ..io.exist(..io.appData("aardio/mingw64/bin/gcc.exe"));
+				if(path){
+					..win.path.add(..io.appData("aardio/mingw64/bin"),,true);
+					..string.setenv("MINGW_HOME",..io.appData("aardio/mingw64"));
+					return path;	
+				}
+			}	
+		}	
+	}
+	
+	check = function(){
+		if(..io.exist(path)){
+			return path;
+		}
+		
+		path = ..io.exist(..io.appData("aardio/mingw32/bin/gcc.exe"))
+		if(path){
+			..win.path.add(..io.appData("aardio/mingw32/bin"),,true);
+			..string.setenv("MINGW_HOME",..io.appData("aardio/mingw32"));
+			return path;
+		}
+		
+		path = ..io.exist(..io.appData("aardio/mingw64/bin/gcc.exe"));
+		if(path){
+			..win.path.add(..io.appData("aardio/mingw64/bin"),,true);
+			..string.setenv("MINGW_HOME",..io.appData("aardio/mingw64"));
+			return path;
+		}
+		
+		var mingw = ..fsys.lnk.search( {"mingw"},"terminal" )  
+		if(mingw){
+			var str  = ..string.load(mingw);
+			if(str){
+				var mingw  = ..string.match(str,"set\s*PATH\s*=\s*(.+?\mingw32\\bin)\;\%PATH\%");
+				if(mingw){
+					..win.path.add(mingw,,true);
+					..string.setenv("MINGW_HOME",..fsys.getParentDir(mingw));
+					path = ..io.joinpath(mingw,"gcc.exe");
+					return path;
+				}
+			} 
+		}
+		else {
+			var mingw = ..fsys.lnk.search( {"tdm-gcc"},"Modify or Remove MinGW" );
+			if(mingw){
+				mingw = ..io.joinpath( ..fsys.getParentDir( ..fsys.getParentDir(mingw) ),"bin");
+				path = ..io.exist(..io.joinpath(mingw,"gcc.exe") );
+				
+				if( path ){
+					..win.path.add(mingw,,true);
+					..string.setenv("MINGW_HOME",..fsys.getParentDir(mingw));
+					return path;
+				}
+			}
+		}
+		
+		path = ..io.exist(..win.path.search("gcc.exe"));
+		if(path){
+			return path;
+		}
+		
+		path = ..io.exist("C:\TDM-GCC-32\bin\gcc.exe") 
+			|| ..io.exist("D:\TDM-GCC-32\bin\gcc.exe")
+			|| ..io.exist("E:\TDM-GCC-32\bin\gcc.exe")  
+			
+		if(path){
+			..win.path.add(..io.splitpath(path).dir,,true);
+			return path;
+		}
+		
+		path = ..io.exist("C:\MinGW\bin\gcc.exe")
+			|| ..io.exist("D:\MinGW\bin\gcc.exe")
+			|| ..io.exist("E:\MinGW\bin\gcc.exe")
+			 
+		if(path){
+			var bin = ..io.splitpath(path).dir;
+			..win.path.add(bin,,true);
+			
+			bin = ..string.trimright(bin,"\/");
+			..string.setenv("MINGW_HOME",..io.splitpath(bin).dir);
+			return path;
+		}
+		
+		path = install();
+		
+		return path;
+	} 
+	
+	get = function(...){
+		var prcs,err = ..process.gcc().popen(...);
+		if(!prcs) return null,err;
+		
+		var out,err,exitCode = prcs.readAll();
+		prcs.close();
+		
+		if(exitCode){
+			return null,err			
+		}
+		
+		return out;
+	}
+	
+	match = function(p,...){
+		var out,err = get(...);
+		if(out){
+			return ..string.match(out,p);
+		}
+		
+		return null,err;
+	}
+}
+
+/**intellisense()
+process.gcc = 用于创建或安装 GCC 编译环境。\n用法请参考范例 / 调用其他语言 / GCC\n\n此扩展库所有函数执行命令的第一个参数如果是:\n"g++","make" 或其他 GCC 同目录下以 ".exe" 结尾的文件名，\n则执行该程序而非默认的 gcc.exe
+process.gcc.install() = 安装 Mingw-w64\n可选在参数中指定 Mingw-w64 离线安装包下载地址
+process.gcc.check() = 搜索并返回 gcc.exe 路径，自动设置 GCC 环境变量。\n如果找不到 gcc.exe，自动安装 Mingw-w64 并返回 gcc.exe 路径。\n失败返回 null 
+process.gcc.path = 调用 check 函数并返回 true 以后可会返回 gcc.exe 路径
+process.gcc.get(__) = 可用一个或多个字符串参数指定命令行参数，\n也可以用在一个字符串参数中用空格分隔多个参数。\n\n执行成功返回进程标准输出。\n失败返回 null,错误信息
+process.gcc.match(.(模式串,->->) = 执行 GCC 命令（第一个参数可以改为 g++）。\n自参数 @2 开始可用一个或多个字符串参数指定命令行参数，\n也可以用在一个字符串参数中用空格分隔多个参数。\n\n执行成功使用参数 @1 指定的模式串匹配进程查找标准输出并返回结果。\n失败返回 null,错误信息\n\n示例：\nprocess.gcc.match( "__STDC_VERSION__\s+(\d+)","-dM -E -x c NUL")\nprocess.gcc.match( "__cplusplus\s+(\d+)","-dM -E -x c++ NUL")
+process.gcc(__) = 创建 GCC 编译环境，\n可选用参数指定工作目录，默认为"/"（应用程序根目录）
+process.gcc() = !processGcc.
+!processGcc.popen(命令参数) = @.popen("main.c -o main.dll -shared -s -municode -m32 -O2 -static -lgcc -lstdc++")
+!processGcc.exec(命令参数) = @.exec("main.c -o main.dll -shared -s -municode -m32 -O2 -static -lgcc -lstdc++")
+!processGcc.popen() = !process_popen.
+!processGcc.? = 如果键值都是字符串：\n当键名只包含字母与数字，在 GCC 工作目录生成同名 ".c" 文件。\n如果键名已包含后缀名，则不添加".c" 后缀。\n含后缀名时请使用下标操作符赋值。\n\n在 aardio 中段注释可以赋值为字符串，首尾星号数目要相同
+end intellisense**/

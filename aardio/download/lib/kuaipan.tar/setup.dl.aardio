@@ -1,0 +1,9 @@
+import fsys; 
+fsys.createDir("~\lib\");
+fsys.copy( "\kuaipan","~\lib\" ); 
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("kuaipan扩展库已安装成功!","aardio- kuaipan扩展库安装程序")

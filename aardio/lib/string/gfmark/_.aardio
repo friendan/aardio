@@ -1,0 +1,28 @@
+﻿
+namespace string.gfmark{
+   
+	_dll = ..raw.loadDll($"~\lib\string\gfmark\.res\cmark-gfm.dll",,"cdecl");
+	
+	render = function(md,opt){
+		var pHtml = _dll.cmark_markdown_to_htmlP(md,#md,opt || 0/*CMARK_OPT_DEFAULT*/)
+		return pHtml  ? ..raw.str(pHtml)
+	} 
+	
+	version = function(){
+		return ..raw.str(_dll.cmark_version_stringP());
+	}
+	
+}
+
+/*intellisense()
+string.gfmark = Github Markdown 组件
+string.gfmark.render(.(MARKDOWN字符串) = 解析 Markdown 并返回 HTML
+string.gfmark.version() = 版本
+end intellisense**/
+
+/*
+cmark-gfm.dll免费开源，官网：
+https://github.com/github/cmark-gfm
+Select the Configuration Properties > C/C++ > Command Line property page.
+In Additional Options, add the /utf-8 option to specify your preferred encoding.
+*/
