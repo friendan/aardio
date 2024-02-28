@@ -1,5 +1,5 @@
 //主进程通信
-//强烈建议大家改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
+//请改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
 import electron.app;
 var app = electron.app( ,,true);// 如果第3个参数为true，可以查看js主进程里的console.log输出
 

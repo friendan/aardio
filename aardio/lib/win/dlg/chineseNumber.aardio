@@ -74,8 +74,7 @@ class chineseNumber{
 	import string.chineseNumber; 
 	this.dropdown.editBox.disableInputMethod();
 	this.dropdown.editBox.onChange = function(){
-		var items = {}; 
-		menu.setItemTexts(items);
+		var items = {};  
 		
 		var text = string.replace(owner.text,"[\s,\_]","");
     	var num = string.match(text,"^([+-]?0*\d+\.?\d*)$");
@@ -186,8 +185,9 @@ class chineseNumber{
 	
 	var scrX,scrY,scrWidth,scrHeight = ..win.getScreenPos(this.hwnd,hOwner)
 	var x,y,cx,cy = this.getPos();
-	if(y+200>scrHeight){
-		y = scrHeight -200;
+	var _,minHeight = this.dpiScale(0,200);
+	if(y + minHeight > scrHeight){
+		y = scrHeight - minHeight;
 		this.setPos(x,y);
 	}
 	

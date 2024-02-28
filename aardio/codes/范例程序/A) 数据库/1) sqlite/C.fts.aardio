@@ -1,0 +1,51 @@
+//全文搜索
+
+import sqlite
+import console.int;
+  
+var db = sqlite("/test-fts.db");  
+if(!db.existsTable("ftstest")){
+	db.exec("CREATE VIRTUAL TABLE ftstest USING fts4 (data,body,tokenize=simple)") 
+}
+
+import mmseg
+var str = /*
+认真地思考，准备好你的问题。草率的提问只能得到草率的回答，甚至得不到回答。在提问时，你越是表现出在此前做过思考与努力去解决自己的问题，你越有可能得到真正的帮助。
+*/
+
+var data = "";
+for word,attr in mmseg.each(str){ 
+    if(attr) data = data + " " + word 
+}
+
+//创建预处理命令,用 @ 字符作为 SQL 命名参数的前缀
+var cmd = db.prepare("INSERT INTO [ftstest] VALUES ( @data,@body );")
+
+//执行命令语句,插入测试数据,并指定 SQL 命名参数
+cmd.step(
+    data = data;
+    body = str; 
+);  
+
+cmd.finalize();
+
+//MATCH 用于全文检索
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备'")
+
+//在词前面加^ 表示该词必须是某列的第一个词
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '^准备'")
+
+//在词后面加* 表示匹配所有以该词为前缀的词
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备*'")
+
+//包含多个词的短语首尾要加双引号
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '"认真 思考"'`)
+ 
+//支持 AND OR NOT 等逻辑操作符
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 OR 思考'`)
+
+//查看结果
+console.dump(result[["body"]]);
+ 
+//删除表 
+db.exec("DROP TABLE ftstest" );

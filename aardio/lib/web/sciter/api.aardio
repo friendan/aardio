@@ -272,7 +272,7 @@ namespace api{
 var dllPath = "~/lib/web/sciter/.res/sciter.dll";
 if(!_STUDIO_INVOKED){
 	dllPath = ..io.appData( 
-		"aardio/std/sciter-js/sciter.5.0.2.21.dll",$"~/lib/web/sciter/.res/sciter.dll"
+		"aardio/std/sciter-js/sciter.5.0.3.9.dll",$"~/lib/web/sciter/.res/sciter.dll"
 	);
 }
 

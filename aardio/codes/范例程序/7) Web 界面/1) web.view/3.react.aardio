@@ -40,8 +40,8 @@ wb.html = /**
 	<script src="https://lib.baomitu.com/react/18.2.0/umd/react.production.min.js"></script>
 	<script src="https://lib.baomitu.com/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 	<script src="https://lib.baomitu.com/dayjs/1.11.7/dayjs.min.js"></script>
-	<script src="https://lib.baomitu.com/antd/5.9.3/antd.min.js"></script>
-	<link rel="stylesheet" href="https://lib.baomitu.com/antd/5.9.3/reset.min.css"> 
+	<script src="https://lib.baomitu.com/antd/5.14.1/antd.min.js"></script>
+	<link rel="stylesheet" href="https://lib.baomitu.com/antd/5.14.1/reset.min.css"> 
 	<script src="https://lib.baomitu.com/babel-standalone/7.22.20/babel.min.js"></script> 
 	<script>!function(e,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):(e=e||self).mitt=n()}(this,function(){return function(e){return{all:e=e||new Map,on:function(n,t){var f=e.get(n);f?f.push(t):e.set(n,[t])},off:function(n,t){var f=e.get(n);f&&(t?f.splice(f.indexOf(t)>>>0,1):e.set(n,[]))},emit:function(n,t){var f=e.get(n);f&&f.slice().map(function(e){e(t)}),(f=e.get("*"))&&f.slice().map(function(e){e(n,t)})}}}});
 	emitter = mitt();//github.com/developit/mitt </script>

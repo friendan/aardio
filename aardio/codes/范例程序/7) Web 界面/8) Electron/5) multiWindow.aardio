@@ -1,5 +1,5 @@
 //electron嵌入多个窗口
-//强烈建议大家改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
+//请改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="electron嵌入多个窗口";right=1250;bottom=789;bgcolor=16777215)

@@ -514,38 +514,17 @@ namespace view{
 	}
 	
 	installRuntime = function(winform){
-		if(!_WIN7_LATER){ return; }
+		if(!_WIN10_LATER){ return; }
 		
 		//https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/#download-section
-		import inet.installer;
-		
-		if(_WIN10_LATER){
-			if( inet.installer.asInvoker("WebView2 Runtime"
-				,"https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617")
-				," /silent /install",,winform
-			) ){
-				return !!getRuntimeInfo();
-			} 		
-		}
-		else {
-			if(!winform)winform = ..win.getActive();
-			
-			var downBox = ..inet.downBox(winform,"正在下载程序运行必需组件：WebView2 Runtime",100) 
-			var savePath = downBox.download("https://go.microsoft.com/fwlink/p/?LinkId=2124703",..io.appData("aardio/inet/installer/"));
-			if(savePath){
-				var prcs,err = ..process.shell(savePath,,"open",,,winform);
-					
-				if(prcs){  
-					prcs.waitOne();
-					prcs.free(); 
-					
-					if(getRuntimeInfo()){
-						::Kernel32.MoveFileEx(savePath,null,0x4/*_MOVEFILE_DELAY_UNTIL_REBOOT*/); 
-						return true; 
-					} 
-				}
-			}
-		}
+		import inet.installer; 
+		 
+		if( inet.installer.asInvoker("WebView2 Runtime"
+			,"https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617")
+			," /silent /install",,winform
+		) ){
+			return !!getRuntimeInfo();
+		} 	 
 	}
 	
 	jsonTryParse = ..web.json.tryParse;
@@ -561,7 +540,7 @@ namespace view{
 }
 
 /**intellisense()
-web.view = WebView2（Edge/Chromium内核）控件，\n可生成体积很小的独立 EXE 程序。\n\nWebView2 支持 Win7 以及之后的系统。\nWin11 已自带 WebView2，Win10 1803 以及之后的系统也已经自动推送 WebView2。\n因为 Win10 会自动更新，版本小于 1803 的 Win10 数量极少，可以忽略不计。\n其他检测到未安装 WebView2 的系统 —— aardio 会自动安装（不需要写任何代码）
+web.view = WebView2（Edge/Chromium内核）控件，\n可生成体积很小的独立 EXE 程序。\n\nWebView2 支持 Win10 以及之后的系统。\nWin11 已自带 WebView2，Win10 1803 以及之后的系统也已经自动推送 WebView2。\n因为 Win10 会自动更新，版本小于 1803 的 Win10 数量极少，可以忽略不计。\n其他检测到未安装 WebView2 的系统 —— aardio 会自动安装（不需要写任何代码）
 web.view( = 创建  WebView2（Edge/Chromium内核） 浏览器控件，
 web.view(.(winform,userDataDir,browserArguments) = 创建浏览器控件，\n参数 @winform 指定嵌入网页的宿主窗口，\n└── @winform 可指定窗体对象或 static,custom 等控件对象。\n可选用参数 @userDataDir 参数自定义用户数据目录，\n可选用参数 @browserArguments 传入一个字符串指定浏览器启动参数，多个参数用空格分开。\n└── 例如修改 UA：`--user-agent="Mozilla/5.0 aardio"` \n└──例如切换语言：`--accept-lang=zh-CN`\n[└──更多参数：](https://peter.sh/experiments/chromium-command-line-switches)\n参数 @browserArguments 也可用数值指定要启动的远程调试端口，\n└── 调试端口为 0 则自动分配空闲端口，\n└── 同一用户数据目录不能同时使用远程调试与内置 CDP 接口\n如果未指定启动参数，则取 web.view.browserArguments 设为默认启动参数
 web.view() = !stdWebView2.
@@ -630,11 +609,12 @@ end intellisense****/
 web.view 基于微软 WebView2（Edge/Chromium内核），
 WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的独立 EXE 程序。
 
-WebView2 支持 Win7 以及之后的系统。
-WebView2 属于公共运行库，如果系统已安装就不需要再安装了。
-未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。
+WebView2 支持 Win10 以及之后的系统。
 Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。
 版本小于 1803 的 Win10 很罕见可以忽略不计。
+
+WebView2 属于公共运行库，如果系统已安装就不需要再安装了。
+未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。
 
 在网页上点右键菜单可以打开网页开发工具（ DevTools ），
 在开发工具的「设置 / 语言」界面可切换开发工具的界面语言。

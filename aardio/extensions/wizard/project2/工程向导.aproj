@@ -53,11 +53,9 @@
 		<folder name="server" path="forms\server" comment="forms\server" local="false" embed="false"/>
 		<folder name="web" path="forms\web" comment="forms\web" local="false" embed="false" ignored="false">
 			<file name="chromeApp.aardio" path="forms\web\chromeApp.aardio" comment="forms\web\chromeApp.aardio"/>
-			<file name="electron.aardio" path="forms\web\electron.aardio" comment="forms\web\electron.aardio"/>
 			<file name="htmlayout.aardio" path="forms\web\htmlayout.aardio" comment="forms\web\htmlayout.aardio"/>
 			<file name="webform.aardio" path="forms\web\webform.aardio" comment="forms\web\webform.aardio"/>
 			<file name="sciter.aardio" path="forms\web\sciter.aardio" comment="forms\web\sciter.aardio"/>
-			<file name="webkit.aardio" path="forms\web\webkit.aardio" comment="forms\web\webkit.aardio"/>
 			<file name="view.aardio" path="forms\web\view.aardio" comment="forms\web\view.aardio"/>
 		</folder>
 		<folder name="winform" path="forms\winform" comment="forms\winform" local="false" embed="false" ignored="false">

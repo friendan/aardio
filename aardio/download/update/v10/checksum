@@ -310,7 +310,7 @@
 1655957288|1527|877|codes\范例程序\2) 调用其他语言\H) JScript\1.start.aardio
 447023162|1706|930|codes\范例程序\2) 调用其他语言\H) JScript\2.json.aardio
 499846701|308|212|codes\范例程序\2) 调用其他语言\H) JScript\3.es5.aardio
-916910755|1526|841|codes\范例程序\2) 调用其他语言\H) JScript\4.es6.aardio
+1415096104|1645|911|codes\范例程序\2) 调用其他语言\H) JScript\4.es6.aardio
 -1000979140|455|305|codes\范例程序\2) 调用其他语言\H) JScript\5.yaml.aardio
 1248307176|969|684|codes\范例程序\2) 调用其他语言\I) GCC\1.c.aardio
 674517385|2455|1197|codes\范例程序\2) 调用其他语言\I) GCC\2.cpp.aardio
@@ -479,10 +479,9 @@
 0|0|0|codes\范例程序\7) Web 界面\6) Sciter.JS\
 0|0|0|codes\范例程序\7) Web 界面\7) HTMLayout\
 0|0|0|codes\范例程序\7) Web 界面\8) Electron\
-0|0|0|codes\范例程序\7) Web 界面\D) web.sysView\
 0|0|0|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\
-193396141|5054|2439|codes\范例程序\7) Web 界面\1) web.view\1.view.aardio
-1257386667|4538|1964|codes\范例程序\7) Web 界面\1) web.view\3.react.aardio
+-1848815331|5059|2438|codes\范例程序\7) Web 界面\1) web.view\1.view.aardio
+327483800|4540|1966|codes\范例程序\7) Web 界面\1) web.view\3.react.aardio
 -719759723|2290|1202|codes\范例程序\7) Web 界面\1) web.view\4.xcall.aardio
 -1674693346|895|543|codes\范例程序\7) Web 界面\1) web.view\5.waitEle.aardio
 -460865847|1149|753|codes\范例程序\7) Web 界面\1) web.view\6.ping.aardio
@@ -496,7 +495,7 @@
 -1160706272|932|657|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\1.cdp.aardio
 -1408072503|568|394|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\2.cookies.aardio
 1926374594|873|515|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\3.captureScreenshot.aardio
--23555946|515|359|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\4.fileInput.aardio
+-1908470457|601|407|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\4.fileInput.aardio
 1728348240|2303|1108|codes\范例程序\7) Web 界面\1) web.view\1) DevTools 接口\7.remoteDebugging.aardio
 1313015364|6989|2868|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\1.flexbox.aardio
 -2111132033|4466|1950|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\2.prism.aardio
@@ -512,7 +511,7 @@
 1528922129|979|638|codes\范例程序\7) Web 界面\3) web.form\2.httpServer.aardio
 -1973824404|2105|1100|codes\范例程序\7) Web 界面\3) web.form\3.firebug-lite.aardio
 960625893|2486|1363|codes\范例程序\7) Web 界面\3) web.form\4.video.aardio
--274174389|453|334|codes\范例程序\7) Web 界面\3) web.form\5.sendMessage.aardio
+-913348388|545|377|codes\范例程序\7) Web 界面\3) web.form\5.sendMessage.aardio
 -536804561|1646|943|codes\范例程序\7) Web 界面\3) web.form\6.Lottie.aardio
 0|0|0|codes\范例程序\7) Web 界面\3) web.form\Chart.js\
 0|0|0|codes\范例程序\7) Web 界面\3) web.form\Datatables\
@@ -535,7 +534,6 @@
 -835946674|1211|676|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\post.aardio
 -1061226453|1645|823|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\proxy.aardio
 -1477400233|571|365|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\userAgent.aardio
--992996713|490|344|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\webgl.aardio
 -1145921606|1097|628|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\动态控制下载选项.aardio
 0|0|0|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\禁止弹出窗口\
 -762435686|348|249|codes\范例程序\7) Web 界面\3) web.form\Web窗体功能\给网页照相.aardio
@@ -586,15 +584,14 @@
 -218546781|21448|5391|codes\范例程序\7) Web 界面\7) HTMLayout\samples.aardio
 106691963|1238|619|codes\范例程序\7) Web 界面\7) HTMLayout\spyHtml.aardio
 -863214260|1197|708|codes\范例程序\7) Web 界面\7) HTMLayout\tint.aardio
-836051488|1260|783|codes\范例程序\7) Web 界面\8) Electron\1) go.aardio
--1026711268|4447|2179|codes\范例程序\7) Web 界面\8) Electron\2) electron.aardio
--1553114951|4114|1901|codes\范例程序\7) Web 界面\8) Electron\3) remoteDebugging.aardio
--1315627344|3743|1964|codes\范例程序\7) Web 界面\8) Electron\4) main.js.aardio
--515718784|1557|753|codes\范例程序\7) Web 界面\8) Electron\5) multiWindow.aardio
--314258304|1814|987|codes\范例程序\7) Web 界面\8) Electron\6) webview.aardio
+1192908861|1245|772|codes\范例程序\7) Web 界面\8) Electron\1) go.aardio
+-917548292|4435|2169|codes\范例程序\7) Web 界面\8) Electron\2) electron.aardio
+939141625|4099|1890|codes\范例程序\7) Web 界面\8) Electron\3) remoteDebugging.aardio
+1326442064|3728|1956|codes\范例程序\7) Web 界面\8) Electron\4) main.js.aardio
+-232828224|1542|740|codes\范例程序\7) Web 界面\8) Electron\5) multiWindow.aardio
+-81155738|1799|973|codes\范例程序\7) Web 界面\8) Electron\6) webview.aardio
 0|0|0|codes\范例程序\7) Web 界面\8) Electron\res\
 -1083564121|1363|775|codes\范例程序\7) Web 界面\8) Electron\res\main.aardio
--2006149945|3802|1764|codes\范例程序\7) Web 界面\D) web.sysView\1.sysView.aardio
 0|0|0|codes\范例程序\8) Web 应用\1) REST\
 0|0|0|codes\范例程序\8) Web 应用\2) JSON\
 0|0|0|codes\范例程序\8) Web 应用\3) WebSocket\
@@ -728,6 +725,7 @@
 -1317198448|438|305|codes\范例程序\A) 数据库\1) sqlite\9.columns.aardio
 -1771614473|805|512|codes\范例程序\A) 数据库\1) sqlite\A.aes.aardio
 -199047002|1302|805|codes\范例程序\A) 数据库\1) sqlite\B.vlistview.aardio
+150303738|1661|924|codes\范例程序\A) 数据库\1) sqlite\C.fts.aardio
 -1275740559|1048|686|codes\范例程序\A) 数据库\1) sqlite\Z.latest.aardio
 -1228049717|4400|1946|codes\范例程序\A) 数据库\2) mysql\1.mysql.aardio
 1215615273|811|550|codes\范例程序\A) 数据库\2) mysql\2.plugin.aardio
@@ -1006,7 +1004,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--242720709|16|35|config\SYS.CFG
+528875799|16|35|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 2016904622|117575|30503|config\intellisense\kernel.txt
@@ -1018,7 +1016,7 @@
 945965821|3519|764|config\themes\dark.xml
 1313524286|3543|751|config\themes\light.xml
 0|0|0|download\update\
--551523169|15892|5274|extensions\ide.aardio
+-1974665177|16319|5420|extensions\ide.aardio
 0|0|0|extensions\plugin\
 0|0|0|extensions\res\
 0|0|0|extensions\trigger\
@@ -1071,7 +1069,7 @@
 0|0|0|extensions\wizard\project2\Publish\
 0|0|0|extensions\wizard\project2\res\
 0|0|0|extensions\wizard\project2\template\
--1859576576|6130|1106|extensions\wizard\project2\工程向导.aproj
+221811887|5928|1088|extensions\wizard\project2\工程向导.aproj
 408461557|29|47|extensions\wizard\project2\.build\高级选项卡.init.aardio
 838443367|143|144|extensions\wizard\project2\.build\高级选项卡.main.aardio
 1847094655|2496|1154|extensions\wizard\project2\.build\高级选项卡.Manifest.xml
@@ -1083,7 +1081,7 @@
 1816759161|2683|1022|extensions\wizard\project2\forms\plus.aardio
 0|0|0|extensions\wizard\project2\forms\server\
 0|0|0|extensions\wizard\project2\forms\web\
--129974975|2905|1122|extensions\wizard\project2\forms\web.aardio
+1543359422|2771|1096|extensions\wizard\project2\forms\web.aardio
 1328010884|6643|2781|extensions\wizard\project2\forms\website.aardio
 0|0|0|extensions\wizard\project2\forms\winform\
 1627849219|2294|907|extensions\wizard\project2\forms\winform.aardio
@@ -1099,12 +1097,10 @@
 -1555077986|4878|1494|extensions\wizard\project2\forms\plus\tabs.aardio
 2137310255|32630|24462|extensions\wizard\project2\forms\plus\images\1.jpg
 -2035888465|2055|1168|extensions\wizard\project2\forms\web\chromeApp.aardio
-477082260|804|582|extensions\wizard\project2\forms\web\electron.aardio
 -1043844094|443|347|extensions\wizard\project2\forms\web\htmlayout.aardio
 1011187754|441|347|extensions\wizard\project2\forms\web\sciter.aardio
--296386819|2395|1348|extensions\wizard\project2\forms\web\view.aardio
+102170920|2394|1342|extensions\wizard\project2\forms\web\view.aardio
 658780297|2108|1248|extensions\wizard\project2\forms\web\webform.aardio
-378481327|1730|1153|extensions\wizard\project2\forms\web\webkit.aardio
 -1909902848|1850|1179|extensions\wizard\project2\forms\winform\bat.aardio
 372797321|655|460|extensions\wizard\project2\forms\winform\blank.aardio
 1908074877|827|571|extensions\wizard\project2\forms\winform\demo.aardio
@@ -1621,7 +1617,7 @@
 0|0|0|extensions\wizard\project2\template\winform-blank\res\
 -1985223173|1085|662|extensions\wizard\project2\template\winform-blank\lib\config.aardio
 0|0|0|extensions\wizard\project2\template\winform-blank\lib\fonts\
--1989837979|748605|743055|help\aardio.chm
+1423898959|748725|743191|help\aardio.chm
 -1186833927|12860|4297|help\关于 aardio.txt
 0|0|0|help\用户许可协议\
 -793218609|3349|1321|help\用户许可协议\aardio开源代码许可证.txt
@@ -2196,7 +2192,6 @@
 417956980|1112|584|lib\util\registry.aardio
 1129676655|3383|1387|lib\util\table.aardio
 -1462775041|5484|1513|lib\util\_.aardio
--393628693|322|217|lib\web\asynServer.aardio
 0|0|0|lib\web\form\
 2042530868|15546|5528|lib\web\json.aardio
 0|0|0|lib\web\layout\
@@ -2209,7 +2204,6 @@
 0|0|0|lib\web\rest\
 0|0|0|lib\web\rpc\
 0|0|0|lib\web\script\
-585747317|1489|858|lib\web\simpleServer.aardio
 0|0|0|lib\web\soapClient\
 0|0|0|lib\web\socket\
 0|0|0|lib\web\ui\
@@ -2270,7 +2264,7 @@
 -1921705905|7529|2374|lib\web\rpc\jsonServer.aardio
 -708824841|64087|14248|lib\web\script\es5.aardio
 -741298993|8816|3697|lib\web\script\json.aardio
-77321172|8789|3465|lib\web\script\_.aardio
+2070602724|8722|3442|lib\web\script\_.aardio
 -2014910930|2909|917|lib\web\soapClient\parameters.aardio
 666218477|7637|2514|lib\web\soapClient\_.aardio
 -1025215424|6399|2536|lib\web\socket\chrome.aardio
@@ -2281,7 +2275,7 @@
 2087608769|7343|2216|lib\web\ui\_.aardio
 0|0|0|lib\web\view\.res\
 1034635115|3985|1746|lib\web\view\dev.aardio
--1487220643|30110|8879|lib\web\view\_.aardio
+721013253|29477|8653|lib\web\view\_.aardio
 -1571764687|367104|148834|lib\web\view\.res\webview.dll
 191922483|327281|61426|lib\win\#DEFINE.aardio
 -2025258603|3195|949|lib\win\animate.aardio
@@ -2300,7 +2294,7 @@
 0|0|0|lib\win\ole\
 -679570301|3081|1382|lib\win\path.aardio
 -1461894370|783|505|lib\win\property.aardio
--1329462469|23786|5918|lib\win\reg.aardio
+-1739445453|23860|5949|lib\win\reg.aardio
 0|0|0|lib\win\region\
 0|0|0|lib\win\rt\
 561284042|1449|741|lib\win\subclass.aardio
@@ -2318,7 +2312,7 @@
 1792802479|1306|660|lib\win\clip\png.aardio
 523635146|1685|735|lib\win\clip\viewer.aardio
 1688610666|3274|1320|lib\win\clip\_.aardio
--1579917949|7115|2520|lib\win\dlg\chineseNumber.aardio
+1038218322|7146|2535|lib\win\dlg\chineseNumber.aardio
 1592236764|853|510|lib\win\dlg\color.aardio
 449492153|1558|762|lib\win\dlg\ctrlColor.aardio
 1669943620|5106|1645|lib\win\dlg\findReplace.aardio
@@ -2472,7 +2466,7 @@
 0|0|0|tools\A) 其他\
 0|0|0|tools\1) 开发环境\.config\
 802272494|4949|1785|tools\1) 开发环境\defender.aardio
--768058155|3311|1471|tools\1) 开发环境\editor.aardio
+324422726|3537|1536|tools\1) 开发环境\editor.aardio
 34235141|2819|1286|tools\1) 开发环境\evb.aardio
 1640292518|5287|1889|tools\1) 开发环境\extlib.aardio
 1614510147|4822|1841|tools\1) 开发环境\process.aardio

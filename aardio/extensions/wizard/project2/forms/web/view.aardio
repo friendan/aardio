@@ -29,12 +29,11 @@ wb.html = /**
 web.view 基于微软 WebView2（Edge/Chromium内核），<br>
 WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的独立 EXE 程序。<br>
 <br>
-WebView2 支持 Win7 以及之后的系统。<br>
+WebView2 支持 Win10 以及之后的系统。<br>
+Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。<br>
+版本小于 1803 的 Win10 很罕见可以忽略不计。<br><br>
 WebView2 属于公共运行库，如果系统已安装就不需要再安装了。<br>
 未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。<br>
-<br>
-Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。<br>
-版本小于 1803 的 Win10 很罕见可以忽略不计。<br>
 <br>
 创建 React，Vue 工程请请先安装 Node.js,VS Code 等前端开发环境。<br>
 <br>

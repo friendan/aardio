@@ -1,5 +1,5 @@
 //创建应用
-//强烈建议大家改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
+//请改用微软的 WebView2（也就是 aardio 标准库里的 web.view ））
 
 import electron.app;
 var theApp = electron.app();

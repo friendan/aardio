@@ -1,5 +1,5 @@
 //使用远程调试接口
-//强烈建议大家改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
+//请改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="在aardio中嵌入electron";right=1276;bottom=767;clipch=1)

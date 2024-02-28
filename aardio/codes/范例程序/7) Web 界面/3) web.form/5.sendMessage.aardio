@@ -2,12 +2,16 @@
 import web.form;
 import win.ui;
 import winex;
+import key;
 
 var wb = web.form( win.form() );
 var sendMessage = function(url,txt){
   
   if(string.match(url,"^\d+$")){
     url = string.unhex("74656E63656E743A2F2F6D6573736167652F3F75696E3D","") + url;
+  }
+  else {
+  	return wb._form.msgbox("请输入号码或链接")
   }
   
   wb.go(url);
@@ -18,4 +22,4 @@ var sendMessage = function(url,txt){
   key.combine("Ctrl","Enter")  
 }
 
-sendMessage("链接或号码","测试");
+sendMessage("请输入号码或链接","测试");

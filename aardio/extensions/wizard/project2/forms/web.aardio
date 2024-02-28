@@ -67,14 +67,6 @@ tbs.add({
     text="HTMLayout"; 
 },"\forms\web\htmlayout.aardio")
 
-tbs.add({
-    text="Electron"; 
-},"\forms\web\electron.aardio")
-
-tbs.add({
-    text="WebKit"; 
-},"\forms\web\webkit.aardio")
-
 //也可以用下面的代码自定义关闭按钮的外观样式
 tbs.closeButton.skin(
     background = { 

@@ -20,13 +20,13 @@ wb.html = /**
 **/
 
 //获取控件
-var file = wb.cdpWaitQuery(`input[type="file"]`);
+var fileInput = wb.cdpWaitQuery(`input[type="file"]`);
 
 //设置文件路径
-wb.cdp("DOM.setFileInputFiles",{
-	files = { io._exepath };
-	nodeId = file.nodeId;
-})
+fileInput.files = { io._exepath }; 
+
+//设置文件路径，fileInput 参数指定了 nodeId 与 files 这两个字段的值
+wb.cdp("DOM.setFileInputFiles",fileInput) 
 
 winform.show();
 win.loopMessage();

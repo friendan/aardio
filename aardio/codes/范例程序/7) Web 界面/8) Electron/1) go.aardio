@@ -1,5 +1,5 @@
 //浏览网页
-//强烈建议大家改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
+//请改用微软的 WebView2（也就是 aardio 标准库里的 web.view ）
 
 import electron.app; 
 var theApp = electron.app(); // 创建electron进程,如果第3个参数为true，可以UTF8模式打开控制台 - 用于查看electron主进程输出
