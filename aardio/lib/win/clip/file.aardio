@@ -77,11 +77,34 @@ read = function(){
 	return file,effect;
 }
 
+oleCopy = function(path){
+	if(!#path) error("参数错误",2);
+	
+	path = ..io.fullpath(path);
+	var pathInfo = ..io.splitpath(path);
+	
+	var shell = ..com.CreateObject("Shell.Application");
+	var folder = shell.Namespace(pathInfo.dir);
+	if(folder){ 
+		var file = folder.ParseName(pathInfo.file);
+		if(file){
+			file.InvokeVerb("Copy");//参数与语言无关，并不等价于菜单显示文本
+			..com.Release(file);
+		}
+		..com.Release(folder);
+	}
+	..com.Release(shell);
+	
+	//Shell.Application 复制的数据有时缺少文件路径，用下面的代码修正
+	return write(path,"copy",false); 
+}
+
 /**intellisense(win.clip.file)
 read() = 返回剪贴板文件路径数组,\n第二个返回值指明复制类型,复制为"copy",剪切则为"move"
 write(.(文件路径) = 将文件复制到剪贴板\n可选使用参数@3指定在复制前是否清空剪贴板,默认清空
 write(.(文件路径,"copy") = 将文件复制到剪贴板\n参数@1可用字符串或字符串数组指定一个或多个文件路径\n可选使用参数@3指定在复制前是否清空剪贴板,默认清空
 write(.(文件路径,"move") = 将文件剪切到剪贴板\n参数@1可用字符串或字符串数组指定一个或多个文件路径\n可选使用参数@3指定在复制前是否清空剪贴板,默认清空
+oleCopy(__) = 清空剪贴板，然后复制文件且复制 OLE 对象。\n参数 @1 指定要复制的文件路径。\nwin.clip.gif.write 函数调用了此函数复制文件
 end intellisense**/
 
  /**intellisense()

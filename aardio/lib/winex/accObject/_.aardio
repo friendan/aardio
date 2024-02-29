@@ -196,17 +196,22 @@ namespace accObject{
 	}  
 	
 	getCaret = function(hwnd,iid){ 
-		var accObj = fromWindow(hwnd,iid, 0xFFFFFFF8/*_OBJID_CARET*/);
-		if(accObj){
-			var x,y,cx,cy = accObj.location();
-			accObj.release();
-			
-			if(y!==null && ( (y+cy) || y ) ){
-				var rc = ::RECT(x,y,x+cx,y+cy);
-				rc.hwnd = hwnd;
-				return rc;
+		var rc;
+		
+		try{
+			var accObj = fromWindow(hwnd,iid, 0xFFFFFFF8/*_OBJID_CARET*/);
+			if(accObj){
+				var x,y,cx,cy = accObj.location();
+				accObj.release();
+				
+				if(y!==null && ( (y+cy) || y ) ){
+					rc = ::RECT(x,y,x+cx,y+cy);
+					rc.hwnd = hwnd;
+				}
 			}
 		}
+		
+		return rc;
 	}
 	
 	focus = function(){
@@ -246,7 +251,7 @@ winex.accObject.fromWindow() = !winex_accObject.
 winex.accObject.fromPoint(.(x,y) = 自屏幕坐标返回AccessibleObject
 winex.accObject.fromPoint() = !winex_accObject.
 winex.accObject.focus() = 返回前台窗口输入焦点元素\n!winex_accObject.
-winex.accObject.getCaret(__/*可选指定窗口句柄*/) = 获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体（添加 hwnd 成员记录光标所在窗口句柄），\n失败返回 null\n\n不是所有窗口都支持，\n建议 winex.getCaret 函数获取光标位置失败再调用此函数
+winex.accObject.getCaret(__/*可选指定窗口句柄*/) = 获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体（添加 hwnd 成员记录光标所在窗口句柄），\n失败返回 null，此函数不会抛出异常。\n\n不是所有窗口都支持，\n建议 winex.getCaret 函数获取光标位置失败再调用此函数
 accObject = !winex_accObject.
 winex.accObject.version() = 返回MSAA组件版本
 end intellisense**/

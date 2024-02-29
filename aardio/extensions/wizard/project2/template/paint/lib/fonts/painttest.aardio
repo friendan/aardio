@@ -5,6 +5,6 @@ namespace fonts.painttest{
 }
 
 /**intellisense()
-fonts.painttest = 导入图标字体,\n所有图标请参考aardio工具->文本文件->图标字体
-fonts.painttest.family = GDI+字样集合,可用于plus控件,gdip等库函数,\n!gdipfamily.
+fonts.painttest = 导入图标字体,\n所有图标请参考 aardio 工具->文本文件->图标字体
+fonts.painttest.family = GDI+ 字体家族,可用于 plus 控件, gdip 等库函数,\n!gdipfamily.
 end intellisense**/

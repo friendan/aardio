@@ -725,7 +725,7 @@
 -1317198448|438|305|codes\范例程序\A) 数据库\1) sqlite\9.columns.aardio
 -1771614473|805|512|codes\范例程序\A) 数据库\1) sqlite\A.aes.aardio
 -199047002|1302|805|codes\范例程序\A) 数据库\1) sqlite\B.vlistview.aardio
-150303738|1661|924|codes\范例程序\A) 数据库\1) sqlite\C.fts.aardio
+1146412729|2172|1142|codes\范例程序\A) 数据库\1) sqlite\C.fts.aardio
 -1275740559|1048|686|codes\范例程序\A) 数据库\1) sqlite\Z.latest.aardio
 -1228049717|4400|1946|codes\范例程序\A) 数据库\2) mysql\1.mysql.aardio
 1215615273|811|550|codes\范例程序\A) 数据库\2) mysql\2.plugin.aardio
@@ -912,7 +912,7 @@
 -1631011069|418|327|codes\范例程序\F) COM 组件\7) AutoCAD\B.eachMainWindow.aardio
 1026790493|634|437|codes\范例程序\F) COM 组件\7) AutoCAD\C.dispArray.aardio
 -1394450630|3427|1508|codes\范例程序\F) COM 组件\8) 其他组件\1) DsoFramer.aardio
--2004308998|1352|738|codes\范例程序\F) COM 组件\8) 其他组件\A) Shell.aardio
+1994677651|2265|1269|codes\范例程序\F) COM 组件\8) 其他组件\A) Shell.aardio
 -1078745224|1143|649|codes\范例程序\F) COM 组件\8) 其他组件\B) MapWinGIS.aardio
 1518133042|1442|742|codes\范例程序\F) COM 组件\8) 其他组件\C) spRecognizer.aardio
 1915131630|422|266|codes\范例程序\F) COM 组件\8) 其他组件\D) FSO.aardio
@@ -946,7 +946,7 @@
 806909178|1089|614|codes\范例程序\G) 操作系统\4) 系统设置\settings.aardio
 -786755768|1946|937|codes\范例程序\G) 操作系统\4) 系统设置\sysColor.aardio
 -480880145|11319|3055|codes\范例程序\G) 操作系统\5) 桌面\0) Wallpapers.aardio
--1697338083|444|304|codes\范例程序\G) 操作系统\5) 桌面\A) Restart-Explorer.aardio
+-1261011943|463|324|codes\范例程序\G) 操作系统\5) 桌面\A) Restart-Explorer.aardio
 499775969|637|422|codes\范例程序\G) 操作系统\5) 桌面\B) VirDesktop.aardio
 1241140517|1036|542|codes\范例程序\G) 操作系统\5) 桌面\C) MultiDesktop.aardio
 2121770736|2345|1094|codes\范例程序\G) 操作系统\9) 安卓子系统\1.setup.aardio
@@ -1004,7 +1004,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-528875799|16|35|config\SYS.CFG
+-2115857228|16|35|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 2016904622|117575|30503|config\intellisense\kernel.txt
@@ -1195,7 +1195,7 @@
 0|0|0|extensions\wizard\project2\template\paint\lib\fonts\
 1174744312|593|269|extensions\wizard\project2\template\paint\lib\style.aardio
 0|0|0|extensions\wizard\project2\template\paint\lib\fonts\.res\
-212178525|356|273|extensions\wizard\project2\template\paint\lib\fonts\painttest.aardio
+-1001560156|363|275|extensions\wizard\project2\template\paint\lib\fonts\painttest.aardio
 -10689524|2852|1656|extensions\wizard\project2\template\paint\lib\fonts\.res\painttest.ttf
 0|0|0|extensions\wizard\project2\template\plus\1\
 0|0|0|extensions\wizard\project2\template\plus\icon\
@@ -1617,7 +1617,7 @@
 0|0|0|extensions\wizard\project2\template\winform-blank\res\
 -1985223173|1085|662|extensions\wizard\project2\template\winform-blank\lib\config.aardio
 0|0|0|extensions\wizard\project2\template\winform-blank\lib\fonts\
-1423898959|748725|743191|help\aardio.chm
+-340729953|748705|743201|help\aardio.chm
 -1186833927|12860|4297|help\关于 aardio.txt
 0|0|0|help\用户许可协议\
 -793218609|3349|1321|help\用户许可协议\aardio开源代码许可证.txt
@@ -1802,10 +1802,10 @@
 -51995625|23|42|lib\fastcgi\_.aardio
 256951497|32683|8729|lib\fastcgi\client\_.aardio
 0|0|0|lib\fonts\.res\
--1125240956|507|346|lib\fonts\fontAwesome.aardio
-1989331466|443|326|lib\fonts\fontAwesomeDlg.aardio
+-1682307213|508|344|lib\fonts\fontAwesome.aardio
+737557148|443|323|lib\fonts\fontAwesomeDlg.aardio
 -2136493270|552|375|lib\fonts\httpFamily.aardio
--1487091711|3199|1512|lib\fonts\_.aardio
+2113555964|3229|1516|lib\fonts\_.aardio
 1306959830|158100|85704|lib\fonts\.res\FontAwesome.ttf
 -1544059728|3756|2053|lib\fonts\.res\FontAwesomeDlg.ttf
 -642847222|5764|1453|lib\fsys\acl.aardio
@@ -1868,9 +1868,9 @@
 -385132226|23165|6960|lib\gdip\bitmap.aardio
 -1072810798|3704|1457|lib\gdip\core.aardio
 1093493607|5420|1650|lib\gdip\exifTags.aardio
-647111230|2953|1378|lib\gdip\family.aardio
+1626449170|3403|1540|lib\gdip\family.aardio
 -548087583|2262|1129|lib\gdip\feather.aardio
-1267949951|4323|1465|lib\gdip\font.aardio
+-1487475484|4603|1583|lib\gdip\font.aardio
 1593714124|37145|7722|lib\gdip\graphics.aardio
 -1671677239|24293|6930|lib\gdip\image.aardio
 -1759962178|4918|1720|lib\gdip\imageAttributes.aardio
@@ -1879,7 +1879,7 @@
 -1845908368|7266|2010|lib\gdip\path.aardio
 1409156110|4055|1580|lib\gdip\pathGradientBrush.aardio
 39486329|5961|1381|lib\gdip\pen.aardio
--1568887488|7012|2149|lib\gdip\privateFontCollection.aardio
+-1732732809|7060|2128|lib\gdip\privateFontCollection.aardio
 1273716046|2934|1060|lib\gdip\snap.aardio
 -1979669184|1483|687|lib\gdip\solidBrush.aardio
 -100637870|4356|1173|lib\gdip\stringformat.aardio
@@ -1953,12 +1953,12 @@
 -1301607378|8440|2393|lib\mouse\_.aardio
 1936469385|21659|4798|lib\nodeJs\_.aardio
 -1637503006|24175|7256|lib\preload\com.aardio
--360007110|6254|2759|lib\preload\io.aardio
+1722310679|6344|2790|lib\preload\io.aardio
 40601196|3705|1528|lib\preload\math.aardio
 1384725059|8604|2420|lib\preload\raw.aardio
 -1448350769|12137|4258|lib\preload\string.aardio
 543017030|7037|2167|lib\preload\struct.aardio
--1360153951|22735|6849|lib\preload\table.aardio
+2010708648|22742|6855|lib\preload\table.aardio
 -1351938973|13183|4438|lib\preload\thread.aardio
 -1477975943|15793|5654|lib\preload\_.aardio
 -1882500609|5123|1985|lib\process\admin.aardio
@@ -2306,8 +2306,8 @@
 1279062881|5840|1748|lib\win\version.aardio
 2136095655|2784|1251|lib\win\versionEx.aardio
 -431827732|46493|13359|lib\win\_.aardio
-1216151256|3143|1234|lib\win\clip\file.aardio
--144784374|824|526|lib\win\clip\gif.aardio
+-319346981|3941|1585|lib\win\clip\file.aardio
+1994686187|946|599|lib\win\clip\gif.aardio
 420491718|5281|1588|lib\win\clip\html.aardio
 1792802479|1306|660|lib\win\clip\png.aardio
 523635146|1685|735|lib\win\clip\viewer.aardio
@@ -2405,7 +2405,7 @@
 1888989482|4286|973|lib\win\ui\ctrl\pick\.res\color.cur
 -885086586|2561|2236|lib\win\ui\ctrl\pick\.res\color.png
 -238397553|1332|609|lib\win\util\autoComplete.aardio
--729671021|9309|2801|lib\win\util\changeNotification.aardio
+1763088016|9309|2800|lib\win\util\changeNotification.aardio
 -457987749|4403|1527|lib\win\util\desktop.aardio
 -166574375|7583|1943|lib\win\util\deviceNotification.aardio
 1162216940|3580|1313|lib\win\util\popup.aardio
@@ -2423,7 +2423,7 @@
 -1888660127|3589|1256|lib\winex\tooltip.aardio
 1207069173|30470|7535|lib\winex\_.aardio
 -121658060|5282|1408|lib\winex\accObject\element.aardio
-1949408950|9439|3176|lib\winex\accObject\_.aardio
+498372781|9508|3204|lib\winex\accObject\_.aardio
 -1985386129|1318|693|lib\winex\ctrl\edit.aardio
 -1639052558|10262|2709|lib\winex\ctrl\listview.aardio
 59039827|77|68|lib\winex\ctrl\_.aardio
@@ -2466,12 +2466,13 @@
 0|0|0|tools\A) 其他\
 0|0|0|tools\1) 开发环境\.config\
 802272494|4949|1785|tools\1) 开发环境\defender.aardio
-324422726|3537|1536|tools\1) 开发环境\editor.aardio
+-603782889|4014|1638|tools\1) 开发环境\editor.aardio
 34235141|2819|1286|tools\1) 开发环境\evb.aardio
 1640292518|5287|1889|tools\1) 开发环境\extlib.aardio
 1614510147|4822|1841|tools\1) 开发环境\process.aardio
 789288000|5770|1864|tools\1) 开发环境\reset.aardio
 -820648958|6772|2216|tools\1) 开发环境\statusBar.aardio
+1857691199|2537|1187|tools\1) 开发环境\.config\fontLink.aardio
 0|0|0|tools\2) 界面\.img\
 0|0|0|tools\2) 界面\.res\
 1275901529|16449|4872|tools\2) 界面\1) fontAwesome.aardio

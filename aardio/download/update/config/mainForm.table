@@ -1,6 +1,7 @@
 ﻿{
-btnClose=true;
-btnStart=false;
+btnClose=false;
+afterLoad=null;
+lnkDown=true;
 beforeSave=null;
-afterLoad=null
+btnStart=true
 }

@@ -159,20 +159,20 @@ namespace privateFontCollection {
 }
 
 /**intellisense()
-gdip.privateFontCollection = 私有字体集合\n\n如果需要创建 gdip.font 自动支持的嵌入字体,\n请在 fonts 名字空间下添加库,并调用 fonts.createFamily 函数注册嵌入字体
-gdip.privateFontCollection.createFamily(.(字体路径,字体名) = 创建字样,创建失败返回空值\n参数@1可以是路径或资源文件、内存数据\n如果不指定名字,则返回字体列表中的第一个字样
+gdip.privateFontCollection = 私有字体集合,\n请在 fonts 名字空间下添加库,并调用 fonts.createFamily 函数注册嵌入字体
+gdip.privateFontCollection.createFamily(.(字体路径,字体名) = 创建字体家族,创建失败返回空值\n参数@1可以是路径或资源文件、内存数据\n如果不指定名字,则返回字体列表中的第一个字体家族
 gdip.privateFontCollection.createFont(.(字体路径,字体名,大小,样式,单位) = 创建字体\n参数@1可以是路径或资源文件、内存数据\n单位默认为像素
 gdip.privateFontCollection()  = 私有字体集合,调用时不应在参数中指定指针\n较老的系统在私有字体集合释放后,会导致该容器加载并仍在使用的的字体异常\n稳妥的方式是调用 gdip.privateFontCollection.getInstance 函数\n获取私有字体集合的单一实例\n!gdipprvfontcoll.
 gdip.privateFontCollection.getInstance() = 获取默认的私有字体集合,\n较老的系统在私有字体集合释放后,会导致该容器加载并仍在使用的的字体异常,\n 稳妥的方式是调用此函数获取单一实例的自定义容器\naardio 会在程序结束前自动释放此容器对象,\n但手动调用此对象的 delete 函数将被忽略,\n\n!gdipprvfontcoll.
 !gdipprvfontcoll.add( = 添加自字义字体
 !gdipprvfontcoll.add(.(字体) = 参数可以是字体文件,资源文件\n或字体文件加载到内存的数据
-!gdipprvfontcoll.createFamily( = 创建字样对象
-!gdipprvfontcoll.createFamily(.("字体名") = 参数为字体名\n如果不指定名字,则返回字体列表中的最后一个添加的字样
+!gdipprvfontcoll.createFamily( = 创建字体家族对象
+!gdipprvfontcoll.createFamily(.("字体名") = 参数为字体名\n如果不指定名字,则返回字体列表中的最后一个添加的字体家族
 !gdipprvfontcoll.createFamily() = !gdipfamily.
-!gdipprvfontcoll.count() = 返回字体列表中包含的字样总数,\n一个字样可以用于创建不同大小、不同样式的同名字体
-!gdipprvfontcoll.getFamilies( = 返回字体集合中的字样数组,\n一个字样可以用于创建不同大小、不同样式的同名字体
-!gdipprvfontcoll.getFamilies(.(sought,clone) = 返回字体集合中的字样数组,所有参数可选,\n参数  @sought 指定期望返回的字样数目,\n不指定则自动获取全部字样并返回,clone参数指定是否复制字样对象,\n如果不复制，在字体列表被删除以后，此函数返回的字样也不能再使用
-!gdipprvfontcoll.getLastFamily(.(clone) = 返回字体集合中的最后一个添加的字样,\n可选参数 @sought 指定期望返回的字样数目,\n不指定则自动获取全部字样并返回,clone参数指定是否复制字样对象,\n如果不复制，在字体列表被删除以后，此函数返回的字样也不能再使用
+!gdipprvfontcoll.count() = 返回字体列表中包含的字体家族总数,\n一个字体家族可以用于创建不同大小、不同样式的同名字体
+!gdipprvfontcoll.getFamilies( = 返回字体集合中的字体家族数组,\n一个字体家族可以用于创建不同大小、不同样式的同名字体
+!gdipprvfontcoll.getFamilies(.(sought,clone) = 返回字体集合中的字体家族数组,所有参数可选,\n参数  @sought 指定期望返回的字体家族数目,\n不指定则自动获取全部字体家族并返回,clone参数指定是否复制字体家族对象,\n如果不复制，在字体列表被删除以后，此函数返回的字体家族也不能再使用
+!gdipprvfontcoll.getLastFamily(.(clone) = 返回字体集合中的最后一个添加的字体家族,\n可选参数 @sought 指定期望返回的字体家族数目,\n不指定则自动获取全部字体家族并返回,clone参数指定是否复制字体家族对象,\n如果不复制，在字体列表被删除以后，此函数返回的字体家族也不能再使用
 !gdipprvfontcoll.getLastFamily() = !gdipfamily.
 !gdipprvfontcoll.delete() = 删除字体
 end intellisense**/

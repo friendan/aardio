@@ -4,13 +4,14 @@ import win.clip.file;
 import win.clip.html;
 import gdip.bitmap;
 import crypt;
-
+import com; 
 namespace win.clip.gif;
 
 write = function(path){ 
+	if(!#path) error("参数错误",2);
 	
 	path = ..io.fullpath(path);
-	..win.clip.file.write(path,"copy",true)
+	..win.clip.file.oleCopy(path);
 	
 	var bmp = ..gdip.bitmap(path);
 	if(bmp){
@@ -26,5 +27,5 @@ write = function(path){
 } 
 
 /**intellisense()
-win.clip.gif.write(__) = 复制 GIF 动画到剪贴板,\n参数指定*.gif 文件路径\n剪贴板虽没有 GIF 专有格式,但是这个函数拥有良好的兼容性
+win.clip.gif.write(__) = 复制 GIF 动画到剪贴板,\n参数指定*.gif 文件路径\n剪贴板虽没有 GIF 专有格式,但是此函数创建的复合格式拥有良好的兼容性。\n开源录屏软件 Gif123 使用此函数复制 GIF 动画
 end intellisense**/

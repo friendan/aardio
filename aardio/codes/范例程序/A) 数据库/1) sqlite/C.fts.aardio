@@ -1,11 +1,11 @@
 //全文搜索
-
-import sqlite
+import sqlite;
 import console.int;
   
 var db = sqlite("/test-fts.db");  
 if(!db.existsTable("ftstest")){
-	db.exec("CREATE VIRTUAL TABLE ftstest USING fts4 (data,body,tokenize=simple)") 
+	//tokenize 指定分词器，fts5 改用 unicode61（需要改用 sqlite.latest 库）
+	db.exec("CREATE VIRTUAL TABLE ftstest USING fts4 (data,body,tokenize=simple)"); 
 }
 
 import mmseg
@@ -15,11 +15,12 @@ var str = /*
 
 var data = "";
 for word,attr in mmseg.each(str){ 
-    if(attr) data = data + " " + word 
+	//SQLite 自带的 simple 分词器用空格分词
+    if(attr) data = data + " " + word;
 }
 
 //创建预处理命令,用 @ 字符作为 SQL 命名参数的前缀
-var cmd = db.prepare("INSERT INTO [ftstest] VALUES ( @data,@body );")
+var cmd = db.prepare("INSERT INTO [ftstest] VALUES ( @data,@body );");
 
 //执行命令语句,插入测试数据,并指定 SQL 命名参数
 cmd.step(
@@ -29,23 +30,27 @@ cmd.step(
 
 cmd.finalize();
 
-//MATCH 用于全文检索
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备'")
+//MATCH 用于全文检索，simple 或 unicode61 分词器在查询时忽略大小写。
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备'");
 
 //在词前面加^ 表示该词必须是某列的第一个词
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '^准备'")
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '^准备'");
 
 //在词后面加* 表示匹配所有以该词为前缀的词
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备*'")
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备*'");
+
+//可以空格分隔多个必须包含的查询词，相当于使用隐式 AND 操作符
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 思考'`);
 
 //包含多个词的短语首尾要加双引号
-var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '"认真 思考"'`)
- 
-//支持 AND OR NOT 等逻辑操作符
-var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 OR 思考'`)
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '"认真 思考"'`);
+
+//支持逻辑操作符 OR 分隔查询词（找到其中一个即可）。
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 OR 思考'`);
+//改用库 sqlite.latest，并改用 FTS5 可支持逻辑操作符 NOT AND 。
 
 //查看结果
 console.dump(result[["body"]]);
  
 //删除表 
-db.exec("DROP TABLE ftstest" );
+db.exec("DROP TABLE ftstest");

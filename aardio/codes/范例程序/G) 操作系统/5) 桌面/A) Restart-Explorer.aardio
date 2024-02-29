@@ -12,7 +12,7 @@ if( explorerPath ) {
 	::Shell32.SHChangeNotify(0x8000000/*_SHCNE_ASSOCCHANGED*/,0,0,0);
 	
 	//刷新文件属性
-	//::Shell32.SHChangeNotify(0x800/*_SHCNE_ATTRIBUTES*/,1/*_SHCNF_srcPath*/,"文件路径",0);
+	//::Shell32.SHChangeNotifyW(0x800/*_SHCNE_ATTRIBUTES*/,5/*_SHCNF_srcPath*/,string.toUnicode("文件路径"),0);
 }
 
 
