@@ -55,5 +55,22 @@ winform.edit.onHyperlink =function(message,href){
 	}
 }
 
+var blink = //D:\huangyx\编程\开发工具\aardio\扩展库3rd\web.blink.tar.lzma
+var blink2 = //D:\huangyx\编程\开发工具\aardio\扩展库3rd\web.blink.tar
+var blinkDir = //D:\huangyx\编程\开发工具\aardio\扩展库3rd
+import fsys.untar;
+import sevenZip.lzma;
+
+//解压缩 tar.lzma 格式
+sevenZip.lzma.decodeFile(blink, blink2)
+
+//tar解包
+import console
+var tar = fsys.untar(blink2, blinkDir);
+for(fileName,writeSize,remainSize in tar.eachBlock() ){
+    console.printf("正在解压：%s 字节数：%d",fileName,writeSize  )
+}
+
+
 winform.show();
 win.loopMessage();
