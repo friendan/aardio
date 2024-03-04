@@ -1,8 +1,5 @@
 //执行 Python 代码
-import console;
-console.log("必须在导入 py3 扩展库以前打开控制台,
-才能查看 Python 在控制台输出的内容与错误信息。");
-
+import console;//可用 console.open() 提前打开控制台。
 import py3; 
 py3.main.testData = "可以这样预先指定 Python 全局变量";
  

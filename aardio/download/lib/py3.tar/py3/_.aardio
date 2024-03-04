@@ -20,11 +20,11 @@ try {
 		}
 		*/
 		
-	
-	
-	var pyconsole = ..raw.loadDll("~\lib\py3\.res\DLLs\pyconsole.aardio.dll",,"cdecl")
-	pyconsole.ioreopen();
-	
+	var hConsole = ::Kernel32.GetConsoleWindow(); 
+	if( hConsole  && ::User32.IsWindowVisible(hConsole) ){
+		var pyconsole = ..raw.loadDll("~\lib\py3\.res\DLLs\pyconsole.aardio.dll",,"cdecl")
+		pyconsole.ioreopen();	
+	} 
 }
 /*}}*/
 
@@ -382,6 +382,18 @@ lasterr = function(){
 		return value,name; 
 	}
 }
+
+..subscribe("afterConsoleOpen",function(...){
+	lock(
+		function(){
+			
+			var pyconsole = ..raw.loadDll("~\lib\py3\.res\DLLs\pyconsole.aardio.dll",,"cdecl")
+			pyconsole.ioreopen();
+	
+			PyRun_SimpleString(`import sys;sys.stdout = sys.stderr = open("CONOUT$","wt");sys.stdin = open("CONIN$","rt");	`);
+		}
+	) 
+} )
 
 /*python引用计数规则{{*//*
 1、new reference(owned reference) 增加计数的引用

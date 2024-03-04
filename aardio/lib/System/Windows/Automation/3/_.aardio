@@ -11,113 +11,41 @@ import dotNet;
 dotNet.reference({
 	"Interop.UIAutomationClient":$"~\lib\System\Windows\Automation\3\.res\Interop.UIAutomationClient.dll";
 	"UIAComWrapper":$"~\lib\System\Windows\Automation\3\.res\UIAComWrapper.dll";
+	"aardio.NetCaret":$"~\lib\System\Windows\Automation\3\.res\aardio.NetCaret.dll";
+	
 });
 
 var Automation = dotNet.load("UIAComWrapper").import("System.Windows.Automation"); 
+var NetCaret = dotNet.load("aardio.NetCaret").import("aardio.NetCaret"); 
+
 System.Windows.Automation = Automation;
 System.Windows.Automation["3"] = Automation; 
 
 namespace System.Windows.Automation{
-	
-	var isActive = ..dotNet.object(true,true);
-	var TextPattern2Pattern = TextPattern2.Pattern;
-	var TextPatternPattern = TextPattern.Pattern;
-	var Release = ..com.Release;
-	
-	var AutomationElement = AutomationElement;
-	var NativeWindowHandleProperty = AutomationElement.NativeWindowHandleProperty
+	   
+	var Release = ..com.Release; 
+	var AutomationElement = AutomationElement; 
 	AutomationElement[["NotSupported"]] = AutomationElement.NotSupported;
-	
+
 	/*
 	此函数用于 winex.caret 。
 	获取当前输入光标位置，返回表示屏幕位置的 ::RECT 结构体，hwnd 字段指定句柄。
 	返回值兼容 winex.caret ，仅 Windows 8 以后系统支持。 
 	*/
-	GetCaret = function(){
-		var focusedEle = AutomationElement.RootElement.FocusedElement;
-		if( !focusedEle ) return;
+	GetCaret = function(){ 
+		var caretRc = ::RECT(); 
 		
-		var err;
-		var textPattern,caretRects;
-		
-		//尝试用 TextPattern2 新接口获取光标位置
-		try{ 
-			textPattern = focusedEle.GetCurrentPattern(TextPattern2Pattern);//失败抛异常(即使支持该接口，点击菜单这些仍有可能抛异常)
-			var caretRange = textPattern.GetCaretRange(isActive);//失败可能抛异常
-			Release(textPattern);
-			
-			if(caretRange){
-				if(isActive.Value) caretRects = caretRange.GetBoundingRectangles();
-				Release(caretRange); 
-			} 
+		var isActive;
+		try{
+			isActive = NetCaret.Caret.GetCaretRect(caretRc);
 		}
 		catch(e){
-			if(textPattern) Release(textPattern); 
-			err = e;
+			isActive = false;
 		}
 		
-		if(err){
-			//如果上面抛出异常，尝试用 TextPattern 接口获取光标位置
-			
-			try{ 
-				textPattern = focusedEle.GetCurrentPattern(TextPatternPattern);//失败抛异常
-				var selections = textPattern.GetSelection();//失败可能抛异常
-				Release(textPattern);
-				
-				if(selections) {
-					if(selections.Length){
-						var caretRange = selections[1];
-						if(caretRange){
-							caretRects = caretRange.GetBoundingRectangles();
-							
-							if(caretRects){
-								//caretRects.Length 为 0 表示当前无文本选区
-								if(! caretRects.Length) {
-									Release(caretRects);
-									
-									//扩展光标位置为文本选区
-									caretRange.ExpandToEnclosingUnit(0/*Automation.Text.TextUnit.Character*/); 
-									caretRects = caretRange.GetBoundingRectangles();
-								} 
-							}
-							
-							Release(caretRange);
-						}
-					}
-					
-					Release(selections);
-				}
-				
-				err = null;
-			} 
-			catch(e){
-				if(textPattern) Release(textPattern);
-				err = e;
-			}
+		if(isActive){
+			return caretRc;
 		}
-		
-		//转换返回值为 ::RECT 结构体
-		var rcRet;
-		if(caretRects){ 
-			if(caretRects.Length) {
-				var rc = caretRects[1];
-				
-				rcRet = ::RECT();
-				
-				rcRet.left = rc.Left;
-				rcRet.top = rc.Top;
-				rcRet.bottom = rc.Bottom;
-				rcRet.right = rc.Right;
-				rcRet.hwnd = focusedEle.GetCurrentPropertyValue(NativeWindowHandleProperty);
-				
-				Release(rc);
-			}
-			
-			Release(caretRects); 
-		}
-		
-		Release(focusedEle); 
-		return rcRet;
 	} 
 } 
 

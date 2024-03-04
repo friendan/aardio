@@ -100,8 +100,9 @@ setParent(.(netForm,aarForm) = 嵌入 .NET 窗口到 aardio 窗口，\n@netForm 
 wrapObject(__) = 如参数是原生 com.NetObject 对象,则返回 dotNet.object 对象，否则直接返回参数。\n\n所有 .NET 原生对象已经自动转换为 dotNet.object 对象，\n除非 .NET 调用普通 aardio 对象的成员函数而非回调特定的委托或事件函数。\n这时候回调参数中的 .NET 对象需要用此函数转换，但数值和字符串不需要转换。\n\n参数传入 com.IsNetObject 函数会返回非 0 值即为原生 com.NetObject 对象，\n非原生 com.NetObject 对象转换为 dotNet.object 应当直接调用 dotNet.object 函数。
 unwrapObject(__) = 如果对象是 dotNet.object 对象\n返回被封装的原生 com.NetObject 对象,\n否则直接返回参数\nn\n原生 com.NetObject 对象传入 com.IsNetObject 函数应返回非 0 值
 getObject(__) = 如果对象是 dotNet.object 对象\n返回被封装的原生 com.NetObject 对象,\n传入其他类型对象或原生 com.NetObject 对象会返回 null\n\n原生 com.NetObject 对象传入 com.IsNetObject 函数应返回非 0 值
-object( = 转换参数指定的 aardio 值或数组为 .NET 原生 DispatchableObject 对象,\n并转换且返回为 aardio 可操作的 dotNet.object 对象 
-object(.(value,byRef) = 参数 @byRef 为 true 则支持 .NET 的输出或引用参数\n\n参数如果是 .NET 原生对象,\n也就是传入 com.IsNetObject 会返回非 0 值,\n不应传入此函数,而应改用 dotNet.wrapObject 函数\n所有 .NET 返回的对象已经自动调用 dotNet.wrapObject 转换为 dotNet.object 对象
+object( = 转换参数指定的 aardio 值或数组为 .NET 原生 DispatchableObject 对象,\n并返回为 aardio 可操作的 dotNet.object 对象\n\ndotNet.object 如果存储的是 Primitive,enum,string 类型或这些类型的数组，\n则可以使用 Value 属性读写值。\n\ndotnet.object 对象支持用 tostring 转换为字符串，\n如果存储的是数值则支持调用 tonumber 函数转为普通数值
+object(.(value,byRef) = 参数 @byRef 为 true 则支持 .NET 的输出或引用参数\n\n参数 @value 应当是纯 aardio 对象。\n\n @value 参数不应传入 .NET 原生对象（也即传入 com.IsNetObject 会返回非 0 值）\n此类 .NET 对象传入 aardio 时会自动调用 dotNet.wrapObject 转为 dotNet.object 对象。
+object() = !dotNetObject.
 byte( = 创建 .NET System.SByte 类型数值或数组
 byte(.(value,byRef) = 创建 .NET System.SByte 类型数值或数组，\n用于存储8位整数。\n\n参数 @value 可以为数值或数组，\n参数 @byRef 为 true 则支持 .NET 的输出或引用参数
 ubyte( = 创建 .NET System.Byte 类型数值或数组
@@ -137,6 +138,11 @@ invokeMember(.("类名->方法名",BindingFlags) = 调用类的方法,\n可添�
 getStaticMember(.("类名->字段名") = 获取字段或属性值、或枚举值
 getEnum(.("枚举类型名->枚举字段名") = 获取枚举值\n注意参数要指定完整类型名
 end intellisense**/
+
+/*****intellisense()
+!dotNetObject.Value = 如果 dotNet.object 对象存储的是\n .NET 中的 Primitive,enum,string 类型或这些类型的数组，\n则可以使用 Value 属性读写值
+end intellisense*****/
+
 
 /**details(用法说明)
 

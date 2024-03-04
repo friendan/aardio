@@ -3,6 +3,7 @@ import process.gcc;
 
 //创建 GCC 环境，参数指定 C/C++ 源码目录
 var gcc = process.gcc("/");
+//C++语法速览 https://quickref.me/zh-CN/docs/cpp.html
 
 //自动存为 main.cpp
 gcc["main.cpp"] = /*************

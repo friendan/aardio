@@ -4,7 +4,7 @@ import console;
 
 /*
 C++ 快速入门
-https://quickref.me/cpp
+https://quickref.me/zh-CN/docs/cpp.html
 https://learnxinyminutes.com/docs/zh-cn/c++-cn
 */
 console.showLoading(" 正在加载 C++ 代码");

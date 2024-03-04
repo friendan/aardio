@@ -34,7 +34,7 @@ tbs.margin = 0;
 var urls = {
 	"https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2270340412479438855#wechat_redirect";
 	"https://learnxinyminutes.com/docs/zh-cn/python-cn/"; 
-	"https://quickref.me/python"; 
+	"https://quickref.me/zh-CN/docs/python.html"; 
 }
 
 tbs.onSelchange = function(idx,strip,form){

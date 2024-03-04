@@ -15,6 +15,7 @@ editX={cls="edit";left=471;top=13;right=512;bottom=33;dr=1;dt=1;edge=1;multiline
 editY={cls="edit";left=524;top=13;right=565;bottom=33;dr=1;dt=1;edge=1;multiline=1;z=4};
 lbWeb={cls="static";left=9;top=42;right=706;bottom=313;db=1;dl=1;dr=1;dt=1;edge=1;notify=1;transparent=1;z=1};
 picturebox={cls="picturebox";left=665;top=7;right=700;bottom=39;dr=1;dt=1;notify=1;transparent=1;z=7};
+static={cls="static";text=")";left=566;top=18;right=573;bottom=40;align="right";dr=1;dt=1;font=LOGFONT(name='Microsoft Sans Serif');transparent=1;z=15};
 static2={cls="static";text="ele = wb.fromPoint(  ";left=333;top=18;right=472;bottom=40;align="right";dr=1;dt=1;font=LOGFONT(name='Microsoft Sans Serif');transparent=1;z=5};
 static3={cls="static";text=",";left=515;top=18;right=521;bottom=40;align="right";dr=1;dt=1;font=LOGFONT(name='Microsoft Sans Serif');transparent=1;z=6}
 )
@@ -129,7 +130,8 @@ genCode = function(){
 		return ; 
 	}  
 	
-	var ele = wb.fromPoint(x,y);
+	var dpiScaleX,dpiScaleY = wb._form.dpiScale(1,1); 
+	var ele = wb.fromPoint(x/dpiScaleX,y/dpiScaleY);
 	if( !ele ){
 		return;
 	};
@@ -180,7 +182,9 @@ genCode = function(){
  	winform.spyElement = ele
  	 
  	var e_x,e_y,e_cx,e_cy = wb.getPos(ele,true) 
- 	flashRect( ::RECT(e_x,e_y,e_x+e_cx+4,e_y+e_cy+4) )  
+ 	var e_x2,e_y2 = wb._form.dpiScale(e_x,e_y);
+ 	var e_cx2,e_cy2 = wb._form.dpiScale(e_x+e_cx+4,e_y+e_cy+4);
+ 	flashRect( ::RECT(e_x2,e_y2,e_cx2,e_cy2) ); 
  
 	if(   ! ( #ele.id || #ele.name )   ){ 
 		var queryOption = {}

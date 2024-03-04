@@ -1,12 +1,13 @@
 //入门
-import console;
-//console.open() 如果要在 Python 中使用 print 函数,请在导入 py3 库以前打开控制台，
+import console;//此库函数打开控制台会自动绑定 Python 标准输出输入。
 
 //在开发环境运行代码 —— aardio 会自动安装缺少的 py3 扩展库，很简单！
 import py3;
 
 //aardio + Python 入门教程系列：
 //https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2270340412479438855#wechat_redirect
+//aardio 语法速览: https://mp.weixin.qq.com/s/wk2oe5USuBvTs3QWdjyYhw
+//Python 语法速览: https://quickref.me/zh-CN/docs/python.html
 
 //导入 Python 模块
 var math = py3.import("math");

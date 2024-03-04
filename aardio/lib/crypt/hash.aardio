@@ -13,13 +13,15 @@ class hash{
 		this.handle = hHash;
 		..table.gc(this,"destroy");
 	} }; 
+	size = function () { 
+		var r,size = GetHashParamByInt(this.handle, 0x4/*_HP_HASHSIZE*/, 4, 4, 0); 
+		return r?size:0;
+	};
 	getValue = function () { 
-		var ret,size = GetHashParamByInt(this.handle, 0x4/*_HP_HASHSIZE*/, 4, 4, 0); 
-		var ret,str = GetHashParamByString(this.handle, 0x2/*_HP_HASHVAL*/, size, size, 0);
+		var r,size = GetHashParamByInt(this.handle, 0x4/*_HP_HASHSIZE*/, 4, 4, 0); 
+		var r,str = GetHashParamByString(this.handle, 0x2/*_HP_HASHVAL*/, size, size, 0);
 		 
-		if (ret) {
-			return str;
-		}
+		if (r) return str;
 	};
 	getHexValue = function( upper=true  ){
 		var s = this.getValue(); 
@@ -106,5 +108,6 @@ crypt.hash() = !crypt_hash.
 !crypt_hash.hashData(__/*字符串*/) = 计算哈希值
 !crypt_hash.hashBuffer(.(buffer,长度) =  参数@1 必须是 raw.buffer 创建的 buffer 对象,\n长度为可选参数
 !crypt_hash.deriveKey(.(算法ID,选项) = 从哈希表中派生密钥,\n参数可选,算法ID默认为_CALG_RC4,选项默认为0\n密钥自动绑定到CSP密钥容器对象\n该函数无返回值
+!crypt_hash.size() = 返回摘要值字节长度
 !crypt_hash.sign(.(keySpec,flags) = 返回签名\n可选用 @keySpec 参数中指定密钥类型,\n@flags 不必指定,默认为_AT_SIGNATURE\n导入密钥时请改为_AT_KEYEXCHANGE
 end intellisense**/

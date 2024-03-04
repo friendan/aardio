@@ -107,8 +107,9 @@ class rsa{
 		var block = (this.getKeyBlockLen() : 1024) / 8;
 		this.blockSize = block;
 		
+		var pad = flags?42:11;
 		var t = {};
-		for(s in this.eachEncrypt(str,block-11,final,hHash,flags ) ){ 
+		for(s in this.eachEncrypt(str,block-pad,final,hHash,flags ) ){ 
 			..table.push(t,s);
 		} 
 	
@@ -148,6 +149,18 @@ class rsa{
 			..table.reverse(t);
 			return ..string.join(t); 
 		}
+	};
+	encryptOaep = function(str,final,hHash){
+		return this.encrypt(str,final,hHash,0x40/*_CRYPT_OAEP*/);
+	}; 
+	decryptOaep = function(str,final,hHash){
+		return this.decrypt(str,final,hHash,0x40/*_CRYPT_OAEP*/);	
+	};
+	encryptOaepReverse = function(str,flags){
+		return this.encryptReverse(str,0x40/*_CRYPT_OAEP*/);
+	}; 
+	decryptOaepReverse = function(str,flags){
+		return this.decryptReverse(str,0x40/*_CRYPT_OAEP*/);
 	};
 	sign = function(keySpec,flags){
 		if(!this.lastHash) error("哈希尚未创建",2);
@@ -228,6 +241,10 @@ decryptReverse( = RSA解密，反转字节序,\n解密模式为 RSA/ECB/PKCS1Pad
 decryptReverse(.(字符串,选项) = 选项为可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 encryptReverse( = RSA加密，反转字节序,\n加密模式为 RSA/ECB/PKCS1Padding
 encryptReverse(.(字符串,选项) = 选项为可选可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decryptOaep(.(字符串,是否已输入全部数据,哈希对象) = RSA 解密。\n填充模式为 PKCS#1 OAEP，其他与 decrypt 函数相同。\n除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+encryptOaep(.(字符串,是否已输入全部数据,哈希对象,选项) = RSA 加密。\n填充模式为 PKCS#1 OAEP，其他与 encrypt 函数相同。\n除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decryptOaepReverse(.(字符串) = RSA 解密，反转字节序。\n填充模式为 PKCS#1 OAEP，其他与 decryptReverse 函数相同。\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+encryptOaepReverse(.(字符串) = RSA加密，反转字节序。\n填充模式为 PKCS#1 OAEP，其他与 encryptReverse 函数相同。\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer,\n如果不手动分配,程序将会自动按需分配 buffer \n参数2可选,可使用对象的blockSize属性指定默认块大小
 blockSize = 加密填充的块大小
 sign(.(keySpec,flags) = 返回签名\n可选用 @keySpec 参数中指定密钥类型,\n@flags 不必指定

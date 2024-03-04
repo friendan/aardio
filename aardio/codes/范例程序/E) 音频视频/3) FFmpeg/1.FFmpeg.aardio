@@ -12,11 +12,12 @@ import process.ffmpeg;
 var ffmpeg = process.ffmpeg(,"-version");
 winform.edit.text = ffmpeg.readAll();
 
-//调用 ffmpeg.exe
+//调用 ffmpeg.exe，FFmpeg参数用法: https://quickref.me/zh-CN/docs/ffmpeg.html
 var ffmpeg = process.ffmpeg("/",//指定要处理的文件所在目录
 	`-i "abc.m4a" -y -acodec libmp3lame -aq 0 "xyz.mp3"`);
-	
-winform.edit.text = ffmpeg.readAll();
+
+//读取进程所有输出，不阻塞界面，但等待进程结束（阻塞代码向后执行）
+winform.edit.text = ffmpeg.readAll(); 
 
 /*
 下面这样分开写参数也可以，

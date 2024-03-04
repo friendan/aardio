@@ -362,6 +362,14 @@ lasterr = function(){
 	} 
 }
 
+..subscribe("afterConsoleOpen",function(...){
+	lock(
+		function(){ 
+			PyRun_SimpleString(`import sys;sys.stdout = sys.stderr = open("CONOUT$","wt");sys.stdin = open("CONIN$","rt");	`);
+		}
+	) 
+} )
+
 /*python引用计数规则{{*//*
 1、new reference(owned reference) 增加计数的引用
 2、borrow reference 不增加计数直接借用

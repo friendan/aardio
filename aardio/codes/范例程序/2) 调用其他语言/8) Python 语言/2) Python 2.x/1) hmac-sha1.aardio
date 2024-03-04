@@ -1,7 +1,7 @@
 //执行 Python 代码
 import console;
 console.log("必须在导入 py2 扩展库以前打开控制台,
-才能查看 Python 在控制台输出的内容与错误信息。");
+才能查看 Python 在控制台输出的内容与错误信息。py3 系列控制库无此限制。");
 
 import py2; 
 py2.main.testData = '可以这样预先指定 Python 全局变量'u; 

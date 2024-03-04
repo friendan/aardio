@@ -24,7 +24,7 @@ console.pause();
 
 /*
 C# 语言快速入门
-https://quickref.me/cs
+https://quickref.me/zh-CN/docs/cs.html
 https://learnxinyminutes.com/docs/zh-cn/csharp-cn/
 
 Win7 自带 .NET 3.5.1，支持 lambda

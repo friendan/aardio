@@ -1,11 +1,10 @@
 ﻿//实现 Python.exe
 
 import console;
-
-//先打开控制台, 再导入Python, Python才能使用控制台
-console.setTitle("python(aardio)");
-
 import py3;
+
+//必须先打开控制台
+console.setTitle("python(aardio)");
 
 //如果使用 py3.10 扩展库，py3.run() 会重置 sys.path 为 py3.getPath()。
 py3.run();

@@ -1,8 +1,5 @@
 //md5 示例
 import console;
-console.log("必须在导入python库以前打开控制台,
-python中的print函数才能支持控制台.")
-
 import py3; 
 
 //导入python模块

@@ -5,6 +5,7 @@ var winform = win.form(text="Hello World / PHP_CGI 服务器";right=759;bottom=4
 winform.add()
 /*}}*/
 
+//Ruby 语法速览 https://quickref.me/zh-CN/docs/ruby.html
 var code = /*
 require 'cgi'
 

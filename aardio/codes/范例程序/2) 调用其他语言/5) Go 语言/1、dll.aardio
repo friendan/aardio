@@ -4,7 +4,7 @@ var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 DLL 不需�
 
 /*
 Go 语言文档教程 
-https://quickref.me/golang 
+https://quickref.me/zh-CN/docs/golang.html
 https://learnxinyminutes.com/docs/zh-cn/go-cn
 https://pkg.go.dev/builtin
 https://go.dev/play
