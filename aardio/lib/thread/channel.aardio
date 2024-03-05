@@ -1,0 +1,127 @@
+﻿//channel 通道
+import thread.semaphore;
+import thread.table;
+
+namespace thread;
+
+class channel{
+	ctor( sizeOrName, semaphoreIn,semaphoreOut){
+		if(!type.isString(sizeOrName)){
+			sizeOrName = sizeOrName || 1;
+			this.semaphoreIn = ..thread.semaphore(semaphoreIn,sizeOrName);
+			this.semaphoreOut = ..thread.semaphore(,sizeOrName,0);
+			this.table = ..thread.table(); 	
+			
+			this.table.set("refCount",1);
+		}
+		elseif( type(semaphoreIn)=="pointer" && type(semaphoreOut)=="pointer" ) {
+			this.semaphoreIn = ..thread.semaphore(semaphoreIn,true);
+			this.semaphoreOut = ..thread.semaphore(semaphoreOut,true);
+			this.table = ..thread.table(sizeOrName); 
+			this.table.add("refCount",1);	
+		}
+		
+		..table.gc(this,"close");
+	};
+	empty = function(){
+		return !this.len() && this.refCount()<=1;
+	};
+	refCount = function(){
+		return this.table?this.table.get("refCount"):0;
+	};
+	len = function(){
+		return this.table?this.table.len():0;
+	};
+	each = function(){
+		return function(){
+			if(this.empty()) return;
+			return this.receive();
+		} 
+	};
+	send = function(v){
+		if(v===null) error("null 值不允许发送到通道",2);
+		
+		if( this.semaphoreIn.waitOne() ){
+			this.table.push(v);
+			this.semaphoreOut.release();
+			return true;	
+		} 
+	};
+	receive = function(timeout){
+		var r,e = this.semaphoreOut.waitOne(timeout);
+		if( r ){
+			var v = this.table.shift(1);
+			this.semaphoreIn.release();
+			return v;	
+		}
+		
+		return null,e;
+	};
+	close = function(){ 
+		if( !this.table.add("refCount",-1) ){
+			this.table.release();
+		} 
+		
+		this.semaphoreIn.close();
+		this.semaphoreOut.close();
+		this.table = null;
+		this.semaphoreIn = null;
+		this.semaphoreOut = null; 
+	};
+	@_meta;
+}
+
+namespace channel{
+    
+    _meta = {
+    	_serialize = function(kernelCall){
+			if(kernelCall) return  ..string.format("global.import('thread.channel') : thread.channel( '%s',..raw.dup(topointer(0x%p)),..raw.dup(topointer(0x%p)))"
+				,owner.table.name
+				,..raw.toPointer(owner.semaphoreIn) 
+				,..raw.toPointer(owner.semaphoreOut)
+				); 
+		};  
+ 		_lshift = function(v) {
+ 			if(owner@===_meta){
+ 				owner.send(v);
+ 				return owner; 
+ 			}
+ 			else {
+ 				return v.receive();
+ 			} 
+ 		};
+    }
+    
+    self.select = function(...){
+   		var list = ((...)@==_meta)?{...}:...;
+    	
+    	var h = {};
+    	for(i=1;#list;1){
+    		h[i] = list[i].semaphoreOut;
+    	}
+    	   	
+ 		var i,err = ..thread.waitOne(h);   	
+ 		if(i && !err){
+    	    h[i].release();
+    		return list[i];
+    	}
+    }  
+}
+
+/*****intellisense()
+thread.channel.select(__) = 等待参数指定的任一通道非空，返回该通道对象。\n可指定一个通道对象数组作为参数，也可指定多个通道对象参数。
+thread.channel(__) = 创建通道。\n可选用参数指定缓存队列大小，默认为 1
+thread.channel() = !threadChannel.
+end intellisense*****/
+
+/*****intellisense(!threadChannel)
+send(__) = 发送值，参数不允许为 null。\n如果通道缓存队列已满则等待。\n等待时阻塞代码向后执行，但不阻塞界面消息。\n\n可用 <<= 操作符（通道对象置于左侧）自动调用此函数
+receive() = 接收值。\n成功返回非 null 值。\n如果通道缓存队列为空则等待。\n等待时阻塞代码向后执行，但不阻塞界面消息.\n\n可选用参数@1指定等待超时（单位毫秒）。\n超时返回 null 值，第 2 个返回值为字符串 "timeout"\n\n可用 <<= 操作符（通道对象置于右侧）自动调用此函数
+close() = 关闭对象。\n对象析构时会自动调用此函数。
+len() = 获取通道缓存队列长度。\n如果对象已关闭则返回 0
+refCount() = 获取此通道对象的线程引用计数。\n也就是仍在使用此通道对象的线程数。\n如果当前对象已关闭则返回 0
+empty() = 如果当前对象已关闭则返回 true。\n如果没有其他线程引用此通道对象，\n并且通道缓存队列为空，则返回 true，\n否则返回 false
+each() = @for v in ??.each(){
+	__/*循环等待并读取通道缓存队列中的值，\n直到通道关闭，或没有其他线程引用此通道且通道缓存队列为空。*/
+}
+end intellisense*****/

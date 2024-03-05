@@ -5,7 +5,9 @@ var t_call = ..thread.call
 
 class table{
 	ctor( name,clear=false){
-		if(!name) name = "$_thread_table:" + ..thread.add("$_thread_table_id",1);
+		if(!name) {
+			name = ..thread.call("_$(_thread_var_getName)");
+		}
 			
 		if( ( ! ..thread.get(name ) || clear) ){ 
 			..thread.set(name,{}) 
@@ -14,29 +16,36 @@ class table{
 		this.name = name
 	}; 
 	set = function(k,v){
-		t_call("__table_set", ,this.name,k,v )
+		t_call("_$__table_set", ,this.name,k,v )
 	}
 	get = function(k,v){
-		return t_call("__table_get", ,this.name,k )
+		return t_call("_$__table_get", ,this.name,k )
 	}
 	getByNamespace = function(k){
-		return t_call("__table_getByNamespace", ,this.name,k)
+		return t_call("_$__table_getByNamespace", ,this.name,k)
 	}
 	setByNamespace = function(k,v){
-		t_call("__table_setByNamespace", ,this.name,k,v )
+		t_call("_$__table_setByNamespace", ,this.name,k,v )
 	}
 	lenByNamespace = function(k,v){
-		t_call("__table_lenByNamespace", ,this.name,k,v )
+		t_call("_$__table_lenByNamespace", ,this.name,k,v )
 	}
 	len = function(){
-		return t_call("__table_len", ,this.name )
+		return t_call("_$__table_len", ,this.name )
 	}
 	append = function(...){
-		return t_call("__table_append", ,this.name,... )
+		return t_call("_$__table_append", ,this.name,... )
 	}
 	each = function(){ 
 		return this.next,this	
-	}	
+	}
+	release = function(){ 
+		..thread.call("_$(_thread_var_release)",,this.name);
+		..thread.set(this.name,null);
+	}  
+	add = function(k,v){ 
+		return ..thread.call("_$__table_add",,this.name,k,v);
+	}  
 	@meta;
 }
 
@@ -63,14 +72,22 @@ var tableFunc = {
 	append=1;
 	remove=1;
 	clear=1;
+	release=1;
 } 
 table.meta = {
 	_get = function(k,ownerCall){
 		if( !ownerCall && !tableFunc[k] )
-			return t_call("__table_get", ,owner.name,k )
+			return t_call("_$__table_get", ,owner.name,k )
+			
+		if(k==="release"){
+			return function(){
+				..thread.call("_$(_thread_var_release)",,owner.name);
+				..thread.set(owner.name,null);
+			} 
+		}
 			
 		owner[[k]] =  function(...){
-			return t_call("__table_call",k,owner.name,... )
+			return t_call("_$__table_call",k,owner.name,... )
 		}
 		return owner[[k]]; 
 	}
@@ -78,7 +95,7 @@ table.meta = {
 		if( tableFunc[k] )
 			error("不能修改默认函数",2)
 			
-		t_call("__table_set", ,owner.name,k,v )
+		t_call("_$__table_set", ,owner.name,k,v )
 	}
 	_serialize = function(kernelCall){
 		if(kernelCall) return `global.import('thread.table') : thread.table("`++owner.name++`")`;
@@ -92,51 +109,51 @@ table.meta = {
 }
  
 lock("INIT.THREAD.CALL.{7EC7B22E-F1A6-4AA7-B5A3-4741C583AA00}")
-if( ! get("__table_call" ) ){
+if( ! get("_$__table_call" ) ){
 	set(
-		"__table_call",
+		"_$__table_call",
 		function( name,...){
 			var t = global[name];
 			if(t)return table[owner]( t,...);
 		}
 	)  
 	set(
-		"__table_get",
+		"_$__table_get",
 		function( name,k){
 			var t = global[name];
 			if(t)return t[k];
 		}
 	)
 	set(
-		"__table_set",
+		"_$__table_set",
 		function( name,k,v){
 			var t = global[name];
 			if(t)t[k] = v;
 		}
 	)
 	set(
-		"__table_getByNamespace",
+		"_$__table_getByNamespace",
 		function( name,k){
 			var t = global[name];
 			if(t)return ( ..table.getByNamespace(k,t) );
 		}
 	)
 	set(
-		"__table_lenByNamespace",
+		"_$__table_lenByNamespace",
 		function( name,k){
 			var t = global[name];
 			if(t)return #..table.getByNamespace(k,t);
 		}
 	)
 	set(
-		"__table_setByNamespace",
+		"_$__table_setByNamespace",
 		function( name,k,v){
 			var t = global[name];
 			if(t)..table.setByNamespace(k,v,t); 
 		}
 	)
 	set(
-		"__table_len",
+		"_$__table_len",
 		function( name ){
 			var t = global[name];
 			if(t) return #(t);
@@ -144,10 +161,17 @@ if( ! get("__table_call" ) ){
 		}
 	) 
 	set(
-		"__table_append",
+		"_$__table_append",
 		function( name,... ){
 			var t = global[name];
 			if(t) ..table.append(t,...); 
+		}
+	) 
+	set(
+		"_$__table_add",
+		function( name,k,v ){
+			var t = global[name];
+			t[k] = (t[k]:0) + v; return t[k];
 		}
 	) 
 }
@@ -155,7 +179,7 @@ unlock("INIT.THREAD.CALL.{7EC7B22E-F1A6-4AA7-B5A3-4741C583AA00}")
  
 /**intellisense()
 thread.table = 线程共享表
-thread.table("__") = 创建多线程共享表,返回对象可传入其他线程使用,\n可选使用参数@1指定线程共享变量名,\n省略参数则自动生成共享变量名
+thread.table("__") = 创建多线程共享表,返回对象可传入其他线程使用,\n可选使用参数@1指定线程共享变量名,\n省略参数则自动分配线程共享变量名。\nthread.var 以及 thread.table 自动分配的线程共享变量名上限为\n:0x3FFFFFFFFFFFFC0000000000000 个。\n应及时调用返回对象的 release 函数释放不需要的线程共享表
 thread.table() = !thread_table.
 ?thread.table =  !thread_table.
 !thread_table.get("键名") = 读取成员值
@@ -186,8 +210,10 @@ thread.table() = !thread_table.
 !thread_table.unshift(.(要插入的一个或多个元素) = 插入一个或多个元素到数组头部,返回数组长度
 !thread_table.shift(.(移除数目) = 自数组头部移除并返回指定个数成员,\n参数默认为1
 !thread_table.append(__) = 追加一个或多个数组到线程共享表,\n此函数内部使用table.append实现,规则相同,\n但无返回值
+!thread_table.add(.(字段名,数值) = 修改共享表中参数@1指定名字的字段值。\n旧的字段值必须为 null 或数值。\n如果旧值为 null 则直接赋值为参数@2。\n如果旧值为数值则增加参数@2指定的数值。
 !thread_table.each = @for( k,v in ??.each() ){
 	__ 
 }
 !thread_table.clear() = 清空共享表中的所有值
+!thread_table.release() = 释放线程共享表
 end intellisense**/

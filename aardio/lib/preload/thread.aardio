@@ -10,7 +10,7 @@ var msgWaitForMultipleObjects = ::User32.api("MsgWaitForMultipleObjects", "INT(I
 
 var threadwait = function( bClose,bAll, ...){
     var threads,timeout = ...;
-    if(type(threads)!="table") {
+    if(type(threads)!="table") || threads@[["_topointer"]]{
     	timeout = 0xFFFFFFFF
     	threads ={...}
     	if( type(threads[#threads]) == "number" ){
@@ -20,7 +20,9 @@ var threadwait = function( bClose,bAll, ...){
     elseif(timeout === null ) timeout = 0xFFFFFFFF  /* Infinite timeout*/
     	
     var len = #threads
-    if(!len) error("参数未指定线程句柄",3);
+    if(!len) {
+    	error("参数未指定线程句柄",3);
+    }
     var threads_c = ..raw.toarray( threads ,"pointer" ,"array");
     var msg,peek,parse,hasMsg;  
     
@@ -164,22 +166,50 @@ init = function(k,v){
 }
 
 init("_$(_thread_var_freeNames).array",{});
+
+//thread.var,thread.table 调用此函数
 init("_$(_thread_var_release)",function(n){
+	if(!..string.find(n,"^\$\(_thread_var\:\d+\:\d+\)$")) return;
+	
     var freeNames = global["_$(_thread_var_freeNames).array"];
-    if(!n) return ..table.shift(freeNames); 
-    
+
     var r = global[n];
     global[n] = null; 
     if(#freeNames<100) ..table.push(freeNames,n); 
 	return r;
 });
 
-init("_$(_thread_call_add)",function(n,v){
+//thread.var,thread.table 调用此函数
+init("_$(_thread_var_getName)",function(n,v){
+	var freeNames = global["_$(_thread_var_freeNames).array"];
+	var name = ..table.shift(freeNames); 
+        
+    if(!name){
+    	var id1 = global["$(_thread_var_id1)"]:0;
+    	var id2 = global["_$(_thread_var_call_add)"]("$(_thread_var_id2)",1);
+    
+    	if(id2>0x1FFFFFFFFFFFFE){
+        	id2 = 0;
+    		global["$(_thread_var_id2)"] = id2;
+    		id1 = global["_$(_thread_var_call_add)"]("$(_thread_var_id1)",1);
+    		 
+    		if(id1>0x1FFFFFFFFFFFFE){
+    			error("Too many thread variables",2);
+    		}
+    	}
+    	
+    	name = "$(_thread_var:" + id1 + ":" + id2 + ")";        	
+    } 
+    
+    return name; 
+})
+
+init("_$(_thread_var_call_add)",function(n,v){
 	global[n] = (global[n]:0) + v; return global[n];
 });
 
 add = function(n,v) {
-	return self.call("_$(_thread_call_add)",,n,v);
+	return self.call("_$(_thread_var_call_add)",,n,v);
 }
 
 var threadCall = ..thread.call;
@@ -192,7 +222,10 @@ var varMeta = {
 		get = lambda() get(owner.name);
 		set = lambda(v) set(owner.name,v);
 		release = function(){
-			if(owner.releasable) return ..thread.call("_$(_thread_var_release)",,owner.name)
+			if( owner.name[1]=='$'# ){
+				..thread.call("_$(_thread_var_release)",,owner.name);
+			}
+			
 			var r = get(owner.name);
 			set(owner.name,null);
 			return r;
@@ -205,29 +238,13 @@ var varMeta = {
 	_tonumber = lambda() tonumber(get(owner.name));
 	_json = lambda() get(owner.name);
 }
+
 	
 self.var = function(name,value){
     var result = {@varMeta}
     if(!name) {
-        name = ..thread.call("_$(_thread_var_release)");
-        
-        if(!name){
-    		var id1 = get("$(_thread_var_id1)"):0;
-    		var id2 = add("$(_thread_var_id2)",1);
-    	
-    		if(id2>0x1FFFFFFFFFFFFE){
-        		id2 = 0;
-    			set("$(_thread_var_id2)",id2);
-    			id1 = add("$(_thread_var_id1)",1);
-    			if(id1>0x1FFFFFFFFFFFFE){
-    				error("Too many thread variables",2);
-    			}
-    		}
-    		
-    		name = "$(_thread_var:" + id1 + ":" + id2 + ")";        	
-        } 
-        
-        result.releasable = 1;
+        name = ..thread.call("_$(_thread_var_getName)");  
+        result.$nameReleasable = 1;
     }
     result.name = name; 
     init(name,value);
@@ -330,12 +347,12 @@ thread.callable(__) = 将对象的_serialize 元方法指定为 thread._callable
 thread.init(.(k,v) = 如果参数k指定名称的线程共享变量为空值,\n则初始化该变量值为参数v指定的值
 thread.add(.(k,v) = 对参数k指定线程共享变量名称的数值增加参数v指定的计数\n参数v可以使用负数执行减操作
 thread.var( = 创建线程共享变量 - 可直接作为调用参数传入其他线程
-thread.var(.(name,value) = 可选用参数@1指定共享变量名称,可选在参数@2中指定初始化值,\n如果不指定共享变量名，则自动分配共享变量名,\n\n线程共享变量不会自动释放,调用 set 函数设为 null 可删除线程变量,\n如果确认没有线程再使用该变量，可调用 relase 函数释放共享变量名,\n自动分配变量名上限为 0x3FFFFFFFFFFFFC0000000000000个\n
+thread.var(.(name,value) = 可选用参数@1指定共享变量名称,可选在参数@2中指定初始化值,\n如果不指定共享变量名，则自动分配共享变量名,\n\n线程共享变量不会自动释放,调用 set 函数设为 null 可删除线程变量,\n如果确认没有线程再使用该变量，可调用 relase 函数释放共享变量名,\nthread.var以及 thread.table 自动分配的线程共享变量名上限为\n:0x3FFFFFFFFFFFFC0000000000000 个。\n应及时调用返回对象的 release 函数释放不需要的线程共享变量
 thread.var() = !threadvar.
 thread.invokeAndWait(func,->->->) = @.invokeAndWait(\n	function(){\n		import win;\n		__/*创建工作线程执行参数@1指定的线程函数,\n参数@1之后的其他可选参数会作为调用线程函数的参数。\n调用并等待线程函数执行完毕,然后获取此线程函数的返回值,\n在界面线程等待时界面仍可响应用户操作，线程函数的返回值会返回给调用线程,\n线程函数拥有独立的全局变量，并应遵守多线程调用规则*/\n	} \n)
 thread.delay(__) = 参数指定延时值,单位毫秒,参数不可省略,\n导入 win 库的界面线程内会执行 win.delay，\n否则执行 sleep 函数。\n\n如果当前线程导入了 win 库则退出消息循环返回null,否则返回true\n否则调用 sleep 函数并总是返回 true
 !threadvar.get() = 获取值
 !threadvar.set(__) = 在参数@1中指定新的值,\n不使用时一定要设置值为null以删除该变量\n如果使用了共享变量名,\n即使删除共享变量也不会再重复分配该变量名给新的线程变量,\n除非调用release函数释放该变量名
 !threadvar.add(__) = 增加数值,\n共享变量之前必须是数值或者null值,\n可以在参数中指定负数执行减操作
-!threadvar.release() = 返回变量原来的值,\n同时设为 null 并删除该变量,\n如果此变量使用了自动分配的共享变量名，\n则释放该变量名并允许 thread.var 分配给其他线程变量
+!threadvar.release() = 返回变量原来的值,\n同时设为 null 并删除该变量。\n应及时释放不再使用的线程共享变量
 end intellisense**/

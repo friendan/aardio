@@ -37,7 +37,7 @@
 -168886531|6309|2811|codes\范例程序\1) aardio 语言\1) 多线程\00.start.aardio
 1963161583|3961|1879|codes\范例程序\1) aardio 语言\1) 多线程\01.handle.aardio
 -1169290155|1899|913|codes\范例程序\1) aardio 语言\1) 多线程\02.thread.command.aardio
-1519238409|1318|651|codes\范例程序\1) aardio 语言\1) 多线程\03.table.thread.aardio
+-1258610135|2155|935|codes\范例程序\1) aardio 语言\1) 多线程\03.table.thread.aardio
 -729080300|949|579|codes\范例程序\1) aardio 语言\1) 多线程\04.call.aardio
 -1636051199|1182|642|codes\范例程序\1) aardio 语言\1) 多线程\05.manage.aardio
 -797037484|2663|1133|codes\范例程序\1) aardio 语言\1) 多线程\06.works.aardio
@@ -50,6 +50,7 @@
 -1345551035|748|439|codes\范例程序\1) aardio 语言\1) 多线程\13.PostThreadMessage.aardio
 963088537|1468|833|codes\范例程序\1) aardio 语言\1) 多线程\14.threadCtrl.aardio
 147298955|889|529|codes\范例程序\1) aardio 语言\1) 多线程\15.function.aardio
+-1070546471|700|407|codes\范例程序\1) aardio 语言\1) 多线程\16.channel.aardio
 52804315|1525|874|codes\范例程序\1) aardio 语言\2) 协同程序\1.fiber.aardio
 -1483792154|532|392|codes\范例程序\1) aardio 语言\2) 协同程序\2.generator.aardio
 1061539616|1006|421|codes\范例程序\1) aardio 语言\2) 协同程序\3.coroutine.aardio
@@ -1004,7 +1005,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-1877800344|16|35|config\SYS.CFG
+623727463|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 2016904622|117575|30503|config\intellisense\kernel.txt
@@ -1959,7 +1960,7 @@
 -1448350769|12137|4258|lib\preload\string.aardio
 543017030|7037|2167|lib\preload\struct.aardio
 2010708648|22742|6855|lib\preload\table.aardio
--1351938973|13183|4438|lib\preload\thread.aardio
+1353019353|13644|4550|lib\preload\thread.aardio
 -1477975943|15793|5654|lib\preload\_.aardio
 -1882500609|5123|1985|lib\process\admin.aardio
 0|0|0|lib\process\apiHook\
@@ -2172,14 +2173,15 @@
 -837766499|1204|666|lib\table\zip.aardio
 1702591986|4170|1524|lib\thread\apiHook.aardio
 6497176|988|550|lib\thread\atom.aardio
+-2117029356|4280|1592|lib\thread\channel.aardio
 1411281816|1098|693|lib\thread\cmdline.aardio
 1542378281|12173|3182|lib\thread\command.aardio
 -758663460|6688|2129|lib\thread\dlManager.aardio
 1266434120|4085|1574|lib\thread\event.aardio
 1103827390|6188|1827|lib\thread\manage.aardio
-1409866532|3999|1668|lib\thread\semaphore.aardio
+402482651|4051|1678|lib\thread\semaphore.aardio
 1346602768|1678|693|lib\thread\shareHandle.aardio
--2133986718|5922|1930|lib\thread\table.aardio
+-888797503|6962|2213|lib\thread\table.aardio
 1083649287|2046|941|lib\thread\token.aardio
 1343974654|6261|2075|lib\thread\works.aardio
 1643154721|4925|2016|lib\time\ntp.aardio

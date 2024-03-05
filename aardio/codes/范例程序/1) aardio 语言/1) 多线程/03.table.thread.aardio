@@ -2,11 +2,36 @@
 import console;
 import thread.table;
 
+//线程都有独享的全局变量环境。
+//下面创建一个多线程共享变量。
+var thrdVar = thread.var();
+thread.invokeAndWait(
+	function(thrdVar){
+		
+		//修改线程共享变量的值
+		thrdVar.set(123456);
+		
+	},thrdVar//线程变量可以传入其他线程使用
+)
+
+//获取线程共享变量的值
+console.log(thrdVar.get());
+
+//及时释放不再使用的线程共享变量
+thrdVar.release();
+
 /*
-前面的范例说过：线程都是独享自己的全局变量环境的。
-而thread.table则是创建了一个线程间共享的table对象,对同一名称的共享表的修改对其他线程都会同时生效。 
+线程共享变量都可指定一个共享名称。
+thread.var 能自动分配名称，并封装了 thread.get() thread.set() 等读写函数。
+但应当及时调用 release 函数释放不再使用的线程共享变量（以及共享变量名）。
 */
+
+//thread.table则是创建了一个线程间共享的table对象,对同一名称的共享表的修改对其他线程都会同时生效。 
 var thrdTable = thread.table("线程共享表名称",true/*清空*/ )
+/*
+上面也可以不指定共享表名称，由 aardio 自动分配名称。
+线程共享表也可以作为线程参数直接传入其他线程。
+*/
 
 var thrdHandle1 = thread.create(
 	function(){
@@ -34,11 +59,14 @@ thread.waitClose( thrdHandle1,thrdHandle2)
 
 console.log( thrdTable.pop(2) )
 console.log( thrdTable.a ); //线程共享表也可以象普通表一样访问
-console.log("--------------")
+console.log("--------------") 
 
 //遍历共享表
 for( k,v in thrdTable.each() ){
 	console.log(k,v) 
 }
+
+//不使用的线程共享表应及时释放。
+thrdTable.release();
 
 console.pause();

@@ -38,8 +38,11 @@ class semaphore {
 	};
 	close = function(){  
 		//The system closes the handle automatically when the process terminates. 
-		//The semaphore object is destroyed when its last handle has been closed.  
-		..raw.closehandle(this.handle)
+		//The semaphore object is destroyed when its last handle has been closed. 
+		if(this.handle){
+			..raw.closehandle(this.handle);
+			this.handle = null;
+		}  
 	}
 	@_metaProperty 
 }
