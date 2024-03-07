@@ -126,7 +126,13 @@ class golang{
 	addPath = function(path){
 		..win.path.add(path);
 	};
-	setProxy = function(proxy,git){
+	setGoProxy = function(proxy){
+		..string.setenv("GOPROXY",proxy);
+		..table.mixin(this.environment,{
+			GOPROXY=proxy;
+		});
+	};
+	setHttpProxy = function(proxy,git){
 		..table.mixin(this.environment,{
 			http_proxy=proxy;
 			https_proxy=proxy;
@@ -136,6 +142,10 @@ class golang{
 			import process.git;
 			process.git(this.workDir).setHttpProxy(proxy)
 		}
+	};
+	//@Deprecated
+	setProxy = function(...){
+		return this.setHttpProxy(...);
 	};
 	enableCgo = function(){
 		import process.gcc;
@@ -212,9 +222,10 @@ golang() = !golang.
 !golang.buildShared(.("源文件文件路径","输出文件路径") = 执行 go build 命令生成 DLL 动态库,\n参数@1必须指定要编译的代码文件,可选指定输出 DLL 文件路径,\n可增加多个参数\n\n编译 DLL 需要依赖 GCC,请先调用 process.gcc.check\n\n注意每个Go导出函数前面都要加上 //export 要导出的函数名 
 !golang.buildArchive(.("源文件文件路径","输出文件路径") = 执行 go build -buildmode=c-archive命令
 !golang.buildStrip(__) = 执行 go build 命令生成体积较小的 EXE 文件。\n参数@1指定要编译的代码文件，可增加多个参数。\n默认按第一个参数指定的 *.go 文件路径输出同名 *.exe 文件。\n默认添加编译参数 -ldflags "-s -w" 以移除调试信息
-!golang.install(__) = 执行 go install 命令,参数中指定要编译安装的代码
+!golang.install(__) = 执行 go install 命令,参数中指定要编译安装的代码。
 !golang.addPath(__) = 添加路径到 PATH 环境变量
-!golang.setProxy("代理服务器地址",是否设为GIT代理) = 设置代理服务器，\n参数 @1 示例: "socks5://127.0.0.1:10801"，\n设为 null 清除代理\n\n参数 @2 可省略，\n设为 true 则同时设置 GIT 的 HTTP / HTTPS 代理
+!golang.setGoProxy("__") = 设置 GOPROXY 环境变量指定的 Go 镜像服务器
+!golang.setHttpProxy("代理服务器地址",是否设为GIT代理) = 设置代理服务器，\n参数 @1 示例: "socks5://127.0.0.1:10801"，\n设为 null 清除代理\n\n参数 @2 可省略，\n设为 true 则同时设置 GIT 的 HTTP / HTTPS 代理
 !golang.mod("init __/*模块名*/")= 执行 go mod 命令，\n参数可以是一个字符串，以空格分隔多个参数。\n也可传入多个参数，参数用法请参考 process 启动参数说明
 !golang.get(__) = 执行 go get 命令,安装远程代码包，\n可在参数 @1 中使用多行字符串指定多个远程包,\n需要先安装 GIT ，如果未安装就自动安装\n\n建议先调用 setProxy 函数设置代理。\n并调用 process.git 的 setHttpProxy 函数设置代理
 !golang.env() = 执行 go env 命令，显示环境变量

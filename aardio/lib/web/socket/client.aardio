@@ -191,7 +191,7 @@ class client{
 			return;
 		}
 		
-		if( msg.fin ){
+		if( msg.fin/*final fragment*/ ){
 			if( msg.type ){
 				if( msg.type == 1 ) msg.data = ..raw.tostring(msg.data);
 				this._beginTranslateMessage(msg);
@@ -204,17 +204,9 @@ class client{
 					..table.push(this.cacheFragment.data,msg.data);
 					this.cacheFragment.length = this.cacheFragment.length + #(msg.data);
 					
-					if( this.cacheFragment.type == 1 ) this.cacheFragment.data = ..string.join(this.cacheFragment.data);
-					else {
-						var len = 0;
-						var buffer = ..raw.buffer(this.cacheFragment.length); 
-						var data = this.cacheFragment.data;
-						for(i=1;#data;1){
-							..raw.concat(buffer,data[i],len)
-							len = len + #data[i];
-						}
-						this.cacheFragment.data = buffer;
-					}
+					this.cacheFragment.data = ..raw.join(this.cacheFragment.data);
+					if( this.cacheFragment.type == 1 ) this.cacheFragment.data = ..raw.tostring(this.cacheFragment.data);
+ 
 					this._beginTranslateMessage(this.cacheFragment);
 				}
 			}

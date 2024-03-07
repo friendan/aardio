@@ -61,7 +61,6 @@
 		<folder name="winform" path="forms\winform" comment="forms\winform" local="false" embed="false" ignored="false">
 			<file name="blank.aardio" path="forms\winform\blank.aardio" comment="forms\winform\blank.aardio"/>
 			<file name="demo.aardio" path="forms\winform\demo.aardio" comment="forms\winform\demo.aardio"/>
-			<file name="paint.aardio" path="forms\winform\paint.aardio" comment="forms\winform\paint.aardio"/>
 			<file name="bat.aardio" path="forms\winform\bat.aardio" comment="forms\winform\bat.aardio"/>
 			<file name="python.aardio" path="forms\winform\python.aardio" comment="forms\winform\python.aardio"/>
 		</folder>

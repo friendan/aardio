@@ -1,0 +1,7 @@
+﻿//DateTime 日期时间
+import dotNet;
+dotNet.import("System.DateTime","mscorlib") 
+
+/**intellisense()
+System.DateTime = .Net System.DateTime 结构体\n!dotNetNameSpace.
+end intellisense**/

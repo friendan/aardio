@@ -8,16 +8,17 @@ if(!( _WIN10_LATER || (_WIN_VER_MAJOR==6 && _WIN_VER_MINOR >= 2) ) ){
 }
 
 import dotNet;
-dotNet.reference({
-	"Interop.UIAutomationClient":$"~\lib\System\Windows\Automation\3\.res\Interop.UIAutomationClient.dll";
-	"UIAComWrapper":$"~\lib\System\Windows\Automation\3\.res\UIAComWrapper.dll";
-	"aardio.NetCaret":$"~\lib\System\Windows\Automation\3\.res\aardio.NetCaret.dll";
-	
-});
 
-var Automation = dotNet.load("UIAComWrapper").import("System.Windows.Automation"); 
-var NetCaret = dotNet.load("aardio.NetCaret").import("aardio.NetCaret"); 
+//合并了 UIAComWrapper.dll,Interop.UIAutomationClient.dll,aardio.NetCaret.dll
+//避免与 FlaUI 使用的同名不兼容 Interop.UIAutomationClient.dll 出现冲突
+var asm = dotNet.loadFile($"~\lib\System\Windows\Automation\3\.res\UIAComWrapperEx.dll");
 
+asm.import("System.Windows.Automation"); 
+asm.import("aardio.NetCaret"); 
+
+var Automation = System.Windows.Automation
+var NetCaret = aardio.NetCaret
+ 
 System.Windows.Automation = Automation;
 System.Windows.Automation["3"] = Automation; 
 

@@ -206,5 +206,6 @@ java\jre\v6 = v6 运行时
 java\ffdec = ffdec Flash反编译
 java\yuiCompressor = yuiCompressor 压缩工具
 com\cube3 = cube3 魔方
-System = System 名字空间(.Net)
+System = System .NET名字空间
+FlaUI = FlaUI 自动化
 ScottPlot = ScottPlot 图表控件

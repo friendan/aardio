@@ -327,6 +327,7 @@ class tabs{
 		}  
 		
 		if( selIndex ? (selIndex<#this.strips) ) this.selIndex = selIndex;
+		else this.selIndex = this.selIndex;
 		return #this.strips;
 	}; 
 	setItemTexts = function(items,limit,selIndex){
@@ -403,9 +404,11 @@ class tabs{
 			}
 			
 			if(this.margin){
+				
 				var rect = this._form.getClientRect();
 				if(this.horizontal){
-					if(ctrl.right + this.margin > rect.right){
+					var margin = this.margin * (this._form.dpiScaleX:1)
+					if(ctrl.right + margin > rect.right){
 						var v = this.lastVisibleIndex();
 						if(v){
 							this.swap(idx,v);
@@ -419,7 +422,8 @@ class tabs{
 					}
 				}
 				else {
-					if(ctrl.bottom + this.margin > rect.bottom){
+					var margin = this.margin * (this._form.dpiScaleY:1)
+					if(ctrl.bottom + margin > rect.bottom){
 						if(v){
 							var v = this.lastVisibleIndex();
 							this.swap(idx,v);
@@ -456,10 +460,11 @@ class tabs{
 		var last = 1;
 		var keepSpace = this.keepSpace && (!this.itemRegion);
 		if(this.horizontal){
+			var margin = this.margin * (this._form.dpiScaleX:1)
 			while( 
 			    var strip;
 			    strip = this.strips[last];
-			    strip && ( ( strip.right + this.margin ) < rect.right ) 
+			    strip && ( ( strip.right + margin ) < rect.right ) 
 			) {
 				if( keepSpace ? (last>1) ){
 					..win.setPos(strip.hwnd,this.strips[last-1].right + this.itemMargin,strip.top,,,,0x1C/*_SWP_NOACTIVATE | _SWP_NOZORDER | _SWP_NOREDRAW*/)
@@ -471,10 +476,11 @@ class tabs{
 			}
 		}
 		else {
+			var margin = this.margin * (this._form.dpiScaleY:1)
 			while( 
 			    var strip;
 			    strip = this.strips[last];
-			    strip && ( ( strip.bottom + this.margin ) < rect.bottom ) 
+			    strip && ( ( strip.bottom + margin ) < rect.bottom ) 
 			) {
 				if( keepSpace ? (last>1) ){
 					..win.setPos(strip.hwnd,strip.left,this.strips[last-1].bottom + this.itemMargin,,,,,0x1C/*_SWP_NOACTIVATE | _SWP_NOZORDER | _SWP_NOREDRAW*/)
@@ -628,9 +634,9 @@ class tabs{
 			if( form ==  this.forms[i]  ) return i;
 		}
 	};
-	delete = function(i){
+	delete = function(idx){
 		var selIndex;
-		var strip = this.strips[i];
+		var strip = this.strips[idx];
 		if(strip) {
 			
 			for(i=#this.selHistory;1;-1){
@@ -639,16 +645,16 @@ class tabs{
 			}
 			
 			selIndex = this.selIndex;
-			if(selIndex==i) {
+			if(selIndex==idx) {
 				var preStrip = ..table.pop(this.selHistory,1)
-				var idx = preStrip ? this.indexOfStrip(preStrip);
+				var preIdx = preStrip ? this.indexOfStrip(preStrip);
 				
-				if( idx ){
-					selIndex = idx;
+				if( preIdx ){
+					selIndex = preIdx;
 				}
 				else { 
-					var lastVisibleIndex = this.lastVisibleIndex();
-					if(selIndex < lastVisibleIndex){
+					var lastVisibleIndex = this.lastVisibleIndex(); 
+					if( lastVisibleIndex && (selIndex < lastVisibleIndex) ){
 						selIndex = selIndex;
 					}
 					elseif(selIndex == lastVisibleIndex){
@@ -664,10 +670,10 @@ class tabs{
 			}
 			
 			var x,y = strip.getPos();
-			..table.remove(this.strips,i);
+			..table.remove(this.strips,idx);
 			strip.close();
 			
-			for(j=i;#this.strips;1){
+			for(j=idx;#this.strips;1){
 				var x2,y2 = this.strips[j].getPos();
 				this.strips[j].setPos(x,y);
 				x,y =  x2,y2;
@@ -676,9 +682,9 @@ class tabs{
 			
 		};
 		
-		var form = this.forms[i];
+		var form = this.forms[idx];
 		if(form) {
-			..table.remove(this.forms,i);
+			..table.remove(this.forms,idx);
 			form.close();
 		};
 		
@@ -971,8 +977,7 @@ class tabs{
 		if( x && y ) { this.setPos(x,y); } 
 		this.show( show ? 4/*_SW_SHOWNOACTIVATE*/: 0/*_SW_HIDE*/);  
 		
-		if(!show){ 
-			this.selIndex = null;
+		if(!show){
 			if(this.$popHandle)this.$popHandle.checked = false;
 			if(this.$popBuddy)this.$popBuddy.checked = false;
 			if(this.onPopup){ this.onPopup(false) }
@@ -1027,8 +1032,7 @@ namespace tabs{
 					 if( strips[i].checked ) return i;
 				} 
 			};
-			_set = function( i ){
-				var strip = owner.strips[i];
+			_set = function( i ){ 
 				
 				if(!i){
 					var strips = owner.strips; 
@@ -1041,8 +1045,10 @@ namespace tabs{
 					}
 					return;	
 				}
-				 
+				
+				var strip = owner.strips[i]; 
 				if(!strip) error("错误的选项卡索引",2);
+				
 				var lastsel = owner.selHistory[#owner.selHistory];
 				if( ( lastsel == strip ) && strip.checked ){
 					
@@ -1192,7 +1198,7 @@ win.ui.tabs() = !win_ui_tabs.
 end intellisense**/
 
 /**intellisense(!win_ui_tabs)
-margin = 可设置选项卡按钮尾部最少预留的边距,\n超出显示范围时自动折叠选项卡并在此显示下拉菜单，\n默认会根据下拉按钮的大小自动设置此值,\n如果设置为0则禁用自动折叠功能
+margin = 可设置选项卡按钮尾部最少预留的边距,\n超出显示范围时自动折叠选项卡并在此显示下拉菜单，\n默认会根据下拉按钮的大小自动设置此值,\n如果设置为0则禁用自动折叠功能。\n\n此属性应设置为系统 DPI 缩放前的原始值
 keepSpace = 是否保持选项之间的间距不变,\n该属性建议由aardio自动设置
 dropButtonMargin = 下拉菜单按钮边距
 itemMargin = 选项卡间隔距离,可以为负数

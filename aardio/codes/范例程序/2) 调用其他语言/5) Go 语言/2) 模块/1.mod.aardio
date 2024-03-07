@@ -4,8 +4,9 @@ import golang;
 //参数 @1 指定工作目录，默认为 "/"
 var go = golang("/go")
 
-//必须设置代理
-go.setProxy("http://127.0.0.1:1082",true); 
+//可选设置代理
+//go.setHttpProxy("http://127.0.0.1:1082"); 
+//go.setGoProxy("https://mirrors.aliyun.com/goproxy/,direct");
 
 //初始化项目
 go.mod("init golang/mdns")

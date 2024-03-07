@@ -71,7 +71,7 @@ wsrv.onMessage = function(hSocket,msg){
 }
 
 //启动服务端 
-if( wsrv.start(,8876) ){
+if( wsrv.start(,8879) ){
 	winform.txtMessage.print( wsrv.getUrl("jsonrpc"),"已启动 WebSocket/JSON-RPC 服务器");
 	winform.txtMessage.print( wsrv.httpServer.getUrl(),"已启动 HTTP服务器");
 }

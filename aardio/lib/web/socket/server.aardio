@@ -192,7 +192,7 @@ class server{
 			return;
 		}
 		
-		if( msg.fin ){
+		if( msg.fin/*final fragment*/ ){
 			if( msg.type ){
 				if( msg.type == 1 && #msg.data ) msg.data = ..raw.tostring(msg.data);
 				this._beginTranslateMessage(client.hSocket,msg);
@@ -208,20 +208,9 @@ class server{
 					..table.push(cacheFragment.data,msg.data);
 					cacheFragment.length = cacheFragment.length + #(msg.data);
 					
-					if( cacheFragment.type == 1 ) cacheFragment.data = ..string.join(cacheFragment.data);
-					else {
-						var len = 0;
-						var buffer = ..raw.buffer(cacheFragment.length); 
-						var data = cacheFragment.data;
-						for(i=1;#data;1){
-							if(#data[i]){
-								..raw.concat(buffer,data[i],len)
-								len = len + #data[i];	
-							}
-						}
-						cacheFragment.data = buffer;
-					}
-					
+					cacheFragment.data = ..raw.join(cacheFragment.data);
+					if( cacheFragment.type == 1 ) cacheFragment.data = ..raw.tostring(cacheFragment.data);
+
 					this._beginTranslateMessage(client.hSocket,cacheFragment);
 				}
 			}

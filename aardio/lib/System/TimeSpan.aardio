@@ -1,0 +1,7 @@
+﻿//TimeSpan 时间间隔
+import dotNet;
+dotNet.import("System.TimeSpan","mscorlib") 
+
+/**intellisense()
+System.TimeSpan = .Net System.TimeSpan 结构体\n!dotNetNameSpace.
+end intellisense**/

@@ -305,21 +305,32 @@ class appDomain{
 	reference = function(path,data){
 		if(!this.delegateAssemblyResolve){
 			this[["(referencePaths)"]] = {};
+			this[["(referenceAssemblies)"]] = {};
+			
 			var match = ..string.match;
 			this.delegateAssemblyResolve = this.delegate.combine(
 				this.appDomainReal,"AssemblyResolve",function(sender,args){
 					var name = match(args.Name,"^[^,]+");
-					
 					var refs = this[["(referencePaths)"]];
 					var path = refs[name];
 					if(!path) return;
 					
-					if(type(path)=="function") {
-						path = invoke(path,refs,name,args.Name,args);
-						if(!type.isString(path)) return path;
+					var asm = this[["(referenceAssemblies)"]][name];
+					if(asm){
+						return asm;
 					}
 					
-					if(path) return this.loadFile(path); 
+					if(type(path)=="function") {
+						path = invoke(path,refs,name,args.Name,args);
+						if(!type.isString(path)) {
+							asm = path; 
+							path = null;
+						}
+					} 
+					
+					if(path) asm = this.loadFile(path);
+					this[["(referenceAssemblies)"]][name] = asm;
+					return asm;
 				} 
 			)
 		} 

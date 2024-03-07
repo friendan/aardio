@@ -20,7 +20,7 @@ mouse.wait()
 
 //支持 Win8 以及之后的系统，Win7 退化为 System.Windows.Automation
 var rect = System.Windows.Automation.GetCaret();
-if(rect) mouse.moveTo(rect.left,rect.top,true);
+if(rect) mouse.moveTo(rect);
 
 /*
 获取光标建议用 winex.caret.get() ，

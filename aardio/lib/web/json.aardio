@@ -483,7 +483,7 @@ web.json.stringifyArray(.(表,是否格式化,是否使用UNICODE编码,是否�
 web.json.parse( = 使用宽松的 JSON 语法解析并返回表对象,\n支持自动检测输入字符串的 Unicode BOM,\n除完全支持 JSON 标准之外，并可兼容 jsonp，json5，支持 aardio-json 扩展标准。
 web.json.parse(.(输入文本,是否解析转义符,输入代码页) = 参数@2默认为 true,\n代码页默认为 65001 即 UTF-8 编码,\n输入文本如使用了 UTF-16 LE/BE 编码则转换为 UTF-8,\n返回对象的元表 _defined 字段记录了所有已定义的键,\n参数传入空值或空字符串返回空值\n解析误到错误的 JSON 语法时会抛出异常
 web.json.tryParse(.(输入文本,是否解析转义符,输入代码页) = 解析 JSON 并返回 aardio 对象\n作用与参数用法与parse函数一样,\n请参考该函数说明\n\n唯一的区别是：\nparse函数遇到JSON语法错误时抛出异常\n而tryParse遇到错误时返回 null,错误信息
-web.json.strip(__) = 将一个对象转换为JSON,再转换回来,\n用于将对象转换为纯粹的JS兼容的对象
+web.json.strip(__) = 将一个对象转换为 JSON ,再转换为 aardio 对象,\n用于将对象转换为 JSON/JS 兼容的对象。\n\n如果提前导入  dotNet.json ，\n则可以用此函数将 .NET 对象转为纯 aardio 对象
 end intellisense**/
 
 //感谢 namwonsta 贡献最初的源码

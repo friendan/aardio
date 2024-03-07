@@ -14,7 +14,7 @@ arrList.Add("字符串");
 var json = dotNet.json.SerializeObject(arrList);
 console.log(json);
 
-//导入 dotNet.json 以后 web.json 会自动支持 .Net对象
+//导入 dotNet.json 以后 web.json 会自动支持 .NET对象
 console.log(web.json.stringify(arrList));
 
 //这个函数内部也是调用 web.json.stringify
@@ -23,5 +23,31 @@ console.dumpJson(arrList);
 //JSON 解析为 .NET 对象
 var obj = dotNet.json.DeserializeObject(json);
 console.log(obj);
+
+/*------------------------------------------------------
+ *以下为调用 Newtonsoft.Json 实现 JSON Path 查询演示
+------------------------------------------------------*/
+
+//dotNet.json 已自动导入 Newtonsoft.Json 名字空间
+JObject = Newtonsoft.Json.Linq.JObject;
+ 
+//参考: https://www.newtonsoft.com/json/help/html/QueryJsonSelectToken.htm
+var jObject = JObject.Parse("{
+  'Space Invaders': ['Taito'],
+  'Doom ]|[': 'id',
+  ""Yar's Revenge"": 'Atari',
+  'Government ""Intelligence""': 'Make-Believe'
+}");
+
+//JSON Path 查询
+var spaceInvaders = jObject.SelectToken("['Space Invaders']");
+
+//.NET 对象转换为字符串
+var str = tostring(spaceInvaders); 
+console.log(str); 
+
+//.NET 对象转换为纯 aardio 对象
+var obj = web.json.strip(spaceInvaders);
+console.dump(obj);
 
 console.pause();

@@ -5,7 +5,7 @@ var winform = win.form(text="WebSocket/JSON-RPC 2.0客户端";right=770;bottom=4
 winform.add(
 btnConnect={cls="button";text="连接WebSocket/JSON-RPC 2.0服务端";left=456;top=414;right=737;bottom=459;db=1;dr=1;z=3};
 txtMessage={cls="edit";left=29;top=22;right=741;bottom=409;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;z=1};
-txtUrl={cls="edit";text="ws://localhost:8876/jsonrpc";left=32;top=418;right=450;bottom=457;db=1;dl=1;dr=1;edge=1;z=2}
+txtUrl={cls="edit";text="ws://localhost:8879/jsonrpc";left=32;top=418;right=450;bottom=457;db=1;dl=1;dr=1;edge=1;z=2}
 )
 /*}}*/
 

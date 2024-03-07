@@ -13,6 +13,8 @@ menuItem3={cls="plus";text="测试菜单三";left=323;top=225;right=593;bottom=2
 
 import win.ui.tabs;
 var menu = win.ui.tabs(winform.menuItem,winform.menuItem2,winform.menuItem3)
+
+//配置菜单外观样式
 menu.skin( { 
 	foreground={
 		default = 0xFFFFFFFF;
@@ -41,14 +43,16 @@ winform.dropdown.skin({
 import web.rest.jsonLiteClient;
 var http = web.rest.jsonLiteClient();
 var suggestion = http.api("http://suggestion.baidu.com/su?cb=&wd={0}") //{0}会替换为请求关键字并以UTF8编码
+
+//输入文本触发下面的事件
 winform.dropdown.editBox.onChange = function(){ 
     if(owner.text === menu.selText){ return;  } 
     
     var result = suggestion[ owner.text ].get();
-    if(result){
+    if(result[["s"]]){ 
     	menu.setItemTexts(result.s,10) //更新下拉列表	
     	menu.popup(true,winform.dropdown)	
-    }
+    } 
 }
 
 // 用户点选菜单项触发此事件,strip参数是点选的控件

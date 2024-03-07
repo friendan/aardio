@@ -73,6 +73,38 @@ namespace raw{
 	long = lambda(v,ref) number("long",ref?{long value=v}:{value = v});
 	ulong = lambda(v,ref) number("LONG",ref?{LONG value=v}:{value = v}); 
 	
+	join = function(arr,sep,b,e){
+		var ls = #sep;
+		var len = -ls;
+		
+		if(b===null) b = 1;
+		else {
+			if(b<0)b=#arr+1+b;
+			if(b < 1) b = 1; 
+		}
+		
+		if(e===nul) e = #arr; 
+		else{
+			if(e<0)e=#arr+1+e;
+			if(e>#arr) e = #arr; 
+		}
+		
+		for(i=b;e){
+			len = len + #arr[i] + ls; 
+		} 
+	 	if(e<b||!len) return;
+	 	
+		var buf = buffer(len);
+		len = 0;
+		
+		for(i=b;e){
+			len = concat(buf,arr[i],len);
+			if(ls)len = concat(buf,sep,len);
+		} 
+ 		
+ 		return buf;
+	}
+	
 	malloc = buffer;//@Deprecated
 }
 
@@ -102,4 +134,5 @@ ulong(__) = 参数@1可传入数值或math.size64 对象,\n返回适用于 LONG 
 
 execute( = 运行外部程序，成功返回 true。\n process.execute 函数提供类似的功能，区别可参考函数源码
 execute(.(file,param,operation,showCmd,workDir,hwnd) = 运行外部程序，成功返回 true。\n@file 指定要运行的程序路径，其他所有参数可省略，\n@param 字符串参数，可选指定启动参数。\n@operation 可选用一个字符串指定执行动词，省略则使用默认动词或 "open"。\n@showCmd 可选用 _SW_ 前缀常量指定显示选项，默认为 _SW_SHOW。\n@workDir 参数可选指定工作目录。\n@hwnd 可选指定所有窗口句柄，默认取当前线程活动窗口
+join(.(buffer数组,分隔字符串,起始索引,结束索引) = 拼接字符串或 buffer 数组，返回 buffer。\n如果拼接后长度为空，此函数返回 null。\n\n参数@1指定的数组可包含字符串或buffer，\n包含 buffer 的数组只能用 raw.join 拼接，不可使用 string.join 拼接\n参数 @2 可选指定一个间隔字符串。\n起始索引与结束索引为可选参数，可传入负数表示自数组尾部倒计数
 end intellisense**/
