@@ -1,12 +1,11 @@
 ﻿//tooltip 屏幕提示
 import win.ui.tooltip;
 import process;
-
 namespace winex;
 
 class tooltip{
 	ctor(form,close,balloon){
-		this = ..win.ui.tooltip.tracking(form,close,balloon);
+		this = ..win.ui.tooltip.tracking(form,close,balloon); 
 	};
 	onHyperlinkClick = function(href,title){
 		..process.openUrl(href);  
@@ -15,6 +14,23 @@ class tooltip{
 		[0x201/*_WM_LBUTTONDOWN*/]=function(hwnd,message,wParam,lParam){
 			if(!this.ptInClientRect(lParam)){
 				this.popup(false); 
+			} 
+		} 
+		[0x18/*_WM_SHOWWINDOW*/]=function(hwnd,message,wParam,lParam){
+			var shown = !!wParam;
+			if(!shown){
+				if(this.attachThreadId){
+					this.capture = false;
+					::User32.AttachThreadInput(..thread.getId(),tFroeground,false);
+					this.attachThreadId = null;
+				} 
+			}
+		} 
+		[2/*_WM_DESTROY*/]=function(){
+			if(this.attachThreadId){
+				this.capture = false;
+				::User32.AttachThreadInput(..thread.getId(),tFroeground,false);
+				this.attachThreadId = null;
 			} 
 		} 
 	}; 
@@ -39,7 +55,15 @@ class tooltip{
     	this.trackPopup(text,x,y);
     	
     	if(text){
+    	    var hFore = ::User32.GetForegroundWindow();
+			var tFroe = hFore ? ..win.getThreadProcessId(hFore);
+			if( tFroe ? (tFroe != ..thread.getId()) ){
+				::User32.AttachThreadInput(..thread.getId(),tFroe,true);
+				this.attachThreadId =  tFroe;
+			}
+ 
     		this.capture = true;
+    		
     		if(timeout){
     			..win.setTimeout(
     				function(){

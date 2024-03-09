@@ -399,10 +399,10 @@ onHyperlinkClick(href,title) = @.onHyperlinkClick = function(href,title){
 	__/*点击了超链接,\n@href 为链接地址,@title 参数为超链接包含文本,\n提示文本中嵌入超链接格式<a href="https://www.aardio.com">超链接</a>\n一个提示里只能写一个超链接,不要写多个*/	
 }
 onPopupHide() = @.onPopupHide = function(){
-	__/*提示已隐藏,此事件不可用*/	
+	__/*隐藏提示触发此通知。\n\n父窗口不是 win.form 对象则此事件不可用，\n替代方法是在此控件的 wndproc 回调中处理 _WM_SHOWWINDOW 消息*/	
 }
 onPopupShow() = @.onPopupShow = function(){
-	__/*提示已弹出并显示,此事件不可用*/	
+	__/*显示提示触发此通知。\n\n父窗口不是 win.form 对象则此事件不可用，\n替代方法是在此控件的 wndproc 回调中处理 _WM_SHOWWINDOW 消息*/	
 }
 popup(false) = 隐藏提示\n不触发onPopupHide
 onDestroy = @.onDestroy = function(){\n	__/*窗口销毁前触发*/\n}

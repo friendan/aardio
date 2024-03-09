@@ -7,7 +7,7 @@ namespace win.ts;
 ::Wtsapi32 := ..raw.loadDll("Wtsapi32.dll");
 
 class session{
-	ctor( sessionId=-1,serverHandle ){
+	ctor( sessionId=-1/*_LOGONID_CURRENT*/,serverHandle ){
 		this.sessionId = sessionId;
 		this.serverHandle = serverHandle;
 	};
@@ -123,9 +123,9 @@ end intellisense**/
 enum = @.enum(\n	function(sessionId,stationName,connectState){\n		console.log(sessionId,stationName,connectState,win.ts.session(sessionId).userName())__/*sessionId 会话ID\nstationName 会话名称，本机控制会话名为"console",\nconnectState 连接状态\n回调函数返回任何非 null 值可终止枚举,\n并且回调函数的返回值将传回为枚举函数的返回值*/\n	}\n)
 isRemote() =  当前是否通过远程桌面登录
 currentId() = 获取当前会话 ID
-activeConsoleId() = 获取活动桌面会话 ID
+activeConsoleId() = 获取本地活动桌面（本机控制台）会话 ID
 connect( = 连接并切换会话,此函数需要管理权限,\n这个函数可用于源登录会话重新连接到其他会话拥有的激活的控制桌面,\n例如将当前远程桌面会话重新连接到本机控制桌面,\n以避免远程桌面关闭而退出会话\n\n此函数需要调用 tscon.exe,但家庭版缺少 tscon.exe,\n建议改用不依赖 tscon.exe 的 win.ts.session().connect() 函数
-connect(.(logonId,targetName,logonPassword) = 所有参数都是可选参数,\n@logonId 指定源会话ID，@logonId 默认为当前会话,\n@logonId指定源会话的登录用户必须拥有连接目标会话的权限,\n连接到 @targetName 指定目标会话名的桌面,@targetName 默认为本机控制会话（"console"）,\n@logonPassword 指定 @logonId 参数指定会话的密码,\n返回值1为标准输出,返回值2为错误输出,返回值3为退出代码\n\n如果切换远程桌面与本地桌面会话,\n@targetId 指定的控制会话桌面将被@logonId 指定的会话接管,\n@targetId指定的会话断开,\n\n如果用于切换本地登录用户,\n@targetId指定的控制会话桌面断开,@logonId 指定的会话将被激活
+connect(.(logonId,targetName,logonPassword) = 所有参数都是可选参数,\n@logonId 指定源会话ID，@logonId 默认为当前会话,\n@logonId指定源会话的登录用户必须拥有连接目标会话的权限,\n连接到 @targetName 指定目标会话名的桌面,@targetName 默认为本机控制台（本地桌面）会话,\n@logonPassword 指定 @logonId 参数指定会话的密码,\n返回值1为标准输出,返回值2为错误输出,返回值3为退出代码\n\n如果切换远程桌面与本地桌面会话,\n@targetId 指定的控制会话桌面将被@logonId 指定的会话接管,\n@targetId指定的会话断开,\n\n如果用于切换本地登录用户,\n@targetId指定的控制会话桌面断开,@logonId 指定的会话将被激活
 end intellisense**/
 
 /**intellisense(!wtsSession)
@@ -139,7 +139,7 @@ clientName() = 客户端名
 clientDirectory() = 客户端目录
 connectState() = 连接状态
 connect( = 连接并切换会话,此函数需要管理权限,\n这个函数可用于源登录会话重新连接到其他会话拥有的激活的控制桌面,\n例如将当前远程桌面会话重新连接到本机控制桌面,\n以避免远程桌面关闭而退出会话
-connect(.(targetId,logonPassword,wait) = 当前源会话登录用户必须拥有连接到目标会话的权限,\n连接到 @targetId 指定目标会话ID,@targetId默认为本机控制会话（即"console"）,\n可选参数  @logonPassword 指定当前源会话的登录密码,注意不是目标会话的密码,\n可选参数 @wait 指定是否等待操作完成,\n函数执行成功返回true,失败返回false\n\n如果切换远程桌面与本地桌面会话,\n@targetId指定的控制会话桌面将被源会话接管,@targetId指定的会话断开,\n\n如果用于切换本地登录用户,\n@targetId指定的控制会话桌面断开,源会话将被激活
+connect(.(targetId,logonPassword,wait) = 当前源会话登录用户必须拥有连接到目标会话的权限,\n连接到 @targetId 指定目标会话ID,@targetId默认为本机控制台（本地桌面）会话,\n可选参数  @logonPassword 指定当前源会话的登录密码,注意不是目标会话的密码,\n可选参数 @wait 指定是否等待操作完成,\n函数执行成功返回true,失败返回false\n\n如果切换远程桌面与本地桌面会话,\n@targetId指定的控制会话桌面将被源会话接管,@targetId指定的会话断开,\n\n如果用于切换本地登录用户,\n@targetId指定的控制会话桌面断开,源会话将被激活
 disconnect(wait) = 断开会话连接，但不关闭会话, \n后续可重新连接到该会话
 end intellisense**/
 

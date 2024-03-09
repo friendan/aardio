@@ -19,11 +19,11 @@ lbOutput={cls="static";text="输出文件名：";left=36;top=146;right=124;botto
 static={cls="static";text="目标 .Net 版本：";left=16;top=184;right=124;bottom=203;align="right";dl=1;dt=1;transparent=1;z=3};
 static2={cls="static";text="输入程序集：";left=36;top=61;right=124;bottom=80;align="right";dl=1;dt=1;transparent=1;z=8};
 static3={cls="static";text="工作目录：";left=31;top=19;right=124;bottom=38;align="right";dl=1;dt=1;transparent=1;z=9};
-static4={cls="static";text="ILMerge 合并的程序集可能用些奇怪问题，内存加载也会失败。
-改用 dotNet.reference() 函数可以注册内存程序集到『虚拟程序集引用表』，
-注册以后就可以像正常程序集一样加载（ 支持 aardio 或 C# 正常加载程序集的代码）。
-这样就算某个组件有多个依赖 DLL，也都可以内存加载了。";left=133;top=431;right=735;bottom=503;transparent=1;z=15}
-)
+static4={cls="static";text="如果需要在运行时加载单个原始程序集，则合并后的新程序集可能会出错。
+这时可以改用 dotNet.reference() 函数注册多个内存程序集到『虚拟程序集引用表』，
+aardio 或 .NET 程序集本身都支持这种『虚拟程序集』（除非存在访问本地程序集文件的代码）。
+但如果程序中用到相互不兼容但名字相同的程序集，用 ILMerge 合并程序集也许能解决问题。";left=133;top=431;right=735;bottom=503;notify=1;transparent=1;z=15}
+)  
 /*}}*/
 
 import fsys;
@@ -115,6 +115,7 @@ var style = {
 		}
 	}
 }
+
 winform.btnOpenOutputPath.skin(style.transButton);
 winform.btnOpenInputFiles.skin(style.transButton);
 winform.btnIFileOpenDir.skin(style.transButton);

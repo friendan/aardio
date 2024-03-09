@@ -1,9 +1,14 @@
 ﻿//UIAutomationClient
 //此功能调用 .NET 组件，相关范例：调用其他语言 > dotNet
 //探测工具 loadcodex("~\tools\6) 探测器\2.inspect.aardio")
-import win.dlg.message;
+
+//运行程序
 import process; 
-process.executeWaitInput("notepad.exe",io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS"));
+process.execute("notepad.exe",io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS"));
+
+//等待窗口激活
+import winex;
+winex.waitActive(,,"Notepad");
  
 //导入 .NET 类  
 //https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6
@@ -14,7 +19,6 @@ import System.Windows.Automation;
 Automation = System.Windows.Automation;
 PropertyCondition = Automation.PropertyCondition;
 AutomationElement = Automation.AutomationElement;
-
 TreeScope = Automation.TreeScope; 
 
 //合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
@@ -23,13 +27,13 @@ var condNotepad = Automation.AndCondition({
 	 PropertyCondition(AutomationElement.ClassNameProperty,"Notepad"),
 	 //指定记事本窗口的窗口类型
 	 PropertyCondition(AutomationElement.ControlTypeProperty,Automation.ControlType.Window)
-})
+})  
 
 //查找记事本窗口
 var notepad = AutomationElement.RootElement.FindFirst(TreeScope.Descendants, condNotepad) 
 if(!notepad){
 	error("未发现目标窗口");
-}
+} 
 
 //合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
 var condEdit = Automation.OrCondition({
@@ -51,6 +55,7 @@ try {
 	textPattern = editBox.GetCurrentPattern(Automation.TextPattern.Pattern);
 }
 
+import win.dlg.message;
 if(textPattern){
 	var text = textPattern.DocumentRange.GetText(50);
 	win.dlg.message().info(text + " ……");

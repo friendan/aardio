@@ -1,4 +1,5 @@
-﻿import crypt.bin;
+﻿//client 通用接口
+import crypt.bin;
 import web.rest.jsonClient;
 import web.rest.jsonLiteClient;
 
@@ -7,9 +8,7 @@ namespace baidu;
 class client {
     
     ctor(http){
-        this = http : ..web.rest.jsonLiteClient()
-        this.apiKey = apiKey;
-        this.secretKey = secretKey;
+        this = http : ..web.rest.jsonLiteClient(); 
 
         this.oauthApi = this.api("https://aip.baidubce.com/oauth/2.0/","GET");
         this.beforeStringifyRequestParameters = function(params,codepage){
@@ -40,20 +39,22 @@ class client {
         	
         	this.extraUrlParameters = {
             	access_token = result.access_token;
-        	}   
+        	}  
 
         	return result;
         }
         else {
-            if(..string.startWith(apiKey,"http://",true)){
+            if(apiKey && ..string.match(apiKey,"^https?\:") ){
                 apiKey = this._http.get(apiKey);
+                
+                if(apiKey){
+                	this.extraUrlParameters = {
+            			access_token = apiKey;
+        			} 
+        			
+        			return true;	
+                }
             };
-            
-        	this.extraUrlParameters = {
-            	access_token = apiKey;
-        	} 
-        	
-        	return true;
         }
     }
 }

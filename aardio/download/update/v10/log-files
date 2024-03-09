@@ -147,12 +147,12 @@
 -1306540492|954|583|codes\范例程序\2) 调用其他语言\2) dotNet\3) 进阶\1.template-compiler.aardio
 -180881670|761|491|codes\范例程序\2) 调用其他语言\2) dotNet\3) 进阶\2.raw-index.aardio
 -403323808|155|125|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\1.ilSpy.aardio
-1760282813|2333|1055|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\3.UIA.aardio
+-2089130144|2486|1147|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\3.UIA.aardio
 -1974584199|1650|978|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\4.PowerShell.aardio
 126961211|1541|872|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\5.OCR.aardio
 2280625|1101|615|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\A.IIS.aardio
 1661322856|1501|832|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\B.Console.aardio
-74516556|5541|1892|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Y.ILMerge.aardio
+210456908|5641|1945|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Y.ILMerge.aardio
 1731717069|1096|687|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Y.openHardwareMonitor.aardio
 614101258|2613|1482|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Z.SeleniumBasic.aardio
 -1152004743|2153|1165|codes\范例程序\2) 调用其他语言\3) PowerShell\1、dotNet.ps.aardio
@@ -548,7 +548,7 @@
 663014892|739|500|codes\范例程序\7) Web 界面\3) web.form\模拟自动化\html.aardio
 -1079126435|2327|1156|codes\范例程序\7) Web 界面\3) web.form\浏览器\frameBrowser.aardio
 1725699643|1855|844|codes\范例程序\7) Web 界面\3) web.form\脚本应用\array.aardio
--2060335271|2431|1377|codes\范例程序\7) Web 界面\4) Chrome\app.aardio
+1437264989|2605|1456|codes\范例程序\7) Web 界面\4) Chrome\app.aardio
 -1317339236|2462|1371|codes\范例程序\7) Web 界面\4) Chrome\driver.aardio
 -894008657|1983|910|codes\范例程序\7) Web 界面\4) Chrome\extensions.aardio
 -422639195|3692|1407|codes\范例程序\7) Web 界面\4) Chrome\remote.aardio
@@ -958,6 +958,7 @@
 0|0|0|codes\范例程序\I) 自动化\4) 输入文本\
 0|0|0|codes\范例程序\I) 自动化\5) 鼠标按键\
 0|0|0|codes\范例程序\I) 自动化\6) UIA\
+0|0|0|codes\范例程序\I) 自动化\7) FlaUI\
 1203766722|692|456|codes\范例程序\I) 自动化\1) 找图找色找字\findColor.aardio
 2056161844|1880|1126|codes\范例程序\I) 自动化\1) 找图找色找字\findImage.aardio
 216440671|1920|1057|codes\范例程序\I) 自动化\1) 找图找色找字\ocrLite.aardio
@@ -985,9 +986,10 @@
 1929486992|713|414|codes\范例程序\I) 自动化\5) 鼠标按键\模拟按键演示.aardio
 1187164345|1675|1028|codes\范例程序\I) 自动化\5) 鼠标按键\监视按键.aardio
 -1543632640|2334|1121|codes\范例程序\I) 自动化\5) 鼠标按键\监视鼠标.aardio
--991773118|2405|1109|codes\范例程序\I) 自动化\6) UIA\1.UIA.aardio
+-2089130144|2486|1147|codes\范例程序\I) 自动化\6) UIA\1.UIA.aardio
 -777614027|912|537|codes\范例程序\I) 自动化\6) UIA\2.UIA3.aardio
 -1020433168|1407|649|codes\范例程序\I) 自动化\6) UIA\3.UIA_Property .aardio
+1394881616|1420|842|codes\范例程序\I) 自动化\7) FlaUI\0.FlaUI.aardio
 -1588736889|1916|1004|codes\范例程序\J) 进程\1) start.aardio
 0|0|0|codes\范例程序\J) 进程\1) 管道\
 1882433942|1671|939|codes\范例程序\J) 进程\2) mem.aardio
@@ -1005,14 +1007,14 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--928520667|15|34|config\SYS.CFG
+-1158692810|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
 -2007981171|5272|2017|config\intellisense\unimportant.txt
 946221732|9375|1953|config\intellisense\web.layout.behavior.txt
 35049853|11002|2229|config\intellisense\web.sciter.behavior.txt
--1484053627|41780|12095|config\intellisense\winform.txt
+890331275|41984|12138|config\intellisense\winform.txt
 -337909174|6519|2765|config\lang\lib.txt
 945965821|3519|764|config\themes\dark.xml
 1313524286|3543|751|config\themes\light.xml
@@ -1662,14 +1664,14 @@
 162527712|1570|612|lib\bencoding\encoder.aardio
 151425416|723|419|lib\bencoding\magnet.aardio
 -1895578078|54|49|lib\bencoding\_.aardio
--530817469|25408|7650|lib\chrome\app.aardio
+1715611117|25587|7720|lib\chrome\app.aardio
 -1038189428|4292|1856|lib\chrome\dev.aardio
 366394541|32612|8020|lib\chrome\driver.aardio
 1141455353|1023|497|lib\chrome\edge.aardio
 1415170124|1707|730|lib\chrome\edge.history.aardio
 -1783794303|916|505|lib\chrome\extensions.aardio
 -1034206558|2169|875|lib\chrome\history.aardio
-1921200302|4011|1570|lib\chrome\path.aardio
+770297288|4361|1739|lib\chrome\path.aardio
 -2100870177|2334|1001|lib\chrome\remote.aardio
 -2025937096|692|469|lib\chrome\time.aardio
 1360641294|13770|4273|lib\color\table.aardio
@@ -1741,7 +1743,7 @@
 849437073|4148|1745|lib\debug\log.aardio
 -1093630105|6165|2197|lib\debug\_.aardio
 0|0|0|lib\dotNet\.res\
--608002484|48784|10955|lib\dotNet\appDomain.aardio
+-1024403543|49083|11018|lib\dotNet\appDomain.aardio
 36508025|8420|2722|lib\dotNet\clr.aardio
 0|0|0|lib\dotNet\interface\
 1751319587|2586|1136|lib\dotNet\nuget.aardio
@@ -2296,14 +2298,14 @@
 0|0|0|lib\win\util\
 1279062881|5840|1748|lib\win\version.aardio
 2136095655|2784|1251|lib\win\versionEx.aardio
--431827732|46493|13359|lib\win\_.aardio
+-1064608437|46597|13405|lib\win\_.aardio
 -319346981|3941|1585|lib\win\clip\file.aardio
 1994686187|946|599|lib\win\clip\gif.aardio
 420491718|5281|1588|lib\win\clip\html.aardio
 1792802479|1306|660|lib\win\clip\png.aardio
 523635146|1685|735|lib\win\clip\viewer.aardio
 1688610666|3274|1320|lib\win\clip\_.aardio
-568428761|7219|2562|lib\win\dlg\chineseNumber.aardio
+218801291|7251|2577|lib\win\dlg\chineseNumber.aardio
 1592236764|853|510|lib\win\dlg\color.aardio
 449492153|1558|762|lib\win\dlg\ctrlColor.aardio
 1669943620|5106|1645|lib\win\dlg\findReplace.aardio
@@ -2329,7 +2331,7 @@
 677322235|3455|1233|lib\win\rt\bcp47.aardio
 1478192657|3958|1593|lib\win\rt\hString.aardio
 -1287274659|2007|872|lib\win\ts\changeNotification.aardio
-735595714|7374|2709|lib\win\ts\_.aardio
+1767431143|7430|2728|lib\win\ts\_.aardio
 -1905724311|2829|1233|lib\win\ui\accelerator.aardio
 -41202246|1487|701|lib\win\ui\atom.aardio
 1624280294|6056|1882|lib\win\ui\background.aardio
@@ -2355,9 +2357,9 @@
 1300932070|8201|2904|lib\win\ui\statusbar.aardio
 -404377663|45493|11369|lib\win\ui\tabs.aardio
 580040|15782|4897|lib\win\ui\toolbar.aardio
-1189361838|25736|7508|lib\win\ui\tooltip.aardio
+1148677887|25993|7561|lib\win\ui\tooltip.aardio
 -285994484|11485|3024|lib\win\ui\tracker.aardio
--1202569139|62283|14227|lib\win\ui\_.aardio
+-771247502|62827|14350|lib\win\ui\_.aardio
 -1081419275|7610|2979|lib\win\ui\ctrl\atlax.aardio
 919455211|5355|1847|lib\win\ui\ctrl\bk.aardio
 21699528|10322|3389|lib\win\ui\ctrl\bkplus.aardio
@@ -2390,7 +2392,7 @@
 -1570678297|43281|11373|lib\win\ui\ctrl\treeview.aardio
 769631330|625|417|lib\win\ui\ctrl\vlistview.aardio
 896368042|6385|2133|lib\win\ui\ctrl\_.aardio
-1758060964|35898|8332|lib\win\ui\ctrl\metaProperty\_.aardio
+582362240|36020|8345|lib\win\ui\ctrl\metaProperty\_.aardio
 0|0|0|lib\win\ui\ctrl\pick\.res\
 2029836246|36391|8305|lib\win\ui\ctrl\pick\_.aardio
 1888989482|4286|973|lib\win\ui\ctrl\pick\.res\color.cur
@@ -2411,8 +2413,8 @@
 -933056030|2933|1160|lib\winex\key.aardio
 -754573083|4606|1097|lib\winex\mouse.aardio
 55854856|2935|1227|lib\winex\selection.aardio
--1888660127|3589|1256|lib\winex\tooltip.aardio
-1207069173|30470|7535|lib\winex\_.aardio
+-620845858|4355|1462|lib\winex\tooltip.aardio
+1488571610|30876|7617|lib\winex\_.aardio
 -121658060|5282|1408|lib\winex\accObject\element.aardio
 498372781|9508|3204|lib\winex\accObject\_.aardio
 -1985386129|1318|693|lib\winex\ctrl\edit.aardio

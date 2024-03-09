@@ -811,17 +811,24 @@ namespace metaProperty {
 				}
 			};
 			enableDpiScaling = function(scaleX,scaleY,suggestedRect){
+				if( owner.isForm ) {
+					if(..win.isIconic(owner.hwnd) ) return;
+					
+					if(scaleX === "init"){
+						if( owner["(dpiScalingInitialized)"] ) return;
+						else{
+							owner["(dpiScalingInitialized)"] = true;
+							
+							if(..win.ui.disableDpiScaling || owner.disableDpiScaling) return; 
+						}
+					}
+				}
+					
 				if( scaleX === false ){
 					owner.enableDpiScaling(1,1);
 					owner.onDpiChanged = null;
 					owner.disableDpiScaling = true;	
 					return;
-				}
-				
-				if(scaleX === "init"){
-					if( !owner["(dpiScalingInitialized)"] ){
-						if(..win.ui.disableDpiScaling || owner.disableDpiScaling) return; 
-					}
 				}
 				
 				owner.disableDpiScaling = null;
@@ -843,7 +850,6 @@ namespace metaProperty {
 				owner[["dpiScaleY"]] = scaleY;
 				
 				if( owner.isForm ){
-					owner["(dpiScalingInitialized)"] = true;
 					
 					if(!owner.onDpiChanged){
 						owner.onDpiChanged = function(dpiX,dpiY,suggestedRect){

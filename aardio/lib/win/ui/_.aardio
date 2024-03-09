@@ -501,12 +501,30 @@ namespace win.form{
 	   }
  	   [0x5/*_WM_SIZE*/] = function(this,hwnd, message, wParam, lParam){
 			if( hwnd == this.hwnd){
-				
-				if( wParam == 1/*_SIZE_MINIMIZED*/ ) {
+				var dwpFlags = 0x1C;/*_SWP_NOACTIVATE |  _SWP_NOZORDER | _SWP_NOREDRAW | _SWP_FRAMECHANGED*/;
+		
+				if(!wParam){ /*_SIZE_RESTORED*/
+					var st = this["[prevSizeStatus]"]; 
+					if(st){
+						this["[prevSizeStatus]"] = null;
+						if( this.onRestored ) this.onRestored(wParam);
+						 
+						if(!this["(dpiScalingInitialized)"] && (st==="minimized")){
+							this.enableDpiScaling("init");
+						}
+					}
+				}
+				elseif( wParam == 1/*_SIZE_MINIMIZED*/ ) {
+					this["[prevSizeStatus]"] = "minimized";
+					
 					if( this.onMinimized ) this.onMinimized();
 					return;
+				} 
+				elseif( wParam == 2/*_SIZE_MAXIMIZED*/ ) {
+					this["[prevSizeStatus]"] = "maximized"
+					dwpFlags = 0x3C;//dwpFlags | _SWP_FRAMECHANGED 
 				}
-				var dwpFlags = ( wParam != 2/*_SIZE_MAXIMIZED*/ )? 0x1C : 0x3C/*_SWP_NOACTIVATE |  _SWP_NOZORDER | _SWP_NOREDRAW | _SWP_FRAMECHANGED*/;
+				
 				var defDlg = this._defClientRect;
 				if(!defDlg) return;
 				 
@@ -1139,10 +1157,13 @@ namespace win.form{
 				owner.invalidate(rect);
 				return owner.update();
 			};
-			show = function(flag) {    
-				if( !owner["(dpiScalingInitialized)"] )owner.enableDpiScaling("init");
-				
+			show = function(flag) {
 				..win.show(owner[["hwnd"]],flag);
+				
+				if( (flag!=6/*_SW_MINIMIZE*/) && (!owner["(dpiScalingInitialized)"] )){
+					owner.enableDpiScaling("init");
+				}
+
 				if( owner[["(__continueModal)"]]  ){
 					hwndOwner = ..win.getOwner( owner.hwnd) 
 					if(hwndOwner && (hwndOwner!=owner[["hwnd"]]) ){

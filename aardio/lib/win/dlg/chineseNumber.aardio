@@ -163,6 +163,7 @@ class chineseNumber{
     	this.onDestroy = function(){
     		if(this.oldFocus){
     		    ..winex.attach(this.oldFocus,true);
+    		    ..thread.delay(100);
     			..win.setFocus(this.oldFocus);
     			..winex.attach(this.oldFocus,false);
     		}

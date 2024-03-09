@@ -1,5 +1,8 @@
 //app 应用 
 import chrome.app;
+
+//调用系统 Edge（Chromium）、Chrome、Supermium 等 Chromium 内核浏览器写软件界面
+//XP、Win7 系统可使用 Supermium  以支持新 Chromium 内核。
 var theApp  = chrome.app();
 
 //指定允许chrome中使用JS直接调用的函数

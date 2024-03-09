@@ -417,28 +417,28 @@ fromClientPoint = function(hwnd,x,y,un=0x0001/*_CWP_SKIPINVISIBLE*/){
 
 fromClientPointReal = User32.api("RealChildWindowFromPoint","int(addr hwnd,int x,int y )")
 
-attachThread = function(tid,att = true){
-	var cid = ..thread.getId(); 
-	if(tid==cid)
+attachThread = function(idAttach,att = true){
+	var idCur = ..thread.getId(); 
+	if(idAttach==idCur)
 		return att;
 	
 	var hfore = ..win.getForeground();	
-	var ret = AttachThreadInput(tid, cid, att?1:0);
+	var ret = AttachThreadInput(idAttach, idCur, att?1:0);
 	..win.setForeground(hfore);
 	
 	return ret;
 }
 
-attach = function(hwnd,att = true){
-	if(!hwnd) error("无效的窗口句柄",2)
+attach = function(hwndAttach,att = true){
+	if(!hwndAttach) error("无效的窗口句柄",2)
 	if(type(att)===type.function){
-		attach(hwnd,true);
+		attach(hwndAttach,true);
 		var ret = att();
-		attach(hwnd,false);	
+		attach(hwndAttach,false);	
 		return ret;
 	}
-	var tid,pid = ..win.getThreadProcessId(hwnd); // 当前窗口的线程ID  
-	return attachThread(tid,att);
+	var idAttach = ..win.getThreadProcessId(hwndAttach); // 当前窗口的线程ID  
+	return attachThread(idAttach,att);
 }
 
 getUiInfo = function(hwnd){
@@ -692,11 +692,11 @@ fromPointReal(.(x坐标,y坐标)=从指定的屏幕坐标查找窗口\n获取叶
 fromClientPoint(.(窗口句柄,x坐标,y坐标) = 从指定的窗口坐标查找子窗口\n仅子窗口,非叶级窗口
 fromClientPoint(.(窗口句柄,x坐标,y坐标,_CWP_ALL) = 从指定的窗口坐标查找子窗口\n_CWP_ALL指定包含隐藏、禁用控件
 fromClientPointReal(.(窗口句柄,x坐标,y坐标) = 从指定的窗口坐标查找子窗口\n仅子窗口,非叶级窗口,穿透groupbox。 
-attach( = 绑定到外部线程窗口并共享输入状态\n注意该函数会重置键盘状态
-attach(.(hwnd,enabled) = 绑定到外部线程窗口并共享输入状态,\n@hwnd 指定外部线程的目标窗口柄\n参数@enabled 省略或为true绑定目标线程,为false取消绑定,\n返回值为是否成功
-attach(.(hwnd,proc) = 执行参数@proc指定的回调函数,\n@hwnd 指定外部线程的目标窗口柄,\n执行回调函数时绑定目标窗口线程并共享输入状态,\n执行完取消绑定，并返回该函数的返回值
-attachThread(__/*线程ID*/) = 附加到外部线程并共享输入状态\n返回值为是否成功附加\n注意该函数会重置键盘状态
-attachThread(__/*线程ID*/,false) = 解除附加\n返回值为是否成功解除
+attach( = 绑定外部窗口所属线程到当前线程并共享输入处理机制。\n注意此函数会重置键盘状态\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
+attach(.(hwndAttach,enabled) = 绑定外部窗口所属线程到当前线程并共享输入处理机制。\n@hwndAttach 指定外部线程的目标窗口句柄\n参数 @enabled 省略或为 true 绑定线程,为 false 取消绑定。\n返回值为是否成功
+attach(.(hwndAttach,proc) = 执行参数@proc指定的回调函数,\n@hwndAttach 指定外部线程窗口句柄。\n执行回调函数时绑定外部窗口所属线程到当前线程并共享输入处理机制。\n执行完取消绑定，并返回该函数的返回值
+attachThread(__/*外部线程ID*/) = 绑定外部线程到当前线程并共享输入处理机制。\n返回值为是否成功附加。\n注意此函数会重置键盘状态。\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
+attachThread(__/*外部线程ID*/,false) = 解除附加\n返回值为是否成功解除
 getFocus(__/*可选指定父窗口句柄*/)=获取输指定参数@1指定句柄的窗口输入焦点所在的控件句柄，\n不指定参数@1获取前台窗口、输入焦点所在的控件句柄。\n\n如果参数@2为 true 则取不到输入焦点时返回 null，\n否则返回叶级窗口或自身
 getCaret(__/*可选指定窗口句柄*/)=获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体，该结构体增加 hwnd 属性存放光标所在窗口句柄。\n失败返回 null\n\n不是所有窗口都支持，\nwinex.caret.get 函数会尝试以更多的方法获取输入光标
 getCaret()=!rect.

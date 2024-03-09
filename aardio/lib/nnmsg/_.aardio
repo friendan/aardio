@@ -1,5 +1,6 @@
 ﻿namespace nnmsg;
 
+version = "1.2.1";
 var dll =  ..raw.loadDll( $"~\lib\nnmsg\.res\nanomsg.dll","nanomsg.dll","cdecl" );
 
 class socket{
@@ -290,6 +291,7 @@ end intellisense**/
 
 /**intellisense()
 nnmsg = nanomsg消息通信组件 v1.1.2\n该组件主要用于服务端开发,不支持vista以下的操作系统
+nnmsg.version = nanomsg.dll 版本号，字符串
 nnmsg.socket(.(protocol,domain) = 创建套接字\nprotocol必须指定,\ndomain为可选参数,默认为_AF_SP
 nnmsg.socket() = !nn_socket.
 nnmsg.socket.pull() = 创建pull类型套接字 - 即用于拉消息的客户端,\npush/pull套接字结合使用可实现消息队列的扇出模式，\n这是一个1对多的模式，服务端不能有多个，但客户端可以多个，\n服务端或客户端不管谁先启动，都会等待对方连接，中间绝不会丢弃消息,\n服务端只发不收，客户端只收不发，一个消息不会重复发给多个客户端\n一般用于任务分派、负载均衡\n下面官网示意图是指传输方式为单向管道（Pipeline）\n并不是指此模型只1对1的,请注意区分，\n![官网示意图](http://nanomsg.org/gettingstarted/pipeline.png) \n!nn_socket.

@@ -159,7 +159,14 @@ class appDomain{
 											owner[[methodName]] = asm[["import"]](typeName + "." + methodName); 
 										}
 										else {
-											owner[[methodName]] = asm[["import"]](typeName + "+" + methodName); 	
+											memberType = unwrapObject( this.utility.GetTypeByName(asm,typeName + "+" + methodName) ); 
+											if(memberType){//嵌套类
+												owner[[methodName]] = asm[["import"]](typeName + "+" + methodName); 
+												..com.Release(memberType);
+											} 	
+											else {//函数
+												return invoke(owner@._get,owner,methodName,true);
+											}
 										}
 									}
 									
@@ -208,15 +215,15 @@ class appDomain{
 						if(obj) return obj;
 						
 						if(!..string.startWith(typeName,asm.Name +".") && !(..string.indexOf(typeName,".")) ){
-							var obj,err = asm.__createInstanceTest( asm.Name +"."+ typeName,...);
+							obj,err = asm.__createInstanceTest( asm.Name +"."+ typeName,...);
 							if(obj){
 								typeName = asm.Name +"."+ typeName;
 							}
 							
-							return obj,err;
+							if(obj) return obj;
 						}
 							
-						return null,err;
+						error(err,2);
 					}
 				} 
 				
