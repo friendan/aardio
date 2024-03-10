@@ -7,9 +7,9 @@ import process.curl;
 
 /*
 curl 文档：
+https://quickref.me/zh-CN/docs/curl.html
 https://curl.se/docs/manual.html
 https://curl.se/docs/manpage.html
-https://quickref.me/curl
 */
 
 //下载网页，成功返回网页，失败返回 null, 错误代码，错误代码参考: https://everything.curl.dev/usingcurl/returns

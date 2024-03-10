@@ -34,6 +34,7 @@
 0|0|0|codes\范例程序\1) aardio 语言\5) 调试技术\
 0|0|0|codes\范例程序\1) aardio 语言\6) 语言扩展\
 0|0|0|codes\范例程序\1) aardio 语言\7) 静态类型\
+0|0|0|codes\范例程序\1) aardio 语言\8) 必读\
 -168886531|6309|2811|codes\范例程序\1) aardio 语言\1) 多线程\00.start.aardio
 1963161583|3961|1879|codes\范例程序\1) aardio 语言\1) 多线程\01.handle.aardio
 -1169290155|1899|913|codes\范例程序\1) aardio 语言\1) 多线程\02.thread.command.aardio
@@ -84,6 +85,7 @@
 -258594865|4484|1967|codes\范例程序\1) aardio 语言\7) 静态类型\3.raw.argsPointer.aardio
 -1157240639|2052|956|codes\范例程序\1) aardio 语言\7) 静态类型\4.raw.struct.aardio
 693687276|1468|752|codes\范例程序\1) aardio 语言\7) 静态类型\5.raw.apiHook.aardio
+594750398|1625|912|codes\范例程序\1) aardio 语言\8) 必读\1.gc.aardio
 0|0|0|codes\范例程序\2) 调用其他语言\1) C 语言\
 0|0|0|codes\范例程序\2) 调用其他语言\2) dotNet\
 0|0|0|codes\范例程序\2) 调用其他语言\3) PowerShell\
@@ -703,7 +705,7 @@
 -1498325099|3615|1446|codes\范例程序\9) 网络应用\5) 下载文件\mtDown.aardio
 822327982|502|336|codes\范例程序\9) 网络应用\5) 下载文件\stream.aardio
 -566640718|591|362|codes\范例程序\9) 网络应用\6) smtp\1.com.smtp.aardio
--646945388|2557|1150|codes\范例程序\9) 网络应用\7) curl\1.curl.aardio
+-773971415|2573|1154|codes\范例程序\9) 网络应用\7) curl\1.curl.aardio
 1741736825|1240|674|codes\范例程序\9) 网络应用\7) curl\2.process.aardio
 813964183|892|534|codes\范例程序\9) 网络应用\7) curl\3.libcurl.aardio
 -1723744124|1648|906|codes\范例程序\9) 网络应用\8) adb\1.adb.aardio
@@ -1007,7 +1009,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--1158692810|15|34|config\SYS.CFG
+613111189|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
@@ -1727,7 +1729,7 @@
 -1061381636|2749|1358|lib\console\int.aardio
 1998841358|4554|1346|lib\console\progress.aardio
 -1742110785|8626|2826|lib\console\wine.aardio
-1673778173|30934|9630|lib\console\_.aardio
+253720330|31400|9712|lib\console\_.aardio
 1216052277|1046|568|lib\coroutine\_.aardio
 -1874841417|3705|1622|lib\crypt\aes.aardio
 251731818|3473|1063|lib\crypt\bin.aardio

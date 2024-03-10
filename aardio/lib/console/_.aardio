@@ -317,14 +317,26 @@ openForWrite = function(utf8){
 }
 
 import thread.event;
-var eventLoading = thread.event(,true);
-var eventLoadingRunning = thread.event(,true,true);
-var loadingMessage = thread.var();
-var loadingDotColor = thread.var();
-var loadingDotChanged = thread.var();
-var loadingDots = thread.var(,{"▏";"▎";"▍";"▌";"▋";"▊";"▆";"▅";"▄";"▃";"▁";"▃";"▄";"▅";"▆";"▇";"▉";"▊";"▋";"▌";"▍";"▎"});
+var eventLoadingStop,eventLoadingStopped;
+var loadingMessage,loadingDotColor,loadingDotChanged,loadingDots;
+var initLoading = function(){
+	if(eventLoadingStop) return;
+	
+	eventLoadingStop = thread.event("(console.std.eventLoadingStop)",true);
+	eventLoadingStopped = thread.event("(console.std.eventLoadingStopped)",true,true);
+	loadingMessage = thread.var("(console.std.loadingMessage)");
+	loadingDotColor = thread.var("(console.std.loadingDotColor)");
+	loadingDotChanged = thread.var("(console.std.loadingDotChanged)");
+	
+	loadingDots = thread.var("(console.std.loadingDots)");
+	if(!loadingDots.get()){
+		loadingDots.set({"▏";"▎";"▍";"▌";"▋";"▊";"▆";"▅";"▄";"▃";"▁";"▃";"▄";"▅";"▆";"▇";"▉";"▊";"▋";"▌";"▍";"▎"})
+	}
+}
 
 setLoadingDots = function(dots,endDots,interval){
+	initLoading();
+	
 	if( endDots !== null ) dots.endDots = true;
 	if( interval !== null ) dots.interval = true;
 	loadingDots.set(dots);
@@ -332,25 +344,26 @@ setLoadingDots = function(dots,endDots,interval){
 }
 
 showLoading = function(msg,dotColor){
+	initLoading();
 	open();
 	
 	if(!msg) {
-		eventLoading.set()
-		eventLoadingRunning.waitOne(); 
+		eventLoadingStop.set()
+		eventLoadingStopped.waitOne(); 
 		return;
 	}
 	
 	loadingDotColor.set(type(dotColor)!=type.number ? 0xF : dotColor);
 	loadingMessage.set(type(msg)==type.string ? msg : "");
-	if(!eventLoadingRunning.waitOne(100)){
+	if(!eventLoadingStopped.waitOne(100)){
 		return;
 	}
 	
 	open();
-	eventLoading.reset();
-	eventLoadingRunning.reset();
+	eventLoadingStop.reset();
+	eventLoadingStopped.reset();
 	thread.invoke( 
-		function(utf8,eventLoading,eventLoadingRunning,loadingMessage,loadingDots,loadingDotChanged,loadingDotColor){  
+		function(utf8,eventLoadingStop,eventLoadingStopped,loadingMessage,loadingDots,loadingDotChanged,loadingDotColor){  
 			..io.utf8 = utf8;
 			
 			import console;
@@ -362,7 +375,7 @@ showLoading = function(msg,dotColor){
 			var dots = loadingDots.get();
 			var interval = loadingDots.interval : 120;
 			var endDots = dots.endDots;
-			while(!eventLoading.wait(interval)){
+			while(!eventLoadingStop.wait(interval)){
 				for(i=1;#dots;1){
 					console.writeText('\r')
 					if(endDots){
@@ -375,7 +388,7 @@ showLoading = function(msg,dotColor){
 					}
 					
 					console.eraseToEndOfLine();
-					if( eventLoading.wait(interval) ) break;
+					if( eventLoadingStop.wait(interval) ) break;
 					if( loadingDotChanged.get() ){
 						dots = loadingDots.get();
 						interval = loadingDots.interval : 120;
@@ -388,8 +401,8 @@ showLoading = function(msg,dotColor){
 			
 			console.eraseLine();
 			console.setCursorVisible(cursorVisible);
-			eventLoadingRunning.set();
-		},..io.utf8,eventLoading,eventLoadingRunning,loadingMessage,loadingDots,loadingDotChanged,loadingDotColor
+			eventLoadingStopped.set();
+		},..io.utf8,eventLoadingStop,eventLoadingStopped,loadingMessage,loadingDots,loadingDotChanged,loadingDotColor
 	)
 }
 
