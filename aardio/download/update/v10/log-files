@@ -85,7 +85,7 @@
 -258594865|4484|1967|codes\范例程序\1) aardio 语言\7) 静态类型\3.raw.argsPointer.aardio
 -1157240639|2052|956|codes\范例程序\1) aardio 语言\7) 静态类型\4.raw.struct.aardio
 693687276|1468|752|codes\范例程序\1) aardio 语言\7) 静态类型\5.raw.apiHook.aardio
-594750398|1625|912|codes\范例程序\1) aardio 语言\8) 必读\1.gc.aardio
+-126735163|1812|996|codes\范例程序\1) aardio 语言\8) 必读\1.gc.aardio
 0|0|0|codes\范例程序\2) 调用其他语言\1) C 语言\
 0|0|0|codes\范例程序\2) 调用其他语言\2) dotNet\
 0|0|0|codes\范例程序\2) 调用其他语言\3) PowerShell\
@@ -1009,11 +1009,11 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-613111189|15|34|config\SYS.CFG
+1401709827|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
--2007981171|5272|2017|config\intellisense\unimportant.txt
+-1079170837|5336|2040|config\intellisense\unimportant.txt
 946221732|9375|1953|config\intellisense\web.layout.behavior.txt
 35049853|11002|2229|config\intellisense\web.sciter.behavior.txt
 890331275|41984|12138|config\intellisense\winform.txt
@@ -1942,7 +1942,7 @@
 700473417|6654|2021|lib\mouse\highlighter.aardio
 -1340717538|2640|1344|lib\mouse\hook.aardio
 795608215|3261|1455|lib\mouse\screenArea.aardio
--1072868253|9687|2701|lib\mouse\_.aardio
+-118308493|10104|2774|lib\mouse\_.aardio
 1936469385|21659|4798|lib\nodeJs\_.aardio
 -1637503006|24175|7256|lib\preload\com.aardio
 1722310679|6344|2790|lib\preload\io.aardio

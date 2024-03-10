@@ -29,13 +29,18 @@ class http{
 	//构造函数
 	ctor( url ){
 		
-		//这里分配资源
+		//分配资源
+		this.ptr = ..raw.realloc(100);
 		
+		//绑定析构函数：参数 @2 可指定成员函数名字，也可以指定函数对象
 		..table.gc(this,"close");
 	};
 	//析构函数
 	close = function(){
 		
 		//这里释放资源
+		if(this.ptr){
+			this.ptr = ..raw.realloc(0,this.ptr);
+		} 
 	};
 }

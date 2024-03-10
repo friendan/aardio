@@ -106,3 +106,5 @@ buffer = 原生字节数组,\n由 raw.buffer 函数分配的可读写、固定�
 Deprecated = @Deprecated__/*注释已废弃并将在后续版本移除功能*/
 lvDispInfo = !LV_DISPINFO.
 nmListView = !NMLISTVIEW.
+flaUiNode = !stdFlaUIElement.
+flaUiParent = !stdFlaUIElement.
