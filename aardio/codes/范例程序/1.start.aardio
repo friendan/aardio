@@ -1,31 +1,41 @@
-//入门
+//快速入门
 import win.ui;
 var winform = win.form(text="第一个 aardio 程序")
 winform.add(
 	edit={cls="richedit";multiline=1;vscroll=1;edge=1;link=1;z=1;marginLeft=6;marginTop=6;marginRight=6;marginBottom=6}
 )
 
-winform.edit.print("aardio 读音🔊 ['ɑ:diəʊ] 。 
-请注意 aardio 的正确写法是：在任何时候都不要单独大写首字母。");
-
 /*
-aardio 语法速览
-https://mp.weixin.qq.com/s/wk2oe5USuBvTs3QWdjyYhw
-
-aardio 特殊符号用法大全
-https://bbs.aardio.com/forum.php?mod=viewthread&tid=11257&from=portal
-
-aardio 语法与使用手册
-chm://the%20language/basic%20syntax.html
-
-快捷键与小技巧
-https://bbs.aardio.com/forum.php?mod=viewthread&tid=13220&from=portal
+语法速览: https://mp.weixin.qq.com/s/wk2oe5USuBvTs3QWdjyYhw
+特殊符号大全: https://bbs.aardio.com/forum.php?mod=viewthread&tid=11257&from=portal
+语法手册: chm://the%20language/basic%20syntax.html
+快捷键与小技巧: https://bbs.aardio.com/forum.php?mod=viewthread&tid=13220&from=portal
+模式匹配入门: https://bbs.aardio.com/forum.php?mod=viewthread&tid=172
+魔法 web.rest: https://mp.weixin.qq.com/s/4mYRDnO49alwpQoBD_cILg
+制作精美界面: https://bbs.aardio.com/forum.php?mod=viewthread&tid=11486&from=portal
 */
+
+//导入 web.json 库，文本框就能以 JSON 格式输出对象
 import web.json;
+
+//文本框内输出任意对象
 winform.edit.print({
+	number = 123;
 	string = "字符串";
 	comment = /*注释也可以赋值为字符串*/;
-	number = 123;
+	comment = /*
+一些普通名词作为专有名词使用时，通常需要大写首字母以示区分。
+例如 Python, python 分别表示不同的意思。
+
+但有些名词本就是专有名词，并不需要大写首字母。
+例如 eBay，iPhone，adidas ，aria2 …… 以及 aardio 。
+
+logo 里使用小写首字母品牌或产品名称就更多了。
+小写首字母体现友好、接地气、非传统、简洁、务实与创新的精神。 
+
+aardio 在编码中也保持小写首字母的驼峰式命名风格。
+仅仅在调用其他语言编写的接口或组件时，会保持原来的大写首字母以示区分。
+*/;
 	object = {
 		name = "object";
 		value = { 
@@ -41,12 +51,13 @@ winform.edit.print({
 	boolean = true || false;
 });
 
+//继续打印，不会覆盖之前的内容。
 winform.edit.print("《 aardio 快速入门教程 》
 https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2209804829378543621
 ");
 
-//定义一个回调函数，在文本框中点击链接时自动触发此函数。
-winform.edit.onHyperlink =function(message,href){
+//定义一个回调函数，在richedit 控件中点击链接时自动触发此函数。
+winform.edit.onHyperlink = function(message,href){
 
 	//在链接上弹起鼠标左键
 	if( message = 0x202/*_WM_LBUTTONUP*/ ) {

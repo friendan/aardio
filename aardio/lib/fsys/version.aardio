@@ -54,12 +54,15 @@ namespace version{
 		_tonumber = function(){
 			return ..raw.convert(owner,{INT n = value }).n;
 		};
-		_tostring = function(){
-			var f = "%d.%d.%d.%02d";
-			if( !owner.revision ){
-				f = "%d.%d.%02d";
-				if( !owner.build ) f = "%d.%d"; 
+		_tostring = function(f){
+			if(!f){
+				f = "%d.%d.%d.%d";
+				if( !owner.revision ){
+					f = "%d.%d.%02d";
+					if( !owner.build ) f = "%d.%d"; 
+				}	
 			}
+			
 			var s = ..string.format(f,owner.major,owner.minor,owner.build,owner.revision);
 			if( #owner.releaseType ) s = s + " " + owner.releaseType;
 			return s;
@@ -128,6 +131,14 @@ namespace version{
 		}  
 	} 
 } 
+
+/**details(转换字符串规则)
+fsys.version 对象可作为参数传入 tostring 函数转换为字符串格式。
+tostring 函数的第 2 个参数可选指定格式化串（ 语法与 string.format 函数相同）。
+如果不指定格式化串，默认格式化串为 "%d.%d.%d.%d"，
+如果 revision 为 0 ，默认格式化串为 "%d.%d.%d"。
+如果同时 build 也为 0，默认格式化串为 "%d.%d"。
+end details**/
  
 /**intellisense() 
 fsys.version("0->0->0->0__") = 创建版本号,支持大于小于相等比较,可转换为字符串或数值,\n参数可以为空,或者数值,字符串,表对象等\n如果参数为字符串,忽略无关文本,版本号后的文本提取为releaseType\n文本中提取的版本号为2~4组以圆点、或其他标点、空格分隔的数值

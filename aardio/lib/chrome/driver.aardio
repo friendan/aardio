@@ -440,82 +440,11 @@ namespace driver{
 		}
 	}
 	
-	chrome2driverVersion ={
-		["32"]="2.6";
-		["33"]="2.8";
-		["34"]="2.9";
-		["36"]="2.10";
-		["40"]="2.12";
-		["41"]="2.13";
-		["42"]="2.14";
-		["43"]="2.15";
-		["45"]="2.16";
-		["46"]="2.18";
-		["47"]="2.19";
-		["48"]="2.20";
-		["50"]="2.21";
-		["52"]="2.22";
-		["53"]="2.23";
-		["54"]="2.24";
-		["55"]="2.26";
-		["56"]="2.27";
-		["57"]="2.28";
-		["58"]="2.29";
-		["60"]="2.31";
-		["61"]="2.32";
-		["62"]="2.33";
-		["63"]="2.34";
-		["64"]="2.35";
-		["65"]="2.36";
-		["66"]="2.37";
-		["68"]="2.41";
-		["70"]="2.42";
-		["71"]="2.45";
-		["73"]="2.46";
-		["74"]="74.0.3729.6";
-		["75"]="75.0.3770.8";
-		["76"]="76.0.3809.12";
-		["77"]="77.0.3865.40";
-		["78"]="78.0.3904.70";
-		["79"]="79.0.3945.16";
-		["80"]="80.0.3987.106";
-		["81"]="81.0.4044.138";
-		["83"]="83.0.4103.14";
-		["84"]="84.0.4147.30";
-		["85"]="85.0.4183.38";
-		["86"]="86.0.4240.22";
-		["87"]="87.0.4280.20";
-		["88"]="88.0.4324.27";
-		["89"]="89.0.4389.23";
-		["90"]="90.0.4430.24";
-		["90"]="90.0.4430.24";
-		["91"]="91.0.4472.19"; 
-		["92"]="92.0.4515.43"; 
-		["93"]="93.0.4577.15"; 
-	} 
-	
-	updateVersionData = function(){
-		var http = ..web.rest.jsonClient()
-		var chromeDriver = http.api("https://registry.npmmirror.com/-/binary/chromedriver/");
-	
-		var paths = chromeDriver.get();
-		if(#paths){
-			for i,p in ..table.eachIndex(paths){
-				var path = p.name ? ..string.trimright(p.name,"/");
-				if(!path) continue;
-				
-				var major = tonumber(..string.match(path,"^\d+"));
-				if( !major || major < 93) continue;
-				
-				chrome2driverVersion[path] = path;	  
-			}	
-		}
-		
-		http.close();
-		return chrome2driverVersion;
-	}
+	var predatesChromeDriverVersion = {
+["100.0.4896.20"]="100.0.4896.20";["100.0.4896.60"]="100.0.4896.60";["101.0.4951.15"]="101.0.4951.15";["101.0.4951.41"]="101.0.4951.41";["102.0.5005.27"]="102.0.5005.27";["102.0.5005.61"]="102.0.5005.61";["103.0.5060.134"]="103.0.5060.134";["103.0.5060.24"]="103.0.5060.24";["103.0.5060.53"]="103.0.5060.53";["104.0.5112.20"]="104.0.5112.20";["104.0.5112.29"]="104.0.5112.29";["104.0.5112.79"]="104.0.5112.79";["105.0.5195.19"]="105.0.5195.19";["105.0.5195.52"]="105.0.5195.52";["106.0.5249.21"]="106.0.5249.21";["106.0.5249.61"]="106.0.5249.61";["107.0.5304.18"]="107.0.5304.18";["107.0.5304.62"]="107.0.5304.62";["108.0.5359.22"]="108.0.5359.22";["108.0.5359.71"]="108.0.5359.71";["109.0.5414.25"]="109.0.5414.25";["109.0.5414.74"]="109.0.5414.74";["110.0.5481.30"]="110.0.5481.30";["110.0.5481.77"]="110.0.5481.77";["111.0.5563.19"]="111.0.5563.19";["111.0.5563.41"]="111.0.5563.41";["111.0.5563.64"]="111.0.5563.64";["112.0.5615.28"]="112.0.5615.28";["112.0.5615.49"]="112.0.5615.49";["113.0.5672.24"]="113.0.5672.24";["113.0.5672.63"]="113.0.5672.63";["114.0.5735.16"]="114.0.5735.16";["114.0.5735.90"]="114.0.5735.90";["32"]="2.6";["33"]="2.8";["34"]="2.9";["36"]="2.10";["40"]="2.12";["41"]="2.13";["42"]="2.14";["43"]="2.15";["45"]="2.16";["46"]="2.18";["47"]="2.19";["48"]="2.20";["50"]="2.21";["52"]="2.22";["53"]="2.23";["54"]="2.24";["55"]="2.26";["56"]="2.27";["57"]="2.28";["58"]="2.29";["60"]="2.31";["61"]="2.32";["62"]="2.33";["63"]="2.34";["64"]="2.35";["65"]="2.36";["66"]="2.37";["68"]="2.41";["70"]="2.42";["71"]="2.45";["73"]="2.46";["74"]="74.0.3729.6";["75"]="75.0.3770.8";["76"]="76.0.3809.12";["77"]="77.0.3865.40";["78"]="78.0.3904.70";["79"]="79.0.3945.16";["80"]="80.0.3987.106";["81"]="81.0.4044.138";["83"]="83.0.4103.14";["84"]="84.0.4147.30";["85"]="85.0.4183.38";["86"]="86.0.4240.22";["87"]="87.0.4280.20";["88"]="88.0.4324.27";["89"]="89.0.4389.23";["90"]="90.0.4430.24";["91"]="91.0.4472.19";["92"]="92.0.4515.43";["93"]="93.0.4577.15";["93.0.4577.15"]="93.0.4577.15";["93.0.4577.63"]="93.0.4577.63";["94.0.46
+06.113"]="94.0.4606.113";["94.0.4606.41"]="94.0.4606.41";["94.0.4606.61"]="94.0.4606.61";["95.0.4638.10"]="95.0.4638.10";["95.0.4638.17"]="95.0.4638.17";["95.0.4638.54"]="95.0.4638.54";["95.0.4638.69"]="95.0.4638.69";["96.0.4664.18"]="96.0.4664.18";["96.0.4664.35"]="96.0.4664.35";["96.0.4664.45"]="96.0.4664.45";["97.0.4692.20"]="97.0.4692.20";["97.0.4692.36"]="97.0.4692.36";["97.0.4692.71"]="97.0.4692.71";["98.0.4758.102"]="98.0.4758.102";["98.0.4758.48"]="98.0.4758.48";["98.0.4758.80"]="98.0.4758.80";["99.0.4844.17"]="99.0.4844.17";["99.0.4844.35"]="99.0.4844.35";["99.0.4844.51"]="99.0.4844.51"}
 
-	findVersionByMap = function(ver,versionMap,desc){ 
+	matchPredatesChromeDriverVersion = function(ver,versionMap,desc){ 
 		ver = ..fsys.version(ver);
 		if(!ver) return;
 		
@@ -533,17 +462,6 @@ namespace driver{
 		}
 	}
 	
-
-	match = function(vc){
-		var vd = findVersionByMap(vc,chrome2driverVersion,false);
-		if( vd ) return vd; 
-		
-		updateVersionData();
-		
-		var vd = findVersionByMap(vc,chrome2driverVersion,false);
-		if( vd ) return vd; 
-	}
-	
 	requirePath = function(vc,installTitle,productName){
 		
 		if(productName === "Microsoft Edge"){
@@ -555,33 +473,67 @@ namespace driver{
 				if( ..io.exist(path) ) return path;
 				
 				..zlib.httpFile.download("https://msedgedriver.azureedge.net/"+tostring(ver)+"/edgedriver_win32.zip"
-						,installTitle : "正在下载本程序必须的组件(chromeDriver/aardio)",..io.joinpath(dir,"\.download"),dir,"edgedriver_win32.zip"); 
+						,installTitle : "正在下载本程序必须的组件：Edge Driver",..io.joinpath(dir,"\.download"),dir,"edgedriver_win32.zip"); 
 		 		
 				return ..io.exist( path);
 			}
 		}
 		
-		var vd = match(vc);
-		if(!vd) return null,"匹配ChromeDriver版本失败"
+		var driverUrl; 
+		var driverVersion;
+		var driverDir;
+		var driverPath;
 		
-		var dir = ..io.appData("aardio/chromeDriver/" + vd); 
-		var path = ..io.joinpath(dir,"chromedriver.exe") ;
+		var chromeVersionInfo = ..fsys.version(vc);
+		if(!chromeVersionInfo) return;
+		
+		if(chromeVersionInfo.major>=115){
+			driverVersion =  tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
+		
+			var platform = (_WIN_64?"win64":"win32");  
+			driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
+				+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";; 
+				
+			if( 200 != ..inet.http.status(driverUrl) ){
+				chromeVersionInfo.revision = 0;
+				driverVersion = tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
+				
+				driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
+				+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";; 
+			}
+			
+			driverDir = ..io.appData("aardio/chromeDriver/" + driverVersion); 
+			driverPath = ..io.joinpath(driverDir,"/chromedriver-" + platform,"chromedriver.exe") ;  
+			
+		}
+		else {
+			driverVersion = matchPredatesChromeDriverVersion(chromeVersionInfo, predatesChromeDriverVersion,false);
+			if(!driverVersion) return null,"匹配 ChromeDriver 版本失败";
+			
+			driverDir = ..io.appData("aardio/chromeDriver/" + driverVersion); 
+			driverPath = ..io.joinpath(driverDir,"chromedriver.exe") ; 
+			
+			driverUrl = "https://cdn.npmmirror.com/binaries/chromedriver/"+driverVersion+"/chromedriver_win32.zip"
+			..zlib.httpFile.referer = "https://registry.npmmirror.com/binary.html?path=chromedriver/" + driverVersion;
+		}
 
-		if( ..io.exist(path) ) return path;
+		if( ..io.exist(driverPath) ) return driverPath;
 		
-		if(! ..io.exist(path) ){
-			..zlib.httpFile.referer = "https://registry.npmmirror.com/binary.html?path=chromedriver/" + vd;
-			..zlib.httpFile.download("https://cdn.npmmirror.com/binaries/chromedriver/"+vd+"/chromedriver_win32.zip"
-				,installTitle : "正在下载本程序必须的组件(chromeDriver/aardio)",..io.joinpath(dir,"\.download"),dir,"chromedriver_win32.zip"); 
-		}  
-		
-		return ..io.exist( ..io.joinpath(dir,"chromedriver.exe") );
+		if( 200 == ..inet.http.status(driverUrl) ){
+			..zlib.httpFile.download( driverUrl
+				,installTitle : "正在下载本程序必须的组件：Chrome Driver"
+				,..io.joinpath(driverDir,"\.download")
+				,driverDir
+				,"chromedriver_win32.zip"); 
+				
+			return ..io.exist( driverPath ); 
+		} 
 	}
 	
 	versionConvert = {
 		["Electron"] = function(v){
 			var electron2Chrome = {["0.20"]="39";["0.21"]="41";["0.25"]="42";["0.27"]="43";["0.30"]="44";["0.31"]="45";["0.36"]="47";["0.37"]="49";["1.1"]="50";["1.2"]="51";["1.3"]="52";["1.4"]="54";["1.6"]="56";["1.7"]="58";["1.8"]="59";["2.0"]="61";["3.0"]="66";["4.0"]="69";["5.0"]="72";["6.0"]="76";["7.0"]="78";["8.0"]="80";["9.0"]="83";["9.0"]="83";["10.0"]="85";["11.0"]="87"}
-				var ret = findVersionByMap(v,electron2Chrome,true);
+				var ret = matchPredatesChromeDriverVersion(v,electron2Chrome,true);
 				return ret;
 		} 
 	}
@@ -590,21 +542,27 @@ namespace driver{
 /**details(说明)
 [JsonWireProtocol](https://www.selenium.dev/documentation/legacy/json_wire_protocol/)
 
-不同版本浏览器需要下载不同版本的 ChromeDriver,
-此支持库可自 npmmirror 自动搜索并下载合适的 ChromeDriver。
-aardio 不会对 ChromeDriver 下载地址失效、变动导致的后果承担任何责任，如不同意请不要使用。
+此支持库会优先使用系统自带的 Edge（Chromium）浏览器。
+不同版本浏览器需要下载不同版本的 chromedriver.exe （Edge 则为 msedgedriver.exe）。
+
+如果 chrome.exe 所在目录已经存在 chromedriver.exe 则直接使用该路径。
+否则 aardio 会自动检测并下载匹配版本的 msedgedriver.exe。
+
+aardio 不会对 msedgedriver 或chromedriver 下载地址失效、变动导致的后果承担任何责任，如不同意请不要使用。
+
+Win7,XP 等旧系统建议手动安装兼容新 Chromium 内核的 Supermium 浏览器（安装时不要修改安装路径）。
 end details**/
 
 /**intellisense()
-chrome.driver = 用于调用 ChromeDriver 自动化控制 Chrome 浏览器，\n可自动下载与浏览器版本匹配的 ChromeDriver 。\n\naardio 不会对 ChromeDriver 下载地址失效、变动导致的后果承担任何责任，\n如不同意请不要使用。\n\n非 Chrome 官方浏览器请自行指定 chromedriver.exe 路径\n[JsonWireProtocol](https://www.selenium.dev/documentation/legacy/json_wire_protocol/)
-chrome.driver( = 创建ChromeDriver对象
+chrome.driver = 用于调用 ChromeDriver 自动化控制 Chrome 浏览器。\n兼容  Edge（Chromium），Supermium 等相同内核浏览器。\n\n如果 chrome.exe 目录存在 chromedriver.exe 则直接使用，\n否则自动检测并下载与浏览器版本匹配的 ChromeDriver 。\n\naardio 不会对 ChromeDriver 下载地址失效、变动导致的后果承担任何责任，\n如不同意请不要使用。\n\n版本号不兼容的其他浏览器请自行指定 chromedriver.exe 路径\n[JsonWireProtocol](https://www.selenium.dev/documentation/legacy/json_wire_protocol/)
+chrome.driver( = 创建 ChromeDriver 对象
 chrome.driver(.(chrome路径,ChromeDriver路径) = 创建ChromeDriver对象,失败返回null,错误信息,\n\n如果不指定参数@1，则只能通过远程调试端口直接连接
 chrome.driver(.(chrome路径,chrome主版本) = 创建ChromeDriver对象,失败返回null,错误信息,\n如果不指定参数@1，则只能通过远程调试端口直接连接,\n参数@2必须使用一个字符串或一个数值指定Chrome的主版本号
 chrome.driver(.(chrome路径) = 创建ChromeDriver对象,失败返回null,错误信息,\n\n参数@1如果不指定Chrome.exe路径,aardio会自动获取chrome路径,\naardio会自动搜索chrome.exe同目录下的chromedriver.exe,\n如果指不到会自动获到chrome.exe的版本并自动下载对应版本的的chromedriver.exe\nn可选使用参数@3自定义下载对话框标题
 chrome.driver() = !chromeDriver.
-chrome.driver.match(__) = 传入Chrome主版本号,返回匹配的ChromeDriver版本
 chrome.driver.requirePath(__) = 参数@1使用字符串传入Chrome版本号,\n返回匹配的ChromeDriver路径\n如果未安装该版本ChromeDriver会自动下载安装\n可选使用参数@2自定义下载对话框标题
-chrome.driver.updateVersionData() = 更新并返回最新Chrome,ChromeDriver版本对应数据表
+chrome.driver.chromePath = Chrome.exe 或浏览器主程序路径
+chrome.driver.driverPath = chromedriver.exe 或 msedgedriver.exe 路径
 end intellisense**/
 
 /**intellisense(!chromeDriver)

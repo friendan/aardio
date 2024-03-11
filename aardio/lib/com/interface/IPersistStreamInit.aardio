@@ -15,6 +15,7 @@ class IPersistStreamInit{
 	fromString = function(str){ 
 		var lpMem = ::GlobalAlloc( 0x40/*_GPTR*/, #str+1 );
 		::CopyMemory(lpMem,str,#str); 
+		
     	var re,pIStream = ::CreateStreamOnHGlobal(lpMem, 1 )
     	
 		if(re){
@@ -31,10 +32,13 @@ class IPersistStreamInit{
 	toString = function(clearDirty){ 
 		var hr,pSteam = ::CreateStreamOnHGlobal( , true );  
 		owner.Save(pSteam, clearDirty);  
+		
 		var hr,handle = ::GetHGlobalFromStream(pSteam);    
 		var size = ::GlobalSize(handle);
 		var ptr = ::GlobalLock(handle); 
 		var str =  ..raw.tostring(ptr,1,size);
+		::GlobalUnlock(handle);
+		
 		..com.Release(pSteam);
 		return str;
 	}

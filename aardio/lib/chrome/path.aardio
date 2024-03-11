@@ -20,8 +20,8 @@ class path{
 		var path;
 		
 		var path = findPath({
-			"chrome.exe";
 			"msedge.exe";
+			"chrome.exe";
 			"2345Explorer.exe"; 
 			"360chrome.exe";
 		})
@@ -145,6 +145,6 @@ namespace path{
 }
 
 /**intellisense()
-chrome.path(.() = 用于获取 Chrome 、 Edge（Chromium ）、Supermium 安装路径\nXXP、Win7 等小于 Win10 系统建议使用 Supermium（支持新内核）。\nSupermium 必须安装到默认目录（或在参数中指定 chrome.exe 路径）
-chrome.path(.(true) = 用于获取chrome安装路径\n支持  Chrome 、 Edge（Chromium ）、Supermium 等浏览器\n\n如果没有可用浏览器,将会下载安装Edge(Chromium) 
+chrome.path(.() = 用于获取 Edge（Chromium ）、Chrome 、 Supermium 安装路径\nXP、Win7 等小于 Win10 系统建议使用 Supermium（支持新内核）。\nSupermium 必须安装到默认目录（或在参数中指定 chrome.exe 路径）
+chrome.path(.(true) = 用于获取chrome安装路径\n支持  Chrome 、 Edge（Chromium ）、Supermium 等浏览器\n\n如果没有可用浏览器,将会下载安装 Edge(Chromium) 
 end intellisense**/

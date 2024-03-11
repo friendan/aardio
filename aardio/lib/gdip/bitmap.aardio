@@ -306,9 +306,10 @@ loadBitmapFromString = function(bin){
 	::CopyMemory(pImageMemory,bin,#bin);
 	::GlobalUnlock(hImageMemory);
 	
-	var re,pIStream = ::CreateStreamOnHGlobal(pImageMemory, true/*GlobalFree*/); 
+	var re,pIStream = ::CreateStreamOnHGlobal(hImageMemory, true/*GlobalFree*/); 
 	var re, img = CreateBitmapFromStream (pIStream);
 	..com.Release(pIStream); 
+	
 	return re,img;
 };
 

@@ -41,15 +41,15 @@ namespace IPicture{
 		return  Query(..com.picture.load(strfile)); 
 	}
 	
-	PrintClient = function(hwnd,x,y,w,h){
+	self.PrintClient = function(hwnd,x,y,w,h){
 		return  Query(..com.picture.printClient(hwnd,x,y,w,h)); 
 	}
 	
-	PrintWindow = function(hwnd,x=0,y=0,w,h,clientOnly) {
+	self.PrintWindow = function(hwnd,x=0,y=0,w,h,clientOnly) {
 		 return  Query(..com.picture.printWindow(hwnd,x,y,w,h,clientOnly)); 
 	} 
 	
-	SnapClient = function(hwnd,x,y,w,h){
+	self.SnapClient = function(hwnd,x,y,w,h){
 		return  Query(..com.picture.snapClient(hwnd,x,y,w,h));
 	}
 	
@@ -61,12 +61,17 @@ namespace IPicture{
 		saveToBuffer = function(saveMemCopy){
 			if(saveMemCopy===null) saveMemCopy = true;
 			var hr,pstream = ::CreateStreamOnHGlobal( , true ); 
-			owner._object.SaveAsFile(pstream,saveMemCopy,0);  
+			owner._object.SaveAsFile(pstream,saveMemCopy,0); 
+			
 			var hr,handle = ::GetHGlobalFromStream(pstream);    
 			var size = ::GlobalSize(handle);
 			var ptr = ::GlobalLock(handle); 
 			var bytes = ..raw.buffer(size,ptr); 
+			::GlobalUnlock(handle)
+			
 			..com.Release(pstream);
+			
+			
 			return bytes;
 		};
 		saveAsFile = function(stream,saveMemCopy){

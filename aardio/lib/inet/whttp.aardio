@@ -778,6 +778,17 @@ namespace whttp{
 			},... 
 		)
 	}
+	
+	status = function(url,nr,method){
+		var http = ..inet.whttp();
+		http.setTimeouts(1000,1000,1000);
+		 
+		if( http.beginRequest( url,method:"HEAD",,,nr?0x200000/*_INTERNET_FLAG_NO_AUTO_REDIRECT*/:null ) ) {
+			http.send();   
+		} 
+		http.close(); 
+		return http.statusCode; 	
+	}
   	
   	_dll = ::WinHttp; //已废弃
 }
@@ -800,6 +811,7 @@ inet.whttp = WinHTTP支持库\n多对象会话cookie隔离不共享,不支持持
 inet.whttp( = 创建HTTP会话对象,所有参数可选，\n注意提前导入zlib库，readAll 函数才能支持 gzip 自动解压。
 inet.whttp(.("UserAgent","HTTP://代理服务器IP:端口","绕过代理主机",选项) = 所有参数可以省略,\nUserAgent参数指定发送给服务器的程序名,\n代理指定空字符串为使用默认代理,如果代理设为"IE"则使用IE以及inet.setProxy的代理设置
 inet.whttp.get(.(url,headers,referer) = 用于界面线程创建线程并获取 @url 指定网址的数据,\n此函数等待下载完成但不会阻塞界面消息循环,\n可选用 @headers 指定 HTTP 头,\n可选用 @referer 指定引用网址,\n所有参数用法与 格式请参考 inet.whttp 对象的 get 函数相同
+inet.whttp.status(.(url,noAutoRedirect,httpMethod) = 对 @url 指定网址发送请求并返回 HTTP 状态码。\n如果未成功发送请求则返回 null。\n可选参数 @noAutoRedirect 为 true 则禁止自动重定向，默认为 false。\n可选用 @httpMethod 参数指定 HTTP 请求方法，默认为 "HEAD"。\n\n大部分网址请求成功会返回 200 状态码。\n部分网址会返回 2xx 状态码，重定向返回 3xx 状态码。\n可用状态码请参考 inet.httpStatusCode 库
 !inet_whttp.setSessionOption( _WINHTTP_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_whttp.setRequestOption( _WINHTTP_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_whttp.lastRequestUrl = 最后一次请求成功的URL

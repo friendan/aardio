@@ -1,17 +1,20 @@
 ﻿//WebDriver 自动化
 import chrome.driver;
 
-//创建 chromeDriver 对象,
+/*
+创建 chromeDriver 对象，支 Chrome，Edge（Chromium），Supermium 等相同内核浏览器。 
+自动检测 chromeDriver 版本，并在必要时自动下载匹配版本的chromeDriver。
+*/
+var driver = chrome.driver();  
 //协议文档 https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol
 //更多用法 https://bbs.aardio.com/forum.php?mod=viewthread&tid=22544
-var driver = chrome.driver(); 
 
 //排除参数，不显示"正受到自动测试软件的控制"，老版本 Chrome 可能会有更大的弹框，新版没问题
 //driver.removeArguments("--enable-automation")
 
 //添加 Chrome 启动参数
 //driver.addArguments("--start-maximized") 
- //driver.addArguments("--incognito") //无痕模式
+//driver.addArguments("--incognito") //无痕模式
 //driver.addArguments("--headless") //无痕模式，看不到界面
 /*
 Chrome 启动参数请搜索一下，网上很多也不可能都写在这里

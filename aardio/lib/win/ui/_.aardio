@@ -1368,8 +1368,23 @@ namespace win.form{
 			};
 			hitCaption = function () { 
 				var hwnd = ..win.getRoot(owner.hwnd);
-				if(  ..win.isZoomed(hwnd) ) return; 
-				 
+				
+				if(  ..win.isZoomed(hwnd) ) {
+					var x,y = ..win.getMessagePos();
+					
+					var rc = ..win.getRect(hwnd,true);
+					if(rc.contains(x,y)){
+						var l = x - rc.left; 
+						var t = y - rc.top;
+						
+						var place = ..win.getPlacement(hwnd);  
+						place.rcNormalPosition.setPos(x - l * place.rcNormalPosition.width() / rc.width(),y - t);
+						place.update();
+						
+						..win.show(hwnd,9/*_SW_RESTORE*/);
+					} 
+				}
+				
 				owner.setTimeout( 
     				function(){
     					..win.releaseCapture();

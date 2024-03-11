@@ -10,7 +10,17 @@ if(!db.existsTable("ftstest")){
 
 import mmseg
 var str = /*
-认真地思考，准备好你的问题。草率的提问只能得到草率的回答，甚至得不到回答。在提问时，你越是表现出在此前做过思考与努力去解决自己的问题，你越有可能得到真正的帮助。
+一些普通名词作为专有名词使用时，通常需要大写首字母以示区分。
+例如 Python, python 分别表示不同的意思。
+
+但有些名词本就是专有名词，并不需要大写首字母。
+例如 eBay，iPhone，adidas ，aria2 …… 以及 aardio 。
+
+logo 里使用小写首字母品牌或产品名称就更多了。
+小写首字母体现友好、接地气、非传统、简洁、务实与创新的精神。 
+
+aardio 在编码中也保持小写首字母的驼峰式命名风格。
+仅仅在调用其他语言编写的接口或组件时，会保持原来的大写首字母以示区分。
 */
 
 var data = "";
@@ -31,22 +41,22 @@ cmd.step(
 cmd.finalize();
 
 //MATCH 用于全文检索，simple 或 unicode61 分词器在查询时忽略大小写。
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备'");
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '专有名词'");
 
 //在词前面加^ 表示该词必须是某列的第一个词
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '^准备'");
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '^一些'");
 
 //在词后面加* 表示匹配所有以该词为前缀的词
-var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '准备*'");
+var result = db.stepQuery("SELECT body FROM [ftstest] WHERE data MATCH '专有*'");
 
 //可以空格分隔多个必须包含的查询词，相当于使用隐式 AND 操作符
-var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 思考'`);
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '小写 首字母'`);
 
 //包含多个词的短语首尾要加双引号
-var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '"认真 思考"'`);
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '"小写 首字母"'`);
 
 //支持逻辑操作符 OR 分隔查询词（找到其中一个即可）。
-var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '认真 OR 思考'`);
+var result = db.stepQuery(`SELECT body  FROM [ftstest] WHERE data MATCH '小写 OR 首字母'`);
 //改用库 sqlite.latest，并改用 FTS5 可支持逻辑操作符 NOT AND 。
 
 //查看结果

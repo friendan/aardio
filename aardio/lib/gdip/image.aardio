@@ -393,12 +393,15 @@ namespace image {
 		};
 		saveToBuffer = function(path,quality,params){
 			var hr,pSteam = ::CreateStreamOnHGlobal( , true );  
-			owner.saveToStream(pSteam, path,quality,params);  
+			owner.saveToStream(pSteam, path,quality,params); 
+			 
 			var hr,handle = ::GetHGlobalFromStream(pSteam);    
 			var size = ::GlobalSize(handle);
 			var ptr = ::GlobalLock(handle); 
 			var bytes = ..raw.buffer(size,ptr); 
-			..com.Release(pSteam);
+			::GlobalUnlock(handle);
+			
+			..com.Release(pSteam); 
 			return bytes;
 		};
 		_topointer = function(){

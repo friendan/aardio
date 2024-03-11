@@ -9,7 +9,7 @@
 0|0|0|codes\我的代码段\
 0|0|0|codes\范例程序\
 0|0|0|codes\范例程序\1) aardio 语言\
--2084107668|1609|1024|codes\范例程序\1.start.aardio
+751696699|2468|1452|codes\范例程序\1.start.aardio
 0|0|0|codes\范例程序\2) 调用其他语言\
 0|0|0|codes\范例程序\3) 控制台程序\
 0|0|0|codes\范例程序\4) Windows 窗口\
@@ -551,7 +551,7 @@
 -1079126435|2327|1156|codes\范例程序\7) Web 界面\3) web.form\浏览器\frameBrowser.aardio
 1725699643|1855|844|codes\范例程序\7) Web 界面\3) web.form\脚本应用\array.aardio
 1437264989|2605|1456|codes\范例程序\7) Web 界面\4) Chrome\app.aardio
--1317339236|2462|1371|codes\范例程序\7) Web 界面\4) Chrome\driver.aardio
+-144605195|2636|1457|codes\范例程序\7) Web 界面\4) Chrome\driver.aardio
 -894008657|1983|910|codes\范例程序\7) Web 界面\4) Chrome\extensions.aardio
 -422639195|3692|1407|codes\范例程序\7) Web 界面\4) Chrome\remote.aardio
 1242668216|1202|756|codes\范例程序\7) Web 界面\4) Chrome\z.more.aardio
@@ -728,7 +728,7 @@
 -1317198448|438|305|codes\范例程序\A) 数据库\1) sqlite\9.columns.aardio
 -1771614473|805|512|codes\范例程序\A) 数据库\1) sqlite\A.aes.aardio
 -199047002|1302|805|codes\范例程序\A) 数据库\1) sqlite\B.vlistview.aardio
-1146412729|2172|1142|codes\范例程序\A) 数据库\1) sqlite\C.fts.aardio
+-173600522|2572|1329|codes\范例程序\A) 数据库\1) sqlite\C.fts.aardio
 -1275740559|1048|686|codes\范例程序\A) 数据库\1) sqlite\Z.latest.aardio
 -1228049717|4400|1946|codes\范例程序\A) 数据库\2) mysql\1.mysql.aardio
 1215615273|811|550|codes\范例程序\A) 数据库\2) mysql\2.plugin.aardio
@@ -898,7 +898,6 @@
 -861990656|809|446|codes\范例程序\F) COM 组件\4) ActiveX EXE\typelib\SampleControl.odl
 -363790691|2036|620|codes\范例程序\F) COM 组件\4) ActiveX EXE\typelib\SampleControl.tlb
 1231876079|609|449|codes\范例程序\F) COM 组件\5) WMI 应用\meta_class.aardio
-1411926919|2135|1023|codes\范例程序\F) COM 组件\5) WMI 应用\NetTraffic.aardio
 -441369398|1256|557|codes\范例程序\F) COM 组件\5) WMI 应用\SWbemSink.aardio
 692694635|2212|1015|codes\范例程序\F) COM 组件\5) WMI 应用\SysInfo.aardio
 -699046203|2205|997|codes\范例程序\F) COM 组件\5) WMI 应用\UserAccount.aardio
@@ -1009,7 +1008,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-1401709827|15|34|config\SYS.CFG
+-869623145|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
@@ -1668,12 +1667,12 @@
 -1895578078|54|49|lib\bencoding\_.aardio
 1715611117|25587|7720|lib\chrome\app.aardio
 -1038189428|4292|1856|lib\chrome\dev.aardio
-366394541|32612|8020|lib\chrome\driver.aardio
+-18354200|35102|8543|lib\chrome\driver.aardio
 1141455353|1023|497|lib\chrome\edge.aardio
 1415170124|1707|730|lib\chrome\edge.history.aardio
 -1783794303|916|505|lib\chrome\extensions.aardio
 -1034206558|2169|875|lib\chrome\history.aardio
-770297288|4361|1739|lib\chrome\path.aardio
+-596719983|4361|1742|lib\chrome\path.aardio
 -2100870177|2334|1001|lib\chrome\remote.aardio
 -2025937096|692|469|lib\chrome\time.aardio
 1360641294|13770|4273|lib\color\table.aardio
@@ -1713,8 +1712,8 @@
 2015862790|928|467|lib\com\interface\IOleWindow.aardio
 -562275663|239|173|lib\com\interface\IPersist.aardio
 159892659|473|250|lib\com\interface\IPersistFile.aardio
-811768604|1728|785|lib\com\interface\IPersistStreamInit.aardio
-1850276111|7189|2161|lib\com\interface\IPicture.aardio
+-678210680|1767|795|lib\com\interface\IPersistStreamInit.aardio
+1803146750|7250|2178|lib\com\interface\IPicture.aardio
 159399825|392|260|lib\com\interface\IServiceProvider.aardio
 -1372676668|1579|803|lib\com\interface\IShellItem.aardio
 1518996758|675|372|lib\com\interface\IShellItemArray.aardio
@@ -1842,7 +1841,7 @@
 2040342124|5560|2059|lib\fsys\untar.aardio
 0|0|0|lib\fsys\update\
 -842694634|3305|1399|lib\fsys\url.aardio
--633293260|6119|2067|lib\fsys\version.aardio
+930985840|6582|2244|lib\fsys\version.aardio
 -2145745389|3076|1266|lib\fsys\watch.aardio
 620644929|2358|1044|lib\fsys\wow64.aardio
 2109775983|26494|7868|lib\fsys\_.aardio
@@ -1857,14 +1856,14 @@
 -183809269|10234|2907|lib\fsys\update\simpleMain.aardio
 407205415|37065|10664|lib\gdi\_.aardio
 0|0|0|lib\gdip\.res\
--385132226|23165|6960|lib\gdip\bitmap.aardio
+1117871489|23168|6962|lib\gdip\bitmap.aardio
 -1072810798|3704|1457|lib\gdip\core.aardio
 1093493607|5420|1650|lib\gdip\exifTags.aardio
 1626449170|3403|1540|lib\gdip\family.aardio
 -548087583|2262|1129|lib\gdip\feather.aardio
 -1487475484|4603|1583|lib\gdip\font.aardio
 1593714124|37145|7722|lib\gdip\graphics.aardio
--1671677239|24293|6930|lib\gdip\image.aardio
+-959937501|24332|6940|lib\gdip\image.aardio
 -1759962178|4918|1720|lib\gdip\imageAttributes.aardio
 1053009785|462|273|lib\gdip\installedFontCollection.aardio
 1581156023|3959|1349|lib\gdip\lineBrush.aardio
@@ -1902,7 +1901,7 @@
 675413754|10739|3568|lib\inet\errorMessage.aardio
 214139263|1614|620|lib\inet\file.aardio
 -1730033364|13160|4093|lib\inet\ftp.aardio
-1157295086|44500|11811|lib\inet\http.aardio
+-1803497658|45292|12016|lib\inet\http.aardio
 387227373|11127|3156|lib\inet\httpFile.aardio
 280150141|4836|1835|lib\inet\httpStatusCode.aardio
 -1975845672|3802|1401|lib\inet\installer.aardio
@@ -1913,7 +1912,7 @@
 757483985|12529|4219|lib\inet\url.aardio
 2121886035|1358|574|lib\inet\urlpart.aardio
 2111567453|1235|647|lib\inet\util.aardio
--348068350|51329|12711|lib\inet\whttp.aardio
+2066819643|52122|12934|lib\inet\whttp.aardio
 1229862763|22726|5749|lib\inet\_.aardio
 0|0|0|lib\java\.interopServices\
 -1309118426|8527|2527|lib\java\class.aardio
@@ -2361,7 +2360,7 @@
 580040|15782|4897|lib\win\ui\toolbar.aardio
 1148677887|25993|7561|lib\win\ui\tooltip.aardio
 -285994484|11485|3024|lib\win\ui\tracker.aardio
--771247502|62827|14350|lib\win\ui\_.aardio
+361355922|63237|14474|lib\win\ui\_.aardio
 -1081419275|7610|2979|lib\win\ui\ctrl\atlax.aardio
 919455211|5355|1847|lib\win\ui\ctrl\bk.aardio
 21699528|10322|3389|lib\win\ui\ctrl\bkplus.aardio
