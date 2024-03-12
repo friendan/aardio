@@ -90,7 +90,7 @@ class ruffle{
 
 namespace ruffle{ 
 	
-    exePath = ..io.appData("aardio/ruffle/2023.9.7.ruffle.dll",$"~\lib\process\ruffle\.res\ruffle.dll") // https://ruffle.rs/#downloads
+    exePath = ..io.appData("aardio/ruffle/2024.3.12.ruffle.dll",$"~\lib\process\ruffle\.res\ruffle.dll") // https://ruffle.rs/#downloads
 	..io.appData("aardio/ruffle/CreateWindowExHook.dll",$"~\lib\process\ruffle\.res\CreateWindowExHook.dll")
 }  
 

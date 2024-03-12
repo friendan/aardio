@@ -1,15 +1,13 @@
 ﻿//回调 aardio
 import win;
-import console; 
-console.showLoading(" 正在执行 PowerShell 命令");
-
+import console.int; 
 import dotNet.ps;
-//上面是执行 PowerShell 脚本，下面是执行 PowerShell 命令，参数用法基本一样
-var output = dotNet.ps.command("Get-Command",{Name="*Process"});
-console.log(output);
+/*
+aardio 调用 PowerShell 教程: https://mp.weixin.qq.com/s/Sr4HNkOJ1mmAj_V52v69IA
+PowerShell 快速入门 https://learnxinyminutes.com/docs/zh-cn/powershell-cn/
+*/
 
 // PowerShell 脚本代码
-// PowerShell 快速入门 https://learnxinyminutes.com/docs/zh-cn/powershell-cn/
 var pScript = /* 
 	# 定义命名参数，参数前加$号，aardio 参数表里去掉$号
 	param($win,$external,$username) # 类似在 aardio 中展开不定参数 $win,$external,$username = ...
@@ -54,4 +52,7 @@ PowerShell 运行在 aardio 中 dotNet.appDomain() 创建的默认应用程序�
 process.popen.ps 则是创建新的子进程运行 PowerShell，并通过管道获取进程输出。 
 */
 console.log(dotNet.ps(`[System.AppDomain]::CurrentDomain`))
-console.pause();
+
+//上面是执行 PowerShell 脚本，下面是执行 PowerShell 命令，参数用法基本一样
+console.showLoading(" 正在执行 PowerShell 命令");
+var output = dotNet.ps.command("Get-Command",{Name="*Process"});

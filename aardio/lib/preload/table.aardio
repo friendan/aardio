@@ -316,6 +316,9 @@ namespace table{
 		if(kv) kv,get = get,kv;
 		return {@{_weak=kv:"kv";_get=get?function(k){ var v = get(k);owner[[k]]=v;return v;} }}
 	};
+	getCall = function(t,k){
+ 		return t[[k]] || invoke(t@._get,t,k,true);
+ 	};
 	
 	mixin = assign; // 废弃
 	mixr = assignDeep; // 废弃
@@ -385,4 +388,5 @@ removeByValue(.(数组,值) = 在数组中查找指定值,\n并移除第一个�
 removeByValue(.(数组,值,true) = 在数组中查找指定值并将找到的值全部移除,\n如果参数@2为 null，则使用 table.range 函数取最大索引，\n这会导致最大索引前的所有null值都作为数组元素处理，\n建议查看此函数源码以避免错误使用导致性能降低。\n\n此函数无返回值。
 clear(__) = 清空参数 @1 指定的表对象内所有键值
 flat(.(array,depth) = 展开@array 参数指定的数组中嵌套的数组并返回新数组,\n此函数不会修改传入参数而是返回新数组,\n可选用 @depth 参数指定要允许展开的嵌套深度,默认值为1
+getCall(.(object,funcName) = 如果对象实际包含 funcName 成员则直接返回。\n否则模拟 object.funcName() 格式触发 _get 元方法，获取函数对象（但不会调用该函数）。\n调用 _get 元方法时 ownerCall 参数为 true。\n\n适用于对 object.funcName() ， object["funcName"] 区分处理的对象，\n例如 .NET 对象。
 end intellisense**/

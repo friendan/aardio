@@ -194,6 +194,11 @@ namespace bitmap {
 			return true;
 		};
 		copyHandle= function(width=0,height=0){
+			if(width==="icon"){
+				var r = gdip.assert2(::Gdiplus.GdipCreateHICONFromBitmap(owner[["pBitmap"]],{pointer icon}));
+				return r.icon;
+			}
+			
 			var hbmp = gdip.assert2( gdip.CreateHBITMAPFromBitmap(owner[["pBitmap"]], null,0x808080/*_CLR_DEFAULT*/) );
 			if( width || height){
 				return ::CopyImage(hbmp, 0x0/*_IMAGE_BITMAP*/, width, height, 4/*_LR_COPYRETURNORG*/ | 8/*_LR_COPYDELETEORG*/ ); 
@@ -278,7 +283,6 @@ CreateBitmapFromGraphics = $.api("GdipCreateBitmapFromGraphics","int(int Width,i
 CreateBitmapFromHBITMAP = $.api("GdipCreateBitmapFromHBITMAP","int(POINTER hbm,int hpal,pointer& Bitmap)")
 CreateHBITMAPFromBitmap = $.api("GdipCreateHBITMAPFromBitmap","int(POINTER Bitmap,pointer& hbmReturn,int background)")
 CreateBitmapFromHICON = $.api("GdipCreateBitmapFromHICON","int(POINTER hicon,pointer& Bitmap)")
-CreateHICONFromBitmap = $.api("GdipCreateHICONFromBitmap","int(POINTER Bitmap,int& hbmReturn)")
 CreateBitmapFromScan0 = $.api("GdipCreateBitmapFromScan0","int(int Width,int Height,int stride,int PixelFormat,pointer scan0,pointer& Bitmap)")
 BitmapLockBits = $.api("GdipBitmapLockBits","int(POINTER Bitmap,struct rect,int flags,int PixelFormat,struct& lockedBitmapData)")
 BitmapUnlockBits = $.api("GdipBitmapUnlockBits","int(POINTER Bitmap,struct  lockedBitmapData)")
@@ -424,7 +428,8 @@ gdip.bitmap(.(宽,高,像素格式,内存指针,行扫描宽度) = 自内存指�
 !gdipbitmap.dispose() = 释放图像\n此对象支持自动释放,不必手工调用此函数
 !gdipbitmap.getPixel(.(x__,y) = 读取位图指定坐标(x,y)的ARGB颜色值
 !gdipbitmap.setPixel(.(x__,y,argb) = 设定位图指定坐标(x,y)的ARGB颜色值  
-!gdipbitmap.copyHandle(.(宽度,高度) = 创建并返回HBITMAP句柄\n可选指定宽度、高度
+!gdipbitmap.copyHandle(.(宽度,高度) = 创建并返回 HBITMAP 位图句柄\n可选指定宽度、高度
+!gdipbitmap.copyHandle(.("icon") = 创建并返回 HICON 图标句柄
 !gdipbitmap.lockMemory( = 锁定图像内存\n返回gdip.BitmapData结构体
 !gdipbitmap.lockMemory(.(rect,_GdipPixelFormat32bppARGB,flags) = 所有参数可选\n默认使用图像的像素格式
 !gdipbitmap.lockData( = 锁定图像内存\n返回gdip.BitmapData结构体\n与lockMemory不同的是使用bits数组存储图像数据

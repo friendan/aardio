@@ -134,6 +134,7 @@
 -1786046573|4608|1959|codes\范例程序\2) 调用其他语言\2) dotNet\CSNET2ClassLibrary.dll
 969843806|3967|1478|codes\范例程序\2) 调用其他语言\2) dotNet\D.uwpCompiler.aardio
 -1387456515|416|275|codes\范例程序\2) 调用其他语言\2) dotNet\E.WebService.aardio
+-125686053|738|482|codes\范例程序\2) 调用其他语言\2) dotNet\F.ctor.aardio
 1346651027|4608|1591|codes\范例程序\2) 调用其他语言\2) dotNet\TestValueTuple.dll
 1044064780|2732|1438|codes\范例程序\2) 调用其他语言\2) dotNet\Y.Debug.aardio
 1105900468|1168|793|codes\范例程序\2) 调用其他语言\2) dotNet\Z.more.aardio
@@ -157,11 +158,11 @@
 210456908|5641|1945|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Y.ILMerge.aardio
 1731717069|1096|687|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Y.openHardwareMonitor.aardio
 614101258|2613|1482|codes\范例程序\2) 调用其他语言\2) dotNet\A) 应用\Z.SeleniumBasic.aardio
--1152004743|2153|1165|codes\范例程序\2) 调用其他语言\3) PowerShell\1、dotNet.ps.aardio
--1893697151|1799|993|codes\范例程序\2) 调用其他语言\3) PowerShell\2、InvokeMember.aardio
+-483954506|2206|1213|codes\范例程序\2) 调用其他语言\3) PowerShell\1、dotNet.ps.aardio
+2105405328|1971|1095|codes\范例程序\2) 调用其他语言\3) PowerShell\2、InvokeMember.aardio
 -1317701389|1850|1046|codes\范例程序\2) 调用其他语言\3) PowerShell\3、onWriteProgress.aardio
-1206714850|1219|698|codes\范例程序\2) 调用其他语言\3) PowerShell\4、dotNet.json.aardio
-1444075993|1766|1036|codes\范例程序\2) 调用其他语言\3) PowerShell\5、AppDomain.aardio
+1294909860|1390|806|codes\范例程序\2) 调用其他语言\3) PowerShell\4、dotNet.json.aardio
+-1607063902|1852|1098|codes\范例程序\2) 调用其他语言\3) PowerShell\5、AppDomain.aardio
 -522039488|2283|1212|codes\范例程序\2) 调用其他语言\3) PowerShell\A、process.popen.ps.aardio
 1786685283|743|462|codes\范例程序\2) 调用其他语言\3) PowerShell\B、process.popen.ps1.aardio
 2083432077|3171|1375|codes\范例程序\2) 调用其他语言\3) PowerShell\Y、executionpolicy.aardio
@@ -990,7 +991,8 @@
 -2089130144|2486|1147|codes\范例程序\I) 自动化\6) UIA\1.UIA.aardio
 -777614027|912|537|codes\范例程序\I) 自动化\6) UIA\2.UIA3.aardio
 -1020433168|1407|649|codes\范例程序\I) 自动化\6) UIA\3.UIA_Property .aardio
-1394881616|1420|842|codes\范例程序\I) 自动化\7) FlaUI\0.FlaUI.aardio
+-1765762182|1676|942|codes\范例程序\I) 自动化\7) FlaUI\0.FlaUI.aardio
+1600441541|1147|686|codes\范例程序\I) 自动化\7) FlaUI\3.PS.aardio
 -1588736889|1916|1004|codes\范例程序\J) 进程\1) start.aardio
 0|0|0|codes\范例程序\J) 进程\1) 管道\
 1882433942|1671|939|codes\范例程序\J) 进程\2) mem.aardio
@@ -1008,7 +1010,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--869623145|15|34|config\SYS.CFG
+-831773490|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
@@ -1608,8 +1610,8 @@
 0|0|0|extensions\wizard\project2\template\winform-blank\res\
 -1985223173|1085|662|extensions\wizard\project2\template\winform-blank\lib\config.aardio
 0|0|0|extensions\wizard\project2\template\winform-blank\lib\fonts\
--340729953|748705|743201|help\aardio.chm
--1186833927|12860|4297|help\关于 aardio.txt
+-886796987|752367|746950|help\aardio.chm
+-79648214|10296|3081|help\关于 aardio.txt
 0|0|0|help\用户许可协议\
 -793218609|3349|1321|help\用户许可协议\aardio开源代码许可证.txt
 642930543|3019|1409|help\用户许可协议\aardio用户许可协议.txt
@@ -1744,7 +1746,7 @@
 849437073|4148|1745|lib\debug\log.aardio
 -1093630105|6165|2197|lib\debug\_.aardio
 0|0|0|lib\dotNet\.res\
--1024403543|49083|11018|lib\dotNet\appDomain.aardio
+-143357137|49224|11043|lib\dotNet\appDomain.aardio
 36508025|8420|2722|lib\dotNet\clr.aardio
 0|0|0|lib\dotNet\interface\
 1751319587|2586|1136|lib\dotNet\nuget.aardio
@@ -1856,7 +1858,7 @@
 -183809269|10234|2907|lib\fsys\update\simpleMain.aardio
 407205415|37065|10664|lib\gdi\_.aardio
 0|0|0|lib\gdip\.res\
-1117871489|23168|6962|lib\gdip\bitmap.aardio
+-541059306|23304|7004|lib\gdip\bitmap.aardio
 -1072810798|3704|1457|lib\gdip\core.aardio
 1093493607|5420|1650|lib\gdip\exifTags.aardio
 1626449170|3403|1540|lib\gdip\family.aardio
@@ -1949,7 +1951,7 @@
 -1452796134|9555|2785|lib\preload\raw.aardio
 -1448350769|12137|4258|lib\preload\string.aardio
 543017030|7037|2167|lib\preload\struct.aardio
-2010708648|22742|6855|lib\preload\table.aardio
+1622410619|23184|7023|lib\preload\table.aardio
 1353019353|13644|4550|lib\preload\thread.aardio
 -1477975943|15793|5654|lib\preload\_.aardio
 -1882500609|5123|1985|lib\process\admin.aardio
@@ -2360,7 +2362,7 @@
 580040|15782|4897|lib\win\ui\toolbar.aardio
 1148677887|25993|7561|lib\win\ui\tooltip.aardio
 -285994484|11485|3024|lib\win\ui\tracker.aardio
-361355922|63237|14474|lib\win\ui\_.aardio
+-1227274683|62903|14398|lib\win\ui\_.aardio
 -1081419275|7610|2979|lib\win\ui\ctrl\atlax.aardio
 919455211|5355|1847|lib\win\ui\ctrl\bk.aardio
 21699528|10322|3389|lib\win\ui\ctrl\bkplus.aardio
@@ -2406,7 +2408,7 @@
 1184181976|198|152|lib\win\util\round.aardio
 1048464748|1862|871|lib\win\util\savePosition.aardio
 -592188799|1199|655|lib\win\util\shellhook.aardio
--263537354|6372|2291|lib\win\util\tray.aardio
+-1304987537|6952|2425|lib\win\util\tray.aardio
 0|0|0|lib\winex\accObject\
 -618304630|2343|1001|lib\winex\caret.aardio
 0|0|0|lib\winex\ctrl\

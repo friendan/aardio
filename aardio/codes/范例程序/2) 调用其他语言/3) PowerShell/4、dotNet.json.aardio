@@ -1,9 +1,13 @@
 //JSON 
 import console;
 import dotNet.ps;
+/*
+aardio 调用 PowerShell 教程: https://mp.weixin.qq.com/s/Sr4HNkOJ1mmAj_V52v69IA
+PowerShell 快速入门 https://learnxinyminutes.com/docs/zh-cn/powershell-cn/
+*/
 
 // ConvertTo-Json 自动兼容到 PowerShell 2.0 （Win7 自带）
-var psVersion =  dotNet.ps.json(`ConvertTo-Json $PSVersionTable.PSVersion`)
+var psVersion = dotNet.ps.json(`ConvertTo-Json $PSVersionTable.PSVersion`)
 console.dumpJson(psVersion);	
 console.log(err);
 

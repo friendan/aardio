@@ -212,7 +212,10 @@ class appDomain{
 					};
 					_call = function(...){ 
 						var obj,err = asm.__createInstanceTest(typeName,...);
-						if(obj) return obj;
+						if(obj) {
+							if(owner[["ctor"]]) owner[["ctor"]](obj);
+							return obj;
+						}
 						
 						if(!..string.startWith(typeName,asm.Name +".") && !(..string.indexOf(typeName,".")) ){
 							obj,err = asm.__createInstanceTest( asm.Name +"."+ typeName,...);
@@ -220,7 +223,10 @@ class appDomain{
 								typeName = asm.Name +"."+ typeName;
 							}
 							
-							if(obj) return obj;
+							if(obj) {
+								if(owner[["ctor"]]) owner[["ctor"]](obj);
+								return obj;
+							}
 						}
 							
 						error(err,2);

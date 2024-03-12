@@ -1,0 +1,35 @@
+//扩展构造函数
+import console;
+import dotNet; 
+var compiler = dotNet.createCompiler("C#"); 
+
+compiler.Source = /******   
+namespace CSharpLibrary  
+{  
+    public class Object{ }   
+} 
+******/
+
+//编译程序集
+var assembly = compiler.CompileOrFail(); 
+
+//自程序集导入名字空间  
+assembly.import("CSharpLibrary"); 
+
+//为 .NET 类添加扩展构造函数
+CSharpLibrary.Object[["ctor"]] = function(this){
+	
+	//.NET 对象创建完成触发此函数
+	
+	//用直接下标可以新增属性或方法
+	this[["Name"]] = "测试字符串"
+}
+
+//使用 C# 编写的类构造对象实例 
+var netObj = CSharpLibrary.Object();
+
+//访问添加的字符串
+console.log(netObj.Name)
+
+console.pause();
+ 

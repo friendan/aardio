@@ -66,6 +66,17 @@ class tray {
 		Shell_NotifyIcon(0x2/*_NIM_DELETE*/,this.$notifyData) 
 		Shell_NotifyIcon(0x0/*_NIM_ADD*/,this.$notifyData) 
 	};
+	setIcon = function(icon,gc){
+		if(owner[["gcIcon"]] ){
+			::DestroyIcon(this.gcIcon);
+			owner[["gcIcon"]] = null;
+		}
+		
+		this.icon = icon;
+		if(gc && !owner[["gcIcon"]]){
+			owner[["gcIcon"]] = this.icon;
+		}
+	};
 	delete = function(){ 
 		if(!this.$notifyData) return; 
 		Shell_NotifyIcon(0x2/*_NIM_DELETE*/, this.$notifyData);
@@ -183,7 +194,8 @@ namespace tray{
 !winUtilTray.reset() = 重置并恢复托盘图标
 !winUtilTray.tip = 设置鼠标提示信息
 !winUtilTray.message = 指定回调消息\n当用户点击托盘图标时、向主窗体发送此消息
-!winUtilTray.icon = 设置托盘的图标,\n值可以是图标ID、句柄、图标数据或图标路径,\n32位图标,最好同时提供 16x16、32x32 的图标
+!winUtilTray.setIcon(__) = 设置托盘的图标,\n参数@1可以是图标ID、句柄、图标数据或图标路径,\n32位图标,最好同时提供 16x16、32x32 的复合图标\n\n如果指定需要释放的图标句柄，参数@2 应设为 true
+!winUtilTray.icon = 用于设置托盘图标,只写属性。\n属性值可以是图标ID、句柄、图标数据或图标路径,\n32位图标,最好同时提供 16x16、32x32 的复合图标\n\n如果传入的是需要释放的图标句柄请改用 setIcon 函数
 !winUtilTray.pop( = 发送托盘消息通知
 !winUtilTray.pop(.(提示信息,标题,图标ID,显示超时) = 发送托盘消息通知\nWin10 以下显示为汽泡提示,\nWin10/11 开启专注助手以后仅发送到通知区,\nWin10/11 获取通知消息请使用 dotNet.toastListener 扩展库。\n\n图标 ID 可省略，警告图标设为2,错误图标设为3\n显示超时以秒为单位
 win.util.tray( = 创建托盘图标

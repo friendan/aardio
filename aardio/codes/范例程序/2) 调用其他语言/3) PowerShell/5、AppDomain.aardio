@@ -2,6 +2,7 @@
 import win;
 import console;
 import dotNet.ps;
+//aardio 调用 PowerShell 教程: https://mp.weixin.qq.com/s/Sr4HNkOJ1mmAj_V52v69IA
 
 /*
 dotNet.ps 在当前进程运行 PowerShell，

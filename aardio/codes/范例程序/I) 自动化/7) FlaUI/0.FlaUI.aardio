@@ -1,4 +1,4 @@
-﻿//FlaUI 入门
+﻿//入门
 import FlaUI;
 import FlaUI.UIA3;
 
@@ -6,7 +6,8 @@ import FlaUI.UIA3;
 var app = FlaUI.Attach("WeChat.exe"); 
 
 //获取主窗口
-var window = app.GetMainWindow( FlaUI.UIA3.UIA3Automation() );
+var automation = FlaUI.UIA3.UIA3Automation();
+var window = app.GetMainWindow( automation );
 
 if(window){
 	
@@ -31,7 +32,12 @@ if(window){
 	可查询的属性有：AutomationId， Name，ClassName，HelpText 。
 	可以用探测工具 FlaUInspect 查看这些属性。
 	*/
-
+	
+	//上面的写法等价于下面的写法
+	var input = window.FindFirstDescendant( 
+		automation.By( Name = "输入"; ControlType="Edit")
+	)
+ 
 	//点击输入框
 	mouse.click(input.BoundingRectangle);
 	
@@ -40,6 +46,9 @@ if(window){
 	
 	//查找按钮
 	var sendButton = window.FindFirstByXPath("//Button[@Name='发送(S)']"); 
+	
+	//转换为 button 控件
+	//var sentButton = FlaUI.As(sendButton,"Button")
 	
 	//点击按钮
 	mouse.click(sendButton.BoundingRectangle );

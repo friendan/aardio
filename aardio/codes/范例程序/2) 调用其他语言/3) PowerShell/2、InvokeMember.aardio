@@ -3,6 +3,10 @@ import win;
 import console; 
 console.showLoading(" 正在执行 PowerShell 命令");
 
+/*
+aardio 调用 PowerShell 教程: https://mp.weixin.qq.com/s/Sr4HNkOJ1mmAj_V52v69IA
+PowerShell 快速入门 https://learnxinyminutes.com/docs/zh-cn/powershell-cn/
+*/
 import dotNet.ps;
 
 //PowerShell 脚本代码
