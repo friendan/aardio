@@ -7,7 +7,7 @@ winform.add()
 /*}}*/
 
 //开启跨域
-import web.form.util
+import web.form.util;
 web.form.util.crossDomain() 
 
 //创建web窗体
@@ -26,7 +26,7 @@ wb.CommandStateChange=function(cmd,enable) {
     }
 }   
  
-var html = /**
+wb.html = /**
 <html>
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -34,19 +34,17 @@ var html = /**
 <body style="overflow:hide; margin:0px; "> 
 <div id="navBar" style=" margin:5px;">  
         <label for="txtUrl">网址</label>
-        <input type="text" name="txtUrl" id="txtUrl" value="http://www.example.com">
+        <input type="text" name="txtUrl" id="txtUrl" value="https://www.aardio.com">
         <input id="btnGo" type="button" onClick="external.go(document.getElementById('txtUrl').value )"  value="打开" /> 
 		<input id="btnRefresh" type="button" onClick="external.refresh()"  value="刷新" />
 		<input id="btnBack" type="button" onClick="history.back()"  value="后退" />
         <input id="btnForward" type="button" onClick="history.forward()"  value="前进" />
 </div> 
-        <iframe name="xDomainFrame" src="http://www.example.com" frameborder="0" scrolling="yes" height="100%" width="100%" noresize="noresize">
+        <iframe name="xDomainFrame" src="https://www.aardio.com" frameborder="0" scrolling="yes" height="100%" width="100%" noresize="noresize">
         </iframe>
 </body>
 </html>
-**/ 
-string.save("/browser.html", html)
-wb.go("/browser.html")
+**/  
 wb.wait();
 
 wbFrame = wb.getWebForm("xDomainFrame") 
@@ -78,5 +76,5 @@ wb.external={
 	} 
 }
 
-winform.show();  
+winform.show(3/*_SW_MAXIMIZE*/);  
 win.loopMessage();

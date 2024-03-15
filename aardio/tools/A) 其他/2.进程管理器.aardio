@@ -109,7 +109,7 @@ winform.chkAll.oncommand = function(id,event){
 winform.listview.insertColumn("进程ID",100,,0x0/*_LVCFMT_LEFT*/) 
 winform.listview.insertColumn("启动参数",100,,0x0/*_LVCFMT_LEFT*/)
 winform.listview.insertColumn("窗口句柄",80,,0x0/*_LVCFMT_LEFT*/)
-winform.listview.insertColumn("窗口标题",200,,0x0/*_LVCFMT_LEFT*/)
+winform.listview.insertColumn("标题",200,,0x0/*_LVCFMT_LEFT*/)
 winform.listview.insertColumn("架构",50,,0x0/*_LVCFMT_LEFT*/)
 winform.listview.insertColumn("内存﻿工作集",80,,0x0/*_LVCFMT_LEFT*/) 
 winform.listview.insertColumn("提交大小",80,,0x0/*_LVCFMT_LEFT*/) 
@@ -134,7 +134,7 @@ winform.btnSearch.oncommand = function(id,event){
 			import win;
 			
 			var currentProcessId = process.getId(); 
-			var addProcess = function(pid,hwnd){
+			var addProcess = function(pid,hwnd,title){
 				if(pid === currentProcessId ) return;
 				
 				try{
@@ -147,7 +147,7 @@ winform.btnSearch.oncommand = function(id,event){
 								tostring(pid);
 								wmiProcess.CommandLine;
 								hwnd?string.format("%08X",hwnd):"";
-								hwnd?win.getText(hwnd):"";
+								title || wmiProcess.Name;
 								usage.isWow64()?"32位":"64位";
 								usage.memString() 
 							} )  
@@ -158,22 +158,20 @@ winform.btnSearch.oncommand = function(id,event){
 			}
 			
 			var listProcessIds = {}
-			var topWindows = {};
-			for hwnd,title,threadId,processId in winex.each() {
-				if( ! ..win.isVisible(hwnd) ) continue;
-				
-				if(#title) {
-					topWindows[processId] = hwnd; 
-					if( ..string.find(title,winform.editExe.text) ) {
-						listProcessIds[processId] = true;
-						addProcess(processId,hwnd);
-					}
+	 
+			import winex.mainWindows; 
+			var mainWindows = winex.mainWindows();
+			for(pid,wnd in mainWindows){
+				if(#wnd.title && ..string.find(wnd.title,winform.editExe.text) ){
+					addProcess(pid,wnd.hwnd,wnd.title);
+					listProcessIds[pid] = true;
 				}
-			}
-			
-			
+			} 
+		 
 			for prcsEntry in process.each( winform.editExe.text ) {
-    			if(!listProcessIds[prcsEntry.th32ProcessID])addProcess(prcsEntry.th32ProcessID,topWindows[prcsEntry.th32ProcessID]);
+    			if(!listProcessIds[prcsEntry.th32ProcessID]){
+    				addProcess(prcsEntry.th32ProcessID,mainWindows[prcsEntry.th32ProcessID][["hwnd"]]);
+    			}
 			}
 			
 			winform.btnSearch.disabledText = null
@@ -230,5 +228,5 @@ winform.btnKillChecked.oncommand = function(id,event){
 	}
 }
 
-winform.show() 
+winform.show();
 win.loopMessage();

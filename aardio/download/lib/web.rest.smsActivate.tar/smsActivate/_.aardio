@@ -53,15 +53,18 @@ class smsActivate {
 		
 		//键转为数值
 		var data = {};
+		var countryInfo;
 		for(k,v in dataRaw){ 
-			..table.push(data,v); 
-		} 
-		
-		for(k,v in data){
-			v.chineseCountryName = countryList[v.country].chn;
-			v.englishCountryName  = countryList[v.country].eng; 
 			v.retailPrice = v.retail_price;
 			v.retail_price = null;
+			
+			countryInfo = countryList[v.country]; 
+			if(!countryInfo) continue;
+			
+			v.chineseCountryName = countryInfo.chn;
+			v.englishCountryName = countryInfo.eng;  
+			
+			..table.push(data,v); 
 		}
 		
 		..table.sort(data,lambda(v) v.retailPrice > owner.retailPrice); 
@@ -188,17 +191,12 @@ namespace smsActivate{
 		code2Service[v.code] = v.name; 
 		..table.push(serviceNames,v.name);
 	}
-	
-	countryId2Name = {}; 
-	countryName2Id = {};  
-	countryNames = {}; 
+	 
+	countryName2Id = {};   
 	for(k,v in countryList){ 
 		countryName2Id[v.chn] = v.id;
 		countryName2Id[v.eng] = v.id;
-		countryName2Id[v.rus] = v.id;
-		countryId2Name[v.id] = v.eng; 
-		
-		..table.push(countryNames,v.chn);
+		countryName2Id[v.rus] = v.id;  
 	}
 	
 	getCountryIdByName = function(name){

@@ -1,0 +1,85 @@
+﻿//mainWindows 主窗口
+import winex;
+
+class winex.mainWindows{
+	ctor(prcs,waiting){  
+		for hwnd,title,tid,pid in ..winex.each() {
+			if( ! ..win.isVisible(hwnd) ) continue;
+			
+			var wnd = this[pid];
+			if( wnd && wnd.main &&  wnd.visible){
+				continue;
+			}
+			
+			var main =  !..win.getOwner(hwnd);
+			var visible = ..win.isVisible(hwnd);
+					
+			var wnd = this[pid];
+			if(!wnd){
+				this[pid] = {
+					hwnd = hwnd;
+					main = main;
+					visible = visible;
+					title = title;
+					threadId = tid;
+					processId = pid;
+				}
+			}
+			elseif(main) {
+				if((!wnd.main) || ( visible && (!wnd.visible ) || (!#wnd.title && #title ) ) ){
+					this[pid] = {
+						hwnd = hwnd;
+						main = main;
+						visible = visible;
+						title = title;
+						threadId = tid;
+						processId = pid;
+					}	
+				}
+			}  
+			elseif( visible && (!wnd.visible ) || (!#wnd.title && #title ) ){
+				this[pid] = {
+						hwnd = hwnd;
+						main = main;
+						visible = visible;
+						title = title;
+						threadId = tid;
+					}
+			}
+			
+		}	
+		
+		if(prcs){
+			var pid = prcs[["id"]]||prcs;
+			var wnd = this[pid];
+			if(!wnd){
+				for(id,wnd in this){
+					var prcs = ..process(id,0x400/*_PROCESS_QUERY_INFORMATION*/ | 0x1000/*_PROCESS_QUERY_LIMITED_INFORMATION*/);
+					if(prcs){
+						var parentId = prcs.getParentId();
+						prcs.free()
+						
+						if(pid==parentId){
+							return wnd; 
+						}
+					}
+				} 
+			}
+			
+			if(waiting){
+				while(( !wnd[["visible"]] )  && ..thread.delay(10) ){
+					wnd = ..winex.mainWindows(prcs);
+				}
+			}
+			
+			return wnd; 
+		}
+	}; 
+}
+
+/*****intellisense()
+winex.mainWindows = 用于查找进程主窗口。\n如果进程有多个窗口，\n则优先取无父窗口及无所有者的可见窗口，并优先取非空标题窗口。
+winex.mainWindows(.() = 无参数则返回所有可以找到主窗口的进程表。\n返回表的键为进程 ID，值为包含窗口信息的表。\n窗口信息的字段：\nhwnd 字段为窗口句柄，\ntitle 字段为窗口标题，\nthreadId 字段为窗口线程 ID。\nvisible 字段为是否可见。\nmain 字段为是否无所有者窗口
+winex.mainWindows(.(进程) = 如果参数@1传入进程ID或 process 对象。\n找到则返回包含主窗口信息的表对象。\n其中 hwnd 字段为窗口句柄，title 字段为窗口标题。\n找不到则返回 null
+winex.mainWindows(.(进程,true) = 查找并等待进程显示主窗口。\n参数@1传入进程ID或 process 对象。\n返回包含主窗口信息的表对象。\n其中 hwnd 字段为窗口句柄，title 字段为窗口标题
+end intellisense*****/

@@ -26,6 +26,7 @@ thread.delay(1000)
 
 wsh.AppActivate("无标题 - 记事本") //激活记事本窗口
 wsh.AppActivate("Untitled - Notepad")
+
 wsh.SendKeys("hello, welcome to aardio") //输出一句话
 
 wsh.sendkeys("{ENTER}");//按下回车

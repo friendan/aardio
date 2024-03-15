@@ -730,7 +730,13 @@ class appDomain{
 namespace appDomain{
 
 	__appDomainCache = {} 
-	__equals = lambda(v) unwrapObject(owner) == unwrapObject(v);
+	__equals = function(v) {
+		if(owner[["_dotNetObject"]] ){
+			return (owner[["_dotNetObject"]] === v[["_dotNetObject"]]) || owner.Equals(v);
+		}
+		
+		return false;
+	}
 	
 	_meta = {
 		_toComObject = lambda() owner[["_dotNetObject"]];

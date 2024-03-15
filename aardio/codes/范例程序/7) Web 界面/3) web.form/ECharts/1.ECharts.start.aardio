@@ -62,9 +62,6 @@ wb.html = /**
 		如果需要在 Win7/IE8 环境运行，建议降低版本到 ECharts 4 。
 		Win10/11 自带 IE11， Win7 已逐渐退出市场一般没必要再考虑。
 		*/
-    
-    	//需要先改一下这个设置，不然 ECharts 无法检测鼠标事件。
-   		echarts.env.pointerEventsSupported = false;
    		
    		//更多图表范例: https://echarts.apache.org/examples/zh/index.html
         var myChart = echarts.init(document.getElementById('main'));

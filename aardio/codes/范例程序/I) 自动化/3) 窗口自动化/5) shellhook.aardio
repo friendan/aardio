@@ -1,4 +1,4 @@
-//监窗口创建销毁
+//临视窗口创建销毁
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=448;bottom=249;parent=...)

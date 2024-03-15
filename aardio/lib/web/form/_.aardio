@@ -940,6 +940,9 @@ namespace form {
 		featureControl( "FEATURE_GPU_RENDERING",gpu?1:0,ref );	
 	};
 	
+	disableNavigationSounds(true);
+	featureControl("FEATURE_NINPUT_LEGACYMODE",0,false);//否则 echarts 需要 echarts.env.pointerEventsSupported = false;
+	featureControl("FEATURE_WEBOC_DOCUMENT_ZOOM",1,false);
 	emulation(11001,true);
 	
 	getMajorVersion = function(){

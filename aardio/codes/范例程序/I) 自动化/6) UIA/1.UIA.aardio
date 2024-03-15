@@ -4,11 +4,10 @@
 
 //运行程序
 import process; 
-process.execute("notepad.exe",io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS"));
+var prcs = process.shell("wordpad.exe",io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS"));
 
-//等待窗口激活
-import winex;
-winex.waitActive(,,"Notepad");
+//等待主窗口
+prcs.waitMainWindow("WordPadClass");
  
 //导入 .NET 类  
 //https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6
@@ -22,32 +21,32 @@ AutomationElement = Automation.AutomationElement;
 TreeScope = Automation.TreeScope; 
 
 //合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
-var condNotepad = Automation.AndCondition({
-	//指定记事本窗口的类名
-	 PropertyCondition(AutomationElement.ClassNameProperty,"Notepad"),
-	 //指定记事本窗口的窗口类型
+var condWordpad = Automation.AndCondition({
+	//指定写字板窗口的类名
+	 PropertyCondition(AutomationElement.ClassNameProperty,"WordPadClass"),
+	 //指定写字板窗口的窗口类型
 	 PropertyCondition(AutomationElement.ControlTypeProperty,Automation.ControlType.Window)
 })  
 
-//查找记事本窗口
-var notepad = AutomationElement.RootElement.FindFirst(TreeScope.Descendants, condNotepad) 
-if(!notepad){
+//查找写字板窗口
+var wordpad = AutomationElement.RootElement.FindFirst(TreeScope.Descendants, condWordpad) 
+if(!wordpad){
 	error("未发现目标窗口");
 } 
 
 //合并查询条件，在 C# 里因为 params 语法糖可以写为多个参数，但参数实际就是一个数组
 var condEdit = Automation.OrCondition({
-	//记事本的编辑框的类名
-	PropertyCondition(AutomationElement.ClassNameProperty,"Edit"),
-	// Windows 11 记事本的编辑框的类名
-	PropertyCondition(AutomationElement.ClassNameProperty,"RichEditD2DPT") 
+	//写字板的编辑框的类名
+	PropertyCondition(AutomationElement.ClassNameProperty,"RICHEDIT50W"),
+	//假设文本框可能使用其他类名
+	PropertyCondition(AutomationElement.ClassNameProperty,"Edit") 
 })
 
-//查找记事本的编辑框 
-var editBox = notepad.FindFirst( TreeScope.Descendants, condEdit); 
+//查找写字板的编辑框 
+var editBox = wordpad.FindFirst( TreeScope.Descendants, condEdit); 
 var hwnd = editBox.Current.NativeWindowHandle;//窗口句柄
 
-//获取记事本内的文本 
+//获取写字板内的文本 
 //https://learn.microsoft.com/en-us/dotnet/api/system.windows.automation.textpattern?view=netframework-4.0
 var textPattern;
 try {
@@ -61,5 +60,5 @@ if(textPattern){
 	win.dlg.message().info(text + " ……");
 }	
 else{
-	return win.dlg.message().info("记事本文本框句柄：" + hwnd)	
+	return win.dlg.message().info("写字板文本框句柄：" + hwnd)	
 }

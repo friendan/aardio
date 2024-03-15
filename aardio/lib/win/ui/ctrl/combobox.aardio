@@ -318,7 +318,7 @@ onDropDown() = @.onDropDown = function(){
 onFocusGot() = @.onFocusGot = function(){ 
 	__/*下拉框获得焦点时触发此事件*/
 } 
-onFocusLost() = @.onDropDown = function(){ 
+onFocusLost() = @.onFocusLost = function(){ 
 	__/*下拉框失去焦点时触发此事件*/
 } 
 onCloseUp() = @.onCloseUp = function(){ 

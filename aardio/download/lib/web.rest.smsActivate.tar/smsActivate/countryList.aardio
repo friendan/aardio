@@ -203,4 +203,8 @@ countryList = {
 [198]={eng="Samoa";rus="Самоа";retry=0;visible=0;id=198;rent=0;chn="萨摩亚";multiService=0};
 [199]={eng="Malta";rus="Мальта";retry=0;visible=0;id=199;rent=0;chn="马耳他";multiService=0};
 [200]={eng="Liechtenstein";rus="Лихтенштейн";retry=0;visible=0;id=200;rent=0;chn="列支敦士登";multiService=0};
+[201]={chn="直布罗陀";eng="Gibraltar";id=201;multiService=0;rent=0;retry=0;rus="Гибралтар"};
+[202]={chn="法罗群岛";eng="Faroeislands";id=202;multiService=0;rent=0;retry=0;rus="Фарерские острова"}
 }
+
+//https://api.sms-activate.org/stubs/handler_api.php?api_key=***&action=getCountries

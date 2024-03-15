@@ -5,7 +5,7 @@ var yaml = web.script.yaml;
 
 /*
 YAML 快速入门
-https://quickref.me/yaml
+https://quickref.me/zh-CN/docs/yaml.html
 https://learnxinyminutes.com/docs/zh-cn/yaml-cn
 */
 var yamlText = /*

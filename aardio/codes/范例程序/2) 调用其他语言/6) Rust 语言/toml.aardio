@@ -2,7 +2,7 @@
 import console; 
 import string.toml;
 
-//TOML 快速入门: https://quickref.me/toml
+//TOML 快速入门: https://quickref.me/zh-CN/docs/toml.html
 var str = string.toml.stringify({abc=123,d={1,2,3}});
 console.log( str );
 

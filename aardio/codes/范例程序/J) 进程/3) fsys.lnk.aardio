@@ -1,11 +1,11 @@
-//查找快捷方式
+//搜索程序路径
+import process;
+import process.cache;
 
-import process 
-import fsys.lnk;
- 
-//参数为要查找的文件名,支持模式表达式, 可忽略大小写
-var qqPath  = fsys.lnk.search( {"qq.exe";"QQScLauncher.exe";"QQProtect.exe"} )  
+//用下面的方法可以搜索运行或 AppPath 注册过的程序，找不到再查找快捷方式
+var qqPath = process.cache.find("qq.exe");
   
+//运行程序
 process.execute( qqPath )
 
 //丢失 QQ 快捷链接, 在资源管理器里浏览位置：

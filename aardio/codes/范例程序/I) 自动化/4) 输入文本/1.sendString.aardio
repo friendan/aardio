@@ -2,7 +2,7 @@
 import process;
 import key;
 
-process.executeWaitInput("notepad.exe");
+process.executeWaitInput("wordpad.exe");
 key.send( "这样就可以实现打字效果了。",200);
 
 key.sendString("直接发送字符串。");
@@ -17,4 +17,4 @@ winex.sayImeAnsi();
 winex.sendString();
 winex.setText();
 winex.key.send();
-*/
+*/ 

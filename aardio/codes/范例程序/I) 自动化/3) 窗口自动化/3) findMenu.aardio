@@ -1,6 +1,9 @@
 //窗口菜单
 import winex; 
 import process;
+import win.version;
+
+error("代码仅适用传统窗口菜单，Win11 记事本已改版");
 
 var prcs = process("Notepad");
 var hwnd = winex.find("Notepad",,prcs.id);

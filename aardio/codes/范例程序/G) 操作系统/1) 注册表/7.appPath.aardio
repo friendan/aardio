@@ -18,8 +18,13 @@ winform.cmbPath.onEditChange  = win.debounce(function(){
 
 	if(io.exist(filename)) return;
 	
-    var result = process.cache.find("<@@" + filename + "@>",,false);
-    winform.cmbPath.autoComplete({result},1) //更新下拉列表	
+	var lst = process.cache.list(false);
+	var files = table.filter(lst,function(v,index){
+		var f = io.splitpath(v).file;
+		return(f &&..string.startWith(f,filename,true));
+	}) 
+	
+    winform.cmbPath.autoComplete(files:{},1) //更新下拉列表	
 },300)
 
 import sys.reg;

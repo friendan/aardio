@@ -339,7 +339,7 @@ namespace port{
 			if(tx) m = m | 2#100
 			if(rx) m = m | 2#1000
 			
-			var e = ::Pcomm.sio_flowctrl(owner.portNumber)
+			var e = ::Pcomm.sio_flowctrl(owner.portNumber,m)
 			if( e < 0 ) return e,errorMessage[e];
 			return e;
 		};
@@ -352,7 +352,7 @@ namespace port{
 			if(f & 2#10) rts = true;
 			if(f & 2#100) tx = true;
 			if(f & 2#1000) rx = true;
-			return;
+			return cts,rts,tx,rx;
 		};
 		transmitAscii = function(fname,func){
 			if(func) func = ..raw.tostdcall(func,"int(int length,int bufSize,ptr buf,int total)");
@@ -560,8 +560,8 @@ lctrl(.(dtr,rts) = 设置串口RTS/DTS,参数使用布尔值
 iqueue()  = 返回输入缓冲区字符长度\n失败返回null,错误信息
 oqueue()  = 返回发送缓冲区中剩余的数据长度
 getLineStatus() = 获取串口的CTS, DST, DCD, RI线的状态
-setFlow(.(CTS硬流控,RTS硬流控,TX软流控,RX软流控) = 串口流控
-getFlow() = 返回4个值,分别表示CTS硬流控,RTS硬流控,TX软流控,RX软流控是否开启
+setFlow(.(CTS硬流控,RTS硬流控,TX软流控,RX软流控) = 设置串口流控
+getFlow() = 返回4个值:\n分别表示CTS、RTS硬流控,TX、RX软流控是否开启
 dataStatus() = 检查接收数据时是否遇到错误\n0表示无错误,小于0表示函数执行错误,大于0时各二进制位作用:\nbit 0 on - parity error\nbit 1 on - framing error\nbit 2 on - overrun error\nbit 3 on - overflow error
 abortRead() = 强制中止read,getch等读数据函数
 getReadTimeouts() = 返回读数据总超时,间隔超时两个值,单位毫秒

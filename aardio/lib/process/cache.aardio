@@ -7,8 +7,30 @@ import win.reg;
 
 namespace process.cache{
 
-	list = function(filePattern,namePattern){
+	list = function(appPath){
 		var lst = {};
+		
+		if(appPath){
+			var reg = ..win.reg("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\App Paths\");
+			for(name,writeTime in reg.eachKey() ){
+				var subKey = reg.open(name); 
+				if(!subKey) continue;
+				var p = subKey.queryValue("");
+				if(#p) lst[..string.expand(p)] = true;
+				subKey.close()
+			}
+			reg.close();
+			
+			var reg = ..win.reg("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\");
+			for(name,writeTime in reg.eachKey() ){
+				var subKey = reg.open(name); 
+				if(!subKey) continue;
+				var p = subKey.queryValue("");
+				if(#p) lst[..string.expand(p)] = true;
+				subKey.close()
+			}
+			reg.close();			
+		} 
 		
 		var regPaths; 
 		if(_WIN10_LATER){
@@ -52,7 +74,22 @@ namespace process.cache{
 		};
 	}
 	
+	
 	find = function(filePattern,namePattern,searchLnk){
+		 
+		if( (namePattern === null) && filePattern && !..string.indexAny(filePattern,"\/" ) ){
+			var filename = filePattern;
+			if(!..string.endWith(filename,".exe",true)){
+				filename = filename + ".exe";
+			}
+			
+			var path = ..win.reg.query("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\App Paths\"+filename,"");
+			if(..io.exist(path) ) return path;
+			
+			var path = ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\"+filename,"");
+			if(..io.exist(path) ) return path;
+		}
+
 		var paths = list(e); 
 		
 		for(i=1;#paths;1){
@@ -81,7 +118,7 @@ namespace process.cache{
 		if(searchLnk!==false){
 			return ..fsys.lnk.search(filePattern,namePattern); 
 		}
-	} 
+	}  
 }
 
 /**intellisense()
@@ -89,7 +126,7 @@ process.cache = 用于搜索运行过的程序
 process.cache.each() = @for(path in ??.each() ){
 	__/*遍历最近运行过的程序路径，\npath 为程序路径，可能为已删除的路径*/
 }
-process.cache.list() = 返回最近运行的应用程序路径数组，\n返回数组可能包含已删除的程序
-process.cache.find(.( = 查找并返回运行过并且未删除的应用程序路径，\n返回路径必须是 exe 后缀，且文件名不包含 Install,Setup 等单词
-process.cache.find(.("文件名","版本信息产品名称",是否搜索快捷方式) = 查找并返回运行过并且未删除的应用程序路径\n忽略大小写比较,并支持模式匹配语法,\n文件名与产品名称必须至少指定一个，\n越是指定严格的文件名匹配条件搜索越快。\n参数@3 为 false 不搜索快捷方式，可加快返回速度
+process.cache.list() = 返回最近运行的应用程序路径数组，\n返回数组可能包含已删除的程序\n\n如果参数 @1 为 true ，\n则允许在列表中包含在 AppPath 注册的应用程序路径
+process.cache.find(.( = 查找并返回运行过或在 AppPath 注册过的有效程序路径，\n返回路径必须是 exe 后缀，且文件名不包含 Install,Setup 等单词
+process.cache.find(.("文件名","版本信息产品名称",是否搜索快捷方式) = 查找并返回运行过或在 AppPath 注册过的有效程序路径。\n忽略大小写比较,并支持模式匹配语法,\n文件名与产品名称必须至少指定一个，\n越是指定严格的文件名匹配条件搜索越快。\n参数@3 为 false 不搜索快捷方式，可加快返回速度
 end intellisense**/

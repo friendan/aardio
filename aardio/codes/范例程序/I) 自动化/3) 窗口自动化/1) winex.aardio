@@ -2,11 +2,11 @@
 import winex.key;
 import process;
 
-//运行记录本
-process.executeWaitInput("notepad.exe");
+//运行写字板
+process.executeWaitInput("wordpad.exe");
 
 //查找并等待激活的窗口
-var hwnd,hCtrl = winex.waitActive( , ,"Notepad","Edit",15 );
+var hwnd,hCtrl = winex.waitActive(,,"WordPadClass","RICHEDIT50W"); 
 
 //win.setFocus,winex.key.combine 等必须要绑定到目标输入线程
 winex.attach(hwnd,function(){

@@ -324,10 +324,10 @@ namespace lnk {
 		var path,args = searchLnk( pTarget,pLabel, 0 /*_CSIDL_DESKTOP*/  )
 		if(path) return path,args;
 		
-		var path,args = searchLnk( pTarget,pLabel, 2 /*_CSIDL_PROGRAMS*/  )
+		var path,args = searchLnk( pTarget,pLabel, 0x19 /*_CSIDL_COMMON_DESKTOPDIRECTORY*/  )
 		if(path) return path,args;
 		
-		var path,args = searchLnk( pTarget,pLabel, 0x19 /*_CSIDL_COMMON_DESKTOPDIRECTORY*/  )
+		var path,args = searchLnk( pTarget,pLabel, 2 /*_CSIDL_PROGRAMS*/  )
 		if(path) return path,args;
 		
 		var path,args = searchLnk( pTarget,pLabel, 0x17 /*_CSIDL_COMMON_PROGRAMS*/  )

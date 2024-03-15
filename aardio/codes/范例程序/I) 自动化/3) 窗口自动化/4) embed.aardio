@@ -10,8 +10,9 @@ static={cls="static";left=46;top=22;right=854;bottom=542;db=1;dl=1;dr=1;dt=1;z=1
 
 import winex; 
 import process;
-process.executeWaitInput("notepad.exe");//运行记事本
-var hwndNotepad,hNotepadEdit = winex.wait(,,"Notepad","<RichEditD2DPT>|<Edit>");//查找句柄
+ 
+process.executeWaitInput("wordpad.exe");
+var hwndNotepad,hNotepadEdit = winex.waitActive(,,"WordPadClass","RICHEDIT50W");
 
 //悬浮影子窗口：外部进程窗口附加到 winform.static 并如影随形的自适应缩放调整位置
 winex.orphanWindow(winform.static,hwndNotepad)
