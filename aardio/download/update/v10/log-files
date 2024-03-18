@@ -51,7 +51,7 @@
 -1345551035|748|439|codes\范例程序\1) aardio 语言\1) 多线程\13.PostThreadMessage.aardio
 963088537|1468|833|codes\范例程序\1) aardio 语言\1) 多线程\14.threadCtrl.aardio
 147298955|889|529|codes\范例程序\1) aardio 语言\1) 多线程\15.function.aardio
--1070546471|700|407|codes\范例程序\1) aardio 语言\1) 多线程\16.channel.aardio
+1656952941|975|568|codes\范例程序\1) aardio 语言\1) 多线程\16.channel.aardio
 52804315|1525|874|codes\范例程序\1) aardio 语言\2) 协同程序\1.fiber.aardio
 -1483792154|532|392|codes\范例程序\1) aardio 语言\2) 协同程序\2.generator.aardio
 1061539616|1006|421|codes\范例程序\1) aardio 语言\2) 协同程序\3.coroutine.aardio
@@ -505,7 +505,7 @@
 -2111132033|4466|1950|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\2.prism.aardio
 -1516295485|1502|854|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\3.lottie.aardio
 -1056703548|1247|707|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\4.sse.aardio
-468342523|2077|1166|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\A.amis.aardio
+-934395049|2870|1453|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\A.amis.aardio
 -1151672755|1583|909|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\B.Cesium.aardio
 -555094262|2564|1440|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\C.ruffle.aardio
 -583374198|651|431|codes\范例程序\7) Web 界面\1) web.view\Z) 其他应用\D.katex.aardio
@@ -632,7 +632,7 @@
 1224777715|1234|788|codes\范例程序\8) Web 应用\4) HTTP服务器\B.asynHttpServer.table.aardio
 -319217302|12205|4331|codes\范例程序\8) Web 应用\4) HTTP服务器\C.asynHttpServer.file.aardio
 1580425997|187|157|codes\范例程序\8) Web 应用\4) HTTP服务器\.www\main.aardio
-1357425838|3551|1708|codes\范例程序\8) Web 应用\5) RPC\externalServer.aardio
+-374990276|4084|1736|codes\范例程序\8) Web 应用\5) RPC\externalServer.aardio
 -240775060|2741|1066|codes\范例程序\8) Web 应用\6) FastCGI\wizard.aardio
 -577820950|2109|934|codes\范例程序\8) Web 应用\7) XML\msxml.aardio
 1368770124|423|330|codes\范例程序\8) Web 应用\7) XML\SOAP.aardio
@@ -1011,7 +1011,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--1106849727|15|34|config\SYS.CFG
+783928784|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
@@ -1838,7 +1838,7 @@
 2003504272|1032|563|lib\fsys\size.aardio
 -1977111463|9753|3179|lib\fsys\stream.aardio
 -335973117|2116|1027|lib\fsys\streamInfo.aardio
-516087221|4513|1866|lib\fsys\table.aardio
+-88667209|5123|1975|lib\fsys\table.aardio
 1973548645|5255|1737|lib\fsys\tar.aardio
 773823352|6888|2085|lib\fsys\time.aardio
 2040342124|5560|2059|lib\fsys\untar.aardio
@@ -2168,7 +2168,7 @@
 -837766499|1204|666|lib\table\zip.aardio
 1702591986|4170|1524|lib\thread\apiHook.aardio
 6497176|988|550|lib\thread\atom.aardio
--2117029356|4280|1592|lib\thread\channel.aardio
+1020357801|4337|1633|lib\thread\channel.aardio
 1411281816|1098|693|lib\thread\cmdline.aardio
 1542378281|12173|3182|lib\thread\command.aardio
 -758663460|6688|2129|lib\thread\dlManager.aardio
@@ -2363,7 +2363,7 @@
 580040|15782|4897|lib\win\ui\toolbar.aardio
 1148677887|25993|7561|lib\win\ui\tooltip.aardio
 -285994484|11485|3024|lib\win\ui\tracker.aardio
--1227274683|62903|14398|lib\win\ui\_.aardio
+992532027|62970|14424|lib\win\ui\_.aardio
 -1081419275|7610|2979|lib\win\ui\ctrl\atlax.aardio
 919455211|5355|1847|lib\win\ui\ctrl\bk.aardio
 21699528|10322|3389|lib\win\ui\ctrl\bkplus.aardio
@@ -2455,7 +2455,7 @@
 1855879538|28726|7997|tools\2.doc.aardio
 0|0|0|tools\3) 编码\
 -1735395459|566|426|tools\3.help.aardio
-1462939377|3663|1289|tools\4.update.aardio
+538404127|3819|1344|tools\4.update.aardio
 0|0|0|tools\5) 文本文件\
 0|0|0|tools\6) 探测器\
 0|0|0|tools\7) 转换工具\
@@ -2468,7 +2468,7 @@
 34235141|2819|1286|tools\1) 开发环境\evb.aardio
 1640292518|5287|1889|tools\1) 开发环境\extlib.aardio
 1614510147|4822|1841|tools\1) 开发环境\process.aardio
-789288000|5770|1864|tools\1) 开发环境\reset.aardio
+-1098141229|5835|1893|tools\1) 开发环境\reset.aardio
 -820648958|6772|2216|tools\1) 开发环境\statusBar.aardio
 1857691199|2537|1187|tools\1) 开发环境\.config\fontLink.aardio
 0|0|0|tools\2) 界面\.img\

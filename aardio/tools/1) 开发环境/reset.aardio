@@ -34,6 +34,8 @@ winform.button.oncommand = function(id,event){
     reg.delKeyTree("aardio") 
     
     ::Shell32.SHChangeNotify(0x8000000,0,0,0);
+    
+    io.remove("~\download\update\config\mainForm.table");
      
      var defaultTheme = /***
  <Theme>

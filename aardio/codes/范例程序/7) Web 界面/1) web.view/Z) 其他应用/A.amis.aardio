@@ -1,19 +1,21 @@
-//低代码框架 amis
+//amis 低代码框架
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="WebView2 - 调用百度低代码前端框架 amis";right=966;bottom=622)
+var winform = win.form(text="WebView2 - 调用 amis";right=966;bottom=622)
 winform.add()
 /*}}*/
 
 import web.view;
 var wb = web.view(winform);
-	
-wb.export({
+
+//导出 JS 函数
+wb.export({ 
+	//注意 aardio 函数在 JS 中返回 Promise 
 	getAmisJson  = function(){
 		return {
 			"type":"page",
 			"title":"表单页面", 
-			"body":{
+			 "body": { {
 				"type":"form",
 				"mode":"horizontal",
 				"api":"/saveForm",
@@ -22,9 +24,40 @@ wb.export({
 					{"type":"input-email","name":"email","label":"Email","required":true},
 					{"type":"static-tpl","tpl":"生成的id为：${id}"}
 				}, 
-			}
+			
+			},
+			{
+				"type": "button",
+      			"label": "调用 aardio 函数",
+      			"onEvent": {
+        			"click": {
+          				"actions": {
+            				{
+              					"actionType": "custom",
+              					"script": "window.aardioMsgbox('网页调用 aardio 函数')"
+            				}
+          				}
+        			},
+        		},
+        		
+        	} } 
 		};
 	}; 
+	
+	amisCopy = function(content,format){
+	 
+		import win.clip.html;
+		if(format=="text/html"){
+			win.clip.html().write(content);
+		}
+		else {
+			win.clip.write(content)
+		} 
+	};
+	
+	aardioMsgbox = function(str){ 
+		winform.msgbox(str,"JS 调用 aardio");
+	};
 })
 
 
@@ -36,9 +69,9 @@ httpServer.run( {
 <html lang="zh">
 	<head>
 	<meta charset="UTF-8" /> 
-	<link rel="stylesheet" href="https://lib.baomitu.com/amis/3.4.2/antd.min.css" />
-	<link rel="stylesheet" href="https://lib.baomitu.com/amis/3.4.2/helper.min.css" />
-	<script src="https://lib.baomitu.com/amis/3.4.2/sdk.min.js"></script>
+	<link rel="stylesheet" href="https://lib.baomitu.com/amis/6.2.2/antd.min.css" />
+	<link rel="stylesheet" href="https://lib.baomitu.com/amis/6.2.2/helper.min.css" />
+	<script src="https://lib.baomitu.com/amis/6.2.2/sdk.min.js"></script>
 	<style> html, body, .app-wrapper { position: relative; width: 100%; height: 100%; margin: 0; padding: 0; }  </style>
 	</head>
 	<body>
@@ -49,7 +82,8 @@ httpServer.run( {
 		let amis = amisRequire('amis/embed');
 		let amisJson = await getAmisJson(); 
 		let amisScoped = amis.embed('#root', amisJson,{},{
-			theme: 'antd'//https://github.com/baidu/amis/issues/2465
+			theme: 'antd',//https://github.com/baidu/amis/issues/2465
+			copy: (content,{format}) => { amisCopy(content,format) },
 		});
 		})();
 	</script>
@@ -57,7 +91,10 @@ httpServer.run( {
 </html>
 **/;
 	["/saveForm"] = function(response,request){
-		var data = request.postJson();//读取表单请求发送的数据，已解析为 aardio 对象
+		
+		//读取表单请求发送的数据，返回值已解析为 aardio 对象
+		var data = request.postJson();
+		
 		response.write({
 			"status": 0,
 				"msg": "保存成功",

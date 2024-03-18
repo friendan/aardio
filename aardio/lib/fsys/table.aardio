@@ -4,27 +4,35 @@ import util.metaProperty
 namespace fsys;
 
 class table{ 
-	ctor( file,dt ){
+	ctor( file,dt ){{
 		this@ = ( 
 			..util.metaProperty(
 				load = function(){
+					
 					for(k,v in this){ 
 						if( ( (type(k)!="string") || (k[1]!='_'#) )  && type(v) != type.function )   
 							this[k] = null;
 					}
-					var s = ..string.load(file);
 					
+					var s = ..string.load(file);
 					if(#s){
 						if(  ! ( s[1] == 0xEF  && s[2] == 0xBB && s[3] == 0xBF )  ) {
 							s = ..string.fromto(s,0,65001);
-						} 
-		
+						}  
+						
 						var ok,t = call(eval,,s);
-						if(! (ok && t) ) {
-							error(t,2)
+						var err = t;
+						if(!ok){
+							var s2 = ..string.match(s,"%{}");
+							if(#s2){
+								ok,t = call(eval,,s2);
+							}
+						
+							if(!ok) error(..string.concat('配置文件出现错误:\n',file,'\n\n错误信息：\n',err),2);
 						}
 						..table.assign(this,t );
 					} 
+					
 					if( type(this.afterLoad) == type.function ) this.afterLoad();
 					return this;
 				};
@@ -76,14 +84,31 @@ class table{
 		);
 		
 		var s = ..string.load(file);
-		if( s ) {
-			..table.assign(this,eval( s ) )	
-		};
+					
+		if(#s){
+			if(  ! ( s[1] == 0xEF  && s[2] == 0xBB && s[3] == 0xBF )  ) {
+				s = ..string.fromto(s,0,65001);
+			}  
+			
+			var ok,t = call(eval,,s);
+			var err = t;
+			if(!ok){
+				var s2 = ..string.match(s,"%{}");
+				if(#s2){
+					ok,t = call(eval,,s2);
+				}
+			
+				if(!ok) error(..string.concat('配置文件出现错误:\n',file,'\n\n错误信息：\n',err),2);
+			}
+			..table.assign(this,t );
+		} 
+		
 		if( dt ) {
 			..table.mix(this,dt);
-		};	
+		};
+		
 		..table.gc( this,"save" );
-	}; 
+	}}; 
 } 
  
 /**intellisense()

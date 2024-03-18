@@ -48,7 +48,14 @@ do{
 	}
 }while(0)
 
-	
+try{
+	var str = string.load("~\download\update\config\mainForm.table")
+	eval(str)
+}
+catch(e){
+	io.remove("~\download\update\config\mainForm.table")
+}
+
 import process;
 process( "~/download/update/u.bin",..io._exepath );
 

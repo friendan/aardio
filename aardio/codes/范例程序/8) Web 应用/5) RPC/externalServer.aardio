@@ -28,7 +28,7 @@ externalServer.external = {
  
 //可选用下面的方法限定只有下面允许的外部域名才能访问 aardio 函数
 externalServer.accessControlAllowOrigin = {
-    ["https://download.aardio.com"] = true //指定准确前缀，域名后不要加斜杆
+    ["https://d.aardio.com"] = true //指定准确前缀，域名后不要加斜杆
 }
 
 //如果不指定端口号，则默认动态分配空闲的端口号
@@ -46,14 +46,17 @@ externalServer.httpHandler["/test.html"] = function(response,request){
         <script src="<?=owner.rpcUrl?>"></script>
         <script>
         /*
-        也可以在前端源码中用 npm i aardio 安装 aardio.js ,
-        然后再调用 aardio.open( RPC端口号 ) 打开 RPC 服务器，
-        这种方式必须事先知道端口号，不能自动分配动态的空闲端口。
-        而且在 RPC 连接成功以前，只能使用 aardio.xcall 调用 aardio 函数。
-        但直接引用 RPC 服务器提供的 aardio.js 可以自动连接，并在连接成功以前事先建立创建函数。
+        也可以在前端源码中用 npm i aardio 安装 aardio.js 。
+        externalServer 提供的 aardio.js 自动获取 RPC 端口并初始化 RPC 方法。
         如果在创建 web.rpc.externalServer 以后调用标准库中的 nodeJs 创建 Node.js  进程，
         也可以自动获取端口号并在连接成功前创建远程函数。
+        
+        远程服务器上的网页可通过 URL 参数获取 RPC 端口并初始化 RPC 方法。
+        也可以调用 aardio.open( 端口号 ) 连接指定的端口。
+        可参考：https://d.aardio.com/ajs/demo.html
         */
+        
+       	//调用 aardio 函数。
         aardio.test("这是网页调用 aardio 的参数",1122);
         
 		//用 aardio 解析模板字符串
@@ -72,26 +75,39 @@ process.openUrl(externalServer.getUrl("/test.html"))
 
 /*
 如果传入小写 http: 或 https: 开头的网址，
-则返回了附加 rpcServerPort 与 rpcAasdl 参数的网址，aardio.js 支持识别这些参数并自动初始化。
+则返回了附加 rpcServerPort 与 rpcAasdl 参数的网址，
+aardio.js 识别这些参数后自动获取 RPC 端口并初始化 RPC 方法。
 
-远程网页如果不指定 rpcAasdl 参数，则在连接成功前只能使用 aardio.xcall 调用本地函数。
-如果不指定 rpcServerPort 参数，则必须调用 aardio.open 主动连接本地接口 
+未传以上参数则网页中必须调用 aardio.open 连接指定的端口。 
 */
-var rpcUrl = externalServer.getUrl("https://download.aardio.com/demo/externalServer/");
+var rpcUrl = externalServer.getUrl("https://d.aardio.com/ajs/demo.html");
 process.openUrl( rpcUrl );
+
+//上面 demo.html 的源码如下：
+/**
+<!doctype html>
+<html><head>
+    <meta charset="utf-8">
+    <script src="https://d.aardio.com/ajs/aardio.js"></script>
+    <script type="text/javascript">
+        (async () => {
+            /*
+            aardio.js 可自动从网址参数 rpcServerPort，rpcAasdl 获取并连接端口与所有远程函数。 
+            如果未指定参数，则应调用 aardio.open( RPC端口号 ) 打开 RPC 服务器。 
+            aardio.open 返回 Promise 对象。 
+            
+            连接成功前只能使用 aardio.xcall 调用本地函数。 
+            */
+            //await aardio.open(8082);
+
+            await aardio.test("这是网页调用 aardio 的参数", 1122);
+
+            let $ = aardio.tag;
+            $`abc${123}ddd${456}`.then(v => alert("模板字符串:" + v));
+        })()
+    </script>
+</head><body></body></html>
+**/
 
 winform.show();
 win.loopMessage();
-
-/**
-global.d.ts 声明 aardio 对象演示：
-
-declare global {
-
-    interface aardioExternal {  
-    /* 添加 external 接口导出的 aardio  函数 */
-    test: (name: string,value: number) => Promise<string>; 
-    }
-}
-export {};
-**/
