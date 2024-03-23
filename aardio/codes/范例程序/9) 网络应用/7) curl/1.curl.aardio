@@ -13,7 +13,7 @@ https://curl.se/docs/manpage.html
 */
 
 //下载网页，成功返回网页，失败返回 null, 错误代码，错误代码参考: https://everything.curl.dev/usingcurl/returns
-var data = process.curl("https://www.example.com")
+var data = process.curl("https://www.aardio.com")
 console.log( data );
 
 //支持所有 curl 参数

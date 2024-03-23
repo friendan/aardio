@@ -1131,12 +1131,18 @@ namespace process{
 	    		entry = nextSnap(entry) ;
 	    	} 
  			
-		},freeItor   ;
+		},freeItor;
 	
 	}  
 	
 	findId = function(exename){
-		for entry in each(exename)  return entry.th32ProcessID;  
+		var pid;
+		for entry in each(exename)  {
+			pid = entry.th32ProcessID;  
+			break;
+		}
+		
+		return pid;
 	}
 	
 	find = function(exename){

@@ -1,4 +1,5 @@
 ﻿//mainWindows 主窗口
+import process;
 import winex;
 
 class winex.mainWindows{
@@ -39,17 +40,26 @@ class winex.mainWindows{
 			}  
 			elseif( visible && (!wnd.visible ) || (!#wnd.title && #title ) ){
 				this[pid] = {
-						hwnd = hwnd;
-						main = main;
-						visible = visible;
-						title = title;
-						threadId = tid;
-					}
+					hwnd = hwnd;
+					main = main;
+					visible = visible;
+					title = title;
+					threadId = tid;
+					processId = pid;
+				}
 			}
 			
 		}	
 		
 		if(prcs){
+			if(type.isString(prcs)){
+				var wnds = {};
+				for processEntry in ..process.each(prcs) {
+					 wnds[processEntry.th32ProcessID] = ..winex.mainWindows(processEntry.th32ProcessID,waiting);
+				}
+				return wnds;
+			}
+			
 			var pid = prcs[["id"]]||prcs;
 			var wnd = this[pid];
 			if(!wnd){
@@ -77,9 +87,32 @@ class winex.mainWindows{
 	}; 
 }
 
+namespace winex.mainWindows{
+    
+    each = function(...){
+    	var windows = ..winex.mainWindows(...);
+    	var i = 0;
+    	var k,v;
+    	return function(){
+    		k,v = ..table.next(windows,k); 
+    		if(k){
+    			i++;
+    			return i,v.hwnd,v.title,v.visible,v.processId,v.threadId;
+    		}
+    	} 
+    }
+}
+ 
 /*****intellisense()
 winex.mainWindows = 用于查找进程主窗口。\n如果进程有多个窗口，\n则优先取无父窗口及无所有者的可见窗口，并优先取非空标题窗口。
-winex.mainWindows(.() = 无参数则返回所有可以找到主窗口的进程表。\n返回表的键为进程 ID，值为包含窗口信息的表。\n窗口信息的字段：\nhwnd 字段为窗口句柄，\ntitle 字段为窗口标题，\nthreadId 字段为窗口线程 ID。\nvisible 字段为是否可见。\nmain 字段为是否无所有者窗口
+winex.mainWindows(.() = 无参数则返回所有可以找到主窗口的进程表。\n返回表的键为进程 ID，值为包含窗口信息的表。\n窗口信息的字段：\nhwnd 字段为窗口句柄。\ntitle 字段为窗口标题。\nthreadId 字段为窗口线程 ID。\nvisible 字段为是否可见。\nmain 字段为是否无所有者窗口
 winex.mainWindows(.(进程) = 如果参数@1传入进程ID或 process 对象。\n找到则返回包含主窗口信息的表对象。\n其中 hwnd 字段为窗口句柄，title 字段为窗口标题。\n找不到则返回 null
 winex.mainWindows(.(进程,true) = 查找并等待进程显示主窗口。\n参数@1传入进程ID或 process 对象。\n返回包含主窗口信息的表对象。\n其中 hwnd 字段为窗口句柄，title 字段为窗口标题
+winex.mainWindows(.("EXE文件名",true) = 查找并等待指定 EXE 运行进程的所有主窗口显示。\n返回表的键为进程 ID，值为包含窗口信息的表。\n窗口信息的字段：\nhwnd 字段为窗口句柄。\ntitle 字段为窗口标题。\n其他字段与无参数调用此函数的返回值相同
+winex.mainWindows.each() = @for i,hwnd,title,visible,pid,tid in winex.mainWindows.each(){
+	__/*遍历所有主窗口。\n迭代器返回参数依次为：\n序号，窗口句柄，标题，是否显示，进程ID，线程ID*/
+}
+winex.mainWindows.each("EXE文件名",true) = @for i,hwnd,title,visible,pid,tid in winex.mainWindows.each("EXE文件名",true){
+	__/*等待指定 EXE 运行进程的所主窗口显示，然后遍历这些主窗口。\n迭代器返回参数依次为：\n序号，窗口句柄，标题，是否显示，进程ID，线程ID*/
+}
 end intellisense*****/

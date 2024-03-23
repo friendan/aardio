@@ -326,28 +326,33 @@ class view {
 		if(!this.browser) return;  
 		if(!type.isString(param)) param = param?..web.json.stringify(param):"{}";
 	
-		var done;
+		var err;
 		var result;
-		var callback = ..raw.tocdecl(function(err,json){
-			if(!err){
-				result = jsonTryParse(json);
-				done = true;
+		var callback = ..raw.tocdecl(function(errCode,json){
+			if(!errCode){
+				result = jsonTryParse(json); 
+				err = 0;
 			}
 			else {
-				done = false;
+				err = errCode; 
 			}
 		},"void(int errCode,ustring json)")
 		
 		_dll.webview_callDevToolsProtocolMethod(this.browser,name,param,callback) 
-		..win.wait(lambda() done,winform.hwnd,,5);
+		..win.wait(lambda() err,winform.hwnd,,5);
 		
 		..raw._release(callback);
-		if(done) return result;
+		
+		if(!err) return result; 
+		return null,err;
 	};
 	cdpWait = function(name,param,timeout){
-		return this._form.wait(function(){
+		var r,e = this._form.wait(function(){
 			return this.cdp(name,param)
 		},,timeout); 
+		
+		if(e=="Timeout!" ) e = 0x102/*_WAIT_TIMEOUT*/;
+		return r,e; 
 	};
 	cdpQuery = function(selector,parent){
 		if(!parent){
@@ -361,9 +366,12 @@ class view {
 		})
 	};
 	cdpWaitQuery = function(selector,parent,timeout){
-		return this._form.wait(function(){
+		var r,e =  this._form.wait(function(){
 			return this.cdpQuery(selector,parent)
 		},,timeout); 
+		
+		if(e=="Timeout!" ) e = 0x102/*_WAIT_TIMEOUT*/;
+		return r,e; 
 	};
 	exportHostObject = function(name,object){
 		if(!this.browser) return;
@@ -568,16 +576,16 @@ xcall( = 调用JS函数并返回值。\n如果不需要返回值建议改用 inv
 xcall(.("object->func",->->->) = 调用 JS 函数并返回值，\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值。\n\n等待返回值过程中会继续处理界面消息,\n参数@!指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
 invoke( = 调用 JS 函数但不会等待返回值。\n\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值
 invoke(.("object->func",->->->) = 调用 JS 函数但不会等待返回值，\n等待返回值过程中会继续处理界面消息。\n\n参数 @1 指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
-cdp(.(method,params) = 调用 WebView2 内置 CDP 接口。\n参数 @method 指定 CDP 方法，例如："Page.navigate" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n成功返回一个表对象，失败返回 null\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
+cdp(.(method,params) = 调用 WebView2 内置 CDP 接口。\n参数 @method 指定 CDP 方法，例如："Page.navigate" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n成功返回一个表对象，失败返回 null,错误代码。\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
 cdp( = 调用 WebView2 内置 CDP（Chrome DevTools Protocol） 接口。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
-cdpWait(.(method,params,timeout) = 调用 WebView2 内置 CDP 接口并等待返回非 null 值。\n参数 @method 指定 CDP 方法，例如："DOM.getDocument" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回一个表对象，超时返回 null\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
+cdpWait(.(method,params,timeout) = 调用 WebView2 内置 CDP 接口并等待返回非 null 值。\n参数 @method 指定 CDP 方法，例如："DOM.getDocument" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回一个表对象，失败返回 null,错误代码。\n超时错误代码为 0x102/*_WAIT_TIMEOUT*/。\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
 cdpWait( = 调用 WebView2 内置 CDP 接口并等待返回非 null 值。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
 cdpQuery( = 使用 WebView2 内置 CDP 接口查询 DOM 节点。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
-cdpQuery(.(selector,parent) = 使用 WebView2 内置 CDP 接口查询节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。
+cdpQuery(.(selector,parent) = 使用 WebView2 内置 CDP 接口查询节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n成功返回表对象，失败返回 null,错误代码
 cdpWaitQuery( = 使用 WebView2 内置 CDP 接口查询并等待 DOM 节点。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
-cdpWaitQuery(.(selector,parent,timeout) = 使用 WebView2 内置 CDP 接口接口查询并等待节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。
+cdpWaitQuery(.(selector,parent,timeout) = 使用 WebView2 内置 CDP 接口接口查询并等待节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回表对象，失败返回 null,错误代码。\n超时错误代码为 0x102/*_WAIT_TIMEOUT*/
 waitEle( = 等待网页创建指定节点
-waitEle(.(selector) = 等待网页创建指定节点\n@selector 参数指定CSS选择器,\n省略参数@2时同步等待节点出现
+waitEle(.(selector) = 等待网页创建指定节点\n@selector 参数指定CSS选择器,\n省略参数@2时同步等待节点出现。\n\n成功返回 CSS 选择器，失败返回 null,错误对象（表对象或字符串）
 waitEle(.(selector,callback,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n参数@2指定 aardio 回调函数,\n找到节点回调参数@1为选择器，\n失败回调参数@2为错误信息,回调参数@1为null,\n可选用参数@3指定超时，单位毫秒
 waitEle(.(selector,js,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n找到节点执行参数@2指定的 JavaScript 代码,\n执行JS代码时自动绑定this对象为找到的节点,\n可选用参数@3指定超时，单位毫秒
 adjust() = 调整页面大小到适合窗口
@@ -611,7 +619,7 @@ WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的�
 
 WebView2 支持 Win10 以及之后的系统。
 Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。
-版本小于 1803 的 Win10 很罕见可以忽略不计。
+现在没有自带 WebView2 的旧系统已经非常罕见，无特殊原因可以忽略不记。
 
 WebView2 属于公共运行库，如果系统已安装就不需要再安装了。
 未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。

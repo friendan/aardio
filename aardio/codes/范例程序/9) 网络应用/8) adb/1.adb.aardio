@@ -40,7 +40,7 @@ var out = adb.readAll(); //读取进程输出，adb 是一个 process.popen 对�
 console.log(out);
 
 //执行 am start 命令打开程序，例如调用浏览器打开网址
-var adb = process.adb.shell("am start -a android.intent.action.VIEW -d 'https://www.example.com'");
+var adb = process.adb.shell("am start -a android.intent.action.VIEW -d 'https://www.aardio.com'");
 
 //或者直接调用下面的函数也可以
-process.adb.startUrl("https://www.example.com");
+process.adb.startUrl("https://www.aardio.com");

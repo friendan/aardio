@@ -1,4 +1,4 @@
-//缩进转换工具
+//缩进转换
 import ide;
 import win.ui;
 import win.ui.atom;

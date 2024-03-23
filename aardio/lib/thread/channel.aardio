@@ -58,6 +58,8 @@ class channel{
 		return null,e;
 	};
 	close = function(){ 
+		if(!this.table) return;
+		
 		if( !this.table.add("refCount",-1) ){
 			this.table.release();
 		} 

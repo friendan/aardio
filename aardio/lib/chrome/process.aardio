@@ -1,0 +1,61 @@
+﻿//process 启动进程
+import process;
+import winex;
+
+import chrome.path;
+
+namespace chrome;
+
+class process{
+	ctor( args,chromeFirst ){
+		if( !self.path || self.$chromeFirst != chromeFirst ){ 
+			self.path  = ..chrome.path(true,chromeFirst);
+			self.$chromeFirst = chromeFirst;
+			
+			if(!self.path){
+				return null,"系统未安装 Chrome";
+			}
+		}
+		 
+		var userDataDir;
+		if( args[["--user-data-dir"]] != null ){ 
+			userDataDir = ..fsys.environment.expand( args["--user-data-dir"] );
+			userDataDir = ..io.createDir( userDataDir )
+			args["--user-data-dir"] =  userDataDir; 
+		}
+		
+		var cmdLine = {};
+		for(k,v in args){
+			if( type(v) != type.boolean ){
+				..table.push(cmdLine,k+"=" +tostring(v)); 
+			}
+			elseif(v) {
+				..table.push(cmdLine,k);	
+			} 
+		}
+		
+		var chromeWins = {}
+		for hwnd,title,threadId,processId in ..winex.each( "Chrome_WidgetWin_1") { 
+			chromeWins[hwnd] = processId;
+		}
+		 
+		if( !..process.execute(self.path,cmdLine) ) return;
+		
+		this.userDataDir = userDataDir;
+		while( ..win.peekPumpMessage()!==null ){
+			for hwnd,title,threadId,processId in ..winex.each( "Chrome_WidgetWin_1") { 
+				if(!chromeWins[hwnd]){
+					var prcs = ..process(processId); 
+					prcs.hwndChrome = hwnd; 
+					return prcs;	 
+				}
+			} 
+		}
+	}; 
+}
+
+/*****intellisense()
+chrome.process( = 创建 Chrome 进程
+chrome.process(.(启动参数表,优先启动Chrome) = 启动 Edge（Chromium ）、Chrome 、 Supermium 等 Chrome  内核浏览器。\n如果参数 @2 为 true 则优先启动 Chrome，否则优先启动 Edge。\n启动参数表中键名应以 -- 开始。\n\n所有参数都可以省略。\n启动成功则返回 process 对象
+chrome.process() = !process.
+end intellisense*****/

@@ -5,9 +5,10 @@ var winform = win.form(text="web.form 入门";right=1151;bottom=745;parent=...;s
 winform.add()
 /*}}*/
 
-//web.form 使用系统自带的 IE 内核,生成的EXE体积很小，
-//注意 Win10/11 自带 IE11， Win7 已逐渐退出市场一般没必要再考虑
-//即使 WIN10 删除 IE 浏览器，IE 内核浏览器控件仍作为操作系统组件被保留。
+//web.form 使用系统自带的 IE 内核，生成的 EXE 体积很小，
+//注意 Win10/11 自带 IE11，不自带 IE11 的旧系统已经很罕见一般没必要再考虑
+//即使系统删除 IE 浏览器，IE 内核浏览器的控件仍作为操作系统组件被保留。
+//改用 web.view 库可支持系统自带的 Edge Chromium 内核。
 
 import web.form;
 var wb = web.form( winform );//参数 @1 指定嵌入窗口（可以是 winform 或 static,custom 等控件对象）。

@@ -13,6 +13,9 @@ https://github.com/TestStack/UIAComWrapper/
 
 System.Windows.Automation 用法请参考：
 aardio 范例 > 调用其他语言 > dotNet > 应用 > UI Automation
+
+不建议在同一进程中同时导入 System.Windows.Automation，System.Windows.Automation.3。
+如果先导入了 System.Windows.Automation.3 则导入 System.Windows.Automation 时忽略不作任何操作。
 */
 import System.Windows.Automation.3;
 

@@ -46,6 +46,10 @@ var condEdit = Automation.OrCondition({
 var editBox = wordpad.FindFirst( TreeScope.Descendants, condEdit); 
 var hwnd = editBox.Current.NativeWindowHandle;//窗口句柄
 
+//鼠标操作，移动鼠标到控件位置
+import mouse;
+mouse.moveTo(editBox.Current.BoundingRectangle);
+
 //获取写字板内的文本 
 //https://learn.microsoft.com/en-us/dotnet/api/system.windows.automation.textpattern?view=netframework-4.0
 var textPattern;

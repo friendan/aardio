@@ -69,6 +69,11 @@ namespace System.Windows.Automation{
 	AutomationElement[["NotSupported"]] = AutomationElement.NotSupported;
 }
 
+/**details(说明)
+不建议在同一进程中同时导入 System.Windows.Automation，System.Windows.Automation.3。
+如果先导入了 System.Windows.Automation.3 则导入 System.Windows.Automation 时忽略不作任何操作。
+end details**/
+
 /**intellisense()
 System.Windows.Automation = .NET System.Windows.Automation 组件。\nSystem.Windows.Automation.3 扩展库可导入兼容的库。\n用法相同且扩展了部分接口。\n[相关文档](https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6)\n!dotNetNameSpace.
 end intellisense**/

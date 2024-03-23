@@ -10,13 +10,16 @@ var wb = web.view(winform);
 winform.show();
 
 //打开页面
-wb.go("http://bbs.aardio.com");
+wb.go("https://bbs.aardio.com");
 
 //等待页面打开（通过等待 CSS 选择器指定的节点实现）
 wb.waitEle("body")
 
-//CDP:获取 Cookies，应当等页面打开再取
-var result = wb.cdp("Page.getCookies");
+//CDP:获取 Cookies，应当等页面打开再取。
+var result = wb.cdp("Network.getCookies",
+	{urls={"https://bbs.aardio.com"}}//参数可省略
+);
+//https://chromedevtools.github.io/devtools-protocol/tot/Network/#method-getCookies
 
 import console;
 console.dumpJson(result.cookies);

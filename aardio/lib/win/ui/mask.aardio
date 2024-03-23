@@ -42,6 +42,13 @@ class mask{
 		this.show(sw);
 		return true;
 	};
+	moveToRect = function(rc,sw){
+		if(!rc) return false;
+		this.autoResize = false;
+		this.setRect(rc);	
+		this.show(sw);
+		return true;
+	};
 }
 
 /**intellisense()

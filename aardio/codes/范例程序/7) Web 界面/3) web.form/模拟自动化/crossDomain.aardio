@@ -29,7 +29,7 @@ var html = /**
         所有web窗体函数即可自动支持跨域框架.
 </div> 
         <iframe name="xDomainFrame" 
-        src="http://www.example.com" frameborder="0" scrolling="yes" 
+        src="http://www.aardio.com" frameborder="0" scrolling="yes" 
         height="900" width="100%" noresize="noresize">
         </iframe>
 </body>

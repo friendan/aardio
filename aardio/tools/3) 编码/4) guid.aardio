@@ -1,4 +1,4 @@
-//GUID生成器
+//GUID 生成器
 import win.ui;
 import win.guid;
 import win.clip;

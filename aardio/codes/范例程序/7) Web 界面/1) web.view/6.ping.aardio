@@ -12,7 +12,7 @@ import process.popen;
 wb.external = {
 	ping = function(domain){
 		
-		//同步有同步的优势，扬长避短是智慧，倒行逆施最累人。 
+		//同步有同步的优势。 
 		var prcs,err = process.popen("ping "+ domain); //请参考范例 > 进程 > 管道
 		
 		/*
@@ -33,8 +33,8 @@ wb.html = /**
 <body style="white-space: pre;"><script>
 doSomething = async() => {
 	
-	//异步有异步的好处，扬长避短是智慧，倒行逆施最累人。
-  	var result = await aardio.ping('www.example.com');
+	//异步有异步的好处。
+  	var result = await aardio.ping('www.baidu.com');
   	document.body.insertAdjacentText('beforeend',result);
 };
 </script>

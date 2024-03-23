@@ -1,4 +1,4 @@
-//升级包制作工具
+//升级包制作
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio - 升级包制作工具";right=735;bottom=471;parent=...)

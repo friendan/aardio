@@ -8,12 +8,12 @@ if( ! dotNet.import("Microsoft.Web.Administration") ){
 
 var serverManager = Microsoft.Web.Administration.ServerManager();
 //启动指定网站
-//注意 C# 中下标要改为 Sites.Item["www.example.com"]
+//注意 C# 中下标要改为 Sites.Item["www.aardio.com"]
 serverManager.Sites.Item["www.aardio.com"].Start()
 
 //注册 MIME
 /*
-var config = serverManager.GetWebConfiguration("www.example.com");
+var config = serverManager.GetWebConfiguration("www.aardio.com");
 var handlersSection = config.GetSection("system.webServer/handlers");
 
 var handlersCollection = handlersSection.GetCollection();

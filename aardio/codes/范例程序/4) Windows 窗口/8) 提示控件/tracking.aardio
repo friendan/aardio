@@ -20,7 +20,7 @@ tooltipCtrl.onHyperlinkClick = function(href,title){
 var toolInfo = tooltipCtrl.addTrackingTool(winform.button); 
 winform.button.oncommand = function(id,event){ 
     var x,y,cx,cy = winform.button.getPos(true)
-    toolInfo.setText(`点链接试试：<a href="https://www.example.com">example.com</a>`).trackPopup(true,x+20,y+cy);
+    toolInfo.setText(`点链接试试：<a href="https://www.aardio.com">aardio.com</a>`).trackPopup(true,x+20,y+cy);
     tooltipCtrl.capture = true;  
 }  
 

@@ -15,7 +15,8 @@ var cacheUiaSupported = ..table.cache();
 get = function(hwnd){
 	if(!hwnd) hwnd = ::User32.GetForegroundWindow();
 	if(!hwnd) return;
-			
+	
+	var caret;
 	var uiInfo = ..winex.getUiInfo(hwnd);
 	if(!uiInfo) {
 		caret = ..winex.accObject.getCaret(hwnd);

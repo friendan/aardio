@@ -18,7 +18,7 @@ var str = http.post("http://httpbin.org/post" ,{
 console.log(str);
 
 //GET演示        
-var str = http.get("http://www.example.com");
+var str = http.get("http://www.aardio.com");
 console.log(str);
 
 /*

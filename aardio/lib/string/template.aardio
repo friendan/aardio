@@ -6,6 +6,15 @@ class template{
 		this.template = template;
 	}; 
 	format = function(args){
+		for k,v in ..table.eachName(this){
+			if( k[1]=='$'# ){
+				k = ..string.right(k,-2);
+				if(args[k]===null){
+					args[k] = tostring(v);	
+				}
+			}
+		}
+		
 		return ( ..string.replace(this.template,pattern,args ) );
 	} 
 }
@@ -14,8 +23,8 @@ class template{
 string.template = 字符串模板
 string.template(.(模板字符串)
 string.template(.(模板字符串,模板匹配规则) = 可选使用模式匹配语法指定参数匹配规则\n默认匹配规则为"\$\{(.+?)\}",匹配形如 ${参数名} 的参数
-?string.template = !string_template.
 string.template() = !string_template.
 !string_template.format = @.format(\n	参数名 = 值__/*可选指定任意多个参数键值对用于替换模板参数*/;\n)
 !string_template.template = @.template = /***\n	${模板参数}__/*根据预设的格式标明参数*/\n***/ 
+!string_template.? = 可用 $模板参数名 格式指定模板参数的默认值
 end intellisense**/

@@ -1,22 +1,32 @@
-﻿//入门
-import FlaUI;
+﻿//入门 
 import FlaUI.UIA3;
+ 
+//创建自动化对象
+var uia = FlaUI.UIA3.UIA3Automation();
+ 
+//可使用『aardio 工具 / 探测器 / FlaUI 探测器』自动生成下面的代码。
+//教程 https://mp.weixin.qq.com/s/uEJSete63SQgJYEHw2PacQ
 
-//附加到目标进程窗口
-var app = FlaUI.Attach("WeChat.exe"); 
+/*
+查找窗口
+参数@1: 可指定EXE文件名、EXE路径、进程ID。
+参数@2: 窗口类名，支持模式匹配语法。
+参数@3: 窗口标题，支持模式匹配语法。
+*/
+var window = uia.FindWindow("WeChat.exe","WeChatMainWndForPC","微信");
 
-//获取主窗口
-var automation = FlaUI.UIA3.UIA3Automation();
-var window = app.GetMainWindow( automation );
-
-if(window){
-	
+//上面的参数都是可选参数，以下写法都是可以的
+//var window = uia.FindWindow("WeChat.exe")
+//var window = uia.FindWindow( , ,"微信");
+//var window = uia.FindWindow( ,"WeChatMainWndForPC")
+ 
+if(window){ 
 	//前置窗口
 	window.Focus();
 	
 	/*
 	了解最简单的几个 XPath 语法规则：
-	XPath 用斜杆分开节点，单斜杆 / 表示选择当前节点的子节点。
+	XPath 用斜杆分开节点，单斜杆 / 表示选择当前节点的测试内容子节点。
 	两个斜杆 // 表示选择当前节点下面任意深度的后代节点（不要求位置是直接子节点）。
 	如果路径开始于单个斜杆 / ，则表示从根节点开始查找。
 	
@@ -25,21 +35,23 @@ if(window){
 	
 	下面用 XPath 查找输入框：
 	*/
-	var input  = window.FindFirstByXPath(`//Edit[@Name="输入"]`);
+	var input  = window.FindFirstByXPath(`//Edit[@Name="文件传输助手"]`);
 	/*
-	上面的[@Name="输入"]用于指定节点的 Name 属性，
+	上面的[@Name="文件传输助手"]用于指定节点的 Name 属性，
 	属性置于方括号内并以 @ 字符作为名称前缀。
 	可查询的属性有：AutomationId， Name，ClassName，HelpText 。
 	可以用探测工具 FlaUInspect 查看这些属性。
 	*/
 	
 	//上面的写法等价于下面的写法
+    /*
 	var input = window.FindFirstDescendant( 
-		automation.By( Name = "输入"; ControlType="Edit")
+		uia.By( Name = "文件传输助手"; ControlType="Edit")
 	)
+    */
  
 	//点击输入框
-	mouse.click(input.BoundingRectangle);
+	mouse.click(input);
 	
 	//发送文本内容
 	key.sendString("测试内容");
@@ -48,8 +60,8 @@ if(window){
 	var sendButton = window.FindFirstByXPath("//Button[@Name='发送(S)']"); 
 	
 	//转换为 button 控件
-	//var sentButton = FlaUI.As(sendButton,"Button")
+	//var sentButton = FlaUI.As("Button",sendButton)
 	
 	//点击按钮
-	mouse.click(sendButton.BoundingRectangle );
+	mouse.click(sendButton);
 }
