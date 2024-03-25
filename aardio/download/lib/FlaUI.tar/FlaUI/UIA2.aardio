@@ -1,0 +1,119 @@
+﻿import winex;
+import process;
+import process.file;
+import FlaUI;
+import dotNet;
+
+dotNet.reference({ 
+	"FlaUI.UIA2":$"~\lib\FlaUI\.res\FlaUI.UIA2.dll";
+});
+
+dotNet.import("FlaUI.UIA2");
+
+FlaUI.UIA2.UIA2Automation[["ctor"]] = function(automation){
+	automation[["By"]] = class {
+ 		ctor( option ){
+ 			var condition;
+ 			for k,v in ..table.eachName(option){ 
+ 			  	
+ 				var func = ..table.getCall(automation.ConditionFactory,"By"+k); 
+ 				if(k=="ControlType") v = ..FlaUI.Definitions.ControlType[v]; 
+ 				
+ 				var cond = invoke(func,automation.ConditionFactory,v); 
+ 				if(!condition) condition = cond;
+ 				else {
+ 					var a = condition
+ 					condition = condition.And(cond);
+ 					
+ 					..com.Release(cond);
+ 					..com.Release(a);
+ 				}
+ 			}
+ 	 	
+ 			return condition
+ 		}; 
+	}
+	automation[["FindWindow"]]  = function(pid,cls,title,timeout){
+		if(type.isString(pid)){
+			var prcs;
+			if(..string.indexAny(pid,"/\")){
+				prcs = ..process.file.find(pid);
+			}
+			else {
+				prcs = ..process.find(pid);	
+			}
+			
+			if(!prcs) return;
+			
+			if(title===null){
+				var hwnd = prcs.getMainWindow(cls);
+				if(hwnd){
+					prcs.free();
+					 
+					return automation.FromHwnd(hwnd); 
+				}
+			}
+			
+			pid = prcs.id; 
+			prcs.free();
+		}
+		elseif(pid[["id"]]){
+			
+			
+			if(title===null){
+				if((cls === null) && pid.hwndChrome){
+					return automation.FromHwnd(pid.hwndChrome); 
+				}
+			
+				var hwnd = prcs.getMainWindow(cls);
+				if(hwnd){  
+					return automation.FromHwnd(hwnd); 
+				}
+			}
+		}
+		
+		var hwnd = ..winex.find(cls,title,pid,,timeout);
+		if(!hwnd) return;
+		
+		return automation.FromHwnd(hwnd); 
+	}; 
+	automation[["FromHwnd"]] = function(hwnd){
+		var wnd = automation.FromHandle(hwnd);
+		
+		if(wnd){
+			wnd[["Focus"]] = function(){
+				..win.setForeground(hwnd);
+			} 
+			
+			return wnd;
+		}	
+	}; 
+}
+
+/*****intellisense()
+FlaUI.UIA2.UIA2Automation = UIA2 自动化接口。\nUIA2 老旧卡，建议使用更新更快的 FlaUI.UIA3。\n注意：不要在同一进程中同时导入 FlaUI.UIA2 与 FlaUI.UIA3
+FlaUI.UIA2.UIA2Automation() = 创建 UIA2Automation 对象\n!stdFlaUIA2Automation.
+end intellisense*****/
+
+/*****intellisense(!stdFlaUIA2Automation)
+GetDesktop() = 返回桌面窗口
+FromPoint(__) = 自参数@1指定的坐标获取节点。\n参数@1 应为 System.Drawing.Point 类型
+FromHwnd(__) = 自参数@1指定的窗口句柄获取节点\n!stdFlaUIElement.
+FocusedElement() = 返回输入焦点所在节点
+ConnectionTimeout = 连接超时，\n值为 System.TimeSpan 对象。\n默认值为 2 秒
+TransactionTimeout  = 处理超时，\n值为 System.TimeSpan 对象。\n默认值为 2 秒
+ConditionFactory = 用于创建节点搜索条件
+By(condition) = @.By(\n	ControlType = "Edit";\n	Name = "输入";__/*创建节点搜索条件。\n表参数@1 中每个键值对指定一个匹配条件，多个条件为 And 关系。\n返回对象提供 And,Or,Not 函数，\nAnd,Or 可以此函数创建的其他搜索条件对象作为参数*/\n)
+By() = !stdFlaUICondition2.
+FromPoint() = !stdFlaUIElement.
+FromHandle() = !stdFlaUIElement.
+FindWindow( = 查找窗口对象
+FindWindow(.(进程,窗口类名,标题,超时) = 所有参数可选（至少指定一个查找条件）。\n参数@1可指定 process 对象、进程ID、EXE文件名、EXE路径。\n窗口类名、标题都支持模式匹配语法。\n超时可选指定一个单位为毫秒的数值
+FindWindow() = !stdFlaUIElement.
+end intellisense*****/
+
+/*****intellisense(!stdFlaUICondition2)
+Not() = 逻辑取反
+Or(__) = 逻辑或，参数 @1 可指定 By 函数返回的其他搜索条件对象
+And(__) = 逻辑与，参数 @1 可指定 By 函数返回的其他搜索条件对象
+end intellisense*****/

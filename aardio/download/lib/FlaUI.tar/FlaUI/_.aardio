@@ -1,0 +1,189 @@
+﻿import key;
+import mouse;
+import process;
+import System.TimeSpan;
+import dotNet;
+
+dotNet.reference({
+	"Interop.UIAutomationClient":$"~\lib\FlaUI\.res\Interop.UIAutomationClient.dll";
+	"FlaUI.Core":$"~\lib\FlaUI\.res\FlaUI.Core.dll"; 
+});
+
+dotNet.import("FlaUI.Core");
+
+FlaUI.Core.FlaUI = FlaUI;
+FlaUI.Core.Core = FlaUI.Core;
+FlaUI = FlaUI.Core;
+
+FlaUI[["Attach"]] = lambda(...) FlaUI.Application.Attach(...)
+FlaUI[["LaunchStoreApp"]] = lambda(...) FlaUI.Application.LaunchStoreApp(...)
+FlaUI[["Launch"]] = function(executable,arguments,...){
+	if(type.isString(executable)){
+		var prcs = ..process(executable,arguments,...);
+		if(prcs){
+			var app = FlaUI.Application.Attach(prcs.id);
+			prcs.free();
+			
+			return app;
+		}
+	}
+	else {
+		return FlaUI.Application.Launch(executable);
+	} 
+}
+
+FlaUI[["enum"]] = function(parentNode,proc){  
+	  
+		var enum;
+		enum = function(parent,level){
+			var next = {};
+			var eles = parent.FindAllChildren();
+			level++;
+	
+			for(i=1;eles.Length;1){
+				var node = eles[i];
+				var r = proc(node,parent,i,level);
+				if( r == true ){
+					..table.push(next,node);
+				}
+				elseif( r === null ) {
+					return;
+				} 
+			}
+			
+			for(i=1;#next;1){
+				if( enum(next[i],level) === null ){
+					return;
+				}
+			} 
+			
+			return true; 
+		}
+		
+		return enum( parentNode,0 ); 
+}
+
+FlaUI[["FromPoint"]]  = function(parentNode,x,y){ 
+	var rc  = ::RECT();
+	var result;
+	
+	FlaUI.enum(parentNode,function(control,parent,index,level){
+			if(!control.ControlType){
+				return false;
+			}
+			rc.float(control.BoundingRectangle);
+			
+			if(rc.contains(x,y)){
+				result = control; 
+				return true;
+			}
+			return false;
+		}
+	) 
+	
+	return result;
+}
+
+FlaUI[["As"]] = function(t,ele){
+	if(type.isString(t)){
+		return FlaUI.AutomationElements.AutomationElementExtensions["As"+t](ele);
+	}
+	
+	return FlaUI.AutomationElements.AutomationElementExtensions.AsType(ele,t);
+}
+
+FlaUI[["DrawHighlight"]] = function(ele) {
+	return FlaUI.AutomationElements.AutomationElementExtensions.DrawHighlight(ele);; 
+}
+
+/**details(入门教程)
+[入门教程](https://mp.weixin.qq.com/s/uEJSete63SQgJYEHw2PacQ)
+end details**/
+	
+/*****intellisense()
+FlaUI = .NET 组件 FlaUI。\n在 aardio 中 FlaUI 与 FlaUI.Core 指向同一名字空间。\n注意首字母大写常用于 .NET 名字空间，而 aardio 名字空间通常小写首字母。\n\n此组件库已自动导入 key,mouse 库
+end intellisense*****/
+
+/*****intellisense(FlaUI)
+Launch( = 运行进程并返回 FlaUI.Application 对象
+Launch(.(executable,arguments) = 字符串参数 @executable 指定执行程序路径。\n可选用字符串 @arguments 指定启动参数。\n如果参数 @1 为字符串，此函数调用 aardio 标准库 procsss 启动进程。\n可传入更多 process 支持的构造参数
+Launch(.(startInfo) = 参数 @startInfo 可指定 System.Diagnostics.ProcessStartInfo 对象
+LaunchStoreApp(.(appUserModelId,arguments) = 运行 UWP 应用。\n此函数等价于 FlaUI.Application.LaunchStoreApp 函数
+Attach(__) = 绑定已运行的进程， FlaUI.Application 对象。\n参数@1可以用字符串指定执行文件名，也可以用数值指定进程 ID。\n此函数等价于 FlaUI.Application.Attach 函数
+Launch() = !stdFlaUIApp.
+Attach() = !stdFlaUIApp.
+Launch() = !stdFlaUIApp.
+Attach() = !stdFlaUIApp.
+enum = @FlaUI.enum(parentNode,function(flaUiNode,flaUiParent,index,level){
+	__/*枚举 @parentNode 节点下面的所有后代节点。\n返回 true 继续枚举子节点，返回 false 忽略子节点。\n返回 null 退出枚举*/
+}
+FromPoint(.(parentNode,x,y) = 自 @x,@y 参数指定的坐标查找并返回节点。\n@parentNode 参数指定父节点或 FlaUI.GetMainWindow 等函数返回的窗口对象
+FromPoint() = !stdFlaUIElement.
+Debug.GetXPathToElement( = 获取节点的 XPath 路径
+Debug.GetXPathToElement(.(node,root) = 参数@node 指定当前节点。\n可选用 @root 参数指定根节点
+Input.Mouse.Position = 当前鼠标位置。\nSystem.Drawing.Point 对象
+Definitions = 类型定义。\n参考 https://github.com/FlaUI/FlaUI/tree/master/src/FlaUI.Core/Definitions
+ControlType = 控件类型。\n参考 https://github.com/FlaUI/FlaUI/blob/master/src/FlaUI.Core/Definitions/ControlType.cs
+ControlType.Edit = 文本框
+ControlType.Button = 按钮
+As("Button",__) = 转换为指定类型的控件对象。\n参数 @1 指定控件类名，参数 @2 指定界面节点对象
+DrawHighlight(__) = 高亮参数@1指定的界面节点对象。\n这个函数很卡，建议改用 aardio 提供的 win.ui.mask
+end intellisense*****/
+
+/*****intellisense(!stdFlaUIApp)
+GetMainWindow( = 获取主窗口节点。
+GetMainWindow(.(automation,waitTimeout) = 获取主窗口节点。\n参数@1应指定 FlaUI.UIA3.UIA3Automation 或 FlaUI.UIA2.UIA2Automation 创建的对象。\n参数 @waitTimeout 可选用一个 System.TimeSpan 对象指定等待时间
+WaitWhileBusy(__) = 如果进程忙则等待。\n可选用参数 @1 可选用一个 System.TimeSpan 对象指定等待时间
+WaitWhileMainHandleIsMissing(__) = 等待创建主窗口。\n可选用参数 @1 可选用一个 System.TimeSpan 对象指定等待时间
+GetAllTopLevelWindows(__) = 获取包含该进程内所有顶层窗口节点的数组。\n参数@1应指定 FlaUI.UIA3.UIA3Automation 或 FlaUI.UIA2.UIA2Automation 创建的对象
+Close() = 关闭进程。\n如果参数 @1 为 true ，则在关闭失败时杀除进程
+Kill() = 杀除进程
+MainWindowHandle = 主窗口句柄
+Name = 进程名称
+ProcessId = 进程 ID
+IsStoreApp = 是否 UWP 应用
+HasExited =  是否已退出
+ExitCode = 退出代码
+CloseTimeout =  关闭超时。\nSystem.TimeSpan 对象
+GetMainWindow() = !stdFlaUIElement.
+end intellisense*****/
+
+/*****intellisense(!stdFlaUIElement)
+FindAllByXPath("__") = 使用参数 @1 指定的 XPath 表达式查找并返回找到的节点数组。\n调用 FindAllByXPath 函数的元素为 XPath 根元素。\n\n获取所有子节点可使用 FindAllChildren 函数
+FindFirstByXPath("__") = 使用参数 @1 指定的 XPath 表达式查找并返回找到的第一个节点。\n调用 FindFirstByXPath 函数的元素为 XPath 根元素。
+FindFirstDescendant(condition) = @.FindFirstDescendant( \n	automation.By( Name = "输入";ControlType="Edit")__/*查找后代节点。\nautomation 请更换为当前使用的 FlaUI.UIA3.UIA3Automation 或 FlaUI.UIA2.UIA2Automation 对象*/\n)	
+FindFirstByXPath() = !stdFlaUIElement.
+FindAllByXPath() = !stdFlaUIElement.
+FindFirstDescendant() = !stdFlaUIElement.
+? = !stdFlaUIElement.
+BoundingRectangle = 节点所在的区块。\n注意所有 mouse 库函数都支持以此结构体转换为区块中点坐标
+ActualWidth = 宽度
+ActualHeight = 高度
+Parent = 父节点\n!stdFlaUIElement.
+Name = 名称
+AutomationId = 自动化 ID 
+ClassName = 类名
+ControlType = 控件类型，这个属型这是一个枚举数值。\n\n改用 Properties.ControlType ，并将其传入 tostring 函数\n可得到英文字符串表示的控件类型
+IsEnabled = 是否启用
+HelpText = 帮助文本
+ItemStatus = 状态，字符串
+Focus() = 如果是窗口调用 SetForeground 函数前置，\n否则调用 FocusNative 设为输入焦点
+FocusNative() = 设为输入焦点
+SetForeground() = 前置窗口
+CaptureToFile(__) = 截图到文件。\n参数指定文件路径。\n如果路径使用了 aardio 规则，可用 io.fullpath 先转换一下
+Capture() = 截图并返回 System.Drawing.Bitmap 对象
+FindAllChildren() = 返回包含所有子节点的数组
+Properties = 元素属性。\n可用属性参考: https://github.com/FlaUI/FlaUI/blob/master/src/FlaUI.Core/FrameworkAutomationElementBase.Properties.cs#L77 \n!stdFlaUiProperty.
+end intellisense*****/
+
+/*****intellisense(!stdFlaUiProperty)
+LocalizedControlType = 本地化的控件类型，中文字符串
+ProcessId = 进程 ID
+NativeWindowHandle = 原生窗口句柄
+IsOffscreen = 在屏幕上是否不可见，不可见为 true
+IsPassword = 是否密码输入框
+IsPeripheral = 是否外围 UI 组件，例如菜单或浮动通知
+IsControlElement = 是否控件
+IsContentElement = 是否内容展示元素 
+ControlType = 控件类型，这是一个对象。\n些对象可传入 tostring 函数转换为英文字符串。\n也可用对象的 Value 成员返回枚举数值
+end intellisense*****/

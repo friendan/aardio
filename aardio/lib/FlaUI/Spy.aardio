@@ -1,0 +1,110 @@
+﻿import win;
+import winex;
+import FlaUI;
+
+namespace FlaUI.Spy; 
+
+var cache = ..table.cache();
+FromPoint = function(x,y){
+	
+	var hwndTarget = ..winex.fromPointReal( x,y,1/*_CWP_SKIPINVISIBLE*/ | 4/*_CWP_SKIPTRANSPARENT*/ | 2/*_CWP_SKIPDISABLED*/ );
+	if(!hwndTarget) return;
+	
+	if(!Automation){
+		error("未指定 FlaUI.Spy.Automation 对象",2)
+	}
+	
+	var hwndRoot = ..win.getRoot(hwndTarget);
+	if(hwndRoot == self.Hwnd){
+		return;
+	}
+	
+	var window = cache[hwndRoot] || Automation.FromHandle(hwndRoot);
+	
+	if(!window){
+		return;
+	}
+	
+	cache[hwndRoot] = window;
+	var node = ..FlaUI.FromPoint(window,x,y);
+	if(!node) return;
+	
+	node[["$window"]] = window;
+	node[["$hwnd"]] = hwndRoot;
+	
+	return node;
+}
+
+GetXPath = function(node){
+	if(node==node[["$window"]]){
+		return "/";
+	}
+	
+	var xpath;
+	
+	try{
+		xpath = ..FlaUI.Debug.GetXPathToElement(node,node[["$window"]]);
+	}
+	
+	if(!xpath){
+		try{
+			xpath = "//" + tostring(node.Properties.ControlType);
+		}
+	}
+	if(!xpath) return ""; 
+	
+	//FlaUI 返回的 XPath 总是错的，修复
+	if(xpath===""){
+		return "/" + tostring(node.Properties.ControlType);
+	}
+	
+	//FlaUI 返回的 XPath 总是错的，修复
+	var current = node.Parent;
+	do {
+		if(current.Parent == node[["$window"]] ){
+			xpath = "/" ++ tostring(current.Properties.ControlType) ++ xpath;
+			break;
+		}
+		
+		current = current.Parent;
+	}while(current);
+	
+	var shortXPath = ..string.match(xpath,"/[^/]+$");
+	var property = 0;
+	
+	var name =  node.Name; 
+	if(#name && #name < 50 /*&& !..string.find(name,"\s")*/ ){
+		xpath = xpath + `[@Name="` + name + `"]`;
+		if(shortXPath) shortXPath = shortXPath + `[@Name="` + name + `"]`;
+		property++;
+	}
+	
+	var aid = node.AutomationId;
+	if(#aid){
+		xpath = xpath + `[@AutomationId="` + aid + `"]`;
+		if(shortXPath) shortXPath = shortXPath + `[@AutomationId="` + aid + `"]`;
+		property++;
+	} 
+	
+	var cls = node.ClassName;
+	if(#cls){
+		xpath = xpath + `[@ClassName="` + cls + `"]`;
+		if(shortXPath) shortXPath = shortXPath + `[@ClassName="` + cls + `"]`;
+		property++;
+	} 
+	
+	if(shortXPath){
+		shortXPath = "/" + shortXPath;
+	}
+	
+	if(property) return xpath,shortXPath;
+	return xpath;
+}
+ 
+/*****intellisense(FlaUI.Spy)
+FromPoint(.(x,y) = 自 x,y 参数指定的屏幕坐标获取自动化节点对象
+FromPoint() = !stdFlaUIElement.
+GetXPath(__) = 返回 XPath 路径，以及 XPath 短路径。\n参数@1 指定 FlaUI.Spy.FromPoint 函数返回的对象
+Automation = 在使用其他函数以前指定为 FlaUI.UIA3.UIA3Automation 或 FlaUI.UIA2.UIA2Automation 对象
+Hwnd = 指定探测器工具自身窗口句柄
+end intellisense*****/

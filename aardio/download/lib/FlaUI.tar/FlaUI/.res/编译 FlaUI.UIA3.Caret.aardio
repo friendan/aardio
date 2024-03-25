@@ -1,0 +1,121 @@
+import dotNet;
+
+var compiler = dotNet.createCompiler("C#");//创建C#语言编译器
+compiler.Reference("~\lib\FlaUI\.res\Interop.UIAutomationClient.dll");
+compiler.Reference("~\lib\FlaUI\.res\FlaUI.UIA3.dll");
+compiler.Reference("~\lib\FlaUI\.res\FlaUI.Core.dll"); 
+compiler.Reference("System.Drawing.dll")
+compiler.Reference("WindowsBase")
+
+//启用 dynamic，最低需求： Win8 .NET 4.x
+compiler.Reference(
+	"System.Core.dll","Microsoft.CSharp.dll"
+);
+compiler.Parameters.CompilerOptions = "/optimize" ;//https://learn.microsoft.com/dotnet/csharp/language-reference/compiler-options
+
+//设置待编译C#源码（ 注释可赋值为字符串，注释标记首尾星号数目要一致 ）
+//支持模板语法： chm://the%20language/template_syntax.html
+compiler.Source = /******   
+using System;
+using FlaUI.Core;
+using FlaUI.Core.AutomationElements; 
+using FlaUI.UIA3;
+using FlaUI.UIA3.Patterns;
+using FlaUI.Core.Definitions;
+
+namespace FlaUI.UIA3
+{  
+    public class Caret  
+    {        
+        public static bool GetCaretRect(dynamic caretInfo)
+        {     
+            var automation = new UIA3Automation();
+            var activeWindow = automation.FocusedElement();
+             
+            if(activeWindow==null) return false; 
+             
+
+            try{
+                caretInfo.hwnd = (int)activeWindow.Properties.NativeWindowHandle.Value.ToInt32();
+               
+                Text2Pattern textPattern2 = activeWindow.Patterns.Text.PatternOrDefault as Text2Pattern;
+                if (textPattern2 != null)
+                { 
+                    bool isActive = false;
+                    var cursorRange2 = textPattern2.GetCaretRange(out isActive);
+                    if(!isActive) return false;
+                    
+                    if ( cursorRange2 != null)
+                    {
+                        var boundingRectangles = cursorRange2.GetBoundingRectangles();
+                        if(boundingRectangles.Length>0) {
+                            var rc = boundingRectangles[0]; 
+                            
+                            caretInfo.top = rc.Top;
+                            caretInfo.left = rc.Left;
+							caretInfo.bottom = rc.Bottom;
+							caretInfo.right = rc.Right;
+							//caretInfo.version = 2;
+							
+                        	return true;
+                        }
+                         
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            	try{
+					TextPattern textPattern = activeWindow.Patterns.Text.PatternOrDefault as TextPattern;
+                	
+                	if (textPattern != null)
+                	{
+                    	var selections = textPattern.GetSelection();
+                    	if(selections.Length==0){
+                        	return false;
+                    	}
+                 	
+						var cursorRange = selections[0];  
+                    	if (cursorRange != null)
+                    	{
+                        	var boundingRectangles = cursorRange.GetBoundingRectangles();
+                         	
+                        	if( boundingRectangles.Length == 0 ) {  
+								//扩展光标位置为文本选区
+								cursorRange.ExpandToEnclosingUnit( TextUnit.Character ); 
+								boundingRectangles = cursorRange.GetBoundingRectangles();
+							}	 
+                        	
+                        	if( boundingRectangles.Length>0) { 
+                            	var rc = boundingRectangles[0];
+                            	
+                            	caretInfo.top = rc.Top;
+                            	caretInfo.left = rc.Left;
+								caretInfo.bottom = rc.Bottom;
+								caretInfo.right = rc.Right;
+								//caretInfo.version = 1;
+								
+                            	return true;
+                        	}
+                    	}
+                	}	
+            	}
+            	catch (Exception ex2)
+            	{
+                	
+            	}   
+            }
+            
+            return false;
+        }
+    }   
+} 
+******/
+
+/*
+注意在 aardio 中编译，调用的是 CLR，而 CLR 只有 2.0 / 4.0 的区别，只支持这两个版本的语法。
+例如安装了 .NET 3.5 但没有安装 .NET 4.x ，那么 CLR 2.0 下编译器不支持 var ，lambda 这些语法 (但是能运行编译后的 DLL)。
+这时候也可以用 VS 编译成 DLL，运行仍然可以支持 CLR  2.0 / 4.0。
+*/
+var assembly = compiler.CompileOrFail("/FlaUI.UIA3.Caret.dll");
