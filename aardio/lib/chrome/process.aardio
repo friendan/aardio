@@ -46,7 +46,7 @@ class process{
 			for hwnd,title,threadId,processId in ..winex.each( "Chrome_WidgetWin_1") { 
 				if(!chromeWins[hwnd]){
 					var prcs = ..process(processId); 
-					prcs.hwndChrome = hwnd; 
+					if(prcs) prcs.hwndChrome = hwnd; 
 					return prcs;	 
 				}
 			} 

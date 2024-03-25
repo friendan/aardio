@@ -554,7 +554,7 @@
 1437264989|2605|1456|codes\范例程序\7) Web 界面\4) Chrome\app.aardio
 -144605195|2636|1457|codes\范例程序\7) Web 界面\4) Chrome\driver.aardio
 -894008657|1983|910|codes\范例程序\7) Web 界面\4) Chrome\extensions.aardio
--422639195|3692|1407|codes\范例程序\7) Web 界面\4) Chrome\remote.aardio
+-324883890|3686|1407|codes\范例程序\7) Web 界面\4) Chrome\remote.aardio
 1242668216|1202|756|codes\范例程序\7) Web 界面\4) Chrome\z.more.aardio
 1332479527|7739|2535|codes\范例程序\7) Web 界面\5) Edge\3.speech.aardio
 878935812|946|614|codes\范例程序\7) Web 界面\6) Sciter.JS\1、external.aardio
@@ -1011,7 +1011,7 @@
 -1289781817|720896|306281|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-1519819879|15|34|config\SYS.CFG
+1547252297|15|34|config\SYS.CFG
 -1857708118|3541|748|config\SYS.THEME
 0|0|0|config\themes\
 -509623125|117740|30547|config\intellisense\kernel.txt
@@ -1676,7 +1676,7 @@
 -1783794303|916|505|lib\chrome\extensions.aardio
 -1034206558|2169|875|lib\chrome\history.aardio
 1594359921|4723|1852|lib\chrome\path.aardio
-953090773|1771|847|lib\chrome\process.aardio
+-457390375|1780|851|lib\chrome\process.aardio
 -2100870177|2334|1001|lib\chrome\remote.aardio
 -2025937096|692|469|lib\chrome\time.aardio
 1360641294|13770|4273|lib\color\table.aardio
@@ -2502,7 +2502,7 @@
 -897462453|4047|1403|tools\5) 文本文件\7.hexEditor.aardio
 0|0|0|tools\6) 探测器\.res\
 750695637|19743|5405|tools\6) 探测器\0.WinSpy.aardio
-1093128861|11910|3967|tools\6) 探测器\1.flaUISpy.aardio
+-2029295804|12361|3994|tools\6) 探测器\1.flaUISpy.aardio
 1297558933|691|406|tools\6) 探测器\2.inspect.aardio
 128717378|7287|2390|tools\6) 探测器\3.dllView.aardio
 923821168|7708|2601|tools\6) 探测器\4.axView.aardio

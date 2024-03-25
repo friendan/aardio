@@ -1,4 +1,4 @@
-//远程调试接口
+//远程调试
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="调用chrome远程调试接口";right=784;bottom=557;topmost=1)

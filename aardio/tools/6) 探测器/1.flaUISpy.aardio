@@ -2,12 +2,12 @@
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="FlaUI 探测器（FlaUISpy）";left=-2;top=100;right=522;bottom=483)
+var winform = win.form(text="FlaUI 探测器（FlaUISpy）";left=-2;top=100;right=522;bottom=464)
 winform.add(
 btnCtrlParent={cls="plus";text="上级控件";left=282;top=105;right=387;bottom=129;align="left";color=8388608;dr=1;dt=1;iconColor=32768;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=5}};iconText='\uF122';notify=1;textPadding={left=21};z=17};
-btnHelp={cls="plus";text="FlaUI 入门教程";left=250;top=355;right=378;bottom=379;color=8388608;db=1;dl=1;dr=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=24};
+btnHelp={cls="plus";text="教程";left=436;top=18;right=493;bottom=42;align="left";color=8388608;dr=1;dt=1;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome')};iconText='\uF059 ';notify=1;textPadding={left=16;bottom=1};z=24};
 btnQuery={cls="plus";left=459;top=134;right=485;bottom=158;align="left";color=8388608;dr=1;dt=1;iconColor=32768;iconStyle={font=LOGFONT(name='FontAwesome')};iconText='\uF002';notify=1;textPadding={left=21};z=20};
-chkCtrl={cls="checkbox";text="按 Ctrl + 移动鼠标启动探测";left=312;top=330;right=501;bottom=352;db=1;dr=1;z=15};
+chkCtrl={cls="checkbox";text="按 Ctrl + 移动鼠标启动探测";left=312;top=327;right=501;bottom=349;db=1;dr=1;z=15};
 editCode={cls="richedit";left=77;top=165;right=494;bottom=314;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;tabstop=1;vscroll=1;z=13};
 editControlName={cls="edit";left=78;top=78;right=493;bottom=99;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;tabstop=1;z=12};
 editControlType={cls="edit";left=78;top=105;right=271;bottom=128;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;tabstop=1;z=11};
@@ -20,10 +20,10 @@ lbHwnd={cls="static";text="窗口句柄:";left=10;top=20;right=73;bottom=37;alig
 lbName={cls="static";text="Name:";left=0;top=78;right=73;bottom=95;align="right";dl=1;dt=1;z=2};
 lbPid={cls="static";text="进程ID:";left=174;top=19;right=221;bottom=41;align="right";dl=1;dt=1;z=4};
 lbProcessInfo={cls="static";left=360;top=100;right=495;bottom=122;dr=1;dt=1;transparent=1;z=14};
-lbTip={cls="static";left=198;top=358;right=509;bottom=377;color=255;db=1;dl=1;dr=1;transparent=1;z=23};
+lbTip={cls="static";left=198;top=380;right=509;bottom=399;color=255;db=1;dl=1;dr=1;z=23};
 plusCur={cls="plus";left=22;top=316;right=54;bottom=348;background="\.res\1.gif";db=1;dl=1;notify=1;repeat="center";z=5};
-radioUia2={cls="radiobutton";text="UIA2";left=135;top=357;right=195;bottom=374;db=1;dl=1;z=22};
-radioUia3={cls="radiobutton";text="UIA3";left=73;top=357;right=133;bottom=374;checked=1;db=1;dl=1;z=21};
+radioUia2={cls="radiobutton";text="UIA2";left=135;top=379;right=195;bottom=396;db=1;dl=1;hide=1;z=22};
+radioUia3={cls="radiobutton";text="UIA3";left=73;top=379;right=133;bottom=396;checked=1;db=1;dl=1;hide=1;z=21};
 static={cls="static";text="启动文件:";left=5;top=49;right=73;bottom=66;align="right";dl=1;dt=1;z=6};
 static2={cls="static";text="请拖动左侧瞄准器图标到目标控件";left=64;top=328;right=293;bottom=353;db=1;dl=1;dr=1;z=7};
 static3={cls="static";text="示例代码:";left=-7;top=164;right=73;bottom=181;align="right";dl=1;dt=1;z=16};
