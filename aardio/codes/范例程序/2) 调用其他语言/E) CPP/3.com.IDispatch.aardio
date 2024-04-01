@@ -68,6 +68,7 @@ vc.exec(
 var dll = raw.loadDll("/test.disp.dll",,"cdecl");
 
 //创建 COM 对象，aardio 可自动支持 IDispatch 接口
+//chm://libraries/kernel/com/com.html
 import com;
 var comObject = com.QueryObjectR( dll.CreateIDispatchObjectP() );
  

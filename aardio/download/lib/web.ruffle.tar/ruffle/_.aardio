@@ -3,10 +3,10 @@
 namespace web;
 ruffle = ..wsock.tcp.asynHttpServer();
 ruffle.run( {
-	["/ruffle/78db3f28886102634739.wasm"] = $"~\lib\web\ruffle\.res\78db3f28886102634739.wasm";
-	["/ruffle/7542721250ab01f59f15.wasm"] = $"~\lib\web\ruffle\.res\7542721250ab01f59f15.wasm";
-	["/ruffle/core.ruffle.7e479ef3f72b52693aec.js"] = $"~\lib\web\ruffle\.res\core.ruffle.7e479ef3f72b52693aec.js";
-	["/ruffle/core.ruffle.ded65d7e90ac68b8b141.js"] = $"~\lib\web\ruffle\.res\core.ruffle.ded65d7e90ac68b8b141.js";
+	["/ruffle/ca182dee324f8e0b099a.wasm"] = $"~\lib\web\ruffle\.res\ca182dee324f8e0b099a.wasm";
+	["/ruffle/e4ac35563b7246e7d3c0.wasm"] = $"~\lib\web\ruffle\.res\e4ac35563b7246e7d3c0.wasm";
+	["/ruffle/core.ruffle.acef68c032af24bfd8c8.js"] = $"~\lib\web\ruffle\.res\core.ruffle.acef68c032af24bfd8c8.js";
+	["/ruffle/core.ruffle.bb26a71ccb0aa747c8a7.js"] = $"~\lib\web\ruffle\.res\core.ruffle.bb26a71ccb0aa747c8a7.js";
 	["/ruffle/ruffle.js"] = $"~\lib\web\ruffle\.res\ruffle.js";
 });
 	

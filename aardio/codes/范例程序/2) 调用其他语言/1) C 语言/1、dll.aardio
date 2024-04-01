@@ -101,7 +101,8 @@ var dll = raw.loadDll( "/bin.dll",,"cdecl" );
 var buf = raw.buffer(100);
 
 /*
-也可以不声明直接调用 API，使用调用 raw.loadDll 指定的 "cdecl" 调用约定
+也可以不声明直接调用 API: chm://libraries/kernel/raw/callapi.html
+使用调用 raw.loadDll 指定的 "cdecl" 调用约定
 相对于声明API，免声明调用 API 是更优的选择，频繁调用的免声明 API 会被缓存而非重复创建，
 长时间不使用的免声明 API 将会被自动释放。
 相关文档：《 aardio 用户手册 / 函数库 / 核心库 / raw 库 / 不声明调用API 》
@@ -123,10 +124,13 @@ var ret,ppt,pd = dll.Test(
 win.msgbox(buf) //在 aardio 中可以将 buffer 字节数组替代几乎所有字符串参数。
 
 /*
-声明API,第二个参数指定cdecl调用约定(如果使用 raw.loadDll指定的默认调用约定，那么下面可以不指定 )
+声明API: chm://libraries/kernel/raw/api.html
+第二个参数指定cdecl调用约定(如果使用 raw.loadDll指定的默认调用约定，那么下面可以不指定 )
 不建议在函数内部声明API，这会重复创建不必要的 API 对象（虽然也会释放，但 aardio 并非立即释放不使用的对象。
 */
 Msgbox = dll.api( "Msgbox","int(addr str)", "cdecl" ); 
+//可使用：aardio 『工具 > 转换工具 > API 转换』自动转为 aardio 声明。
+
 var ret = Msgbox( winform.hwnd ); 
 
 win.loopMessage()

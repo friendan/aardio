@@ -80,7 +80,11 @@ loadRes = function(resName,resType = "RES",module ){
 } 
 
 saveRes = function(srcDir="/",target="/"){
-
+	/*
+	资源路径自动转为大写（必须大写）。
+	如果一定要小写，aardio 里可以打包解包的库太多了。
+	例如:  sevenZip.lzma.tar($"\你要嵌入的打包文件.tar.lzma","\运行时解包路径")
+	*/
 	srcDir = ..string.upper( ..string.replace(srcDir,"@\","/") );
 	if( srcDir[1] != '/'#)
 		srcDir =  '/' + srcDir;
@@ -116,7 +120,7 @@ saveAppData = function(resDir="/",target){
 
 /**intellisense(fsys.res)
 enum(回调函数,资源类型,模块句柄或路径) =  @.enum(\n	function(module,resType,resName){ \n		var res = string.load(resName,resType,module);\n		return true;\n	}\n)
-saveRes(.(源目录,目标目录) = 保存内嵌资源目录为硬盘文件\n源目录可指定源目录路径\n所有参数可省略
+saveRes(.(源目录,目标目录) = 保存内嵌资源目录为硬盘文件\n源目录可指定源目录路径\n所有参数可省略。\n\n资源路径自动转为大写（必须大写）。\n如果一定要小写，aardio 里可以打包解包的库太多了。\n例如:  sevenZip.lzma.tar($"\你要嵌入的打包文件.tar.lzma","\运行时解包路径")
 saveAppData(.(资源目录,目标目录) = 保存内嵌资源目录到系统AppData目录\n源目录可指定源目录路径\n目标目录必须指定子目录路径,不能指定完整路径,\n所有参数可省略
 makeIntResource(__) = 将数值类型资源名转换为指针,字符串类型名直接返回
 load(.("DLL路径") = 加载资源DLL并返回句柄\n仅加载资源不会执行DLL代码\n返回值可作为fsys.res.enum或string.load的最后一个参数\n注意必须调用fsys.res.free函数释放返回的句柄

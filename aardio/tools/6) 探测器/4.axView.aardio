@@ -51,17 +51,16 @@ winform.editDoc.enablePopMenu();
 winform.editCode.enablePopMenu();
 
 winform.editCode.text = /*
-本﻿工具支持VB/VC等语言编写的COM控件，
-请直接拖动COM控件到当前窗口上即可生成代码。
+本﻿工具支持 VB/VC 等语言编写的 COM 控件，
+请直接拖动 COM 控件到当前窗口上即可生成代码。
 
-也可支持VB6编写的OCX控件，在VB6中使用VB6的OCX需要注册,
-但是在aardio中这些OCX控件大多不用注册就可以愉快的直接调用。
+在 VB6 中使用 VB6 的 OCX 需要注册,
+但在 aardio 中这些 OCX 控件大多不用注册就可以直接调用。
 	
-如果OCX控件是用VB6编写的，请注意：
-1、自WinXP到Win10，操作系统都自带VB6运行库。
-而且微软还会悄悄给VB6打补丁，所以基本的运行是没有问题的。
-2、如果用VB6编写OCX，尽量只是调用运行库以及操作系统提供的API。
-尽可能不要调用其他VB6编写的控件，这很容易导致莫名其妙的问题并且难以排查。.
+如果OCX控件是用 VB6 编写的，请注意：
+1、自 XP 到 Win11，操作系统都自带 VB6 运行库，基本运行是可以的。
+2、如果用V B6 编写 OCX，尽量只是调用运行库以及操作系统提供的 API。
+尽可能不要调用其他 VB6 编写的控件，这可能导致莫名其妙的问题且难以排查。.
 */
 
 var codeTemplate = /*******

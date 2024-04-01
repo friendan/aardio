@@ -97,7 +97,7 @@ namespace msxml{
 			return owner.document.save(owner.url,...);
 		}
 		loadXml = function(xml,cp){
-			if(cp) xml = ..string.fromto(xml,cp);
+			if(cp!==null) xml = ..string.fromto(xml,cp);
 			owner.document.loadXML(xml)
 		}
 		xml = {
@@ -131,6 +131,14 @@ web.msxml() = 创建 XML 文档对象,可选在参数中指定 URL 或 XML 文�
 !msxml.url = XML文件路径
 !msxml.documentElement = !msXmlNode.
 !msxml.document = XML文档对象\n!msXmlDoc.
+!msxml.getElementsByTagName("*__/*tagName*/") = 根据标签名返回节点
+!msxml.getElementsByTagName() = !msXmlNode.
+!msxml.nodeFromId("__/*ID*/") = 根据ID返回节点
+!msxml.nodeFromId() = !msXmlNode.
+!msxml.setProperty("SelectionLanguage","XPath") = 设置属性
+!msxml.selectNodes("__/*XPath表达式*/") = 查询节点。\n返回 COM 数组，使用 length 属性获取数组长度。\n返回数组起始索引为 0（aardio 普通数组起始索引为 1） 
+!msxml.createNode(.(类型,名称,名字空间) = 创建节点
+!msxml.createNode() = !msXmlNode.
 !msxml.xml = 返回XML文本
 !msXmlDoc.parseError = 返回错误信息
 !msXmlDoc.parseError.errorCode = 该错误代码
@@ -145,7 +153,7 @@ web.msxml() = 创建 XML 文档对象,可选在参数中指定 URL 或 XML 文�
 !msXmlDoc.nodeFromId("__/*ID*/") = 根据ID返回节点
 !msXmlDoc.nodeFromId() = !msXmlNode.
 !msXmlDoc.setProperty("SelectionLanguage","XPath") = 设置属性
-!msXmlDoc.selectNodes("__/*XPath表达式*/") = 查询节点 
+!msXmlDoc.selectNodes("__/*XPath表达式*/") = 查询节点。\n返回 COM 数组，使用 length 属性获取数组长度。\n返回数组起始索引为 0（aardio 普通数组起始索引为 1） 
 !msXmlDoc.createNode(.(类型,名称,名字空间) = 创建节点
 !msXmlDoc.createNode() = !msXmlNode.
 !msXmlDoc.documentElement = !msXmlNode.

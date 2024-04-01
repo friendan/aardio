@@ -18,7 +18,7 @@ wb.export({
 			 "body": { {
 				"type":"form",
 				"mode":"horizontal",
-				"api":"/saveForm",
+				"api":"/saveForm.aardio",
 				"body":{
 					{"type":"input-text","name":"name","label":"Name","required":true},
 					{"type":"input-email","name":"email","label":"Email","required":true},
@@ -90,7 +90,7 @@ httpServer.run( {
 	</body>
 </html>
 **/;
-	["/saveForm"] = function(response,request){
+	["/saveForm.aardio"] = function(response,request){
 		
 		//读取表单请求发送的数据，返回值已解析为 aardio 对象
 		var data = request.postJson();
@@ -98,7 +98,7 @@ httpServer.run( {
 		response.write({
 			"status": 0,
 				"msg": "保存成功",
-				"data": { "id":  1 } 
+				"data": { "id":  ..math.random(1,200) } 
 		}) 
 	};
 }); 

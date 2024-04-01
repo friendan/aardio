@@ -41,6 +41,7 @@ extern "C" {
 	}
 }`);
 
+//chm://libraries/kernel/raw/callapi.html
 var value = dll.getValue();
 var str = string.format("0x%X",value);
 console.log("已复制: " + str,value);

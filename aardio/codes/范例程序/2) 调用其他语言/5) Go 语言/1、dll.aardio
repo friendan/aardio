@@ -1,4 +1,5 @@
 //DLL 交互
+//相关文档: chm://libraries/kernel/raw/go/datatype.html
 import golang;
 var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 DLL 不需要 ）。 
 

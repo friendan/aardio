@@ -62,6 +62,9 @@ namespace excel{
 		Open = function(path){
 			return owner.WorkBooks.Open( ..io.fullpath(path) ) 
 		};
+		Save = function(){
+			return owner.ActiveWorkbook.Save();
+		};
 		SaveAs = function(path,format){
 			if(!#path) error("请指定保存路径",2);
 			
@@ -76,6 +79,8 @@ namespace excel{
 					} ) [..string.lower(ext)];
 				}; 
 			} 
+			
+			//xls 后缀可能报 SaveAs 方法无效，请改用 xlsx 后缀或调用 Save 函数
 			return owner.ActiveWorkbook.SaveAs( ..io.fullpath(path),format );
 		};
 		createFile = function(path){
@@ -114,7 +119,8 @@ com.excel() = !excel.
 !excel.Quit() = 退出Excel\n注意所有存储 Excel 创建或返回对象的变量离开作用域并被回收后才会完全退出,\n可调用 collectgarbage("collect") 提前回收资源，\n也可以调用 com.Release 函数显式释放指定的 COM 对象
 !excel.Open("/my->xls") = 打开excel文件
 !excel.Open() = !excel_book.
-!excel.SaveAs("/my->xls") = 存储excel文件
+!excel.SaveAs("/my->xlsx") = 另存 Excel文件为指定路径。\n如果保存到当前路径，建议改用 Save 函数。\n\n存为 xls 文件后缀可能报 SaveAs 方法无效，\n请改用 xlsx 后缀或调用 Save 函数
+!excel.Save() = 保存 Excel文件
 !excel.createFile("/my->xls") = 如果目标文件存在则打开,\n否则创建新文件
 !excel.Run("__/*宏名称*/(参数)") = 运行宏 
 !excel_book.Sheets() = !excel_sheet.

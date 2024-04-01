@@ -9,12 +9,18 @@ import sys.upnp.nat;
 import string.intSegments;
 import sys.volume;
 import fsys.knownFolder;
+import sys.volume;
 
 namespace process;
 
 class aria2{
 	ctor(rpcPort){{
-		this.downloadDir = ..fsys.knownFolder("374DE290-123F-4565-9164-39C4925E467B","aria2");
+		
+		this.downloadDir = ..sys.volume.maxSpace("download/aria2");
+		if(this.downloadDir[1]=='C'#){
+			this.downloadDir = ..fsys.knownFolder("374DE290-123F-4565-9164-39C4925E467B","aria2");
+		}
+		
 		this.rpcPort = rpcPort : ..wsock.getFreePort();
 		this.rpcToken = ..string.random(10);
 		this.$readyCallbacks = {};

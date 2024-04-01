@@ -11,14 +11,18 @@ var midiOut = sys.midiOut();
 /*
 可以在主线程里直接演奏音乐。
 也可以将 midiOut 对象传入一个或多个独立线程，
-并使用 channel 属性指定不同的默认通道，使用 midiOut.changeInstrument() 切换乐器。
-就可以轻松实现多乐器同时合奏。
 要注意 close 函数会同时关闭所有线程的同一设备对象。
 */
 thread.invoke( function(midiOut,lyric){
 
 	//指定字幕回显函数
 	midiOut.log = function(v) lyric.text = v;
+	
+	//不同线程指定不同通道，就可以轻松实现多乐器同时合奏。
+	midiOut.channel = 1;
+	
+	//切换乐器，默认设置当前通道（不要用参数@2指定其他通道）
+	midiOut.changeInstrument(12);
 	
 	midiOut.play("
 		两只老虎,

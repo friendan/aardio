@@ -8,33 +8,22 @@ winform.add()
 import web.view; 
 var wb = web.view(winform);
 
-/*
-添加网页默认加载的 JavaScript （ 在 window.onload 事件触发之前执行 ）。
-*/
-wb.preloadScript(`
-//禁止超链接默认开新窗口
-window.addEventListener('load',function(){ 
-	let base = document.querySelector('base'); 
-	if (base) base.removeAttribute('target');	
-})
-
-//禁止超链接开新窗口
-document.addEventListener('mousedown', function (event) {
-  var target = event.target;
-  for(var i=1;target && i<=5;i++){
-  	if ( target.tagName == 'A')  {
-  		target.removeAttribute('target');
-  		return;
-  	}
-  	
-  	target = target.parentNode; 
-  } 
-}, true);
-
-//禁止弹窗函数
-window.open =  function(url){ window.location.href = url; } 
-`)
-
+//弹出新窗口触发
+wb.onNewWindow = function(url){
+	
+	//耗时操作应返回异步自动执行的函数（提前结束 onNewWindow）
+	return function(){ 
+		//如果打开的是 file: 前缀网址，例如拖放文件到网页上。
+ 		var filePath = inet.url.getFilePath(url)
+ 		if(filePath){
+ 			winform.msgbox(filePath,"本地文件"); 	
+ 		}
+ 		else {
+ 		 	wb.go(url); 
+ 		} 
+ 	}
+}
+ 
 wb.html = /**
 <!doctype html>
 <html><head><base target="_blank" /></head>
@@ -43,5 +32,5 @@ wb.html = /**
 <button onclick="window.open('http://www.aardio.com')" >aardio.com</button>
 **/
 
-winform.show(3/*_SW_MAXIMIZE*/);
+winform.show();
 win.loopMessage();

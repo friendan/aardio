@@ -24,11 +24,16 @@ wb.html = /**
     </div>
 
     And here is another:
-   <div id="graphDivParent"><div id="graphDiv"></div></div>
-   
-   <script src="https://lib.baomitu.com/mermaid/9.1.6/mermaid.min.js"></script>
+   <div id="graphDiv"></div>
+    
+   <script type="module">
+      import mermaid from 'https://lib.baomitu.com/mermaid/10.9.0/mermaid.esm.min.mjs';
+      window.mermaid = mermaid;
+      
+      //mermaid.initialize({ startOnLoad: true }); 
+    </script>
    <script>	
-   	mermaid.init({ startOnLoad: false }); 
+   //mermaid.initialize({ startOnLoad: false }); 
    </script>
 </body>
 **/
@@ -36,18 +41,15 @@ wb.html = /**
 //aardio 调用 Mermaid.js 绘图
 winform.button.oncommand = function(id,event){
 	wb.xcall(`
-	(text)=>{
-	mermaid.render('graphDiv',text,(svg)=>{
-			
-			/*
-			注意 mermaid.render 会自动删除参数 1 指定 ID 的节点。 
-			这导致 Mermaid 自己提供的范例都无法运行。
-			
-			所以暂时想了一个奇葩的方法在外面包了一个 graphDivParent 。
-			*/
-			var ele = document.getElementById("graphDivParent");
- 			ele.innerHTML = "<div id='graphDiv'>" + svg + "</div>";
- 		});	
+	(graph)=>{
+	
+		mermaid.render('graphTemp',//不要指定 graphDiv，否则会被删除
+			graph ).then(
+			(result,bindFunctions)=>{ 
+				var ele = document.getElementById("graphDiv");
+ 				ele.innerHTML = result.svg;
+			}
+ 		) 
 	}`,'graph TB\na-->b')	
 }
 

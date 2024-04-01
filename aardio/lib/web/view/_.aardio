@@ -67,7 +67,11 @@ class view {
 		
 		winform.onEraseBkgnd  = lambda() 0; 
 		
-		this._jsCallback = {};
+		//避免回调函数指针被提前回收
+		this._cdpEventGC = {};
+		this._cdpCallbackGC = {};
+		this._jsCallbackGC = {};
+		
 		this.export = function(name,callback){
 			if(!this.browser) return;
 			if(type(name)==="table"){
@@ -83,7 +87,7 @@ class view {
 			if(type(name)!=="string") error("参数@1必须是字符串",2);
 			if((type(callback)!=="function")&&(type(callback)!=="class") ) error("参数@2必须是函数",2);
 			
-			this._jsCallback[name] = ..raw.tocdecl(function(seq,req,arg){
+			this._jsCallbackGC[name] = ..raw.tocdecl(function(seq,req,arg){
 				var ok,ret;
 				
 				if(req){
@@ -106,7 +110,7 @@ class view {
 			}
 			,"void(string seq,string req,ptr arg)")
 			
-			_dll.webview_bind(this.browser,name,this._jsCallback[name],null); 
+			_dll.webview_bind(this.browser,name,this._jsCallbackGC[name],null); 
 		};
 
 		if(!winform.wait( function(){
@@ -148,7 +152,7 @@ class view {
 		};
 		
 		this._form = winform;
-		this.hwndChrome = ..win.getChild(winform.hwnd);
+		this.hwndChrome = ..win.getChild(winform.hwnd); 
 	} };
 	adjust = function(){
 		if(!this.browser) return;
@@ -235,7 +239,8 @@ class view {
 		if(!this.browser) return; 
 			
 		if(type(callback)=="function"){
-			this._jsCallback[callback] = ..raw.tocdecl(function(err,json){
+			var callbackCdecl;
+			callbackCdecl = ..raw.tocdecl(function(err,json){
 				if(!err){
 					var r,e = call(callback,cbOwner,jsonTryParse(json));
 					if(!r){ errput(e:"ExecuteScript failed","WebView") }
@@ -243,12 +248,17 @@ class view {
 				else {
 					errput("ExecuteScript failed","WebView")
 				}
-				
-				this._jsCallback[callback] = null;
+				 
+				this._form.setTimeout(
+					function(){
+						..raw._release(callbackCdecl);
+						this._jsCallbackGC[callbackCdecl] = null; 
+					},0
+				)
 			},"void(int errCode,ustring json)")
 			
-			return _dll.webview_do_script(this.browser,js,this._jsCallback[callback])
-				
+			this._jsCallbackGC[callbackCdecl] = callback;
+			return _dll.webview_do_script(this.browser,js,callbackCdecl); 
 		}
 		
 		return _dll.webview_do_script(this.browser,"(function(){"+js+'\n})()',null)
@@ -322,13 +332,14 @@ class view {
 			if( url ? ..string.find( url,p) ) return true; 
 		},timeout);
 	}; 
-	cdp = function(name,param){
+	cdp = function(name,param,callbackArg){
 		if(!this.browser) return;  
 		if(!type.isString(param)) param = param?..web.json.stringify(param):"{}";
-	
+	 
 		var err;
 		var result;
-		var callback = ..raw.tocdecl(function(errCode,json){
+		var callbackCdecl;
+		callbackCdecl = ..raw.tocdecl(function(errCode,json){ 
 			if(!errCode){
 				result = jsonTryParse(json); 
 				err = 0;
@@ -336,12 +347,29 @@ class view {
 			else {
 				err = errCode; 
 			}
+			
+			if(callbackArg){
+				callbackArg(result,err); 
+				
+				this._form.setTimeout(
+					function(){
+						..raw._release(callbackCdecl);
+						this._cdpCallbackGC[callbackCdecl] = null; 
+					},0
+				)
+			}
 		},"void(int errCode,ustring json)")
+ 
+		var hr = _dll.webview_callDevToolsProtocolMethod(this.browser,name,param,callbackCdecl);
+		if(hr) return null,hr;
 		
-		_dll.webview_callDevToolsProtocolMethod(this.browser,name,param,callback) 
-		..win.wait(lambda() err,winform.hwnd,,5);
-		
-		..raw._release(callback);
+		if(callbackArg){
+			this._cdpCallbackGC[callbackCdecl] = callbackArg; 
+			return true;
+		}
+
+		..win.wait(lambda() err,winform.hwnd,,5); 
+		..raw._release(callbackCdecl);
 		
 		if(!err) return result; 
 		return null,err;
@@ -354,7 +382,7 @@ class view {
 		if(e=="Timeout!" ) e = 0x102/*_WAIT_TIMEOUT*/;
 		return r,e; 
 	};
-	cdpQuery = function(selector,parent){
+	cdpQuery = function(selector,parent,callback){
 		if(!parent){
 			parent = this.cdp("DOM.getDocument")[["root"]];
 			if(!parent) return;
@@ -363,7 +391,7 @@ class view {
  		return this.cdp("DOM.querySelector",{
 			selector = selector;
 			nodeId = parent[["nodeId"]] : parent;
-		})
+		},callback)
 	};
 	cdpWaitQuery = function(selector,parent,timeout){
 		var r,e =  this._form.wait(function(){
@@ -372,6 +400,31 @@ class view {
 		
 		if(e=="Timeout!" ) e = 0x102/*_WAIT_TIMEOUT*/;
 		return r,e; 
+	};
+	cdpSubscribe = function(eventName,callback){
+		if(this._cdpEventGC[eventName]){
+			_dll.webview_removeDevToolsProtocolEventReceivedW(this.browser,eventName,this._cdpEventGC[eventName].token);
+			..raw._release(this._cdpEventGC[eventName].callback);
+			this._cdpEventGC[eventName] = null;
+		}
+		
+		if(callback){
+			
+			var callbackCdecl = ..raw.tocdecl(function(json){
+				var ret  = callback( ..web.json.parse(json) );
+				if(type(ret) === "function"){
+					this._form.setTimeout(ret,0)
+				}
+			}
+			,"void(ustring)");
+			var	token = {long value};
+			var ret = _dll.webview_addDevToolsProtocolEventReceivedW(this.browser,eventName,token,callbackCdecl);
+		
+			this._cdpEventGC[eventName] = {
+				callback = callbackCdecl;
+				token = token;
+			}
+		}
 	};
 	exportHostObject = function(name,object){
 		if(!this.browser) return;
@@ -445,13 +498,32 @@ namespace view{
 		onFullScreen = {
 			_set = function( callback ){ 
 				owner[["(onFullScreen)"]] = callback;
-				owner[["(onFullScreenStdcall)"]] = callback ? ..raw.tostdcall(owner[["(onFullScreen)"]],"void(bool)",owner); 
+				owner[["(onFullScreenStdcall)"]] = callback ? ..raw.tocdecl(owner[["(onFullScreen)"]],"void(bool)",owner); 
 				_dll.webview_addContainsFullScreenElementChanged(owner.browser,owner[["(onFullScreenStdcall)"]]);
 			} 
 			_get = function(){
 				return owner[["(onFullScreen)"]];
 			}	
 		}; 
+		onNewWindow = {
+			_set = function( callback ){ 
+				owner[["(onNewWindow)"]] = function(url){
+					var ret,handled  = callback(url);
+					if(type(ret)=="function"){
+						owner._form.setTimeout(ret,0);
+						return handled===null?true:handled; 
+					}
+					
+					return ret;
+				} 
+				owner[["(ononNewWindowStdcall)"]] = callback ? ..raw.tocdecl(owner[["(onNewWindow)"]],"bool(ustring)",owner); 
+				_dll.webview_addNewWindowRequested(owner.browser,owner[["(ononNewWindowStdcall)"]]);
+			} 
+			_get = function(){
+				return callback;
+			}	
+		}; 
+		
 		location  = {
 			_set = function( url ){ 
 				owner.go(url);
@@ -576,12 +648,14 @@ xcall( = 调用JS函数并返回值。\n如果不需要返回值建议改用 inv
 xcall(.("object->func",->->->) = 调用 JS 函数并返回值，\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值。\n\n等待返回值过程中会继续处理界面消息,\n参数@!指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
 invoke( = 调用 JS 函数但不会等待返回值。\n\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值
 invoke(.("object->func",->->->) = 调用 JS 函数但不会等待返回值，\n等待返回值过程中会继续处理界面消息。\n\n参数 @1 指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
-cdp(.(method,params) = 调用 WebView2 内置 CDP 接口。\n参数 @method 指定 CDP 方法，例如："Page.navigate" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n成功返回一个表对象，失败返回 null,错误代码。\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
-cdp( = 调用 WebView2 内置 CDP（Chrome DevTools Protocol） 接口。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
+cdp(.(method,params) = 调用 WebView2 内置 CDP 接口。\n参数 @method 指定 CDP 方法，例如："Page.navigate" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n成功返回一个表对象，失败返回 null,错误代码
+cdp(.(method,params,callback) = 异步调用 WebView2 内置 CDP 接口。\n不等待 CDP 调用完成，而是在调用完成异步回调 callback 函数。\n参数 @method 指定 CDP 方法，例如："Page.navigate" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n@callback 指定回调函数，\n回调参数@1为 CDP 返回的表对象，回调参数@2 为错误代码。\n成功返回 true，失败返回 null,错误代码
+cdp( = 调用 WebView2 内置 CDP（Chrome DevTools Protocol） 接口。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
 cdpWait(.(method,params,timeout) = 调用 WebView2 内置 CDP 接口并等待返回非 null 值。\n参数 @method 指定 CDP 方法，例如："DOM.getDocument" 。\n参数 @param 用一个表对象，或 JSON 字符串指定调用参数。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回一个表对象，失败返回 null,错误代码。\n超时错误代码为 0x102/*_WAIT_TIMEOUT*/。\n\n[CDP 文档](https://chromedevtools.github.io/devtools-protocol/)
 cdpWait( = 调用 WebView2 内置 CDP 接口并等待返回非 null 值。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
 cdpQuery( = 使用 WebView2 内置 CDP 接口查询 DOM 节点。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
-cdpQuery(.(selector,parent) = 使用 WebView2 内置 CDP 接口查询节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n成功返回表对象，失败返回 null,错误代码
+cdpQuery(.(selector,parent) = 使用 WebView2 内置 CDP 接口查询节点。\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n成功返回表对象，失败返回 null,错误代码
+cdpQuery(.(selector,parent,callback) = 异步调用 WebView2 内置 CDP 接口查询节点。\n不等待 CDP 调用完成，而是在调用完成异步回调 callback 函数。\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n@callback 指定回调函数，\n回调参数@1为 CDP 返回的表对象，回调参数@2 为错误代码。\n成功返回 true，失败返回 null,错误代码
 cdpWaitQuery( = 使用 WebView2 内置 CDP 接口查询并等待 DOM 节点。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
 cdpWaitQuery(.(selector,parent,timeout) = 使用 WebView2 内置 CDP 接口接口查询并等待节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回表对象，失败返回 null,错误代码。\n超时错误代码为 0x102/*_WAIT_TIMEOUT*/
 waitEle( = 等待网页创建指定节点
@@ -611,6 +685,9 @@ remoteDebuggingPort = 远程调试端口,只读属性
 openRemoteDebugging() = 创建 web.socket.chrome 远程调试对象,\n请先导入web.socket.chrome\n!stdwebsocketchromeClient.
 focus() = 网页窗口设置为输入焦点
 hwndChrome = 网页窗口句柄
+cdpSubscribe( = 订阅 CDP 事件
+cdpSubscribe(.(事件名,回调函数) = 回调函数的参数为参数表对象。\n如果回调函数返回一个函数，则先结束事件，然后异步执行该函数。\n调用此函数总是会取消之前订阅的同名事件。\n如果回调函数为 null，则仅取消订阅
+onNewWindow(callback) = @.onNewWindow = function(url){\n	__/*返回 false 继续打开新窗口。\n返回 true 阻止打开新窗口。\n返回函数则阻止打开新窗口，并异步执行该函数。\n耗时或阻塞浏览器控件的操作应放入返回的异步函数内执行*/\n}
 end intellisense****/
 
 /**details(必读)

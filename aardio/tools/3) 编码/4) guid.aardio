@@ -8,12 +8,17 @@ winform.add(
 btnCpy={cls="button";text="复制到剪贴板";left=436;top=21;right=529;bottom=47;z=3};
 btnGenerant={cls="button";text="生成GUID";left=339;top=21;right=432;bottom=47;z=2};
 lbTip={cls="static";text="GUID理论上能产生全球唯一的值";left=31;top=279;right=537;bottom=296;transparent=1;z=4};
-txtGuid={cls="edit";left=31;top=22;right=327;bottom=48;edge=1;multiline=1;z=1};
+txtGuid={cls="edit";left=31;top=22;right=327;bottom=48;edge=1;z=1};
 txtGuid2={cls="edit";left=31;top=62;right=529;bottom=270;edge=1;multiline=1;z=5}
 )
 /*}}*/
 
+winform.txtGuid.setCueBannerText("可在此粘贴所有兼容格式",true)
+
 winform.btnCpy.oncommand = function(id,event){
+	if(string.trim(winform.txtGuid.text) == ""){
+		winform.btnGenerant.oncommand();
+	}
 	winform.btnCpy.disabledText = "已复制 ......";
 	
 	var str = #winform.txtGuid2.selText ? winform.txtGuid2.selText : winform.txtGuid.text;
@@ -121,7 +126,7 @@ var autoSel = function(hwnd,message,wParam,lParam){
 }
 winform.txtGuid2.wndproc = autoSel;
 winform.txtGuid.wndproc = autoSel;
-winform.btnGenerant.oncommand();
+//winform.btnGenerant.oncommand();
 
 winform.show(true); 
 win.loopMessage();

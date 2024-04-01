@@ -55,7 +55,7 @@ class process{
 }
 
 /*****intellisense()
-chrome.process( = 创建 Chrome 进程
+chrome.process( = 创建 Chrome 进程\n[Chrome 启动参数参考](https://peter.sh/experiments/chromium-command-line-switches)
 chrome.process(.(启动参数表,优先启动Chrome) = 启动 Edge（Chromium ）、Chrome 、 Supermium 等 Chrome  内核浏览器。\n如果参数 @2 为 true 则优先启动 Chrome，否则优先启动 Edge。\n启动参数表中键名应以 -- 开始。\n\n所有参数都可以省略。\n启动成功则返回 process 对象
 chrome.process() = !process.
 end intellisense*****/

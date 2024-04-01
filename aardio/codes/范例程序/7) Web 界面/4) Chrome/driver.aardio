@@ -16,11 +16,10 @@ var driver = chrome.driver();
 //driver.addArguments("--start-maximized") 
 //driver.addArguments("--incognito") //无痕模式
 //driver.addArguments("--headless") //无痕模式，看不到界面
+
 /*
-Chrome 启动参数请搜索一下，网上很多也不可能都写在这里
+Chrome 启动参数参考:
 https://peter.sh/experiments/chromium-command-line-switches/
-有些用户找不到这些就说 aardio 资料太少，
-您这是下载一个几 MB 的 aardio 就要我们给您整个宇宙啊。
 */
 
 //创建会话，打开chrome浏览器，调用参数仅用于演示( 可以省略 )。

@@ -1291,7 +1291,7 @@ namespace listview{
 	__/*右键点击项目触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
 }
 
-!listview.onClick = @.onClick = functionitem,subItem,nmListView){
+!listview.onClick = @.onClick = function(item,subItem,nmListView){
 	__/*左键单击项目触发此事件。\nitem 为变更为焦点的项序号，subItem 为列序号，nmListView 为 NMLISTVIEW 结构体*/
 }
 

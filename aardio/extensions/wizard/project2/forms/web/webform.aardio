@@ -42,7 +42,7 @@ web.form 的优势是简洁轻量，调用本地函数方便，兼容 XP，Vista
 htmx 相当于将每个 HTML 节点变成了一个可以实时刷新的微浏览器，可以少写很多 JS 代码。
 可以方便地利用 <a href="javascript:void(0)" onclick="external.chmTemplate()">aardio 服务端模板语法生成新的 HTML</a>。
 
-htmx.js 1.6.1 完美支持 IE11 内核， Win10，Win11 已自带 IE11 内核控件。
+htmx.js 1.8.6 完美支持 IE11 内核， Win10，Win11 已自带 IE11 内核控件。
 如果您的程序仍要支持 Win7，移除 htmx.js 或安装 IE11 都可以。
 
 </pre>

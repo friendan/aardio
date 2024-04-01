@@ -58,6 +58,7 @@ c.code = /****
 ****/ 
 
 //声明C函数，与声明 API 类似
+//chm://libraries/kernel/raw/api.html
 var helloW = c.getCdecl("helloW","void(byte a,int b,LONG c,struct ppt,int pt_x,int pt_y,double &pd)")
 helloW(1,2,3,{int x = 4;int y = 5},6,7,8.1);
 
@@ -77,6 +78,7 @@ console.log( "C函数返回值", ret )
 则必须先声明再调用，不声明直接调用无法支持这类参数。
 
 相关文档：《 aardio 用户手册 / 函数库 / 核心库 / raw 库 / 不声明调用API 》
+chm://libraries/kernel/raw/callapi.html
 */
 
 console.pause();

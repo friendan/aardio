@@ -636,9 +636,9 @@ peekPumpInputMessage = function(msg){
 	return ret;
 };
 
-peekPumpMessage = function(msg,hwnd,filterMin,filterMax,remove){
+peekPumpMessage = function(msg,hwnd,filterMin,filterMax,flags){
     msg = msg : {};
-	var ret = peekMessage(msg,hwnd,filterMin,filterMax,remove); 
+	var ret = peekMessage(msg,hwnd,filterMin,filterMax,flags); 
 	if( ret ){ parseMessage(ret) }
 	elseif( ret === null ){ quitMessage(msg.wParam); }
 	return ret;
@@ -646,19 +646,22 @@ peekPumpMessage = function(msg,hwnd,filterMin,filterMax,remove){
   
 var time_tick = ..time.tick;
 var delayCount = 0;
-delay = function ( msDelay,msSleep,hwnd,filterMin,filterMax,remove) { 
+delay = function (msDelay,msSleep) { 
 	delayCount++
-	if( delayCount > 10 ){
-		delayCount--;
-		return true;
+	if( delayCount > 10 ){ 
+		  var r = false;
+		  peekPumpMessage(); 
+		  delayCount--;
+		  return r!==null;
 	}
+	
 	msDelay = msDelay : 0;
 	msSleep = msSleep : 1;	
 	var msg = {}; 
 	var endTick = msDelay ? ( time_tick() + msDelay ) ;
 	var ret;
 	do{ 
-		ret = peekMessage(msg,hwnd,filterMin,filterMax,remove); 
+		ret = peekMessage(msg); 
 		if(ret) { 
 			parseMessage(msg);
 		}  
@@ -672,27 +675,49 @@ delay = function ( msDelay,msSleep,hwnd,filterMin,filterMax,remove) {
 			delayCount--;
 			return true;
 		}
+		
 		sleep(msSleep)
 	}while( !closed  ) 
 	delayCount--; 
 } 
- 
-wait = function(func,hwnd,timeout,interval=100){  
+
+wait = function(func,hwnd,timeout,interval=100){   
 	var ret,ret2,ret3; 
 	var tkBegin = time_tick();
+
+	var endTick = interval ? ( time_tick() + interval ) ;
+	var ret,tk;
+	var msg = {};
 	do{   
-		ret,ret2,ret3 = func();
-		if( (ret !== null) || (ret2 !== null) )
-			return ret,ret2,ret3; 
-			
+		ret = peekMessage(msg); 
+		if(ret) {  
+			parseMessage(msg);
+		}  
+		elseif( ret === null ){
+			quitMessage(msg.wParam); 
+			return;
+		}
+		
+		tk = time_tick();
 		if( timeout ) { 
-			if( ( time_tick() - tkBegin) > timeout )
+			if( ( tk - tkBegin) > timeout )
 				return null,"Timeout!"  
 		}
-	}while( delay(interval) && ( (!hwnd) || isWindow(hwnd) )  ) 
+		
+		if( !endTick || ( tk > endTick ) ){ 
+			ret,ret2,ret3 = func(); 
+			if( (ret !== null) || (ret2 !== null) )
+				return ret,ret2,ret3; 
+			
+			endTick = interval ? ( tk + interval ); 
+		} 
+		
+		sleep(1);
+	}while( !closed && ( (!hwnd) || isWindow(hwnd) )   )  
 }	
-
 /*}}*/ 
+
+
 
 sendCopyData = function(hwnd,data,dType){
 	if( type(data) == "table"){
