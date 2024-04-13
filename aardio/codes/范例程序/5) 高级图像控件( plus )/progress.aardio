@@ -11,6 +11,12 @@ plus={cls="plus";left=161;top=282;right=707;bottom=316;bgcolor=6447459;forecolor
 //设置进度区间，可自动切换到进度条显示模式
 winform.plus.setProgressRange(1,50);
 
+/*
+进度条可以是横向的（宽度大于高度），也可以是竖向的（高度大于宽度），
+plus 控件会根据设计时的宽高比自动判断进度条的方向，不需要设置其他参数。
+教程: https://bbs.aardio.com/forum.php?mod=redirect&goto=findpost&ptid=11486&pid=64074
+*/
+
 winform.button.oncommand = function(id,event){
 	winform.button.disabledText = "测试一下"
 	winform.plus.startProgress(50); 

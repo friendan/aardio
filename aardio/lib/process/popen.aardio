@@ -6,14 +6,17 @@ namespace process
 
 class popen{
 	ctor( exefile,parameters="", startInfo,... ){{
+ 
 		if( type(startInfo) == type.string ){
    			parameters = {parameters;startInfo;...};
    			startInfo = null;
    		}
    			
 		var sa = ..table.assign(..process.STARTUPINFO(),startInfo);
-		sa.flags = (sa.flags:0) | 0x100/*_STARTF_USESTDHANDLES*/ | 0x1/*_STARTF_USESHOWWINDOW*/
-		sa.createNoWindow = true;
+		
+		//startInfo 参数指定{ showWindow = 1/*_SW_NORMAL*/ } 可显示控制台以外的窗口
+		sa.flags = (sa.flags:0) | 0x100/*_STARTF_USESTDHANDLES*/ | 0x1/*_STARTF_USESHOWWINDOW*/;
+		sa.createNoWindow = true;//不显示控制台窗口
 
 		var saPipe = { 
     		INT nLength;
@@ -282,6 +285,7 @@ class popen{
 					if(s) echo.log( ..string.crlf( s )  );
 					if( !( this.process && this.process.stillActive() ) ) {
 						this.echoTimerId = null;
+						if(this.onResponseEnd) this.onResponseEnd();
 						return 0;
 					}
 				},interval : 500 
@@ -305,9 +309,12 @@ class popen{
 			}
 			
 		}
+		
 		for( all,out,err in this.each(interval) ){
     		echo( all,out,err );//回显
 		}
+		
+		if(this.onResponseEnd) this.onResponseEnd();
 	};
 	expect = function(p,timeout,max){
 		var s = "";  
@@ -396,6 +403,9 @@ class popen{
 			return this.process.assignToJobObject(hJob);
 		}
 	};
+	killOnExit = function(){
+		return this.assignToJobObject(..process.job.limitKill); 
+	};
 	terminate = function(){
 		this.process.terminate();
 		this.close();
@@ -412,8 +422,8 @@ class popen{
 			if( this.beforeClose ) this.beforeClose();
 			
 			if(this.stdIn)..raw._release(this.stdIn);
-			..raw._release(this.stdOut);
-			..raw._release(this.stdErr);
+			if(this.stdOut)..raw._release(this.stdOut);
+			if(this.stdErr)..raw._release(this.stdErr);
 		  
 			this.stdIn = null;  
 			this.stdOut = null; 
@@ -488,7 +498,7 @@ process.popen = 创建进程管道并调用目标程序，\n可隐藏子进程�
 process.popen( = 创建进程管道并调用目标程序，\n可隐藏子进程的控制台黑窗口。\n\n成功返回可读写的进程管道对象，\n失败返回 3 个值：null,错误信息,错误代码
 process.popen(.( ,系统命令行) = 创建可读写的进程管道对象。\n如果省略第一个参数,并仅指定命令行,则作为系统命令行启动运行
 process.popen(.(执行文件,命令行参数,更多命令行参数,->->->) = 命令行参数可以是一个数组、一个或多个字符串参数,\n\n数组或多个命令行参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符
-process.popen(.(执行文件,命令行参数,STARTUPINFO) = 命令行参数可以是字符串或由多个字符串组成的数组,\n数组参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符。\nSTARTUPINFO参数为process.STARTUPINFO 结构体,可选参数\n如果该参数是普通table对象.将自动创建为STARTUPINFO结构体
+process.popen(.(执行文件,命令行参数,startupInfo) = 命令行参数可以是字符串或由多个字符串组成的数组,\n数组参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符。\nSTARTUPINFO参数为 process.STARTUPINFO 结构体,可选参数\n如果该参数是普通 table 对象.将自动转换为 STARTUPINFO 结构体。\n//@startupInfo 指定{ showWindow = 1/*_SW_NORMAL*/ } 可显示控制台以外的窗口
 process.popen.cmd( = 创建管道按命令行方式调用控制台类型应用程序,\n可隐藏子进程的控制台黑窗口,并支持管道读写。
 process.popen.cmd(.(命令行参数,->->->) = 如果第一个参数包含换行,则替换为批处理命令分隔符&&,\n如果传入多个命令行参数，或者命令行参数是个数组，则合并为单个命令行,\n合并时不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
 process.popen.cmd64( = 创建管道按命令行方式调用控制台类型应用程序,\n可隐藏子进程的控制台黑窗口,并支持管道读写。\n\n此函数禁用64位系统文件与注册表重定向,\n在64位系统会返回64位进程,兼容32位系统。\n\n如果不需要读写管道，应当改用 process.wow64
@@ -549,7 +559,8 @@ process.popen.detached() = !process_popen.
 !process_popen.getExitCode() = 该函数调用成功有两个返回值:进程退出代码,进程是否已退出
 !process_popen.close() = 关闭当前对象，释放读写管道。\n当前对象释放时会自动调用此函数。\nreadAll,terminate 等函数会自动调用此函数\n\n注意此函数并不会关闭目标进程。
 !process_popen.terminate() = 强制关闭进程并释放进程对象
-!process_popen.assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回true\n作业对象示例请参考标准库 process.job.limitKill 的源码
+!process_popen.assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回 true\n作业对象示例请参考标准库 process.job.limitKill 的源码。\n也可直接调用 killOnExit 函数绑定 process.job.limitKill
+!process_popen.killOnExit() = 主进程退出时自动退出此进程
 !process_popen.ctrlEvent(0)=发送Ctrl+C(SIGINT信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
 !process_popen.ctrlEvent(1)=发送Ctrl+Break(SIGBREAK信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
 !process_popen.process = !process.
@@ -559,4 +570,7 @@ process.popen.detached() = !process_popen.
 !process_popen.json() = 等待并读取进程输出的一行 JSON ，并解析为对象。\n成功返回对象，失败返回 null,错误信息。\n此函数不阻塞界面线程消息。\n\nJSON 最外层必须是大括号 {} 或中括号 []，JSON不能包含非转义换行，且必须以换行结束。\n自动忽略不符合要求的其他输出。\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json
 !process_popen.jsonAll() = 读取进程的全部输出，并用 JSON 解析为 aardio 对象。\n成功返回对象，失败返回 null,错误信息。\n此函数会等待进程结束，但不会阻塞当前线程窗口消息。\n\n进程输出应符合 JSON 语法。\n如果参数 @1 为 true 或省略，读取后关闭进程管道。\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json
 !process_popen.jsonWrite() = 将对象转换为 JSON 并写入进程标准输入，\nJSON 不包含换行，且以换行结尾。\n最好统一为输入对象生成的JSON 最外层是大括号 {} 或中括号 []\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json\n\n成功返回 true，失败返回 null ，错误代码，错误信息。
+!process_popen.onResponseEnd() = @.onResponseEnd = function(){
+	__/*被调用进程结束，异步或同步调用 logResponse 函数结束后触发此回调*/
+}
 end intellisense**/

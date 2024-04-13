@@ -172,15 +172,15 @@ setIcon = function(hwnd,hIcon,big){
     
     var smallPrev,bigPrev;		 
 	if( !big ){  
-		smallPrev = ::User32.SendMessageP( owner.hwnd,0x80/*_WM_SETICON*/,0,hIcon); 
+		smallPrev = ::User32.SendMessageP( hwnd,0x80/*_WM_SETICON*/,0,hIcon);  
 		if( big !== null  ) return smallPrev;
 	}
-	
-	return smallPrev,::User32.SendMessageP( owner.hwnd,0x80/*_WM_SETICON*/,0,hIcon);  
+	 
+	return smallPrev,::User32.SendMessageP( hwnd,0x80/*_WM_SETICON*/,1/*_ICON_BIG*/,hIcon);  
 }
 
 getIcon = function( hwnd,big){
-	return ::User32.SendMessageP( hwnd[["hwnd"]] : hwnd,0x80/*_WM_SETICON*/,big ? 1/*_ICON_BIG*/ : 2/*_ICON_SMALL2*/,0) ;
+	return ::User32.SendMessageP( hwnd[["hwnd"]] : hwnd,0x7F/*_WM_GETICON*/,big ? 1/*_ICON_BIG*/ : 2/*_ICON_SMALL2*/,0) ;
 }
 
 self.DestroyIcon = ::DestroyIcon;
@@ -199,6 +199,6 @@ createIcon( = 在图标数据中加载指定像素的图标,失败返回空值
 createIcon(.(图标数据,是否图标,适配大小,最大位宽,选项) = 自内存创建图标,失败返回空值,\n图标数据:也可以是路径,或资源文件路径,\n是否图标:可省略,默认为true,载入光标请指定为false,仅支持单色光标\n适配大小:可省略,如果不匹配则取最接近大小的图标,\n最大位宽:可省略,默认值为32位\n选项:保留参数,不必指定\n\n如果选项不指定_LR_SHARED，返回的句柄不再使用时必须调用 ::DestroyIcon销毁
 createSharedIcon(.(图标数据,是否图标,适配大小,最大位宽) = 自内存创建共享图标,失败返回空值,\n图标数据:也可以是路径,或资源文件路径,\n是否图标:可省略,默认为true,载入光标请指定为false,仅支持单色光标\n适配大小:可省略,如果不匹配则取最接近大小的图标,\n最大位宽:可省略,默认值为32位\n选项:保留参数,不必指定\n\返回的句柄不能调用 ::DestroyIcon销毁,注意这种图标不应大量创建
 createAniCursor(.(动画光标数据) = 自内存加载*.ani格式的动画光标\n参数也可以是文件、或资源文件路径
-setIcon(.(窗口对象或句柄,图标句柄或路径,是否大图标) = 设置窗口图标,窗口负责释放图标句柄,\n参数@3设为true仅设置大图标,设为false仅设置小图标\n如果省略该参数l则同时设置大图标和小图标\n如果替换了小图标,返回值1为窗口原来的小图标,如果替换了大图标,返回值为窗口原来的大图标
+setIcon(.(窗口对象或句柄,图标句柄或路径,是否大图标) = 设置窗口图标,窗口负责释放图标句柄,\n参数@3设为true仅设置大图标,设为false仅设置小图标\n如果省略参数@3则同时设置大图标和小图标。\n如果替换了小图标,返回值1为窗口原来的小图标,如果替换了大图标,返回值2为窗口原来的大图标
 getIcon(.(窗口对象或句柄,是否大图标) = 获取窗口图标句柄\n返回的句柄不应被释放,共享图标返回空值
 end intellisense**/

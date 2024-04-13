@@ -1496,6 +1496,7 @@ namespace plus {
 			var w = rc.right - rc.left;
 			var h = rc.bottom - rc.top; 
 			
+			//宽大于高则为水平滑块
 			if( w > h ){
 				owner.onMouseDrag = function(wParam,lParam){
 					var dpiScaleX,dpiScaleY = (owner.dpiScaleX : 1) ,(owner.dpiScaleY : 1);
@@ -1786,11 +1787,11 @@ radioClick() = 单选模式下选中控件
 progressPercentage = 进度条当前百分比。\n如果用户正在控件上按下鼠标（例如拖动滑块），设置此属性会被忽略
 progressPos = 获取或设置进度条当前值。\n如果用户正在控件上按下鼠标（例如拖动滑块），设置此属性会被忽略
 focusOnClick = 设为false时禁止在单击控件时设置此控件为焦点控件
-setTrackbarRange( = 设置滑块范围,并切换到滑块显示模式,\n用户拖动滑块时触发 onPosChanged 事件，可用于获取当前位置
+setTrackbarRange( = 设置滑块范围，并切换到滑块显示模式。\n如果宽大于高显示为水平滑块，高大于宽则显示为垂直滑块。\n用户拖动滑块时触发 onPosChanged 事件，可用于获取当前位置
 setTrackbarRange(.(最小值,最大值) = 如果使用图像制作滑块控件,\n请将背景、前景图像设为九宫格拉伸的expand模式,\n使用前景切图在右侧或顶部预留滑块位置不拉伸,\n如果未指定前景图像,aardio将自动使用当前字体颜色绘制滑块按钮,\n同样通过前景切图预留滑块大小,边框圆角属性将作用于滑块按钮,\n前景色将用于绘制滑块左侧或底部,背景色将用于绘制滑块右侧或顶部,\n前景边距将同时限制背景前景色的大小，但不会作用于背景图像
 setPieRange( = 设置扇形进度条范围,
 setPieRange(.(最小值,最大值) = 切换为扇形进度条模式\n在此模式下前景图或前景色被裁剪为扇形,\n如果有背景色则被裁剪为圆角,背景图不裁剪,\n如果指定背景图、前景图,应设为center显示模式以使圆心对齐
-setProgressRange( = 设置进度条范围\n调用了此函数将会强制使用expand显示模式\n水平进度条文本右对齐,垂直进度条文本上对齐时将限制文本输出于前景内部\n否则不改变文本输出位置\n可选用textPadding属性指定文本内边距
+setProgressRange( = 设置进度条范围，并切换到进度条显示模式。\n如果宽大于高显示为水平进度条，高大于宽则显示为垂直进度条。\n调用了此函数将会强制使用expand显示模式\n水平进度条文本右对齐,垂直进度条文本上对齐时将限制文本输出于前景内部\n否则不改变文本输出位置\n可选用textPadding属性指定文本内边距
 getProgressRange() = 返回进度条最小值,最大值
 setProgressRange(.(最小值,最大值) = 设置进度条范围\n调用了此函数将会强制使用expand显示模式
 stepProgress( = 增加进度条的值

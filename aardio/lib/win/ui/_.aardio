@@ -1371,7 +1371,7 @@ namespace win.form{
 				var hwnd = ..win.getRoot(owner.hwnd);
 				
 				//优先考虑双击取消最大化，最大化拖动意义不大
-				if(  ..win.isZoomed(hwnd) ) return; 
+				if(  ..win.isZoomed(hwnd) || owner.restoreFullScreen ) return; 
 				
 				owner.setTimeout( 
     				function(){

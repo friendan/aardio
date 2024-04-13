@@ -5,16 +5,19 @@ import wsock.tcp.server;
 import wsock.tcp.client;
 import wsock.udp.client;
 import web.socket.jsonClient;
+import web.rpc.jsonClient;
 import sys.upnp.nat;
 import string.intSegments;
 import sys.volume;
 import fsys.knownFolder;
 import sys.volume;
+import process.job.limitKill;
 
 namespace process;
 
 class aria2{
 	ctor(rpcPort){{
+		self.server = this;
 		
 		this.downloadDir = ..sys.volume.maxSpace("download/aria2");
 		if(this.downloadDir[1]=='C'#){
@@ -27,7 +30,9 @@ class aria2{
 		
 		//https://aria2.github.io/manual/en/html/aria2c.html
 		this.defaultArguments = {
-			"--quiet";//避免写满管道导致断线
+			"--daemon";"--quiet";//避免写满管道导致断线
+			"--console-log-level=error";
+			"--show-console-readout=false";
 			"--rpc-allow-origin-all";"--enable-dht";
 			"--enable-rpc";"--bt-enable-lpd";"--enable-peer-exchange"};
 			
@@ -54,7 +59,21 @@ class aria2{
 			return this.rpcUrl; 
 		}
 		
-		var args = ..table.concat(this.defaultArguments,{...});
+		//https://aria2.github.io/manual/en/html/aria2c.html#options
+		var args2;
+		if(type(...)=="table"){
+			args2 = ..table.concat(this.defaultArguments,(...));
+		}
+		else {
+			args2 = ..table.concat(this.defaultArguments,{...});
+		}
+		 
+		var args = ..table.append({},args2);
+		for k,v in ..table.eachName(args2){ 
+			if(k[1]!='-'#) k = "--"+..string.replace(k,'[A-Z]',lambda(c)"-"+..string.lower(c)) ; 
+			..table.push(args,(v===""||v===true)?k:(k + "=" + tostring(v)))
+		}
+		
 		if( this.rpcListenAll ){
 			..table.push(args,"--rpc-listen-all");
 		}
@@ -79,7 +98,7 @@ class aria2{
 		if(this.userAgent){
 			..table.push(args,`--user-agent=` + this.userAgent);
 		}
-		
+	 
 		var trackerList = this.trackerList;
 		if(!trackerList) trackerList = "https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_best.txt";
 		if(!..string.indexAny(trackerList,'\n,')  && ..string.endWith(trackerList,".txt",true)){
@@ -174,8 +193,13 @@ class aria2{
 		if(this.arguments){
 			..table.append(args,this.arguments);
 		}
-			
-		this.server = ..process.popen(aria2path,args)
+		
+		var err;	
+		this.server,err = ..process.popen(aria2path,args);
+		if(!this.server ) return null,err;
+		
+		this.server.assignToJobObject(..process.job.limitKill);
+		
 		this.server.codepage = 65001;
 		this.rpcUrl = "ws://127.0.0.1:" + this.rpcPort + "/jsonrpc";
 		
@@ -200,43 +224,72 @@ class aria2{
 			
 			jsonClient.rpc.url = this.rpcUrl;
 			jsonClient.connect(this.rpcUrl);
+			this["(jsonClient)"] = jsonClient;	
+			
+			var jsonClientSync = ..web.rpc.jsonClient("http://127.0.0.1:" + this.rpcPort + "/jsonrpc");
+			this["(jsonClientSync)"] = jsonClientSync;
+			this["(jsonClient)"].sync = jsonClientSync; 
 			
 			if(this.rpcToken){
 				jsonClient.rpc.beforeRequest = function(reqData){
 					..table.insert(reqData.params,"token:" + this.rpcToken);
 					return reqData;
 				}
+				
+				jsonClientSync.rpc.beforeRequest = function(reqData){
+					..table.insert(reqData.params,"token:" + this.rpcToken);
+					return reqData;
+				}
 			}
-			
-			this["(jsonClient)"] = jsonClient;	
 		}
 		return this.rpcUrl;
 	};
-	stop = function(){
-		if(!this.server) return;
+	stop = function(async){
+		if(!this.server) return; 
 		
 		var jsonClient = this["(jsonClient)"]; 
-		if( jsonClient && jsonClient.rpc.isConnected() ){
-			jsonClient.aria2.shutdown();
+		if( jsonClient){ 
+			if(async && jsonClient.rpc.isConnected()) jsonClient.aria2.shutdown()
+			else {
+				jsonClient.sync.aria2.shutdown();
+			}
+			
 			this.rpcUrl = null;
 			this["(jsonClient)"] = null;
-			this.server.close(); 
+			this["(jsonClientSync)"] = null;
+			this.server.close();
 		}
 		else {
 			this.server.terminate();  
+		}
+		
+		this.server = null;
+		
+		if(self.server == this){
+			self.server = null;
 		}
 	};
 	jsonClient = function(){
 		if(!this["(jsonClient)"]) this.startServer();
 		return this["(jsonClient)"];
 	};
+	jsonClientSync = function(){
+		if(!this["(jsonClientSync)"]) this.startServer();
+		return this["(jsonClientSync)"];
+	};
 }
 
 namespace aria2{
+	
+	..subscribe("beforeUnload",function(){
+		if(self.server){
+			self.server.stop();
+		}
+	} );
 		
-	aria2path = ..io.appData("/aardio/std/aria2/1.36/aria2c.exe"
+	aria2path = ..io.appData("/aardio/std/aria2/1.37/aria2c.exe"
 		,$"~\lib\process\aria2\.res\aria2c.exe")
-	..io.appData("/aardio/std/aria2/1.36/COPYING",$"~\lib\process\aria2\.res\COPYING")
+	..io.appData("/aardio/std/aria2/1.37/COPYING",$"~\lib\process\aria2\.res\COPYING")
 	
 	defaultTrackerList  = "udp://tracker.opentrackr.org:1337/announce
 udp://9.rarbg.com:2810/announce
@@ -266,6 +319,7 @@ process.aria2( = 创建 aria2 客户端
 process.aria2(.(rpcPort) = 创建 aria2 对象,\n可选使用 @rpcPort 参数指定 RPC 服务端监听端口，\不指定参数则自动分配空闲端口
 process.aria2() = !stdProcessAria2.
 process.aria2.defaultTrackerList = 默认 Tracker 服务器列表,\n当获取用户指定的 Tracker 服务器列表失败时使用此值,\nTracker 服务器必须以逗号换换行符分隔,\n这里不能指定 获取 Tracker 服务器列表的网址
+process.aria2.server = 最后一次启动的 process.aria2 实例\n!stdProcessAria2.
 end intellisense**/
 
 /**intellisense(!stdProcessAria2)
@@ -274,11 +328,12 @@ trackerList = 指定 Tracker 服务器列表，可以逗号或换行符分隔多
 isReady() = aria2已启动，并且 jsonClient 已连接时返回true
 ready(proc) = @.ready(\n	function(){\n		var jsonClient = ??.jsonClient();\n		__/*aria2已启动，并且jsonClient已连接时执行此函数*/\n	}\n)
 addArguments(__) = 使用一个或多个参数指定 aria2 启动参数,应在 startRpcUrl 之前调用
-startServer() = 启动aria2服务服务进程。\n可选使用一个或多个参数指定 aria2 启动参数。\n\n要注意所有下载配置都需要在调用此函数以前指定才会有效
-jsonClient() = 启动并返回 JSON-RPC 客户端\n成功返回 web.socket.jsonClient 对象,\n如果服务端未启动,则启用服务进程\n可用接口函数请参考 https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface\n!stdwebsocketjsonClient.
+startServer() = 启动 aria2 服务进程。\n注意所有下载配置都需要在调用此函数以前指定才会有效。\n可选使用一个或多个参数指定 aria2 启动参数。\n可用参数见 https://aria2.github.io/manual/en/html/aria2c.html#options \n启动参数可指定多个字符串参数，也可指定包含数组或名值对的表。\n短参数名应用逗号分隔为 2 个参数，例如: "-j",10 。\n长参数可在一个参数内以等号分隔名字与参数值，\n也可以小驼峰式命名写为表的名值对，如：\n{ maxConcurrentDownloads = 12  }
+jsonClient() = 启动并返回基于 WebSocket 协议的异步 JSON-RPC 客户端，\n成功返回 web.socket.jsonClient 对象。\n如果服务端未启动，则启动服务进程。\n可用接口函数请参考 https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface \n\njsonClientSync 与 jsonClient 函数返回的 API 接口是一样的，\n区别是 jsonClientSync 调用后阻塞等待结果返回，\n而 jsonClient 则立即返回，RPC 调用结束再触发返回对象的 end 成员函数\n!stdwebsocketjsonClient.
+jsonClientSync() = 启动并返回基于 HTTP 协议的同步 JSON-RPC 客户端，\n成功返回 web.rpc.jsonClient 对象。\n如果服务端未启动，则启动服务进程。\n可用接口函数请参考 https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface \n!web_rpcJsonClientObject.
 rpcMaxRequestSize = 最大请求数\n如果自定义此属性，将在调用 startServer 函数时生效
 rpcToken = RPC密钥\n如果自定义此属性，将在调用 startServer 函数时生效
-rpcUrl = RPC地址\n如果自定义此属性，将在调用 startServer 函数时生效
+rpcUrl = 默认为 null，调用 startServer 函数后为启动的 RPC 接口地址
 rpcPort = RPC端口\n不指定时自动分配空闲端口\n如果自定义此属性，将在调用 startServer 函数时生效
 userAgent =  指定下载客户端特征字符串,\n不指定则使用默认值  aria2/version
 rpcListenAll = 是否允许外部网络使用RPC调用aria2接口,默认为false\n如果自定义此属性，将在调用startServer函数时生效
@@ -292,5 +347,5 @@ saveSessionInterval = 保存下载状态时间间隔，默认为 30 秒
 diskCache = 磁盘缓存大小，默认为 32M
 fileAllocation = 文件分配方式。\n建议保持为 null 由 aardio 自动指定：\nNTFS 分区自动指定为 "falloc"，否则为 "prealloc"
 server = 服务进程\n!process_popen.
-stop() = 关闭 aria2
+stop() = 关闭 aria2，并等待调用完成。\n如果参数 @1 为 true，则发送 RPC 指令后不等待调用完成。\n当前进程退出后也会自动关闭 aria2
 end intellisense**/

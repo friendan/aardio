@@ -18,5 +18,5 @@
 }
 
 /**intellisense()
-golang.string(__) = 创建Go字符串，\n参数可指定 buffer、string、null 类型的值\n可作为结构体参数用于获取 Go 字符串的值,\n获取到 Go 字符串以后，考虑 Go 会随时释放字符串,\n应当尽快使用 tostring 转换此结构体为 aardio 字符串\n不要保存或继续使用 Go 字符串指针
+golang.string(__) = 创建 Go 字符串。\n参数@1可指定 buffer、string、null 类型的值。\n作为调用 Go函数的参数使用时,\nGo 语言的 API 参数类型必须声明为 *string 指针。\n不建议在 Go 中修改或在 aardio 调用返回后继续保存该字符串指针。\n也不应用这种方法获取并保存 Go 字符串指针。\n\n一般也不建议使用 golang.string 传字符串。\n更稳妥的方法是用 Go 类型 *C.char 接收 aardio 字符串指针，并且 C.GoString 转换
 end intellisense**/

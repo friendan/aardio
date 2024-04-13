@@ -203,8 +203,8 @@ namespace accObject{
 			if(accObj){
 				var x,y,cx,cy = accObj.location();
 				accObj.release();
-				
-				if(y!==null && ( (y+cy) || y ) ){
+
+				if(y!==null && cx && cy){
 					rc = ::RECT(x,y,x+cx,y+cy);
 					rc.hwnd = hwnd;
 				}

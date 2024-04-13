@@ -98,9 +98,8 @@ class process {
 			sa.creationFlag =  (sa.creationFlag : 0) | 0x400/*_CREATE_UNICODE_ENVIRONMENT*/; 
 			if(sa.createNoWindow){
 				sa.creationFlag = sa.creationFlag | 0x8000000/*_CREATE_NO_WINDOW*/;
-			}
-			
-		
+			} 
+
 			if( !sa.username ){
 				ret = CreateProcess(pfile ,parameters
    				, sa.processAttributes 
@@ -190,9 +189,9 @@ class process {
 			this.free();
 		}
 	};
-	kill = function(){
+	kill = function(exitcode){
 		this.suspend();
-		this.terminate();
+		this.terminate(exitcode);
 	};
 	ctrlEvent = function(event){
 		if( _WIN_64 && !this.isWow64() ){
@@ -556,6 +555,9 @@ class process {
 	};
 	assignToJobObject = function(job){
 		return ::Kernel32.AssignProcessToJobObjectB(job,this.handle);
+	};
+	killOnExit = function(){
+		return this.assignToJobObject(..process.job.limitKill); 
 	};
 	isX64 = function(){
 		return this.__isX64 ;
@@ -1185,14 +1187,28 @@ namespace process{
 		return '"' + o + '"';	
 	} 
 	
+	var argumentsMeta = { _tostring = lambda() joinArguments(owner);_type="object" }
+	arguments = function(args){
+		args = args || {};
+		if(!args@)args@ = argumentsMeta;
+		return args;
+	}
+	
 	joinArguments = function(parameters,...){
 		if( ... !== null ) parameters = { parameters; ... }
 		if( type(parameters) == type.table ){
+			var isPArgs = parameters@===argumentsMeta;
+			
 			var out = {}
 			for k,v in ..table.eachName(parameters){
 				if(k[1]=='-'# || k[1]=='/'#){
-					..table.push(out,k,v!==""?tostring(v):null);
+					..table.push(out,k,tostring(v));
 				} 
+				elseif(isPArgs) {
+					..table.push(out,"--" + ..string.replace(k,"[A-Z]",function(c){
+						return "-" + ..string.lower(c);
+					} ),tostring(v));
+				}
 			}
 			
 			..table.append(out,parameters); 
@@ -1238,6 +1254,8 @@ namespace process{
 	workDir = ..io.fullpath("/")
 }
 
+import process.job.limitKill;
+
 /**details(相关范例)
 范例程序 > 进程
 end details**/
@@ -1257,6 +1275,7 @@ process.find() = !process.
 process.shell() = !process.
 process.shellAs() = !process.
 process.is(__) = 传入参数是否 process 对象
+process.arguments() = 返回一个命令行参数表对象。\n或将参数指定的表（只能是未指定元表的纯表）转换为命令行参数表对象。\n此参数表可用于指定 process 库所有启动进程函数的命令行参数。\n表中无 / 或 - 前导字符的参数名将由小驼峰转换为连字符风格并加上 -- 前缀。\n名值对参数将用空格分开参数名与参数值。\n注意 -- 前缀的参数用等号和空格分隔参数值通常是等价的。\n参数表的其他数组成员也会直接转换为命令行参数
 !process.stillActive() = 进程是否仍在运行
 !process.getInfo( = 获取进程信息
 !process.getInfo(.() = 获取进程信息
@@ -1331,7 +1350,8 @@ process.is(__) = 传入参数是否 process 对象
 !process.waitMainWindow( = 等待并返回进程主窗口以及窗口进程ID。\n也可调用 winex.mainWindows 且指定参数 @2 为 true 以等待主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
 !process.waitMainWindow(.(类名,等待窗口句柄) = 等待并返回进程主窗口以及窗口进程ID。\n所有参数可选。\n可选指定要等待的类名,类名参数支持模式匹配语法,\n不指定类名时忽略隐藏窗口,\n可选指定等待窗口句柄,该窗口关闭时些函数不再等待并直接返回结果
 !process.closeMainWindow() = 关闭进程的主窗口，忽略隐藏窗口
-!process.assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回true\n作业对象示例请参考标准库 process.job.limitKill 的源码。
+!process.assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回 true\n作业对象示例请参考标准库 process.job.limitKill 的源码。\n也可直接调用 killOnExit 函数绑定 process.job.limitKill
+!process.killOnExit() = 主进程退出时自动退出此进程
 !process.ctrlEvent(0)=发送Ctrl+C(SIGINT信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
 !process.ctrlEvent(1)=发送Ctrl+Break(SIGBREAK信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
 !process.emptyWorkingSet() = 将工作集中的内存尽可能移动到页面文件中,\n应发在最小化或程序空闲内存确实暂不需要使用时调用,\n不应频繁调用此函数
@@ -1393,9 +1413,9 @@ xCountChars = 控制台宽度(字符单位)
 yCountChars = 控制台高度(字符单位)
 fillAttribute = 控制台窗口使用的文本和背景颜色
 flags = @.flags = _STARTF_USE__ //指定结构体中哪些成员生效\n
-showWindow = 显示参数\n支持以_SW_前缀的常量\n_SW_HIDE表示隐藏窗口(默认值)
-stdInput = 标准输入(可用于创建管道)
-stdOutput = 标准输出(可用于创建管道)
+showWindow = 显示参数，\n支持以_SW_ 前缀的常量\n_SW_HIDE 表示隐藏窗口（默认值）。\n此属性用于指定是否显示控制台以外的窗口，\nflags 字段必须指定 _STARTF_USESHOWWINDOW 才会生效
+stdInput = 标准输入（可用于创建管道）
+stdOutput = 标准输出（可用于创建管道）
 stdError = 标准错误输出(可用于创建管道) 
 waitInputTimeout = 进程启动后等待初始化完成的最大超时\n默认为0xFFFFFFFF(无限等待),设为0则不等待
 creationFlag = @.creationFlag = CREATE__ //创建进程的参数,参考API CreateProcess的说明
@@ -1410,7 +1430,7 @@ username = 登录用户名
 password = 登录密码
 domain = 域名
 logonFlags = 登录选项,默认为 _LOGON_WITH_PROFILE
-createNoWindow = 不为应用程序创建控制台窗口
+createNoWindow = 应用程序不创建控制台窗口
 end intellisense**/
 
 /*intellisense(!processEntry) 

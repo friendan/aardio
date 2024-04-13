@@ -25,7 +25,13 @@ class jsonLiteClient{
 			var t = this._http.responseContentType; 
 
 			if(t){
+				
+				if( ..string.match( t,"[\w\/]*<@@x-ndjson@>![\W]"  ) ) {
+					return ..web.json.ndParse(s,true);
+				}
+				
 				if( ..string.match( t,"[\w\/]*<@@json@>![\W]"  ) ) return ..web.json.parse(s,true);
+				
 				if(t=="application/x-www-form-urlencoded"){
 					var r = ..inet.url.splitParameters(s);
 					for(k,v in r){
@@ -47,14 +53,17 @@ class jsonLiteClient{
 			if(this.strictParsing) return s;
 			return  ..web.json.tryParse(s,true) : s;
 		}
-		this.lastResponse = function(){
+		lastResponse = function(){
 			var s = this.lastResponseData;
 			if( s ){
 				s = ..string.trim(s);
-		 		if( s[1] == '{'# || s[1] == '['# && (!this._http.lastReadErrCode ) ){
-		 			s = ..web.json.stringify( ..web.json.parse(s,true),true);
+			 	
+		 		if( (..string.match( this._http.responseContentType,"[\w\/]*<@@json@>![\W]"  ) 
+		 			|| s[1] == '{'# || s[1] == '['#) && (!this._http.lastReadErrCode ) ){
+		 				var jObject = ..web.json.parse(s,true);
+		 				if(jObject) s = ..web.json.stringify(jObject,true);
 		 		}
-		 		if( ..console && _STUDIO_INVOKED  ) ..console.log(s) else ..io.print(s);
+		 		if( ..console && _STUDIO_INVOKED ) ..console.log(s) else ..io.print(s);
 		 		return s;
 			}
 		};

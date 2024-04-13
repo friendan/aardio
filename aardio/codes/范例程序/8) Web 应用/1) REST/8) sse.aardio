@@ -26,8 +26,11 @@ thread.invoke(
 		var http = web.rest.jsonLiteClient();
 
 		var eventSource = http.api(url) 
-		eventSource.get(,, function(message){   
-			winform.edit.print("HTTP 服务端推送了事件")
+		
+		//参数 @2 或 参数@3 指定接收数据回调函数则自动支持 SSE，兼容 ndjson 流。
+		eventSource.get( , function(message){   
+			//注意这里的 message 已经由 JSON 解析为对象
+			winform.edit.print("HTTP 服务端推送了事件",type(message))
 			winform.edit.print(message);
 		} ) 
 		 

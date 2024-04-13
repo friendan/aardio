@@ -8,7 +8,7 @@ plus={cls="plus";left=45;top=30;right=974;bottom=649;ah=1;aw=1;background="\form
 /*}}*/
 
 winform.getTemplatePath = function(){
-	return io.fullpath("/template/console/") 
+	return io.fullpath("/template/console/");
 }
 
 winform.show() 

@@ -216,6 +216,7 @@ class http{
 		this.contentLength = tonumber(this.readHeader("Content-Length:"):null); 
 		this.responseContentType = this.readHeader("Content-Type:");
 		this.eventStream = ..string.startWith(this.responseContentType:"","text/event-stream",true);
+		
 		this.responseContentEncoding = this.readHeader("Content-Encoding:");
 		if( this.afterSend) {
 			this.afterSend(this.statusCode,this.contentLength);
@@ -257,8 +258,7 @@ class http{
 				} 
 			}
 		}
-		
-		 
+
 		return this.endSendData(); 
 	};
 	setAuth = function(user,pwd){
@@ -537,9 +537,19 @@ class http{
     	var ret;
     	if( this.onReceive ){
     	    
-    	    for(str,size in this.eachRead() ){
-    			if( this.onReceive( str,size,total ) === false )
-    				break;
+    	    if(this.parseStreamData &&
+    	       ..string.startWith(this.responseContentType:"","application/x-ndjson",true) ){
+    	    	
+    	    	for(str,size in this.eachRead() ){
+    				if( this.onReceive( this.parseStreamData(str) ) === false )
+    					break;
+    			}
+    	    } 
+    	    else{
+    	    	for(str,size in this.eachRead() ){
+    				if( this.onReceive( str,size,total ) === false )
+    					break;
+    			}
     		}
     	    
     		ret = true;
@@ -564,7 +574,7 @@ class http{
 				if(!str){
 					this.lastReadErrCode = errCode; 
 					return null;
-				}
+				} 
 				return str,size;
 			};
 		}
@@ -584,7 +594,7 @@ class http{
 						continue; 
 					}
 					else {
-						if(e.data && this.parseEventData) e.data = this.parseEventData(e.data);
+						if(e.data && this.parseStreamData) e.data = this.parseStreamData(e.data);
 						return e;
 					}
 				}
@@ -810,6 +820,10 @@ inet.http() = !inet_http.
 !inet_http.eachReadBuffer(缓冲区,长度) = @var buffer = .raw.bufferc( 1024 * 10 );\nfor( size in ??.eachReadBuffer( buffer ) ){ 
 	__ 
 }
+!inet_http.parseStreamData = @.parseStreamData = function(data){
+	__/*如果 ContentType 响应类型为 text/event-stream，\n则 eachRead 与 onReceive 回调会自动调用 parseStreamData 提前转换数据。\n如果 ContentType 响应类型为 application/x-ndjson，\n则 onReceive 回调会自动调用 parseStreamData 提前转换数据\nweb.rest.client 会自动设定此回调*/
+	return data;
+} 
 !inet_http.lastReadErrCode = 最后一次读取数据是否遇到错误,例如网络断开连接等等
 !inet_http.read(.(读取长度) = 长度参数可选\n返回读取字符串,以及长度\n失败返回false,错误信息\n该函数必须在send请求以后调用
 !inet_http.readAll() = 读取所有返回数据\n该函数必须在send请求以后调用

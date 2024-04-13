@@ -1,36 +1,27 @@
-﻿//BT 下载
+//BT 下载
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aria下载器";right=1250;bottom=704;border="none")
+var winform = win.form(text="aria下载器";right=1010;bottom=607;border="none")
 winform.add(
-bk={cls="bk";left=0;top=0;right=1251;bottom=31;bgcolor=11841964;dl=1;dr=1;dt=1;forecolor=5392444;linearGradient=0;z=2};
-custom={cls="custom";text="自定义控件";left=0;top=28;right=1251;bottom=706;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1}
+bk={cls="bk";left=0;top=0;right=1012;bottom=31;bgcolor=11841964;dl=1;dr=1;dt=1;forecolor=5392444;linearGradient=0;z=2};
+custom={cls="custom";text="自定义控件";left=0;top=30;right=1012;bottom=609;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1}
 )
 /*}}*/
 
+//启动 aria2 
 import process.aria2;
-var aria2 = process.aria2();  
+var aria2 = process.aria2(); 
+aria2.startServer( maxConcurrentDownloads = 10 );
+ 
+//导入网页前端
+import web.ariaNg;   
 
-//启动服务器
-aria2.startServer("--max-connection-per-server=16"); 
- 
-import web.view;
-var wb = web.view(winform.custom);
- 
-//导入网页前端服务器
-import web.ariaNg; 
-var url = web.ariaNg.getUrl("/index.html#!/settings/rpc/set/ws/127.0.0.1/"+aria2.rpcPort
-	+"/jsonrpc/"+crypt.bin.encodeBase64(aria2.rpcToken))
- 
 //打开网页
-wb.go(url);
- 
-//关闭窗口前关闭 aria2
-winform.onDestroy = function(){
-    aria2.stop();
-}
+import web.view;
+var wb = web.view(winform.custom); 
+wb.go( web.ariaNg.defaultUrl );
 
-//添加窗口标题栏、边框、阴影等
+//自绘标题栏、阴影边框
 import win.ui.simpleWindow;
 win.ui.simpleWindow(winform);
 

@@ -22,12 +22,18 @@ class asynHttpServer{
 		this.documentRoot = documentRoot : "/";
 		this.defalutDocument = "main.aardio";
 		
-		this.getUrl = function(path,netIp){  
+		this.getUrl = function(path,netIp,arg3){  
 			var ip,port = this.getLocalIp();
 			if(!(ip&&port)) return;
 			
+			var extra;
+			if(type(netIp)==="table"){
+				extra = netIp;
+				netIp = arg3;
+			}
+			
 			if(ip=="0.0.0.0"){ 
-				ip = netIp? ..wsock.tcp.client.getLocalIp() : "localhost";
+				ip = (netIp||arg3)? ..wsock.tcp.client.getLocalIp() : "localhost";
 			}
 			
 			var url = ..string.format("http://%s:%d",ip,port ); 
@@ -37,6 +43,10 @@ class asynHttpServer{
 				
 				url = url + "/" + path;
 			};
+			
+			if(extra){
+				url = ..inet.url.appendExtraInfo(url,extra);
+			}
 			return url;
 		}
 		
@@ -63,7 +73,7 @@ class asynHttpServer{
 		}
 	}; 
 	spaUrl = function(indexUrl,documentBase){
-		var indexPath,extraInfo = ..string.match(indexUrl,"([^\#\?]+)(.*)"); 
+		var indexPath,extraInfo = ..string.match(indexUrl,"([^\#\?]*)(.*)");  
   
 		var ip,port = this.getLocalIp();
 		if(!(ip&&port)) this.start("127.0.0.1");
@@ -842,7 +852,10 @@ maxConnection = 最大连接数
 clientBufferSize = 客户端套接字读写缓冲区大小，默认为1MB\n缓冲区如果设置的太小，会导致过于频繁的调用读写函数
 keepAliveTimeout = 最大保持连接时间,以秒为单位,\n负数表示不限时间
 clearKeepAliveTimeout() = 关闭所有超出keepAliveTimeout限制的超时连接\n在连接超出最大连接数时,此函数会被自动调用
-getUrl(__) = 返回HTTP服务端访问网址,可选指定目录或文件路径\n注意参数第一个字符不需要指定斜杠\n如果参数@2为true，IP "0.0.0.0"替换为上网卡IP而不是localhost\n如果服务器启动失败不返回任何值
+getUrl( = 返回 HTTP 服务端访问网址\n如果服务器启动失败不返回任何值
+getUrl(.() = 返回首页网址
+getUrl(.(path,localIp) = 返回 @path 指定路径的网址，路径开始可省略斜杠。 \n注意参数第一个字符不需要指定斜杠\n可选用 @localIp 指定 IP "0.0.0.0" 是否替换为上网卡 IP（否则 localhost ）
+getUrl(.(path,param,localIp) = 返回 @path 指定路径的网址，路径开始可省略斜杠。\n@param 指定 URL 参数表（table 对象）。\n可选用 @localIp 指定 IP "0.0.0.0" 是否替换为上网卡 IP（否则 localhost ）
 spaUrl( = 返回 SPA 单页应用首页网址\n如未启动服务端则自动启动且监听IP设为 "127.0.0.1"
 spaUrl(.(indexHtmlPath,documentBase) = 参数指定 SPA 单页应用首页路径，\n404错误页也会自动设置到该路径，\n返回首页网址\n\n可选用参数 @documentBase 指定根目录以避免网页不支持非根目录路径
 documentRoot = 网站应用程序根目录,默认为"/",\n只能设置为硬盘上实际存在的目录,\n改变此目录,会同时改变\n服务端代码中的应用程序根目录以及用户库目录,\n如果只是相将所有请求路径转向某个目录,应当改用 documentBase 属性\n如果网站在嵌入资源目录中,应当改用 documentBase 属性

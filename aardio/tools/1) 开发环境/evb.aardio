@@ -8,7 +8,8 @@ checklist={cls="checklist";left=15;top=51;right=739;bottom=384;db=1;dl=1;dr=1;dt
 edit={cls="edit";left=16;top=52;right=739;bottom=385;edge=1;hide=1;multiline=1;z=4};
 static={cls="static";text="请勾选需要封包到独立 EXE 内的文件与目录：";left=25;top=14;right=420;bottom=46;dl=1;dt=1;transparent=1;z=3};
 static2={cls="static";text="纯 aardio 程序本就可以直接生成独立 EXE，不需要此工具。
-调用 Python 等不能生成独立 EXE 的外部组件时，可用此工具转换。";left=16;top=399;right=452;bottom=456;transparent=1;z=5}
+调用 Python 等不能生成独立 EXE 的外部组件时，可用此工具转换。
+可打包 32/64 位 EXE，例如 64 位 python.exe 。";left=16;top=399;right=452;bottom=456;transparent=1;z=5}
 )
 /*}}*/
 

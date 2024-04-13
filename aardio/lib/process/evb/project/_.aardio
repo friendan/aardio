@@ -4,8 +4,9 @@ namespace process.evb;
 
 class project{
 	ctor(){
-		this.mapExecutableWithTemporaryFile = true;
-		this.allowRunningOfVirtualExeFiles = true;
+		this.mapExecutableWithTemporaryFile = true;//使用临时文件映射可执行文件
+		this.allowRunningOfVirtualExeFiles = true;//将虚拟系统共享到子进程
+		this.processesOfAnyPlatforms = true;//允许包含并运行 64 位 EXE。
 		this.files = {};
 	};
 	addSubFile = function(srcPath,dstName,wildcard,proc,enumSubdir){
@@ -147,9 +148,10 @@ evbProject.main = 指定启动 EXE 文件路径
 evbProject.output = 指定要生成的独立 EXE 文件路径 
 deleteExtractedOnExit = 是否在退出时删除释放的文件，\n如果没有文件设置为释放就不用管
 compressFiles = 压缩文件，没必要设置
-mapExecutableWithTemporaryFile = 使用临时文件映射可执行文件\n一般没必要设置
+processesOfAnyPlatforms = 允许32 位封包程序包含并运行 64 位 程序。
+mapExecutableWithTemporaryFile = 使用临时文件映射可执行文件。\n程序会自动清除这些临时文件，而且临时文件不包含任何实际内容
 allowRunningOfVirtualExeFiles = 允许运行虚拟可执行文件\nmapExecutableWithTemporaryFile 为 true 时有效\n一般没必要设置
-shareVirtualSystem = 将虚拟系统共享到子进程\nmapExecutableWithTemporaryFile 为 true 时有效\n一般没必要设置
+shareVirtualSystem = 将虚拟系统共享到所有子进程（即使子进程不是封包内程序）。\nmapExecutableWithTemporaryFile 为 true 时有效\n一般没必要设置
 main = 需要封包的启动 EXE 文件路径\n不指定则自动设为已添加文件中的第一个 EXE 文件
 output = 生成的独立 EXE 文件
 end intellisense**/

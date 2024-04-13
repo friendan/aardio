@@ -24,9 +24,9 @@ v2scan = lambda(v,e)::MapVirtualKey(v,e?4:0);
 
 scan2v = lambda(s,e)::MapVirtualKey(s,e?3:1);
 
-getCode = function(kn){
-	var vk = (type(kn)==type.number)?kn:VK[..string.upper(kn)] : VK_MAPSHIFT[kn]
-	return (type(vk)==type.number)?vk:null,VK_EXT[vk] : VK_EXT2[kn] : 0
+getCode = function(kn){ 
+	var vk = (type(kn)!="string")?kn:VK[kn ? ..string.upper(kn)] : VK_MAPSHIFT[kn]
+	return (type(vk)=="number")?vk:null,VK_EXT[vk] : VK_EXT2[kn] : 0
 } 
 
 send = function(str,tk=0){
@@ -92,7 +92,7 @@ combine = function(...){
 	
 	..thread.delay( delayDown );
 	
-	for(i=1;#args;1){
+	for(i=#args;1;-1){
 		vk,ext = getCode(args[i]); 
 		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
 		..thread.delay(1)
@@ -213,12 +213,12 @@ setState = function( state,... ){
 		if(!vk) error("输入的键名无效:" + k,2);  
 		
 		c = (vk== 0x14/*_VK_CAPITAL*/ || vk== 0x90/*_VK_NUMLOCK*/ || vk==0x91/*_VK_SCROLL*/ ) 
-			? 1 : 2_10000000;
+			? 1 : 2#10000000;
 			
 		if(state)
-			kbState[vk+1] |= c;
+			kbState[vk+1] = kbState[vk+1] | c;
 		else
-			kbState[vk+1] &= ~c;
+			kbState[vk+1] = kbState[vk+1] & ~c;
 	}
 	return ::User32.SetKeyboardState(kbState);
 }

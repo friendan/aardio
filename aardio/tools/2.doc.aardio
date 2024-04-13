@@ -27,8 +27,41 @@ if(!atom){
 	return;
 }
 
-::User32.SendMessage(winform.hwnd,0x80/*_WM_SETICON*/,0,::User32.LoadIcon(_HINSTANSE,129));
-::User32.SendMessage(winform.hwnd,0x80/*_WM_SETICON*/,1,::User32.LoadIcon(_HINSTANSE,129));
+var redirectObject = {
+	["dllModuleObject"] = "raw";
+	["rectfObject"] = "gdip.core"; 
+	["mathSize64Object"] = "math";
+	["processObject"] = "process";
+	["processPopenObject"] = "process.popen";
+	["fileObject"] = "io"; 
+	["webRestClientObject"] = "web.rest.client"; 
+	["webRestApiObject"] = "web.rest.client"; 
+	["mathSize64Object"] = "math"; 
+	["fileObject"] = "io"; 
+	["timeObject"] = "time"; 
+	["fsysStreamObject"] = "fsys.stream"; 
+	["gdipbitmapObject"] = "gdip.bitmap"; 
+	["gdipimageObject"] = "gdip.image"; 
+	["gdipfontObject"] = "gdip.font"; 
+	["inetDownBoxObject"] = "inet.downBox"; 
+	["dotNetNameSpaceObject"] = "dotNet.appDomain"; 
+	["timeObject"] = "time"; 
+	["embedObject"] = "com"; 
+	["WebSocketJsonClientObject"] = "web.socket.jsonClient"; 
+	["webRpcJsonClientObject"] = "web.rpc.jsonClient"; 
+	["tcpclientObject"] = "wsock.tcp.client"; 
+	["tcpaclientObject"] = "wsock.tcp.asynClient";
+	["asynHttpServerObject"] = "wsock.tcp.asynHttpServer";
+	["staticObject"] = "win.ui.ctrl.static";
+	["uiCtrlPlusObject"] = "win.ui.ctrl.plus";
+	["editObject"] = "win.ui.ctrl.edit";
+	["winform"] = "win.ui"; 
+	["listviewObject"] = "win.uictrl.listview";
+	["fsysTableObject"] = "fsys.table";
+}
+
+import win.image; 
+win.image.setIcon(winform,::User32.LoadIcon(_HINSTANSE,129)) 
 winform.show( 0x3/*_SW_MAXIMIZE*/ );
 
 import fsys.table;
@@ -424,7 +457,10 @@ winform.lbBrowser.preTranslateAccelerator = function(msg){
 }
 
 import process;
-import process.chm;
+import process.chm; 
+import ide.doc;
+
+var kernelDocument = ..ide.doc( "kernel" ); 
 wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
 	if( ..string.startWith(url,"javascript:",true) ) return;
 
@@ -440,7 +476,31 @@ wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Heade
 			var x,y,cx,cy = wb.getPoint(ele);
 			wb.scrollPos(,x,y);
 		}
-		else {
+		else {  
+			if(redirectObject[id]){ 
+				winform.setTimeout( 
+					function(){
+						winform.editLibPath.text = redirectObject[id];
+						winform.btnOpenMarkdown.oncommand();
+						wb.wait();
+						
+						var ele = wb.getEle(id);
+						if( ele ){
+							var x,y,cx,cy = wb.getPoint(ele);
+							wb.scrollPos(,x,y);
+							
+						}		
+					}
+				);
+				return url, Flags, TargetFrameName, PostData, Headers,true; 
+			}
+			elseif(kernelDocument.const[id]||kernelDocument.sections[id]||kernelDocument.define[id]){
+				winform.editLibPath.text = id;
+				winform.btnOpenMarkdown.oncommand();
+				return;	
+			}
+			
+			
 			winform.msgboxErr("在当前页面没有找到相关内容");
 		}
 		

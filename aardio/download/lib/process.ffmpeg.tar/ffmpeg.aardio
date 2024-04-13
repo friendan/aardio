@@ -24,9 +24,9 @@ class ffmpeg {
 namespace ffmpeg {
 
 	getPath = function(){ 
-		if(self.path) return self.path;
+		if(self.path) return self.path; 
 		
-	 	var path = ..io.appData("/aardio/ffmpeg-static/" + cdnVersion + "/" + cdnFilename);
+	 	var path = ..io.appData("/aardio/ffmpeg-static/" + cdnVersion + "/" + getCdnFilename());
 		if(! ..io.exist(path) ){
 			install();
 		}
@@ -38,26 +38,44 @@ namespace ffmpeg {
 		self.path = ..io.exist(path);
 	};
 	
-	cdnFilename = _WIN_64 ? "win32-x64" : "win32-ia32";
-	cdnVersion = "5.0.1";
+	cdnVersion = "6.0"; 
+	
+	getCdnFilename = function(){
+		if(!cdnFilename){
+			if( ..string.map(cdnVersion)[1]<6 ){
+				cdnFilename = _WIN_64 ? "win32-x64" : "win32-ia32";
+			}
+			else {
+				cdnFilename = _WIN_64 ? "ffmpeg-win32-x64" : "ffmpeg-win32-ia32";
+			}
+		} 	
+		
+		return cdnFilename;
+	} 
+	
 	cdnUrl = "https://npmmirror.com/mirrors/ffmpeg-static/";
 	
 	install = function(name){ 
 		import zlib.httpFile;
-		if( zlib.httpFile.download("https://npmmirror.com/mirrors/ffmpeg-static/b"+cdnVersion+"/"+cdnFilename+".gz"
+		
+		if( zlib.httpFile.download("https://npmmirror.com/mirrors/ffmpeg-static/b"+cdnVersion+"/"+getCdnFilename()+".gz"
 			,"正在下载本程序必须组件：FFmpeg",..io.appData("/aardio/ffmpeg-static/" + cdnVersion) )) {
 			return getPath(name);
 		}
 	} 
 }
 
+/**details(FFmpeg调用参数说明)
+[FFmpeg调用参数说明](https://quickref.me/zh-CN/docs/ffmpeg.html)
+end details**/
+
 /**intellisense()
-process.ffmpeg = 调用 ffmpeg.exe，返回 process.popen 管道对象
+process.ffmpeg = 调用 ffmpeg.exe，返回 process.popen 进程管道对象\n[FFmpeg调用参数说明](https://quickref.me/zh-CN/docs/ffmpeg.html)
 process.ffmpeg(.(workDir,->->->) = 调用 ffmpeg.exe，返回 process.popen 管道对象\n@workDir 参数指定工作目录，传入空值则默认设为"/"。\n可传入一个或多个启动命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号
 process.ffmpeg() = !process_popen.
 setPath(__) = 自定义 ffmpeg.exe 路径。\n参数 @1 指定文件路径
 process.ffmpeg.getPath() = 返回 ffmpeg.exe 路径。\n如果找不到路径则会自动安装
-process.ffmpeg.cdnFilename = 默认下载的 ffmpeg 文件名。\n64位系统默认为 "win32-x64"，32位默认为 "win32-ia3"
-process.ffmpeg.cdnVersion = 默认下载的 ffmpeg 版本。\n当前为 "5.0.1"
+process.ffmpeg.cdnFilename = 默认下载的 ffmpeg 文件名。\n64位系统默认为 "ffmpeg-win32-x64"，32位默认为 "ffmpeg-win32-ia3"
+process.ffmpeg.cdnVersion = 默认下载的 ffmpeg 版本。\n当前为 "6.0"
 process.ffmpeg.cdnUrl = ffmpeg.exe 默认下载地址
 end intellisense**/

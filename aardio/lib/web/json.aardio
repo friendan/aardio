@@ -373,12 +373,12 @@ JSON默认编码为UTF-8,与aardio一致。
 如果检测到声明编码的BOM，或者检测到Unicode特征则忽略参数将inputCodepage设为实际代码页
 */
 tryParse = function(s,unescape=true,inputCodepage){ 
-	if( type(s) != "string" ){
-		if(type(s) != "buffer") return null ,"参数不是字符串";
+	if( !type.isString(s)  ){
+		return null ,"参数不是字符串";
 	}	
 	
 	if( !#s ) return; 
-	
+
 	var a,b = s[1],s[2];
 	if( a == 0xEF  && b == 0xBB && s[3] == 0xBF ){
 		s = ..string.right(s,-4);
@@ -407,6 +407,19 @@ tryParse = function(s,unescape=true,inputCodepage){
 	var ok,data,pos = call(scanAny,self,s,unescape,1,,true);
 	if(!ok) return null,data; 
 	return data;
+}
+
+ndParse = function(s,unescape){
+	var r = {}
+	var s = ..string.splitEx(s,'<\\r*\\n>|\\r|\x1E');//ndjson,json-seq
+	for i,j in s {
+		if(#j){
+			var ok,d = call(scanAny,self,j,unescape,1,,false);
+			if(!ok) error(d,2); 
+			..table.push(r,d);
+		}
+	}
+	return r; 
 }
 
 parse = function(...){
@@ -484,6 +497,8 @@ web.json.parse( = 使用宽松的 JSON 语法解析并返回表对象,\n支持�
 web.json.parse(.(输入文本,是否解析转义符,输入代码页) = 参数@2默认为 true,\n代码页默认为 65001 即 UTF-8 编码,\n输入文本如使用了 UTF-16 LE/BE 编码则转换为 UTF-8,\n返回对象的元表 _defined 字段记录了所有已定义的键,\n参数传入空值或空字符串返回空值\n解析误到错误的 JSON 语法时会抛出异常
 web.json.tryParse(.(输入文本,是否解析转义符,输入代码页) = 解析 JSON 并返回 aardio 对象\n作用与参数用法与parse函数一样,\n请参考该函数说明\n\n唯一的区别是：\nparse函数遇到JSON语法错误时抛出异常\n而tryParse遇到错误时返回 null,错误信息
 web.json.strip(__) = 将一个对象转换为 JSON ,再转换为 aardio 对象,\n用于将对象转换为 JSON/JS 兼容的对象。\n\n如果提前导入  dotNet.json ，\n则可以用此函数将 .NET 对象转为纯 aardio 对象
+web.json.ndParse( = 解析 ndjson，也就是每行一句 JSON 
+web.json.ndParse(.(输入文本,是否解析转义符) = 解析 ndjson。\n只能输入 UTF-8 文本，字符串不能有 BOM 编码头（一般也不可能有）
 end intellisense**/
 
 //感谢 namwonsta 贡献最初的源码

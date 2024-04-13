@@ -1,5 +1,6 @@
 ﻿import process.popen;
 import inet.installer;
+import fsys.file;
 import win.reg;
 
 namespace process;
@@ -7,8 +8,8 @@ namespace process;
 class evb{
 	ctor( evbPath ){
 		var exePath = path();
-		if(!exePath){
- 			..inet.installer("Enigma Virtual Box"
+		if(!exePath || !..fsys.file.lastModified(exePath,"2024/1/23 10:11:05") ){
+ 			..inet.installer("Enigma Virtual Box 最新版"
  				,_WINXP?"http://enigmaprotector.com/assets/files/enigmavb.exe":"https://enigmaprotector.com/assets/files/enigmavb.exe"
  				,"/SP- /SILENT /SUPPRESSMSGBOXES /NOCANCEL /NORESTART")
 		}

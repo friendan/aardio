@@ -7,6 +7,8 @@ trackbar={cls="plus";left=225;top=266;right=667;bottom=281;bgcolor=14265123;bord
 )
 /*}}*/
 
+//创建滑尺控件教程: https://bbs.aardio.com/forum.php?mod=viewthread&tid=11486&page=1#pid64076
+
 //设置滑尺范围,切换到滑尺模式
 winform.trackbar.setTrackbarRange(1,100);
 

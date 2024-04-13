@@ -27,4 +27,12 @@ for(i=1;#dmSegMobileReply.elems){
 	//console.more(1000);
 }
 
+import web.json;
+
+//不需要任何封装，所有 Protobuf 消息对象都可以直接转换为 json
+var json = web.json.stringify(dmSegMobileReply);
+
+//Protobuf 消息对象可通过 JSON 转换为纯 table 对象
+var tab = web.json.strip(dmSegMobileReply) 
+
 console.pause(true);

@@ -6,6 +6,7 @@ import process.job.limitKill;
 import string.cmdline;
 import process.cmdline;
 import inet.http;
+import win.path;
 
 namespace process;
 
@@ -14,7 +15,7 @@ class adb{
 		var args = ..string.cmdline.arguments(param,... )
 		if( defaultArguments ) args = ..table.append({},defaultArguments,args);
 
-		this = ..process.popen( "~/lib/process/adb/.res/adb.exe",args,{workDir=workDir});
+		this = ..process.popen(self.path,args,{workDir=workDir});
 		this.assignToJobObject(..process.job.limitKill);
 		this.codepage = 65001;
 		
@@ -171,7 +172,7 @@ namespace adb{
 	} 
 	
 	getSerialNo = function(){ 
-		return get("get-serialno" ) 
+		return get("get-serialno") 
 	}
 	
 	setSerialNo = function(device){
@@ -179,7 +180,8 @@ namespace adb{
 		return device;
 	}
 	 
-	getState = function(){ 
+	getState = function(serialNo){ 
+		if(serialNo) return get("-s",serialNo,"get-state");
 		return get("get-state")  
 	}
 	
@@ -188,31 +190,27 @@ namespace adb{
 		return get("--version")   
 	}
 	
-	
 	findDevice = function(usb){
 		var devices = getDevices();
 		if(#devices){
 			if(#devices==1){
-				setSerialNo(null); 
-				return devices[1].serialNo
+				return setSerialNo(devices[1].serialNo); 
 			}
-			
-			if(usb){
-				if(type.isString(usb)){
-					for(i,dev in devices){
-						if(dev.serialNo == usb){
-							return setSerialNo(dev.serialNo); 
-						}
-					} 	
-				}
-				else {
-					for(i,dev in devices){
-						if(!..string.find(dev.serialNo,":")){
-							return setSerialNo(dev.serialNo); 
-						}
-					} 	
+			 
+			if(type.isString(usb)){
+				for(i,dev in devices){
+					if(dev.serialNo == usb){
+						return setSerialNo(dev.serialNo); 
+					}
 				} 	
-			} 
+			}
+			else {
+				for(i,dev in devices){
+					if(!usb || !..string.indexOf(dev.serialNo,":")){
+						return setSerialNo(dev.serialNo);
+					}
+				}  	
+			}  
 			
 			return setSerialNo(devices[1].serialNo); 
 		}
@@ -225,7 +223,7 @@ namespace adb{
 		if(out) {
 			var ret = {}
 			for dev in ..string.lines(..string.trim(out),,"\s+",3){
-				if(#dev==3 && dev[2]=="device" || (dev[2]=="offline" && offline) ){
+				if(#dev==3 && (dev[2]=="device" || (dev[2]=="offline" && offline)) ){
 					var info = {};
 					for k,v in ..string.gmatch(dev[3],"(\S+)\:(\S+)") { 
 		    			info[k] = v;
@@ -256,8 +254,10 @@ namespace adb{
 			
 			..string.setenv("ANDROID_ADB_SERVER_PORT",port);
 		} 
+
+		var adb,err = ..process.popen( self.path,"start-server"); 
+		if(!adb) return null,err;
 		
-		var adb = ..process.popen( "~/lib/process/adb/.res/adb.exe",param,"start-server"); 
 		var out,err = adb.expect("daemon started successfully",3000)
 		adb.close();
 		
@@ -285,9 +285,7 @@ namespace adb{
 				}  
 			} 
 		} 
-	}
-	
-	startServer();
+	} 
 	
 	pair = function(addr,code){
 		var prcs = ..process.adb("pair",addr);
@@ -300,13 +298,23 @@ namespace adb{
 		
 		return r,e;
 	}
+	
+	disconnect = function(){
+		return get("disconnect");
+	}
 	 
 	connect = function(addr,changeSerialNo){
+		if( !addr ){
+			addr = ..string.load( ..io.appData("aardio/process/adb/$$.ADDR") );
+			if(!addr) return null,"参数 @1 必须指定连接地址";
+		}
+		
 		var r,e = ..process.adb("connect",addr).readAll(); 
 		if(r){
-			var r2 = ..string.match(r,"connected\s+to\s+\S+")
-			if(r2) {
-				if(changeSerialNo)setSerialNo(addr);
+			var r2 = ..string.match(r,"connected\s+to\s+(\S+)")
+			if(r2) { 
+				if(!..string.indexOf(addr,":")) addr = addr + ":5555";
+				if((changeSerialNo===null) || changeSerialNo )setSerialNo(addr);
 				return r2;
 			}
 			
@@ -316,8 +324,34 @@ namespace adb{
 		return r,e; 
 	}
 	
-	tcpip = function(port){
-		return ..process.adb("tcpip",port).readAll();  
+	isConnected = function(){
+		return "device" getState();
+	}
+	
+	tcpip = function(port,save){
+		var ip = ip();
+		
+		if(port===false)return get("usb");
+		if(!port) port = 5555;
+		
+		var out,err = get("tcpip",port);
+		if(out){
+			var addr = ..string.match(out,"connected\s+to\s+(\S+)");
+			if(!addr && ip) addr = ip + ":" + port;
+			
+			if(save){
+				..string.save(..io.appData("aardio/process/adb/$$.ADDR"),addr)
+			}
+			return addr; 
+		}
+		return out,err;
+	}
+	
+	ip = function(){
+		var out,err = shellGet("ip addr show wlan0");
+		if(!out)return null,err;
+		
+		return ..string.match(out,"inet\s*(\d+\.\d+\.\d+\.\d+)/\d+");
 	}
 
 	key = λ(code) shellGet("input keyevent "+code); 
@@ -630,10 +664,47 @@ namespace adb{
 		
 		return null,o;
 	} 
+	
+	path = ..io.appData("aardio/std/adb/20240409/adb.exe",$"~\lib\process\adb\.res\adb.exe");
+	..io.appData("aardio/std/adb/20240409/AdbWinApi.dll",$"~\lib\process\adb\.res\AdbWinApi.dll");
+	..io.appData("aardio/std/adb/20240409/AdbWinUsbApi.dll",$"~\lib\process\adb\.res\AdbWinUsbApi.dll");
+	
+	..string.setenv("ADB",path)
+	..win.path.add(..io.appData("aardio/std/adb/20240409/"),,true); 
+	
+	startServer();
 }
 
+/**details(入门必读)
+adb 命令速查与参考文档： 
+https://quickref.me/zh-CN/docs/adb.html
+https://adbshell.com/
+http://developer.android.com/tools/help/adb.html
+
+手机启用 adb 调试步骤
+https://developer.android.com/tools/adb?hl=zh-cn#Enabling
+要点：点按手机版本号选项七次才会显示开发者选项
+
+process.adb.startServer 启动 adb 服务端，这个函数实际上会自动调用一次，
+adb 需要一个常驻服务端（启动一个 adb.exe 进程），也只能有一个服务进程，多个服务进程会工作不正常。
+这个扩展库会自动查找之前启动的 adb 服务端，如果找到就直接重用。
+进程退出时不会退出常驻服务端（一般无此必要 ）。
+
+每次发送 adb 指令时也会启动一个 adb 客户端，这也是一个 adb.exe 进程。
+所有 adb 客户端在执行完成后，或当前进程退出后将会自动关闭（由 process.job.limitKill 实现）。
+
+只有首次连接需要配对。
+在手机无线调试页面可以看到动态端口，首次用该端口连接。
+然后执行下面的命令设置固定端口，并保存连接地址到 APPDATA。
+process.adb.tcpip("5555",true)
+
+也可以用 USB 线连接手机直接执行上面的 tcpip 函数。
+
+以后就可以无参数直接调用 process.adb.connect() 连接手机了。 
+end details**/
+
 /**intellisense()
-process.adb = 使用管道调用 adb\n[关于 adb](http://developer.android.com/tools/help/adb.html)\n调用 process.adb.startServer 函数启动 adb 服务端，\n该函数会重用已启动的 adb 服务端而不会重复启动。\n该函数启动的 adb 服务端为驻留进程，不会随程序退出，\n\n发送其他 adb 指定则启动 adb 客户端。\n此扩展库启动的所有 adb 客户端在执行结束或程序退出时自动关闭。
+process.adb = 使用管道调用 adb。\n调用 process.adb.startServer 函数启动 adb 服务端，\n该函数会重用已启动的 adb 服务端而不会重复启动。\n该函数启动的 adb 服务端为驻留进程，不会随程序退出，\n\n发送其他 adb 指定则启动 adb 客户端。\n此扩展库启动的所有 adb 客户端在执行结束或程序退出时自动关闭。
 process.adb( = 执行 adb 命令，返回 process.popen 进程管道对象。
 process.adb(.(->->->) = 执行 adb 命令，返回 process.popen 进程管道对象。\n可传入一个或多个启动命令行参数（字符串）。\n传入单个字符串参数时，可用空格分开多个命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n也可用一个数组传入多个参数
 process.adb.get(.(->->->) = 执行 adb 命令。\n成功返回进程输出，出错返回 null，错误信息 。\n\n可传入一个或多个启动命令行参数（字符串）。\n传入单个字符串参数时，可用空格分开多个命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n也可用一个数组传入多个参数
@@ -642,6 +713,7 @@ process.adb.shell(__) = 启动 adb 客户端并返回  process.popen 对象,\n�
 process.adb() = !process_popen.
 process.adb.shell() = !process_popen. 
 process.adb.workDir = 工作目录，默认为 "/"（应用程序根目录）;
+process.adb.path = adb.exe 路径
 end intellisense**/
 
 /**intellisense(process.adb)
@@ -665,6 +737,7 @@ uninstall(.("应用名") = 卸载应用。\n可用 process.adb.logger 预先设�
 uninstall(.("应用名","-k") = 卸载应用,但保留配置和缓存
 getSerialNo() = 返回当前连接的设备串号，\n出错返回 null，错误信息。\n\n如果当前连接了多个设备，且未用 setSerialNo 函数指定设备，\n此函数返回 null 值，错误信息
 setSerialNo(__/*设备串号*/) = 指定设将命令发送至特定设备。\n参数 @1 指定设备序号，设为 null 则不指定特定设备。\n此函数返回参数 @1 。\n\n如果 process.adb.defaultArguments 添加了 {"-s","设备序号"} 以发送到特定设备，\n则覆盖 setSerialNo 函数指定的目标设备
+isConnected() = 当前是否连接设备
 getState() = 成功返回设备状态，"device" 为连接成功。\n出错返回 null，错误信息
 getDevices() = 返回所有连接设备。\n如果参数 @1 为 true ，则允许返回离线设备。\n返回值为一个数组，数组元素为设备信息。\n设备信息的 serialNo 字段为设备串号，\nstate 字段为连接状态，"device" 为已连接，"offline" 表示离线。\ninfo 为设备信息，其中 product 为产品代号，model 为设备型号
 waitForDevice() = 等待设备连接
@@ -675,8 +748,10 @@ pair( = 无线配对手机设备\nAndroid 11 及更高版本支持
 pair(.("IP:端口","配对码") = 无线配对手机设备\n参数 @1 示例 "192.168.1.103:35151"。\n请打开『手机开发者设置/无线调试/使用配对码配对设备』获取IP端口与配对码。\n注意配对端口与连接端口是不一样的。\n\n成功返回包含设备guid 的字符串，\n失败返回 null，错误信息
 pairQr(.("IP:端口","配对码") = 扫描二维码后无线配对手机设备\n请打开『手机开发者设置/无线调试/使用二维码配对设备』扫描二维码。\n请调用 process.adb.qrCode 并传入相同参数生成二维码。\n注意配对端口与连接端口是不一样的。\n\n成功返回包含设备 guid 的字符串，\n失败返回 null，错误信息
 connect( = 无线连接手机设备，\n需要先调用 pair 函数配对。
-connect(.("IP:端口",默认设备) = 无线连接手机设备。\n可选参数 @2 设为 true 则连接成功自动调用 setSerialNo 函数设为默认设备。\n请打开『手机开发者设置/无线调试』获取IP端口\n成功返回进程输出字符串，失败返回 null，错误信息。\n\n需要先调用 pair 函数配对。\n注意配对端口与连接端口不一样
-tcpip(__) = USB 调试模式下修改无线连接端口。\n参数@1 使用数值或字符串指定端口号。\n返回进程输出，错误输出，退出代码
+connect(.("IP:端口",设为默认设备) = 无线连接手机设备。\n可选参数 @2 指定连接成功是否自动调用 setSerialNo 函数设为默认设备，\n不指定参数 @2 则默认设为 true。\n\n请打开『手机开发者设置/无线调试』获取动态无线端口。\n或用 tcpip 函数设置固定端口并获取连接地址。\n如果 tcpip 函数保存了默认地址，那么 connect 函数可省略连接地址参数。\n\n连接成功返回连接地址，失败返回 null，错误信息。\n\n首次连接需要先调用 pair 函数配对设备。\n注意配对端口与连接端口不一样
+disconnect() = 断开连接
+tcpip(__) = 已连接手机后修改无线连接端口。\n参数@1 使用数值或字符串指定端口号，不指定则默认为 5555。\n成功返回"IP:端口"格式地址，失败返回 null,错误信息。\n如参数@2 为 true，则保存IP与端口以自动设置 connect 函数的默认参数。 \n\n如果参数 @1 为 false 则关闭此固定端口并切换到默认的 USB 模式。\n成功返回进程输出，失败返回 null，错误输出。\n\n此函数开启 TCPIP 固定端口以后，\n手机无线调试页面仍然会显示另一个动态端口号。\n并且每次调用这个函数，动态端口号都会变更
+ip() = 返回手机 IP 地址
 findDevice() = 查找已连接设备，并自动设置一个默认设备。\n如果当前仅连接一个设备，则不限定默认设备。\n如果参数 @1 为 true，则优先选择有线连接设备。\n如果参数为设备序号，优先选择指定设备。\n成功返回选择的默认设备序号
 startCall(.(phone) = 拔打指定电话，需要在手机开发者选项中打开权限
 startUrl(.(url) = 用浏览器打开参数 @url 指定的网址

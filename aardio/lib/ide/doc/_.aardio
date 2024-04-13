@@ -20,30 +20,38 @@ class doc{
     		var preloadTableDoc = ..ide.doc( ..io.libpath("preload.table") );
     		var preloadThreadDoc = ..ide.doc( ..io.libpath("preload.thread") ); 
     		var preloadComDoc = ..ide.doc( ..io.libpath("preload.com") ); 
+    		var preloadIoDoc = ..ide.doc( ..io.libpath("preload.io") ); 
+    		var preloadStructDoc = ..ide.doc( ..io.libpath("preload.struct") ); 
     		
-    		..table.mix( this.const,preloadDoc.const
-    			,preloadMathDoc.const
-    			,preloadRawDoc.const
-    			,preloadStringDoc.const
-    			,preloadTableDoc.const
-    			,preloadThreadDoc.const
-    			,preloadComDoc.const);
+    		..table.mix( this.const,preloadDoc.const:{}
+    			,preloadMathDoc.const:{}
+    			,preloadRawDoc.const:{}
+    			,preloadStringDoc.const:{}
+    			,preloadTableDoc.const:{}
+    			,preloadThreadDoc.const:{}
+    			,preloadComDoc.const:{}
+    			,preloadIoDoc.const:{}
+    			,preloadStructDoc.const);
+    		
+    		..table.mix( this.define ,preloadDoc.define:{}
+    			,preloadMathDoc.define:{}
+    			,preloadRawDoc.define:{}
+    			,preloadStringDoc.define:{}
+    			,preloadTableDoc.define:{}
+    			,preloadThreadDoc.define:{}
+    			,preloadComDoc.define:{}
+    			,preloadIoDoc.define:{}
+    			,preloadStructDoc.define);
     			
-    		..table.mix( this.define ,preloadDoc.define
-    			,preloadMathDoc.define
-    			,preloadRawDoc.define
-    			,preloadStringDoc.define
-    			,preloadTableDoc.define
-    			,preloadThreadDoc.define
-    			,preloadComDoc.define);
-    			
-    		..table.assignDeep( this.sections ,preloadDoc.sections
-    			,preloadMathDoc.sections
-    			,preloadRawDoc.sections
-    			,preloadStringDoc.sections
-    			,preloadTableDoc.sections
-    			,preloadThreadDoc.sections
-    			,preloadComDoc.sections);
+    		..table.assignDeep( this.sections ,preloadDoc.sections:{}
+    			,preloadMathDoc.sections:{}
+    			,preloadRawDoc.sections:{}
+    			,preloadStringDoc.sections:{}
+    			,preloadTableDoc.sections:{}
+    			,preloadThreadDoc.sections:{}
+    			,preloadComDoc.sections:{}
+    			,preloadIoDoc.sections:{}
+    			,preloadStructDoc.sections); 
     		
     		this.libPath = "global";
     		this.filePath = "global";

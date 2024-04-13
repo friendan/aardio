@@ -53,7 +53,7 @@ class encoder{
 		if (n > 0x7F ) { 
 			..table.push(this.data 
 				, ..string.pack( 
-					(2_10000000 | ( ( n >> 24) & 0xFF) ) 
+					(2#10000000 | ( ( n >> 24) & 0xFF) ) 
 			  		,( n >> 16) & 0xFF
 			  		,( n >> 8) & 0xFF
 			  		,( n & 0xFF) 

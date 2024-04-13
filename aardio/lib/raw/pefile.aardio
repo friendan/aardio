@@ -36,6 +36,7 @@ class pefile{
 		if(this.imageHeader.signature!='PE\0\0'){
 			return null,"PE格式错误" 
 		}
+		this.imageHeader.timeDate = ..time(this.imageHeader.timeDateStamp,"!%Y-%m-%d %H:%M:%S");
 		
 		var optionalHeader = file.read({WORD magic;BYTE majorLinkerVersion;BYTE minorLinkerVersion})
 		this.majorLinkerVersion = optionalHeader.majorLinkerVersion;
@@ -475,5 +476,7 @@ raw.pefile() = !rawPeFile.
 !rawPeFile.exportDeclaration() = 导出 aardio 格式的导出函数声明，\n仅支持使用C++修饰名导出的 API 函数,\n导出的 aardio 代码仅供参考。
 !rawPeFile.majorLinkerVersion = 链接器主版本号
 !rawPeFile.minorLinkerVersion = 链接器副版本号
+!rawPeFile.imageHeader.timeDateStamp = PE 文件创建时间戳，数值
+!rawPeFile.imageHeader.timeDate = PE 文件创建时间，time 对象\n!time.
 !rawPeFile.path = 文件路径
 end intellisense**/

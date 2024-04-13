@@ -40,14 +40,15 @@ getScan = function(vk,ext,alt,down,n=1){
 }
 
 down = function(hwnd,k,alt){
-	var vk,ext = ..key.getCode( k ) : k; 
+	var vk,ext = ..key.getCode( k );  
+	
 	//必须用::User32.PostMessage，不然组合键无效
 	::User32.PostMessage(hwnd,alt? 0x104: 0x100, vk ,(getScan(vk,ext,alt,true)));
 	..thread.delay(delayDown)
 }
 
 up = function(hwnd,k,alt){
-	var vk = ..key.getCode( k ) : k 
+	var vk = ..key.getCode( k );
 	::User32.PostMessage(hwnd,alt? 0x105: 0x101 ,vk ,getScan(vk,ext,alt));
 	..thread.delay(delayUp) 
 	
@@ -56,19 +57,38 @@ up = function(hwnd,k,alt){
 click  = function(hwnd,k,alt){
 	down(hwnd,k,alt); 
 	up(hwnd,k,alt);
-	..thread.delay(delayClick)
+	..thread.delay(delayClick);
 }
 
 altDown = function(hwnd,k){
-	return down(hwnd,k,true)
+	down(hwnd,k,true);
 }
 
 altUp = function(hwnd,k){
-	return up(hwnd,k,true)
+	up(hwnd,k,true);
 }
 
-altClick = function(hwnd,k){
-	return click(hwnd,k,true)
+var altClickAux;
+altClickAux = function(hwnd,k,...){
+	..key.setState(true,k);
+	altDown(hwnd,k);
+	
+	if(...) altClickAux(hwnd,...);
+	
+	altUp(hwnd,k); 
+	..key.setState(false,k)
+}
+
+altClick = function(hwnd,k,...){
+	..key.setState(true,"ALT"); 
+	altDown(hwnd,"ALT"); 
+	
+	altClickAux(hwnd,k,...);
+	
+	up(hwnd,"ALT"); 
+	..key.setState(false,"ALT")
+	
+	..thread.delay(delayClick); 
 }
 
 combine = function(hwnd,...){
@@ -79,7 +99,7 @@ combine = function(hwnd,...){
 	}
 	
 	..key.setState(true,...)
-	for(i=1;#arg ){
+	for(i=#arg;1;-1 ){
 		up(hwnd,arg[i]) 
 	} 
 	..key.setState(false,...)
@@ -91,12 +111,12 @@ delayDown = 按下后的时间间隔,默认为5
 delayUp = 弹起后的时间间隔,默认为1
 delayClick = 完整击键之间的间隔,默认为5
 
-down(__/*句柄*/,"键名" ) = 参数二可以是键名或虚拟键值
-up(__/*句柄*/,"键名" ) = 参数二可以是键名或虚拟键值
-click(__/*句柄*/,"键名" ) = 参数二可以是键名或虚拟键值
-altDown(__/*句柄*/,"键名" ) = 后台发送ALT组合键按下消息\n参数二可以是键名或虚拟键值
-altUp(__/*句柄*/,"键名" ) =  后台发送ALT组合键弹起消息\n参数二可以是键名或虚拟键值
-altClick(__/*句柄*/,"键名" ) =  后台发送ALT组合键击键消息\n参数二可以是键名或虚拟键值\n如果目标窗口是外部线程应先使用winex.attach共享输入状态
-combine(hwnd,"CTRL","__") = 发送组合热键,参数个数不限.\n参数可以是键名字,或者按键的虚拟码(_VK前缀常量)\n调用此函数之前,必须调用 winex.attach 附加输入线程.
+down(__/*句柄*/,"键名") = 参数二可以是键名或虚拟键值
+up(__/*句柄*/,"键名") = 参数二可以是键名或虚拟键值
+click(__/*句柄*/,"键名") = 参数二可以是键名或虚拟键值
+altDown(__/*句柄*/,"键名") = 后台发送 ALT 组合键按下消息\n参数二可以是键名或虚拟键值
+altUp(__/*句柄*/,"键名") =  后台发送 ALT 组合键弹起消息\n参数二可以是键名或虚拟键值
+altClick(__/*句柄*/,"键名") =  后台发送 ALT 组合键击键消息，可指定一个或多个键名或虚拟键值参数。\n如果目标窗口是外部线程应先使用 winex.attach 共享输入处理机制。\n个别按键操作可能需要先用 win.setActive 激活目标窗口（不常见）
+combine(hwnd,"CTRL","__") = 发送组合热键,参数个数不限.\n参数可以是键名字,或者按键的虚拟码(_VK前缀常量)\n如果目标窗口是外部线程应先使用 winex.attach 共享输入处理机制。\n个别按键操作可能需要先用 win.setActive 激活目标窗口（不常见）
 send(__/*句柄*/,"TEST") = 输入ASCII字符
 end intellisense**/

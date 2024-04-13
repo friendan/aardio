@@ -63,7 +63,7 @@ Python 与 aardio 混合编程范例目录：
 <span style="color:green">aardio 范例 &gt; 调用其他语言 &gt; Python 语言 &gt; Python 2.x</span> 
 </span><span id="process" style="font-size:10.5pt;display:none">
 进程外调用 64 位或 32 位 Python 环境，
-使用 32 位 Python 可 <a href="https://mp.weixin.qq.com/s/UAXYpMSFm37RowitRYo12Q">生成独立 EXE</a> ，64 位 Python 不支持生成独立 EXE。
+使用 32 位 / 64 位 Python 都支持 <a href="https://mp.weixin.qq.com/s/UAXYpMSFm37RowitRYo12Q">生成独立 EXE</a> 。
 
 软件可自带绿色 Python 环境，可指定版本 。
 如果不带 Python 环境，aardio 也可以在运行时自动下载所需 Python 环境。

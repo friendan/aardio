@@ -1,0 +1,149 @@
+//安卓投屏
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="安卓手机无线投屏";right=564;bottom=593;bgcolor=16777215)
+winform.add(
+button={cls="button";text="连接到 ...";left=299;top=542;right=530;bottom=575;db=1;disabled=1;dr=1;z=5};
+edit={cls="edit";left=19;top=382;right=544;bottom=535;db=1;dl=1;dr=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=2};
+editPort={cls="edit";left=158;top=546;right=274;bottom=573;db=1;dr=1;edge=1;num=1;z=3};
+plus={cls="plus";left=19;top=20;right=544;bottom=361;db=1;dl=1;dr=1;dt=1;repeat="scale";z=1};
+static={cls="static";text="请输入连接端口：";left=9;top=550;right=139;bottom=574;align="right";db=1;dr=1;transparent=1;z=4}
+)
+/*}}*/
+
+/*
+手机启用 adb 调试步骤
+https://developer.android.com/tools/adb?hl=zh-cn#Enabling
+要点：点按手机版本号选项七次才会显示开发者选项 
+*/
+import process.adb; 
+winform.findAdbDevice =  function(){ 
+ 	if(!process.adb.findDevice()) { 
+		process.adb.connect()
+	} 	 
+ 	
+ 	//如果连接成功
+	if( process.adb.isConnected()){  
+		
+		import process.scrcpy; 
+		var scrcpy = process.scrcpy();
+ 		
+		//指定启动参数
+		//https://github.com/Genymobile/scrcpy/wiki/README.zh-Hans
+		scrcpy.arguments = { 
+			
+			//支持小驼峰参数名（自动转换为连字符风格）
+			powerOffOnClose = true;
+			
+			//也可以这样写参数
+			"--always-on-top","--stay-awake";
+			
+			//或者这样写
+			"--window-title":"标题：我的设备";
+		}
+		
+		//启动 scrcpy
+		var prcs,err = scrcpy.open(); 
+		prcs.logResponse(winform.edit);
+		//prcs.killOnExit(); //退出主进程时自动退出 scrcpy 。 
+		//prcs.close();//可选关闭进程管道，不会退出 scrcpy 。
+		
+		//发送快捷键，支持的快捷键列表：
+		//https://github.com/Genymobile/scrcpy/wiki/README.zh-Hans#%E5%BF%AB%E6%8D%B7%E9%94%AE
+		scrcpy.modKey("SHIFT","O"); //第一个 MOD（ALT）键不用写，后面每个参数指定一个键名
+		
+		  
+		winform.button.disabledText = "已连接到：" + ..process.adb.getSerialNo();
+		
+		//最小化
+		winform.show(6/*_SW_MINIMIZE*/);
+		
+		//自定义手机键盘
+		winform.startKeyHook(scrcpy.hwnd);
+		
+		//退出定时器
+		return false;
+	} 
+}
+
+//自定义手机按键，左侧为电脑键名，右侧为手机按键函数名
+var KEYMAP = {
+	down = { ["ESC"] = "keyBack" };
+} 
+
+//自定义手机按键
+import key.hook;
+winform.startKeyHook = function(hwndScrpy){
+ 	if(winform.keyHook)return;
+	
+	//创建键盘钩子	 
+	winform.keyHook = key.hook(); 
+
+	//按键回调函数
+	winform.keyHook.mapKey(KEYMAP,process.adb,hwndScrpy); 
+}
+
+/*
+下面是配对代码，只有首次连接需要配对。
+*/
+winform.button.oncommand = function(id,event){
+	
+	//无线连接手机
+	var str = process.adb.connect(owner.adbInfo.addr + ":" + winform.editPort.text);
+	if(str){
+		 
+		//执行 shell 命令
+		var adb = process.adb.shell("ls"); 
+		var out = adb.readAll(); //读取进程输出，adb 是一个 process.popen 对象，请参考该库函数文档。
+		winform.edit.print(out);
+		
+		//上传文件
+		//process.adb.push( "/abc.txt","/mnt/sdcard/abc.text" ); 
+		
+		var addr = process.adb.tcpip("5555",true);
+		if( addr ){
+			winform.edit.print("已开启无线调试固定端口，连接地址：",addr);
+			winform.edit.print("已自动保存连接地址，之后可以免参数调用 process.adb.connect() 连接手机。" );
+			 
+			winform.findAdbDevice();
+		}
+	} 
+	else {
+		winform.msgboxErr("连接失败，请输入正确端口")
+	}
+}
+
+//配对成功回调此函数
+winform.onAdbPair = function(info){
+	if(info){
+		if(winform.findDeviceTimerId){
+			winform.clearInterval(winform.findDeviceTimerId);
+			winform.findDeviceTimerId = null;			
+		}
+ 
+		winform.edit.print("配对成功：",info);
+		winform.button.text = "连接到：" + info.addr;
+		winform.button.adbInfo = info;
+		winform.button.disabled = false;
+	}
+	
+	return true;//返回 false 停止此二维码的自动配对
+}
+
+//生成配对二维码
+import process.adb.qrCode;
+var qrBmp = process.adb.qrCode(winform );
+winform.plus.setBackground(qrBmp.copyBitmap(winform.plus.width));
+
+winform.edit.text = /*
+手机与电脑连接到同一无线局域网，
+然后打开安卓手机 > 设置 > 开发者选项 > 无线调试 > 扫二维码配对
+*/
+ 
+winform.show() 
+
+//发现手机设备
+import process.adb;
+winform.findDeviceTimerId = winform.setInterval( winform.findAdbDevice ,2000 );
+
+win.loopMessage();

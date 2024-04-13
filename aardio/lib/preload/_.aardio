@@ -206,7 +206,7 @@ type.callable = function(v){
 	return t == "function" || t == "class" || !!( v@ ? v@._call )
 }
 /**intellisense(::)
-::Ntdll = 默认已加载的系统DLL组件ntdll.dll\n!dllmodule.
+::Ntdll = 默认已加载的系统DLL组件ntdll.dll\n!dllModule.
 ::Kernel32 = 默认已加载的Kernel32.dll模块对象\nKernel32.dll是Windows内核库,提供很多常用API
 ::Kernel32.gethandle() = 返回句柄
 ::Kernel32.SetDllDirectory(.("DLL搜索目录") = 设置加载DLL的默认目录
@@ -249,5 +249,5 @@ type.callable = function(v){
 ::CopyMemory(.(目标内存地址,源地址,源数据长度) = 复制内存\n此函数调用::Kernel32.RtlMoveMemory
 ::CopyMemoryByStruct(.(目标内存地址,源结构体,源结构体长度) = 复制结构体到目标内存\n此函数调用::Kernel32.RtlMoveMemory
 ::GetLastError() = 返回系统错误代码
-::Ucrtbase = UCRT 运行时，\nWindows 10 以及之后的系统已经自带了 UCRT。\n\n加载此 DLL 的代码如下：\n::Ucrtbase := ..raw.loadDll("ucrtbase.dll",,"cdecl");\n注意等号前必须加冒号。\n!dllmodule.
+::Ucrtbase = UCRT 运行时，\nWindows 10 以及之后的系统已经自带了 UCRT。\n\n加载此 DLL 的代码如下：\n::Ucrtbase := ..raw.loadDll("ucrtbase.dll",,"cdecl");\n注意等号前必须加冒号。\n!dllModule.
 end intellisense**/

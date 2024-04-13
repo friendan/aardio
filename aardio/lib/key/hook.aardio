@@ -47,6 +47,51 @@ namespace key
 			this.hhk  = null;
 		}
 	}
+	
+	mapKey = function(map,methodOwner,hwnd){
+		var down={};
+		var up={};
+		
+		for(k,v in map.down){
+			down[..key.getCode(k)] = methodOwner[v];
+		}
+		
+		for(k,v in map.up){
+			up[..key.getCode(k)] = methodOwner[v];
+		}
+		
+		this.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){ 
+			if( injected ) return; 	
+			 
+			if( hwnd && hwnd != ..win.getForeground()  ) {
+				return;
+			}
+  	  	
+    		select(msg) {
+    			case 0x100/*_WM_KEYDOWN*/ ,0x104/*_WM_SYSKEYDOWN*/ {
+    		    	
+    		    	var method = down[vkcode];
+    		    	if(method){
+    		    	    
+    		    		method();
+    		    		
+    		    		return true;
+    		    	} 
+    			}
+    			case 0x101/*_WM_KEYUP*/,0x105/*_WM_SYSKEYUP*/ {
+    	    		var method = up[vkcode];
+    		    	if(method){
+    		    	    
+    		    		method();
+    		    		
+    		    		return true;
+    		    	} 
+    			}  
+    		}
+    	}   
+		
+	}
+	
 }
 
 /**intellisense()
@@ -67,6 +112,8 @@ key.hook() = 创建低级键盘钩子\n!stdKeyHook.
     
 	__/*取消按键调用 return true;\n注意钩子回调函数不要做耗时操作\n耗时操作应改用线程或 winform.setTimeout 异步执行*/
 }
+!stdKeyHook.mapKey( = 创建一个映射按键的 proc 。\n用法请参考：范例/自动化/adb/安卓投屏
+!stdKeyHook.mapKey(.(map,owner,hwnd) = 参数 @map 可在 down 字段指定按键映射表，在 up 字段指定弹起键映射表。\n按键映射表的键应当为 key.VK 定义的键名，值为 @owner 的成员函数名。\n可选用 @hwnd 限定映射按键的窗口句柄
 !stdKeyHook.close() = 释放按键录制钩子
 _LLKHF_EXTENDED=@1/*_LLKHF_EXTENDED*/
 _LLKHF_INJECTED=@0x10/*_LLKHF_INJECTED*/

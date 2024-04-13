@@ -1,5 +1,5 @@
 //通用代码块
-//原理：https://mp.weixin.qq.com/s/BhFTemG3D3i6Ttvzag25XQ
+//原理: https://mp.weixin.qq.com/s/BhFTemG3D3i6Ttvzag25XQ
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="HTML 代码块生成工具 - 本工具使用 aardio 语言编写";right=1055;bottom=674;bgcolor=16777215)

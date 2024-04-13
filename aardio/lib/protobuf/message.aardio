@@ -342,7 +342,6 @@ namespace message {
 
 /**intellisense()
 protobuf = Protobuf 序列化协议,\n支持 proto2,proto3 语法。\n用法 请参考：aardio 范例 > 网络应用 > protobuf
-protobuf.message = Protobuf 消息对象，\nProtobuf 中所有类型都是继承自 protobuf.message。\n字段名中下划线后接小写字母会自动去掉下划线转换为驼峰式命名
+protobuf.message = Protobuf 消息对象，\nProtobuf 中所有类型都是继承自 protobuf.message。\n字段名中下划线后接小写字母会自动去掉下划线转换为驼峰式命名\nProtobuf 消息对象可以用 web.json.stringify 转换为 json，\n也可以用 web.json.strip 转换为纯 table 对象
 end intellisense**/
-
  

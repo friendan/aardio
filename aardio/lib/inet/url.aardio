@@ -25,10 +25,15 @@ append = function(base,relative,...){
 appendExtraInfo = function(url,param){
     if(type(param)==="table"){param=stringifyParameters(param)}
 	if(!#param) return url;
+	
 	var turl = split(url);
-	if( #turl.extraInfo ) turl.extraInfo = turl.extraInfo + "&" + param;
-	else turl.extraInfo = "?" + param;
-	return tostring(turl);	
+	if(turl) {
+		if( #turl.extraInfo ) turl.extraInfo = turl.extraInfo + "&" + param;
+		else turl.extraInfo = "?" + param;
+		return tostring(turl);	
+	}
+	
+	return url + "?" + param;
 }
 
 UrlCanonicalize = Shlwapi.api("UrlCanonicalizeW","int(ustring url,ustring& out,INT& size, INT flags)" )
@@ -179,14 +184,14 @@ var _urlinfo ={
 			push(t,owner.path);
 		}
 		
+		if(#owner.location)push(t,"#",owner.location);
+		
 		if(type(owner.extraInfo)=="table"){
 			push(t,"?",stringifyParameters(owner.extraInfo));
 		}
 		else {
 			push(t,owner.extraInfo);
 		}
-		
-		if(#owner.location)push(t,"#",encode(owner.location));
 		
 		return ..string.join(t); 
 	}
@@ -256,15 +261,15 @@ getFilePath = function(url){
 
 /**intellisense(inet.url)
 is(url,_URLIS__) = 检测URL 
-joinpath( = 当对于当前URL的相对路径转换为完整URL\n注意该函数忽略文件名,简单拼接请使用append函数替代
-joinpath(.("当前URL",相对路径,_URL__) = 当对于当前URL的相对路径转换为完整URL\n相对路径如果为空则直接返回参数@1,\n可选使用参数三指定转换选项
-appendExtraInfo(.(url,附加参数) = 在URL后追加参数\n参数首字符不能是问号\n参数@2也可以指定一个包含多个参数键值对的表
+joinpath( = 当对于当前URL的相对路径转换为完整 URL 。\n注意该函数忽略文件名,简单拼接请使用 append 函数替代
+joinpath(.("当前URL",相对路径,_URL__) = 当对于当前 URL 的相对路径转换为完整 URL 。\n相对路径如果为空则直接返回参数 @1,\n可选使用参数三指定转换选项
+appendExtraInfo(.(url,附加参数) = 在 URL 后追加参数。\n参数首字符不能是问号。\n参数@2也可以指定一个包含多个参数键值对的表。\n\n如果 @url 参数仅指定路径而非合法 URL，\n则简单添加 ? 号后拼接参数
 append( = 拼接URL
-append(.(url目录,url子路径,->->->) = 支持不定个数参数\n第一个参数无论是否以"/"字符结束都认为是一个目录
-canonicalize(__/*URL*/) = URL规范化转换\n扩展和适当置换路径中包含的所有..和.
+append(.(url目录,url子路径,->->->) = 支持不定个数参数。\n第一个参数无论是否以"/"字符结束都认为是一个目录。
+canonicalize(__/*URL*/) = URL规范化转换\n扩展和适当置换路径中包含的所有 .. 和 . 
 canonicalize("当前URL",_URL__) = URL规范化转换\n参数三指定转换选项
 hashNum(__/*url*/) = 返回哈希数值
-split(__/*输入URL*/) = 拆分URL返回包含协议、路径、端口、参数等的表对象\n返回的表对象可以调用tostring重新生成URL\n可传入空值以获取用于拼接URL的表
+split(__/*输入URL*/) = 拆分URL返回包含协议、路径、端口、参数等的表对象\n返回的表对象可以调用 tostring 重新生成 URL\n可传入空值以获取用于拼接URL的表
 split() = !inet_urlcrack. 
 stringify(urlInfo) = @.stringify(\n	scheme = "https";\n	user = "";\n	password ="";\n	host ="__/*使用参数表构建并返回URL字符串*/";\n	location = "";\n	extraInfo = {\n		name = value;\n	};\n)
 splitParameters( = 拆分URL参数并返回名值对组成的表对象\n名字都转换为小写,如果名字尾部有[]或[键名]则值转换为表\n如果只指定名字不指定值,则值为空字符串

@@ -1,7 +1,6 @@
 ﻿//struct 预定义结构体
 namespace preload.struct{}
 
-/*intellisense()*/
 class ::POINT {
    ctor(x=0,y=0){
       this.x = x;
@@ -19,7 +18,6 @@ class ::SIZE {
 	int cx;
 	int cy;
 } 
-/*end intellisense*/
 
 class ::RECT {
 	ctor(left=0,top=0,right=0,bottom=0){
@@ -150,6 +148,7 @@ class ::RECT {
 ?.getRect = !rect.
 ?.getItemRect = !rect.
 ?.getClientRect = !rect.
+!rect = ::RECT 结构体对象，包含用于表示区块位置的数值字段 left,top,right,bottom
 !rect.left = 左
 !rect.top = 上
 !rect.right = 右
@@ -186,8 +185,10 @@ class ::RECT {
 !rect.xywh(.(left,top,right,bottom) = 修改左、上、右、下的值,\n返回结构体的左上角坐标x,y 以及宽度width,高度height等4个值
 !rect.xywh(.() = 返回结构体的左上角坐标x,y 以及宽度width,高度height等4个值
 !rect.contains(.(x,y) = 检测指定的 x,y 坐标是否位于矩形区块内
+!point = ::POINT 结构体对象，包含用于表示坐标的数值字段 x,y
 !point.x = x坐标
 !point.y = y坐标
+!size = ::SIZE 结构体对象，包含用于表示大小的数值字段 cx,cy
 !size.cx = 宽
 !size.cy = 高
 ::OffsetRect(.(rc,dx,dy) = 移动矩形框，\n此函数已废弃，请直接调用 rc.offset 函数

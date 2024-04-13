@@ -375,12 +375,14 @@ namespace file{
 		
 	}
 	
-	lastModified = function(path){
+	lastModified = function(path,last){
 		var file = ..fsys.file(path,"r");
 		if(!file) return;
 		 
 		var tmWrite = file.lastModified();
 		file.close();
+		
+		if(last) return tmWrite > ..time.iso8601(last);
 		if(tmWrite) return tmWrite;
 	}
 }
@@ -389,7 +391,8 @@ namespace file{
 fsys.file = 用于打开或创建文件对象,\nfsys.file 返回的文件对象可传入其他线程使用。
 fsys.file.temp(.(pathOrExt,dontDeleteOnClose) = 创建临时文件,\n可选用 @pathOrExt 参数指定临时文件路径或后缀名,\n指定临时文件后缀名时第一个字符必须是 . 号,\n可选指定 @dontDeleteOnClose 参数值为 true 禁止关闭对象自动删除文件,\n@dontDeleteOnClose 为 true 时文件才会有共享读写权限,\n可通过返回文件对象的 path 属性获取临时文件路径
 fsys.file.temp() = !fsysfile.
-fsys.file.lastModified(__) = 参数指定文件路径,\n返回最后修改时间,返回值是time.gmt对象,\n即RFC1123格式时间,HTTP协议使用该对象\n!time.
+fsys.file.lastModified(__) = 参数 @1 指定文件路径，返回最后修改时间。\n返回值是 time.gmt 对象，即 RFC1123 格式时间。HTTP 协议使用该对象\n!time.
+fsys.file.lastModified(__,"2024/1/1 11:01:00") = 参数 @1 指定文件路径，\b参数 @2 指定任何兼容 time.iso8601 参数的时间。\n如果文件修改时间大于参数 @2 指定的时间则返回 true
 fsys.file(__/*文件句柄*/) = 可以指定文件、管道等句柄
 fsys.file(__/*文件句柄*/,true) = 直接文件、管道等句柄\n添加析构函数负责释放句柄
 fsys.file("__/*文件路径*/") = 只读模式打开,文件必须存在\n如果路径以斜杠结束,则以目录模式打开.\n更多参数参考源码

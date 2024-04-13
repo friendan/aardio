@@ -408,7 +408,7 @@ class whttp{
 						continue; 
 					}
 					else {
-						if(e.data && this.parseEventData) e.data = this.parseEventData(e.data);
+						if(e.data && this.parseStreamData) e.data = this.parseStreamData(e.data);
 						return e;
 					}
 				}
@@ -667,10 +667,21 @@ class whttp{
     			
 		var ret;
     	if( this.onReceive ){ 
-    		for(str,size in this.eachRead() ){
-    			if( this.onReceive( str,size,total ) === false )
-    				break;
-    		} 
+    	    if(this.parseStreamData &&
+    	       ..string.startWith(this.responseContentType:"","application/x-ndjson",true) ){
+    	    	
+    	    	for(str,size in this.eachRead() ){
+    				if( this.onReceive( this.parseStreamData(str) ) === false )
+    					break;
+    			}
+    	    } 
+    	    else {
+    	    	for(str,size in this.eachRead() ){
+    				if( this.onReceive( str,size,total ) === false )
+    					break;
+    			} 
+    	    }
+    	    
     		ret = true;
     	}
     	else{ 
@@ -848,6 +859,10 @@ inet.whttp.status(.(url,noAutoRedirect,httpMethod) = 对 @url 指定网址发送
 !inet_whttp.eachReadBuffer(缓冲区,长度) = @var buffer = .raw.bufferc( 1024 * 10 );\nfor( size in ??.eachReadBuffer( buffer ) ){ 
 	__
 }
+!inet_whttp.parseStreamData = @.parseStreamData = function(data){
+	__/*如果 ContentType 响应类型为 text/event-stream，\n则 eachRead 与 onReceive 回调会自动调用 parseStreamData 提前转换数据。\n如果 ContentType 响应类型为 application/x-ndjson，\n则 onReceive 回调会自动调用 parseStreamData 提前转换数据\nweb.rest.client 会自动设定此回调*/
+	return data;
+} 
 !inet_whttp.lastReadErrCode = 最后一次读取数据是否遇到错误,例如网络断开连接等等
 !inet_whttp.read(.(读取长度) = 长度参数可选\n返回读取字符串,以及长度\n该函数必须在send请求以后调用
 !inet_whttp.readAll() = 读取所有返回数据\n该函数必须在send请求以后调用

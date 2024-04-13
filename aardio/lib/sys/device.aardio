@@ -67,7 +67,8 @@ class device{
 				}
 				
 				idx ++;
-				..table.push(property,adapterData)
+				property[#propertyType+1] = adapterData; 
+				
 				return idx,..table.unpackArgs( property )
 			}
 		}

@@ -634,9 +634,11 @@ else {
 	isVisible = ..win.isVisible;
 }
 
-removeBorder = function(hwnd){
-	..win.modifyStyle(hwnd,0xCF0000);
-	..win.setPos(hwnd,,,,,,0x20/*_SWP_FRAMECHANGED*/|0x10/*_SWP_NOACTIVATE*/);
+removeBorder = function(hwnd,r){
+	if(r || r === null ) ..win.modifyStyle(hwnd,0xCF0000);
+	else ..win.modifyStyle(hwnd,,0xCF0000);
+
+	..win.setPos(hwnd,,,,,,0x20/*_SWP_FRAMECHANGED*/|0x10/*_SWP_NOACTIVATE*/);	
 }
 
 orphanWindow = function(ctrl,hwnd){
@@ -716,7 +718,7 @@ getUiInfo() = 获取UI线程窗口焦点,光标等信息\n可选使用参数@1�
 quit(__/*输入窗口句柄*/) = 退出程序,发送 _WM_QUIT 消息
 close(__/*输入窗口句柄*/) = 关闭窗口,发送 _WM_CLOSE 消息\n不等待消息处理完成
 closeAndWait(__/*输入窗口句柄*/) = 关闭窗口,发送 _WM_CLOSE 消息\n等待消息处理完成,且不阻塞当前线程消息循环
-removeBorder(__) = 移除窗体边框样式,\n参数@1指定目标窗口句柄
+removeBorder(__) = 移除窗体边框样式,\n参数 @1 指定目标窗口句柄。\n如果参数 @2 为 false 则恢复窗口边框
 orphanWindow(.(ctrl,hwnd) = 使用 @hwnd 指定句柄的外部窗口作为参数,\n调用 aardio 控件对象的 orphanWindow 函数。\n使外部窗口附加为控件的悬浮影子窗口,\n悬浮影子窗口可将外部进程窗口附加到 @ctrl 并如影随形的自适应缩放调整位置\n此函数同时移除外窗口边框，并附加输入线程
 end intellisense**/
 

@@ -93,8 +93,8 @@ win.rt.bcp47 = BCP47语言标签相关函数库,\n支持 Win8 以及 Win8 以后
 end intellisense**/
 
 /**intellisense(::)
-::Winlangdb = 标准库 win.rt.bcp47 加载的系统DLL组件,\n仅 Win8 以及 Win8 以后的系统支持此组件,\n!dllmodule.
-::Bcp47Langs = 标准库 win.rt.bcp47 加载的系统DLL组件,\n仅 Win8 以及 Win8 以后的系统支持此组件,\n!dllmodule.
+::Winlangdb = 标准库 win.rt.bcp47 加载的系统DLL组件,\n仅 Win8 以及 Win8 以后的系统支持此组件,\n!dllModule.
+::Bcp47Langs = 标准库 win.rt.bcp47 加载的系统DLL组件,\n仅 Win8 以及 Win8 以后的系统支持此组件,\n!dllModule.
 end intellisense**/
 
 /*

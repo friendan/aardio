@@ -7,6 +7,7 @@ plus={cls="plus";left=390;top=108;right=643;bottom=361;notify=1;z=1}
 )
 /*}}*/
 
+//教程: https://bbs.aardio.com/forum.php?mod=redirect&goto=findpost&ptid=11486&pid=64075
 winform.plus.setPieRange(1,360)
 winform.plus.progressPos  = 1;
 winform.plus.foreground = 0x80ffff00;//也可以改为图像,图像应设为center显示模式以居中对齐

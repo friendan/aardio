@@ -63,9 +63,12 @@ class client{
 		};
 		
 		if(urlParams){
-			this.lastRequestUrl = ..inet.url.appendExtraInfo(
-				this.lastRequestUrl, ..inet.url.stringifyParameters(urlParams,codepage) 
-			);	
+			if(type(urlParams)=="function") receiveCallback = urlParams;
+			else {
+				this.lastRequestUrl = ..inet.url.appendExtraInfo(
+					this.lastRequestUrl, ..inet.url.stringifyParameters(urlParams,codepage) 
+				);
+			} 	
 		}
 		
 		if( this.extraParameters ) {
@@ -109,14 +112,20 @@ class client{
 			if( fileReceive ){
 				error("调用 receiveFile 函数后的下一个请求不能指定 receiveCallback 回调参数",2)
 			}
+			else {
+				this._http.parseStreamData = this.parseResponseResult;
+			}
+			
 			this._http.onReceiveBegin = null;
 			this._http.onReceive = receiveCallback;
+		}
+		else {
+			this._http.parseStreamData = null;
 		}
 		
 		headers = ..web.joinHeaders('Content-Type:' + contentType,headers);
 		if(this["(ＴＯＫＥＮ)"]) headers = ..web.joinHeaders('Authorization:' + this["(ＴＯＫＥＮ)"],headers);
 		
-		this._http.parseEventData = this.parseResponseResult;
 		var ret,errMsg,errCode = this._http.down(this.lastRequestUrl,params
 			,headers,this.referer,this.acceptType,this.lastRequestMethod,owner[["__httpFlags"]]); 
 			
@@ -581,7 +590,7 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 !web_restClient.api(.("网址模板","HTTP动词","模式串") = 网址模板可使用 {name}、{/name}、或 {...} 指定模板参数,\n大括号内的参数名可使用英文字符或数字,\n模板参数名首字符为斜杠（例如{/name}）表示使用实参替换后保留斜杠，\n {...} 表示不定个数的模板参数,如使用多个实参替换则自动使用斜杠拼接，\n默认在网址模板尾部自动添加 {...}\n\n返回API对象使用下标指定模板实参，\n如果下标是字符串，按下标出现的前后顺序替换模板参数，\n如果下标是表对象，则表中的键值对用于替换与键同名的模板参数,\n\n可选用参数@2指定HTTP动词,默认值为"POST"\n\n参数@3如果为模式串，则使用模式匹配转换响应数据并返回。\n参数@3如果为函数，则调用该函数转换转换响应数据并返回。\n参数@3如果为数组，则作为string.map的模式参数@2转换响应数据并返回
 !web_restClient.api(.("网址模板","HTTP动词","模式串",HTTP选项) = 可选在参数@4用 _INTERNET_FLAG_ 前缀常量自定义http请求选项\n其他参数用法同上
 !web_restClient.api() = !web_rest_api.
-!web_rest_api.? = 可输入任意 HTTP API 资源名\n返回一个  HTTP API 调用对象,\n返回对象可以使用成员操作符继续获取下级资源，\n也可以作为函数直接调用并发送请求,\n作为函数使用时,\n可选用参数@1指定请求数据参表，也可直接指定请求字符串,\n可选用参数@2指定URL参数表,\n可选用参数@3指定 inet.http对象的 onReceive 回调函数\n指定参数 @3 则自动支持 自动支持 text/event-stream\n!web_rest_api.
+!web_rest_api.? = 可输入任意 HTTP API 资源名\n返回一个  HTTP API 调用对象,\n返回对象可以使用成员操作符继续获取下级资源，\n也可以作为函数直接调用并发送请求,\n作为函数使用时,\n可选用参数@1指定请求数据参表，也可直接指定请求字符串,\n可选用参数@2指定URL参数表,\n可选用参数 @2 或 @3 指定 inet.http对象的 onReceive 回调函数。\n指定 onReceive 回调函数则自动支持自动解析 SSE 流，兼容 ndjson 流。\n作为函数调用时成功返回解析后数据，失败返回 null,错误信息,错误代码\n!web_rest_api.
 !web_rest_api.head() = HEAD方法提交请求\n如果该函数返回非null值为成功,请使用lastResponseHeaders获取应答HTTP头\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串
 !web_rest_api.get(__) = GET方法提交请求,获取资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n如果资源URL名称需要用到 get，请使用["/get"]替代以避免被识别为默认HTTP方法
 !web_rest_api.post(__) = POST方法提交请求,新增或修改资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n可选用参数@2指定URL参数表,\n可选用参数@3指定inet.http对象的onReceive回调函数

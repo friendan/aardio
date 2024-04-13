@@ -11,11 +11,13 @@ import process.python;
 /*
 如果指定 process.python.path = "python.exe" 
 则调用系统安装的 Python，没安装会自动下载安装，
-否则调用绝色嵌入版 Python ，没下载也会自动下载。
+否则调用绿色嵌入版 Python ，没下载也会自动下载。
 */ 
 
 /*
 执行 Python 代码，支持任意版本 python ( 支持 64位 Python )。
+调用 32 / 64 位 python.exe 都可以在发布 aardio 程序时打包为独立 EXE 文件。
+
 参数也可以是（*.py, *.aardio 文件路径，支持内存加载资源文件）
 如果 Python 代码开始为 aardio 模板标记，则启用模板语法： 
 chm://the%20language/template_syntax.html

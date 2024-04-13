@@ -211,7 +211,6 @@ import golang.string;
 golang = 调用 Go 编译器。\n调用 Go 编译后的执行程序并不需要此扩展库。\n\n此扩展库可自动下载配置 Go 编译器
 golang( = 创建 Go 编译器调用程序
 golang(.("Go项目目录","Go安装目录") = 创建 Go 编译器调用程序，所有参数可选。\nGo 项目目录默认为 aardio 应用程序根目录的 "/" 。\n如果不指定 Go 安装目录,自环境变量 GOROOT 中获取\n如果查找 Go 编译器失败会自动下载 Go 编译器
-golang.string() = 创建 Go 语言 string 对象,返回结构体,\n作为调用 Go函数的参数使用时,\nGo 语言的 API 参数类型必须声明为 *string 指针
 golang() = !golang.
 !golang.command(__) = 执行 go 命令,支持一个或多个命令参数
 !golang.run(__) = 执行 go run 命令,参数中指定要编译运行的代码

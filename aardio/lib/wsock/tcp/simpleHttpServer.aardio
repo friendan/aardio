@@ -722,6 +722,7 @@ namespace simpleHttpServer{
 				if(path[1]=='/'#) path = ..string.right(path,-2);
 				url = url + "/" + path;
 			};
+			
 			return url;
 		};
 		stop = function(){ 
@@ -808,7 +809,7 @@ namespace simpleHttpServer{
 	
 	self.customErrors = {};
 	startSpaUrl = function(indexUrl,documentBase,app){
-		var indexPath,extraInfo = ..string.match(indexUrl,"([^\#\?]+)(.*)"); 
+		var indexPath,extraInfo = ..string.match(indexUrl,"([^\#\?]*)(.*)");  
 		
 		if(indexPath[1]!='/'# && indexPath[1]!='\\'#) indexPath = "/" + indexPath;
 		self.customErrors[404] = indexPath;

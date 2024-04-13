@@ -1,4 +1,7 @@
-﻿import process;
+﻿if(type(process)!=type.class){
+	import process;
+}
+
 namespace process.job;
 
 var limitKillJob;

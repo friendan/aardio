@@ -72,5 +72,8 @@
 <AllowRunningOfVirtualExeFiles><?= 
 (owner.allowRunningOfVirtualExeFiles? "True" : "False")  //允许运行虚拟可执行文件
 ?></AllowRunningOfVirtualExeFiles>
+<ProcessesOfAnyPlatforms><?= 
+(owner.processesOfAnyPlatforms? "True" : "False")  //允许包含并运行 64 位 EXE
+?></ProcessesOfAnyPlatforms>
 </Options>
 </>

@@ -593,15 +593,34 @@ namespace view{
 		return installRuntime(winform);
 	}
 	
+	//此地址不作任何保证，请修改 web.view.win7installer 为您自己提供的网址。
+	win7installer = "http://d.aardio.com/web-view-109/";
+	
 	installRuntime = function(winform){
-		if(!_WIN10_LATER){ return; }
-		
 		//https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/#download-section
 		import inet.installer; 
+		var downloadUrl = "https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617");
+		
+		if(!_WIN10_LATER){ 
+			if(_WIN7_LATER && win7installer){
+				
+				downloadUrl  = ..inet.http.get(win7installer);
+				if(!#downloadUrl) return;
+				
+				if(downloadUrl[[1]] == "="){
+					if ..win.msgboxTest('系统未安装运行程序必须的 WebView2 Runtime 组件！\n是否打开 WebView2 Runtime 下载页面？',winform[["hwnd"]]){
+						..raw.execute(..string.right(downloadUrl,-2));
+						return;
+					} 
+					return;
+				} 
+			} 
+			else {
+				return;
+			}
+		}
 		 
-		if( inet.installer.asInvoker("WebView2 Runtime"
-			,"https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617")
-			," /silent /install",,winform
+		if( inet.installer.asInvoker("WebView2 Runtime", downloadUrl ," /silent /install",,winform
 		) ){
 			return !!getRuntimeInfo();
 		} 	 

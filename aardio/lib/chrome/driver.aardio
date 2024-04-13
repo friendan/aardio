@@ -214,7 +214,7 @@ class driver{
 		else {
 			//避免单线程异步嵌入服务器无法响应当前线程请求
 			var afterSend = this.client.afterSend;
-			this.client.afterSend = function(){ ..win.delay(500);}
+			this.client.afterSend = function(){ ..thread.delay(500);}
 			es = this.startBrowser(desiredCap,requiredCap);	
 			this.client.afterSend = afterSend;
 		}
@@ -329,6 +329,13 @@ namespace driver{
 			
 			return null,ret;
 		};
+		sendKeys = function(...){
+			var keys = ..chrome.driver.KEYS;
+			var items = type(...)=="table"? ... : { ... }; 
+			return this.keys(
+				value = ..table.map(items,lambda(v) (keys[..string.upper(v)]||v||'\ue000') );
+			)
+		}; 
 		loadScript = function(jsfile){
 			this.restClient.notify(
 				function(){
@@ -388,11 +395,15 @@ namespace driver{
 			}
 			this.switchWindow( cur );
 		};
+		waitEle = function(css,...){ 
+			var this = owner;
+			return ..win.wait( lambda() this.query(["css selector"]=css),owner.hwndChrome,...);
+		};
 		waitTitle = function(str,...){
-			return ..win.wait( lambda() this.findTitle(str),... ) 
+			return ..win.wait( lambda() this.findTitle(str),owner.hwndChrome,... ) 
 		};
 		waitUrl = function(str,...){
-			return ..win.wait( lambda() this.findUrl(str),... ) 
+			return ..win.wait( lambda() this.findUrl(str),owner.hwndChrome,... ) 
 		};
 		eachWindow = function(){
 			var info = this.window_handles.get();
@@ -425,14 +436,85 @@ namespace driver{
 				this.queryAll = parent.queryAll;
 				this.querySelector = parent.querySelector;
 				this.querySelectorAll = parent.querySelectorAll;
+				this.waitEle = parent.waitEle;
 			};
+			sendKeys = function(...){
+				var keys = ..chrome.driver.KEYS;
+				var items = type(...)=="table"? ... : { ... }; 
+				return this.value(
+					value = ..table.map(items,lambda(v) (keys[..string.upper(v)]||v||'\ue000') );
+				)
+			}; 
 			setValue = function(...){
 				return this.value(
 					value = { ... };
 				)
+			}; 
+			getValue = function(){
+				var r = this.value.get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
 			};
 			innerText = function(){
 				var r = this.text.get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			isSelected = function(){
+				var r,e = this.selected.get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			getAttribute = function(name){
+				var r,e = this.attribute[name].get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			getProperty = function(){
+				var r,e = this.property[name].get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			getStyle = function(name){
+				var r,e = this.css[name].get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			getName = function(){
+				var r,e = this.name.get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			getRect = function(){
+				var r,e = this.rect.get();
+				if( r[["status"]] === 0 ){
+					var rc = ::RECT();
+					rc.float(r.value); 
+					return rc; 
+				}
+			};
+			getSize = function(){
+				var r,e = this.size.get();
+				if( r[["status"]] === 0 ){
+					var v = r.value; 
+					return ::SIZE(v.width,v.height); 
+				}
+			};
+			isDisplayed= function(){
+				var r,e = this.displayed.get();
+				if( r[["status"]] === 0 ){
+					return r.value
+				}
+			};
+			isEnabled = function(){
+				var r,e = this.enabled.get();
 				if( r[["status"]] === 0 ){
 					return r.value
 				}
@@ -537,10 +619,72 @@ namespace driver{
 				return ret;
 		} 
 	}
+	
+	KEYS={
+	NULL = '\ue000';
+	CANCEL = '\ue001';
+	HELP = '\ue002';
+	BACKSPACE = '\ue003';
+	TAB = '\ue004';
+	CLEAR = '\ue005';
+	RETURN = '\ue006';
+	ENTER = '\ue007';
+	SHIFT = '\ue008';
+	CONTROL = '\ue009';
+	CTRL = '\ue009';
+	ALT = '\ue00a';
+	PAUSE = '\ue00b';
+	ESCAPE = '\ue00c';
+	SPACE = '\ue00d';
+	PGUP = '\ue00e';
+	PGDN = '\ue00f';
+	END = '\ue010';
+	HOME = '\ue011';
+	LEFT = '\ue012';
+	UP = '\ue013';
+	RIGHT = '\ue014';
+	DOWN = '\ue015';
+	INSERT = '\ue016';
+	DELETE = '\ue017';
+	SEMICOLON = '\ue018';
+	EQUALS = '\ue019';
+	NUMPAD0 = '\ue01a';
+	NUMPAD1 = '\ue01b';
+	NUMPAD2 = '\ue01c';
+	NUMPAD3 = '\ue01d';
+	NUMPAD4 = '\ue01e';
+	NUMPAD5 = '\ue01f';
+	NUMPAD6 = '\ue020';
+	NUMPAD7 = '\ue021';
+	NUMPAD8 = '\ue022';
+	NUMPAD9 = '\ue023';
+	MULTIPLY = '\ue024';
+	ADD = '\ue025';
+	SEPARATOR = '\ue026';
+	SUBTRACT = '\ue027';
+	DECIMAL = '\ue028';
+	DIVIDE = '\ue029';
+	F1 = '\ue031';
+	F2 = '\ue032';
+	F3 = '\ue033';
+	F4 = '\ue034';
+	F5 = '\ue035';
+	F6 = '\ue036';
+	F7 = '\ue037';
+	F8 = '\ue038';
+	F9 = '\ue039';
+	F10 = '\ue03a';
+	F11 = '\ue03b';
+	F12 = '\ue03c';
+	META = '\ue03d';
+	COMMAND = '\ue03d';
+	}
 } 
  
 /**details(说明)
-[JsonWireProtocol](https://www.selenium.dev/documentation/legacy/json_wire_protocol/)
+[WebDriver 协议](https://w3c.github.io/webdriver)
+[JSON wire protocol 协议](https://www.selenium.dev/documentation/legacy/json_wire_protocol)
+JSON wire protocol 仅供参考，以 WebDriver 文档为准。
 
 此支持库会优先使用系统自带的 Edge（Chromium）浏览器。
 不同版本浏览器需要下载不同版本的 chromedriver.exe （Edge 则为 msedgedriver.exe）。
@@ -563,6 +707,7 @@ chrome.driver() = !chromeDriver.
 chrome.driver.requirePath(__) = 参数@1使用字符串传入Chrome版本号,\n返回匹配的ChromeDriver路径\n如果未安装该版本ChromeDriver会自动下载安装\n可选使用参数@2自定义下载对话框标题
 chrome.driver.chromePath = Chrome.exe 或浏览器主程序路径
 chrome.driver.driverPath = chromedriver.exe 或 msedgedriver.exe 路径
+chrome.driver.KEYS = 这是一个表，\n表的键值定义了可用于 sendKeys 函数的键名与键值。\n键名与标准库 key,key.VK 基本兼容，但键值是不同的
 end intellisense**/
 
 /**intellisense(!chromeDriver)
@@ -609,6 +754,7 @@ closeAll() = 关闭会话创建的所有浏览器窗口
 go("__") = 打开指定网址\nHTTP接口：GET /session/{session id}/url
 url.get() = 获取当前URL\nHTTP接口：GET	/session/{session id}/url
 query(查询参数) = @.query(["partial link text"]="链接文本"__/*使用指定键值对查询网页元素,不指定参数获取当前活动元素*/)
+waitEle("__") = 等待并返回指定 CSS 选择器匹配的节点对象。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\nHTTP接口：POST /session/{session id}/element
 querySelector("__") = 指定CSS选择器并返回节点对象\nHTTP接口：POST /session/{session id}/element
 querySelector() = !chromeDriverEle.
 query() = !chromeDriverEle.
@@ -651,14 +797,15 @@ alert.accept() = 取消alert\nHTTP接口：POST /session/{session id}/alert/acce
 alert.text.get() = 获取alert文本\nHTTP接口：GET /session/{session id}/alert/text
 alert.text(__) = 发送alert文本\nHTTP接口：POST /session/{session id}/alert/text
 screenshot.get() = 截屏\nHTTP接口：GET /session/{session id}/screenshot
+sendKeys(__) = 在活动节点发送按键。\n参数可指定一个或多个键名，也要吧用一个字符串数组指定一个或多个键名。\n可用键名为 chrome.driver.KEYS 定义的键名。\n其他字符串直接发送
 getCurrentUrl() = 获取当前URL，成功返回字符串
 getCurrentTitle() = 获取当前网页窗口标题，成功返回字符串
 getCurrentWindow() = 获取当前网页窗口句柄标识，成功返回字符串
 switchWindow(__) = 切换窗口,\n参数@1可用字符串指定窗口句柄标识,\n也可以用数值参数指定窗口索引。\n成功返回 true
 findTitle(__) = 查找并等待出现网页窗口标题并切换到该窗口,\n参数指定窗口标题,支持模式匹配语法,成功返回 true
 findUrl(__) = 使用网址查找网页窗口并切换到该窗口,\n参数指定网址,支持模式匹配语法,成功返回true
-waitTitle(__) = 等待指定标题的网页窗口并切换到该窗口,\n参数指定窗口标题,支持模式匹配语法,成功返回true
-waitUrl(__) = 等待指定网址的网页窗口并切换到该窗口,\n参数指定网址,支持模式匹配语法,成功返回true
+waitTitle(__) = 等待指定标题的网页窗口并切换到该窗口。\n参数 @1 指定窗口标题，支持模式匹配语法。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\n成功返回true
+waitUrl(__) = 等待指定网址的网页窗口并切换到该窗口。\n参数 @1 指定网址，支持模式匹配语法。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\n成功返回true
 eachWindow() = @for( index,window,title,url in ??.eachWindow() ){
 	__/*遍历所有窗口,已自动切换焦点到当前遍历的窗口*/
 }
@@ -678,6 +825,7 @@ delete = DELETE方法提交请求,删除资源\n调用时可以写 delete() 或 
 put = PUT方法提交请求,替换或更新资源\n调用时可以写 put() 或 put.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n!web_rest_api.
 patch = PATCH方法提交请求,更新资源\n调用时可以写 patch() 或 patch.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n!web_rest_api.
 query(查询参数) = @.query(["partial link text"]="链接文本"__/*使用指定键值对查询网页元素,不指定参数获取当前活动元素*/)
+waitEle("__") = 等待并返回指定 CSS 选择器匹配的节点对象。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\nHTTP接口：POST /session/{session id}/element
 querySelector("__") = 指定CSS选择器并返回节点对象\nHTTP接口：POST /session/{session id}/element/{element id}/element
 querySelector() = !chromeDriverEle.
 query() = !chromeDriverEle.
@@ -686,16 +834,24 @@ querySelectorAll("__") = 指定CSS选择器并返回节点对象数组\nHTTP接�
 querySelectorAll() = !chromeDriverEle.
 queryAll() = !chromeDriverEle.
 selected.get() = 是否选中\nHTTP接口：GET /session/{session id}/element/{element id}/selected	
+attribute = 标签属性集合。\n使用下标或成员操作符指定属性名，例如：\nattribute["属性名"].get() 返回对象的 value 字段为属性值
+property = 属性集合。\n使用下标或成员操作符指定属性名，例如：\nattribute["属性名"].get() 返回对象的 value 字段为属性值
 attribute.?.get() = 获取attribute值\nHTTP接口：GET /session/{session id}/element/{element id}/attribute/{name}
 property.?.get() = 获取property值\nHTTP接口：GET /session/{session id}/element/{element id}/attribute/{name}
-css.?.get() = 获取CSS属性值\nHTTP接口：GET /session/{session id}/element/{element id}/css/{property name}
-name.get() = 获取标签名\nHTTP接口：GET /session/{session id}/element/{element id}/name
-rect.get() = 获取元素区块\nHTTP接口：GET /session/{session id}/element/{element id}/rect
-enabled.get() = 元素是否启用\nHTTP接口：GET /session/{session id}/element/{element id}/enabled
-click() = 模拟点击\nHTTP接口：POST /session/{session id}/element/{element id}/click
-clear() = 清空\nHTTP接口：POST /session/{session id}/element/{element id}/clear
-setValue(__) = 使用一个或多个参数指定输入的值\nHTTP接口：POST /session/{session id}/element/{element id}/value
-clear() = 清空\nHTTP接口：POST /session/{session id}/element/{element id}/clear
 screenshot.get() = 截屏\nHTTP接口：GET /session/{session id}/element/{element id}/screenshot
-innerText() = 获取节点文本\nHTTP接口：GET /session/{session id}/element/{element id}/text
+sendKeys(__) = 在该节点发送按键。\n参数可指定一个或多个键名，也要吧用一个字符串数组指定一个或多个键名。\n可用键名为 chrome.driver.KEYS 定义的键名。\n其他字符串直接发送
+setValue(__) = 使用一个或多个字符串参数指定要发送的文本。\n如果要发送 chrome.driver.KEYS 定义的按键，必须指定对应键名的键值。\n改用 sendKeys 函数可在参数中指定键名
+getValue() = 返回文本值
+innerText() = 获取节点文本
+getAttribute() = 返回 HTML 标签属性值，成功返回字符串值，否则为 null 值
+getProperty() = 返回节点属性值
+getStyle(__) = 返回 CSS 样式指定属性值，参数 @1 指定属性名 
+getName(__) = 返回 name 属性值
+getRect(__) = 返回一个表示节点区块位置的 ::RECT 结构体
+getSize(__) = 返回一个表示节点大小的 ::SIZE 结构体
+isDisplayed(__) = 节点是否显示
+isEnabled(__) = 节点是否启用
+isSelected() = 节点是否选中
+clear() = 清空节点
+click() = 模拟点击
 end intellisense**/

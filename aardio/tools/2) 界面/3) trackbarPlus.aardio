@@ -6,6 +6,7 @@ import fonts.fontAwesome;
 var winform = win.form(text="aardio - 滑尺配色工具";right=999;bottom=746;bgcolor=16777215;border="none";exmode="none";mode="popup")
 winform.add(
 bk={cls="bk";text="  滑尺配色工具（ 适用于 plus 控件 ）";left=0;top=0;right=1001;bottom=24;align="left";bgcolor=8026746;color=15793151;dl=1;dr=1;dt=1;z=49};
+btnHelp={cls="plus";text="打开教程";left=392;top=716;right=462;bottom=740;color=8388608;db=1;dr=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=57};
 btnOpenColorTable={cls="plus";text='\uF090 导出配色表';left=476;top=717;right=594;bottom=742;bgcolor=13491144;db=1;dr=1;font=LOGFONT(h=-13;name='FontAwesome';charset=0);forecolor=12043443;notify=1;z=56};
 btnPreviewCode={cls="plus";text='\uF08E 生成演示源码';left=833;top=717;right=973;bottom=742;bgcolor=13491144;db=1;dr=1;font=LOGFONT(h=-13;name='FontAwesome';charset=0);forecolor=12043443;notify=1;z=48};
 btnUpdateForm={cls="plus";text='\uF08B 导出到窗体设计器选中控件';left=603;top=717;right=821;bottom=742;bgcolor=13491144;db=1;dr=1;font=LOGFONT(h=-13;name='FontAwesome';charset=0);forecolor=12043443;notify=1;z=47};
@@ -35,8 +36,8 @@ chkFgDefault={cls="plus";text='\uF0C8 默认状态';left=175;top=61;right=258;bo
 chkFgDisabled={cls="plus";text='\uF0C8 禁用状态';left=175;top=192;right=258;bottom=218;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=24};
 chkFgFocus={cls="plus";text='\uF0C8 获得焦点';left=175;top=159;right=258;bottom=185;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=22};
 chkFgHover={cls="plus";text='\uF0C8 鼠标进入';left=175;top=94;right=258;bottom=120;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=18};
-chkLinearGradient={cls="plus";text='\uF0C8 启用线性渐变';left=48;top=713;right=168;bottom=739;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=54};
-chkPreviewBackground={cls="plus";text='\uF0C8 设置预览窗口背景色';left=203;top=715;right=365;bottom=741;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=43};
+chkLinearGradient={cls="plus";text='\uF0C8 启用线性渐变';left=48;top=716;right=168;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=54};
+chkPreviewBackground={cls="plus";text='\uF0C8 设置预览窗口背景色';left=203;top=716;right=365;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=43};
 chkTxtActive={cls="plus";text='\uF0C8 鼠标按下';left=301;top=127;right=386;bottom=153;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=31};
 chkTxtDefault={cls="plus";text='\uF0C8 默认状态';left=301;top=61;right=386;bottom=87;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=27};
 chkTxtDisabled={cls="plus";text='\uF0C8 禁用状态';left=301;top=192;right=386;bottom=218;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=35};
@@ -656,7 +657,15 @@ winform.onMinimize = function(lParam){
 	return true;	
 }
 
-winform.tbWidth.oncommand = function(id,event,pos){
+winform.tbWidth.oncommand = function(id,event,pos){ 
+	if(owner.pos < 10 ){
+		 owner.pos = 10; 
+	}
+	
+	if(pos && pos < 10 ){
+		 pos = 10; 
+	}
+	
     if(owner.pos>owner.max/2){
     	if(winform.tbHeight.pos>winform.tbHeight.max/2)winform.tbHeight.pos = 35;
     }
@@ -669,10 +678,26 @@ winform.tbWidth.oncommand = function(id,event,pos){
 	updateTrackbarPadding();
 	updateThumbPadding();
 	winform.plusPreview.redrawTransparent();
+	
+	if(winform.tbHeight.pos<winform.tbWidth.pos){
+		winform.lbCurrentState.text = "水平滑块：宽度 > 高度"
+	}
+	else {
+		winform.lbCurrentState.text =  "垂直滑块：宽度 < 高度" 
+	}
+	
 }
 winform.tbWidth.pos = 442; 
 
 winform.tbHeight.oncommand = function(id,event,pos){
+	if(owner.pos < 10 ){
+		 owner.pos = 10; 
+	}
+	
+	if(pos && pos < 10 ){
+		 pos = 10; 
+	}
+	
     if(owner.pos>owner.max/2){
     	if(winform.tbWidth.pos>winform.tbWidth.max/2)winform.tbWidth.pos = 35;
     }
@@ -691,6 +716,13 @@ winform.tbHeight.oncommand = function(id,event,pos){
 	updateTrackbarPadding();
 	updateThumbPadding();
 	winform.plusPreview.redrawTransparent();
+	
+	if(winform.tbHeight.pos<winform.tbWidth.pos){
+		winform.lbCurrentState.text = "水平滑块：宽度 > 高度"
+	}
+	else {
+		winform.lbCurrentState.text =  "垂直滑块：宽度 < 高度" 
+	}
 }
 winform.tbHeight.pos = 15;
 
@@ -828,6 +860,20 @@ winform.show();
 for(name,ctrl in winform.eachControl("trackbar") ){ 
 	ctrl.oncommand ();
 }
+
+winform.btnHelp.oncommand = function(id,event){
+	import process;
+	process.openUrl("https://bbs.aardio.com/forum.php?mod=redirect&goto=findpost&ptid=11486&pid=64076")
+}
+
+winform.btnHelp.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000
+	}
+})
 
 winform.plusPreview.redrawTransparent();
 winform.cPreviewBackground.redrawTransparent();

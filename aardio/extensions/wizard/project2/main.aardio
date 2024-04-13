@@ -5,11 +5,13 @@ var mainForm = win.form(text="高级选项卡演示";right=917;bottom=681;bgcolo
 mainForm.add(
 bk={cls="bk";left=0;top=0;right=923;bottom=92;background="\res\images\bg.gif";dl=1;dr=1;dt=1;z=2};
 btnCreateProject={cls="plus";text="创建工程(Enter)";left=718;top=653;right=851;bottom=677;db=1;dr=1;font=LOGFONT(h=-13);notify=1;tabstop=1;z=13};
-btnDlgDir={cls="plus";text="浏览";left=698;top=586;right=758;bottom=613;db=1;dr=1;font=LOGFONT(h=-13);notify=1;z=12};
+btnDlgDir={cls="plus";text="浏览";left=698;top=575;right=758;bottom=602;db=1;dr=1;font=LOGFONT(h=-13);notify=1;z=12};
 btnEsc={cls="plus";text="取消(Esc)";left=595;top=653;right=692;bottom=677;db=1;dr=1;font=LOGFONT(h=-13);notify=1;tabstop=1;z=14};
 btnNav1={cls="plus";text="高级界面";left=22;top=5;right=119;bottom=88;background="\res\images\icon_bg.jpg";bkBottom=3;bkLeft=7;bkRight=8;bkTop=2;color=16777215;dl=1;dt=1;font=LOGFONT(h=-14);foreground="\res\icons\plus.png";notify=1;paddingBottom=7;paddingLeft=5;paddingRight=5;paddingTop=5;valign="bottom";x=0.5;y=0.2;z=6};
 btnNav2={cls="plus";text="窗口程序";left=122;top=5;right=219;bottom=88;background="\res\images\icon_bg.jpg";bkBottom=3;bkLeft=7;bkRight=8;bkTop=2;color=16777215;dl=1;dt=1;font=LOGFONT(h=-14);foreground="\res\icons\winform.png";notify=1;paddingBottom=7;paddingLeft=5;paddingRight=5;paddingTop=5;valign="bottom";x=0.5;y=0.2;z=5};
-chkSaveToDefaultDir={cls="plus";text="设为默认目录";left=761;top=588;right=900;bottom=615;align="left";db=1;dr=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=30;y=3;z=1};
+chkArgv={cls="plus";text="启动参数";left=204;top=653;right=294;bottom=677;align="left";db=1;dl=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=24;y=0.5;z=16};
+chkRunAs={cls="plus";text="管理权限";left=99;top=653;right=189;bottom=677;align="left";db=1;dl=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=24;y=0.5;z=15};
+chkSaveToDefaultDir={cls="plus";text="设为默认目录";left=761;top=575;right=903;bottom=602;align="left";db=1;dr=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=24;y=0.5;z=1};
 custom={cls="custom";left=3;top=93;right=913;bottom=570;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;tabstop=1;z=7};
 editProjectDir={cls="edit";left=104;top=578;right=687;bottom=602;bgcolor=16777215;db=1;dl=1;dr=1;font=LOGFONT(h=-13);tabstop=1;z=8};
 editProjectName={cls="edit";left=104;top=617;right=687;bottom=641;bgcolor=16777215;db=1;dl=1;dr=1;font=LOGFONT(h=-13);tabstop=1;z=10};
@@ -31,9 +33,9 @@ if(!atom){
 import fsys; 
 mainForm.btnDlgDir.oncommand = function(id,event){
 	import fsys.dlg.dir;
-	var dir = fsys.dlg.dir( fsys.getParentDir( mainForm.editProjectDir.text ),mainForm.hwnd );
+	var dir = fsys.dlg.dir( mainForm.editProjectDir.text,mainForm.hwnd );
 	if( dir ){
-		mainForm.editProjectDir.text = fsys.joinpath(dir,mainForm.editProjectName.text)
+		mainForm.editProjectDir.text = dir
 	} 
 }
 
@@ -43,7 +45,9 @@ mainForm.btnEsc.skin(style.main.button)
 mainForm.btnCreateProject.skin(style.main.button)
 mainForm.btnDlgDir.skin(style.main.button) 
 mainForm.chkSaveToDefaultDir.skin(style.main.checkbox)
- 
+mainForm.chkRunAs.skin(style.main.checkbox)
+mainForm.chkArgv.skin(style.main.checkbox)
+
 //添加自定义的标题栏、窗口边框、阴影等
 import win.ui.simpleWindow;
 win.ui.simpleWindow( mainForm );
@@ -102,6 +106,8 @@ mainForm.btnCreateProject.oncommand = function(id,event){
 		mainForm.editProjectDir.setFocus();
 		return;
 	}
+	
+	dstDir = io.joinpath(dstDir,mainForm.editProjectName.text);
 	if( ..io.exist(dstDir) ){
 		mainForm.msgboxErr("已存在相同目录,请重新指定新的工程名称!","aardio工程向导");
 		mainForm.editProjectName.setFocus();
@@ -166,10 +172,30 @@ mainForm.btnCreateProject.oncommand = function(id,event){
 	var pathMain = fsys.joinpath(dstDir,"main.aardio");
 	var strMain = string.load( pathMain );
 	if(strMain){
+		strMain = string.removeBom(strMain);
 		var template = string.template(strMain);
 		strMain = template.format(
 			PROJECTNAME = mainForm.editProjectName.text;
 		)
+		 
+		if(mainForm.chkArgv.checked){
+			if(!string.find(strMain,`if\s*\(\s*_ARGV.opt\s*==\s*%""\s*\)\s*%\{\}\s*`)){
+				strMain = '/*\r\n
+启动参数名前导字符可以为任意个数 / 或 - 。\r\n
+参数值可以空格或等号分开，例如： "/opt test" 或 "--opt=test" 。\r\n
+*/\r\n
+if(_ARGV.opt == "test"){\r\n
+	return;\r\n
+}\r\n\r\n' + strMain;				
+			}
+		}
+		else {
+			strMain = string.replace(strMain,`if\s*\(\s*_ARGV.opt\s*==\s*%""\s*\)\s*%\{\}\s*`,"");
+		}
+		
+		if(mainForm.chkRunAs.checked){
+			strMain = '//RUNAS//\r\n' + strMain;
+		}
 		string.save(pathMain,strMain)
 	}
 	
@@ -204,25 +230,15 @@ mainForm.btnEsc.oncommand = function(id,event){
 
 
 import fsys;
-var projectNamePrev = " ";
-mainForm.editProjectName.oncommand = function(id,event){
-	if( event == 0x300/*_EN_CHANGE*/ ){ 
+mainForm.editProjectName.onChange = function(){  
 		var path = mainForm.editProjectDir.text;
 		var validName = fsys.path.validName(mainForm.editProjectName.text); 
 		
 		if( (validName!=mainForm.editProjectName.text) ){
 			mainForm.editProjectName.text = validName;
 			mainForm.editProjectName.setFocus(); 
+			mainForm.editProjectName.showWarningTip("工程名必须使用合法文件名")
 		}
-		
-		if( #projectNamePrev ){
-			mainForm.editProjectDir.text = fsys.path.replaceFile(path,mainForm.editProjectName.text);
-		}
-		else {
-			mainForm.editProjectDir.text = io.joinpath(path,mainForm.editProjectName.text);
-		}
-		projectNamePrev = validName;
-	}
 }
 
 win.setOwner(mainForm.hwnd,ide.getMainHwnd());
@@ -232,9 +248,10 @@ if(!projectDir){
 	return;
 }
 
-mainForm.editProjectName.text = string.match(projectDir,"\\([^\\]+?)\\$");
+mainForm.editProjectName.text = fsys.getFileName(projectDir);
 mainForm.editProjectName.setFocus(0,-1);
-mainForm.editProjectDir.text = projectDir;
+
+mainForm.editProjectDir.text = fsys.getParentDir(projectDir);
 
 mainForm.onOk = function(){
      mainForm.btnCreateProject.oncommand();
@@ -243,6 +260,33 @@ mainForm.onOk = function(){
 mainForm.onCancel = function(){
     mainForm.btnEsc.oncommand();
 }
+
+import win.ui.tooltip;
+var runasTipCtrl = win.ui.tooltip.tracking(mainForm,false);
+mainForm.chkRunAs.onMouseEnter = function(wParam,lParam){ 
+    var x,y,cx,cy = mainForm.chkRunAs.getPos(true); 
+    
+    //手动显示提示
+    runasTipCtrl.setText('程序启动将请求管理权限。\n启动文件 main.aardio 首行将添加 //RUNAS// 指令。
+\n\n调用 sys.runAsTask 可自动获取管理权限（静默无提示）。').trackPopup(true,x+cx-mainForm.dpiScale(8),y+cy/2);
+}
+
+mainForm.chkRunAs.onMouseLeave = function(wParam,lParam){ 
+	runasTipCtrl.trackPopup(false); //手动关闭提示
+}
+
+var argvTipCtrl = win.ui.tooltip.tracking(mainForm,false);
+mainForm.chkArgv.onMouseEnter = function(wParam,lParam){ 
+    var x,y,cx,cy = mainForm.chkArgv.getPos(true); 
+    
+    //手动显示提示
+    argvTipCtrl.setText('添加接收启动参数（ _ARGV ）示例。').trackPopup(true,x+cx-mainForm.dpiScale(8),y+cy/2);
+}
+
+mainForm.chkArgv.onMouseLeave = function(wParam,lParam){ 
+	argvTipCtrl.trackPopup(false); //手动关闭提示
+}
+
 
 mainForm.show();
 win.loopMessage();
