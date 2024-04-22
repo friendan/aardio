@@ -14,7 +14,7 @@ class http{
      	if( flags === null ) flags = 0;
 		if( proxy === null ) proxy = "";
 		if( proxyBypass === null ) proxyBypass = "";
-		if( agent === null ) agent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";
+		if( agent === null ) agent = self.userAgent;
 		
 		var accessType = 0/*_INTERNET_OPEN_TYPE_PRECONFIG*/  
 	    if( !proxy ){
@@ -216,7 +216,8 @@ class http{
 		this.contentLength = tonumber(this.readHeader("Content-Length:"):null); 
 		this.responseContentType = this.readHeader("Content-Type:");
 		this.eventStream = ..string.startWith(this.responseContentType:"","text/event-stream",true);
-		
+		this.ndjsonStream = ..string.startWith(this.responseContentType:"","application/x-ndjson",true);
+			
 		this.responseContentEncoding = this.readHeader("Content-Encoding:");
 		if( this.afterSend) {
 			this.afterSend(this.statusCode,this.contentLength);
@@ -536,21 +537,11 @@ class http{
     			 
     	var ret;
     	if( this.onReceive ){
-    	    
-    	    if(this.parseStreamData &&
-    	       ..string.startWith(this.responseContentType:"","application/x-ndjson",true) ){
-    	    	
-    	    	for(str,size in this.eachRead() ){
-    				if( this.onReceive( this.parseStreamData(str) ) === false )
-    					break;
-    			}
-    	    } 
-    	    else{
-    	    	for(str,size in this.eachRead() ){
-    				if( this.onReceive( str,size,total ) === false )
-    					break;
-    			}
-    		}
+    	     
+    	    for(str,size in this.eachRead() ){
+    			if( this.onReceive( str,size,total ) === false )
+    				break;
+    		} 
     	    
     		ret = true;
     	}
@@ -566,9 +557,26 @@ class http{
 		this.lastReadErrCode = errCode; 
 		return str,size;
 	};
+	eachLine = function(){
+		return function(){
+			var line = "";
+			var r = this.read;
+			while( var char = r(1) ) { 
+				if( char == '\r' ) continue;
+				if( char == '\n' ){ 
+					if(#line){
+						if( this.parseStreamData )line = this.parseStreamData(line,true);
+						return line;
+					}		 
+				}
+				
+				line = line ++ char;
+			}
+		}	
+	};
 	eachRead = function(bufferSize){
 		this.lastReadErrCode = null;
-		if(!this.eventStream){
+		if(! (this.eventStream || this.ndjsonStream ) ){
 			return function(){
 				var str,size,errCode = readFile(this.request,bufferSize) ; 
 				if(!str){
@@ -577,6 +585,10 @@ class http{
 				} 
 				return str,size;
 			};
+		}
+		
+		if(this.ndjsonStream){
+			return this.eachLine();; 
 		}
 			
 		return function(){
@@ -594,7 +606,7 @@ class http{
 						continue; 
 					}
 					else {
-						if(e.data && this.parseStreamData) e.data = this.parseStreamData(e.data);
+						if(e.data && this.parseStreamData) e.data = this.parseStreamData(e.data,true);
 						return e;
 					}
 				}
@@ -693,7 +705,8 @@ class http{
 }
 
 namespace http{ 
-
+	userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";
+	
 	HttpOpenRequest = ::Wininet.api("HttpOpenRequestW","pointer(POINTER hConnect,ustring verb,ustring objectName,ustring version,ustring referrer,struct acceptTypes,INT flags,INT context)")
 	AddRequestHeaders = Wininet.api("HttpAddRequestHeadersW","bool(POINTER hRequest,ustring headers,INT length,INT modifiers)")
 	QueryInfo = Wininet.api("HttpQueryInfoW","int(POINTER hRequest, INT dwInfoLevel,struct& lpBuffer,INT &lpdwBufferLength, INT & lpdwIndex)")
@@ -785,6 +798,7 @@ inet.http(.("UserAgent",false) =  禁用代理，UserAgent 为可选参数
 inet.http.isAlive(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 当前是否能正常访问互联网,所有参数可选
 inet.http.get(.(url,headers,referer) = 用于界面线程创建线程并获取 @url 指定网址的数据,\n此函数等待下载完成但不会阻塞界面消息循环,\n可选用 @headers 指定 HTTP 头,\n可选用 @referer 指定引用网址,\n所有参数用法与 格式请参考 inet.http 对象的 get 函数相同
 inet.http.status(.(url,noAutoRedirect,httpMethod) = 对 @url 指定网址发送请求并返回 HTTP 状态码。\n如果未成功发送请求则返回 null。\n可选参数 @noAutoRedirect 为 true 则禁止自动重定向，默认为 false。\n可选用 @httpMethod 参数指定 HTTP 请求方法，默认为 "HEAD"。\n\n大部分网址请求成功会返回 200 状态码。\n部分网址会返回 2xx 状态码，重定向返回 3xx 状态码。\n可用状态码请参考 inet.httpStatusCode 库
+inet.http.userAgent =  创建 inet.http 对象且未明确指定 user agent 参数时使用的默认值 。\n适用于 inet.http 以及所有基于 inet.http 创建的对象，例如：\n inet.httpFile, inet.downBox, web.rest, inet.installer 等
 inet.http() = !inet_http.
 !inet_http.setSessionOption( _INTERNET_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_http.setRequestOption( _INTERNET_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
@@ -828,7 +842,10 @@ inet.http() = !inet_http.
 !inet_http.read(.(读取长度) = 长度参数可选\n返回读取字符串,以及长度\n失败返回false,错误信息\n该函数必须在send请求以后调用
 !inet_http.readAll() = 读取所有返回数据\n该函数必须在send请求以后调用
 !inet_http.eachRead = @for(str,size in ??.eachRead() ){ 
-	table.push(__,str ) ; 
+	__/*循环读取数据，可选在 eachRead 的参数@1 指定缓冲区大小*/  
+} 
+!inet_http.eachLine = @for(str,size in ??.eachLine() ){ 
+	__/*每次读取一行数据，忽略回车，去掉换行符*/ 
 } 
 !inet_http.onSendBegin = @.onSendBegin = function(){
 	return len__/*上传长度*/;

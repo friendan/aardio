@@ -42,6 +42,10 @@ canonicalize = function(url,flag=0){
 	if( !hr ) return url;
 }
 
+cmp = function(url,url2){
+	return ..string.cmp(canonicalize( decode(url) ),canonicalize( decode(url2) ));
+}
+
 hashNum = function(url){
 	var hr,hash = ::Shlwapi.HashData(url,#url,{INT value},4);
 	if(!hr) return hash.value;
@@ -267,7 +271,7 @@ appendExtraInfo(.(url,附加参数) = 在 URL 后追加参数。\n参数首字�
 append( = 拼接URL
 append(.(url目录,url子路径,->->->) = 支持不定个数参数。\n第一个参数无论是否以"/"字符结束都认为是一个目录。
 canonicalize(__/*URL*/) = URL规范化转换\n扩展和适当置换路径中包含的所有 .. 和 . 
-canonicalize("当前URL",_URL__) = URL规范化转换\n参数三指定转换选项
+canonicalize("当前URL",_URL__) = URL规范化转换\n参数@3指定转换选项
 hashNum(__/*url*/) = 返回哈希数值
 split(__/*输入URL*/) = 拆分URL返回包含协议、路径、端口、参数等的表对象\n返回的表对象可以调用 tostring 重新生成 URL\n可传入空值以获取用于拼接URL的表
 split() = !inet_urlcrack. 
@@ -280,9 +284,10 @@ encode(.(字符串,输出代码页) = 除字母数字以及-._~等非保留字�
 decode(.(字符串,输入代码页) = URL解码并返回文本,失败返回空值,\n参数二指定输入编码(codepage),省略自动检测输入编码\n此函数返回数据转换为UTF8编码
 encodeMbcs(.(字符串,输出代码页) = 如果字符串包含多字节字符,\n使用URL编码其中的汉字和%符号,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
 decodeUnicode(.(字符串) = 解码%uXXXX或%uXX编码的字符串\n失败返回空值
-encodeUri(.(字符串,输出代码页) = URL编码,\n字母数字以及URL非保留字符、URL保留字符都不编码,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
+encodeUri(.(字符串,输出代码页) = URL编码,\n字母数字以及 URL 非保留字符、URL 保留字符都不编码（RFC3986）,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
 getFileName(.(网址,默认文件名) = 获取URL中的文件名\n参数2可选,默认为"index.html"
 getFilePath(__) = 如果 URL 为 file: 协议开头，\n则返回 URL 解码后的文件路径，否则返回 null
+cmp(__) = 比较参数@1与参数@2指定的网址是否相同。\n相同则返回 0 ，否则返回其他数值。\n比较前进行 URL 解码，并调用 inet.url.canonicalize 规范格式，\n比较时忽略大小写
 end intellisense**/
 
 /*intellisense(!inet_urlcrack)

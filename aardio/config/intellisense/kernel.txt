@@ -25,7 +25,7 @@ _WIN_VER_BUILD = Windows 构建版本号\nWindows10 构建版本号与发行版�
 
 _CMDLINE = 命令行参数的原始文本\n也可以使用 _ARGV 获取解析后的命令行参数\n_CMDLINE 仅在启动线程中存在,一般用于main.aardio,开发环境中为null\n可使用#操作符检测参数是否为空
 _ARGV = 解析后的进程启动参数表，已解析双引号、命令行参数转义符等并转换为数组,\n命令行解析规则请参考标准库中 string.cmdline 的源码,\n\nARGV 既包含命令行参数数组,也包含按下列规则解析的键值对:\n以斜杠或短横线开始的前导参数作为键(键名移除一个或多个相同的前导字符,区分大小写)，\n如果前导参数包含等号,则以等号拆分为键值对,等号前后不应有空格,\n否则检查下一参数如果没有相同的首字符则设为此键对应的值，\n如果一个前导参数没有指定值,则默认值为空字符串（逻辑值为true）\n\n_ARGV仅在发布后的进程启动线程中存在,开发环境中 _ARGV 为空表。\n非主线程请改用 thread.cmdline
-_ARGV.? = 请输入命令行参数中以斜杠或短横线开始的前导参数名
+_ARGV.? = 请输入命令行参数中以斜杠或短横线开始的前导参数名。\n注意参数名区分大小写
 _MAX_PATH_U8 = @0x410/*_MAX_PATH_U8*/
 _MAX_PATH_U16 = @0x208/*_MAX_PATH_U16*/
 intellisense代码模式 = @/*intellisense(__/*请输入名字空间*/)*/\n\n/*end intellisense*/\n
@@ -181,7 +181,7 @@ table.range(__) =  返回table数组的最小索引,最大索引\nmin,max=table.
 table.unpack(.(array,i,j)  =  返回 @array 参数指定的数组中自i到j的元素。\n可用负数表示倒计数，-1 表示最后一个元素。\n省略 i 则 i 为 1，省略 j 则 j 为 -1。\n省略i,j参数则返回数组中的所有元素。\n如果i,j都不小于零，则不检测数组长度，不存在的元素在对应位置返回 null 值
 table.left(.(array,len) = 返回 @array 参数指定的数组左侧开始返回指定个数的元素。\n此函数不是返回包含指数目元素的数组，而是多一个元素多一个返回值。\n如果要返回数组请改用 table.slice 函数
 table.right(.(array,len) = 返回 @array 参数指定的数组右侧开始返回指定个数的元素。\n此函数不是返回包含指数目元素的数组，而是多一个元素多一个返回值。\n如果要返回数组请改用 table.slice 函数
-table.clone(__) = 返回一个克隆后的新table对象,保持元表不变。\n使用深拷贝,( 混入函数table.mixin() 使用浅拷贝复制表 ).\n而table.create使用写时拷贝复制表
+table.clone(__) = 返回一个克隆后的新table对象,保持元表不变。\n使用深拷贝,( 混入函数table.assign 使用浅拷贝复制表 ).\n而table.create使用写时拷贝复制表
 table.count(__) = 获取table成员总数
 
 string =  string字符串函数库

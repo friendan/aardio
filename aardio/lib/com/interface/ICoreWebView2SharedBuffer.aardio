@@ -1,0 +1,75 @@
+﻿import com.interface;
+import fsys.stream;
+
+namespace  com.interface;
+
+class ICoreWebView2SharedBuffer{
+	ctor( ){
+		this = ..com.interface.IUnknown(); 
+	}; 
+	pointer _GetSize = "int(LONG &value)"; 
+	pointer _GetBuffer = "int(ptr &value)"; 
+	pointer _OpenStream = "int(ptr &value)";   
+	pointer _GetFileMappingHandle = "int(ptr &value)"; 
+	pointer Close = "int()"; 
+	
+	GetSize = function(){
+		var hr,size = owner._GetSize(0);
+		if( hr >= 0/*_SUCCEEDED*/ ){ 
+			return size;
+		}
+		
+		return 0;
+	}
+	
+	GetSize64 = function(){
+		var size = ..math.size64(0);
+		var hr = owner._GetSize(size);
+		if( hr >= 0/*_SUCCEEDED*/ ) return size; 
+		return ..math.size64(0);
+	}
+	
+	GetBufferPtr = function(){
+		var hr,p = owner._GetBuffer();
+		if( hr >= 0/*_SUCCEEDED*/  && p ){ 
+			return p;
+		}
+	} 
+	
+	GetBuffer = function(){
+		var size = owner.GetSize(); 
+		var hr,p = owner._GetBuffer();
+		if( hr >= 0/*_SUCCEEDED*/  && p && size){
+			return ..raw.buffer(size,p);
+		}
+	} 
+	
+	OpenStream = function(){
+		var hr,p = owner.__OpenStream();
+		if( hr >= 0/*_SUCCEEDED*/  && p ){
+			var stream = ..fsys.stream(p);
+			..com.Release(p);
+			return stream;
+		}
+	}
+}
+ICoreWebView2SharedBuffer.IID = "{B747A495-0C6F-449E-97B8-2F81E9D6AB43}";
+
+ICoreWebView2SharedBuffer.Query = function(p){
+	return ..com.interface(p,ICoreWebView2SharedBuffer);
+}
+
+/**intellisense()
+com.interface.ICoreWebView2SharedBuffer = ICoreWebView2SharedBuffer 接口
+com.interface.ICoreWebView2SharedBuffer.Query(__) = 返回 ICoreWebView2SharedBuffer 接口对象
+com.interface.ICoreWebView2SharedBuffer.Query() = !ICoreWebView2SharedBuffer.
+end intellisense**/
+
+/*****intellisense(!ICoreWebView2SharedBuffer)
+GetBuffer() = 复制并返回 buffer 对象
+GetBufferPtr() = 返回 buffer 指针
+GetSize64() = 返回表示 buffer 大小的 math.size64 对象
+GetSize() = 返回表示 buffer 大小的 数值
+OpenStream() = 返回 IStream 接口对象\n!fsys_stream.
+Close() = 关闭对象，成功返回 0
+end intellisense*****/

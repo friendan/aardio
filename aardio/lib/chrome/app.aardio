@@ -512,7 +512,7 @@ class app {
 }
 
 /**intellisense()
-chrome.app = 调用系统已安装的chrome创建应用程序，\n支持 Chrome 、 Edge（Chromium ）、Supermium 等浏览器，\n\n如果没有找到可用的浏览器会下载安装Microsoft Edge (Chromium)。\nXP、Win7 等小于 Win10 系统建议使用 Supermium（支持新内核）。\nSupermium 必须安装到默认目录（或在参数中指定 chrome.exe 路径）
+chrome.app = 调用系统已安装的 Chrome 创建应用程序，\n支持 Chrome 、 Edge（Chromium ）、Supermium 等浏览器，\n\n如果没有找到可用的浏览器会下载安装 Microsoft Edge (Chromium)。\nWin7 则自动安装 Chrome 109，XP 自动安装 Chrome 49
 chrome.app(.(父窗口,chrome启动程序路径) = 调用系统已安装的chrome创建应用程序\n所有参数可选，参数@2也可以指定CEF3启动程序cefclient.exe的路径\n使用CEF3支持在参数@1指定父窗口并嵌入浏览器到该窗口,\n原版Chrome嵌入父窗口会出现兼容性问题,\n\n!processchromeapp.
 chrome.app.path = 自定义Chrome.exe位置,\n支持Chrome,兼容Chrome启动参数的Chrome内核浏览器,\n也可以指定CEF3启动程序cefclient.exe
 chrome.app() = !processchromeapp.

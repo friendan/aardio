@@ -63,10 +63,6 @@ tbs.add({
     text="Java"; 
 },"\forms\winform\java.aardio")
 
-tbs.add({
-    text="批处理"; 
-},"\forms\winform\bat.aardio")
-
 tbs.selIndex = 1;
 
 winform.getTemplatePath = function(){

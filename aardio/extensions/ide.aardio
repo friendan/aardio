@@ -238,7 +238,7 @@ namespace ide{
 			}
 			
 			return __createProcess__(path,code,op);
-		} 
+		}
 	}
 	else {
 		processGroup = function(name){
@@ -323,6 +323,9 @@ namespace ide{
 		} 
 	}  
 
+	libDocument = function(lib){
+		return createProcess("~\tools\2.doc.aardio",{____search_libdoc__key=lib});
+	} 
 }
 
 /**intellisense(ide)
@@ -385,6 +388,7 @@ setControlParam(.(控件名,参数表) = 更新控件参数,成功返回true，�
 getControlParam(.(控件名) = 获取控件参数,\n参数中的font属性作为::LOGFONT的参数才能转换为字体对象
 loadPrivateFont(.("字体路径") = 在开发环境中加载字体文件,\n使窗体设计器中的控件可以显示该字体
 showStatus(.(消息,进度) = 在IDE状态栏显示削息和进度\n参数@1使用字符串指定消息,\n参数@2使用数值指定进度\n所有参数可选\n不指定进度时重置进度为初始状态
+libDocument(__) = 打开库函数文档，并搜索参数 @1 指定的关键字
 end intellisense**/
 
 /**intellisense()

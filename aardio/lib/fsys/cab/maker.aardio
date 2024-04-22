@@ -41,21 +41,25 @@ folder = function(rootDir,targetPath,CompressionType="LZX"){
 	
 	var ddfPath =  ..io.tmpname("ddf") ;
 	..string.save(ddfPath, ..string.fromto( ..string.join(tFiles,'\r\n'),65001,0) );
-	var parameter = "/V0 /F " + ..fsys.shortpath(ddfPath) + " /D MaxDiskSize=CDROM /D CompressionType="+CompressionType+" /D CompressionMemory=21 /D Cabinet=ON /D Compress=ON /L " +  ..fsys.shortpath(tTarget.dir) +''
-	
-	var prcs = ..process.popen("makecab.exe",parameter )
+
+	var prcs = ..process.popen("makecab.exe", "/V0","/F",ddfPath,"/D"
+		,"MaxDiskSize=CDROM","/D","CompressionType="+CompressionType,"/D","CompressionMemory=21"
+		,"/D","Cabinet=ON","/D","Compress=ON","/L",tTarget.dir);
+		
 	if(!prcs){
 		return null,'压缩目录时出错:\r\n' + path;
 	}
+	
 	prcs.logger = self.logger;
-	prcs.logResponse();
+	prcs.logResponse();  
 	prcs.close();
-		
+	
 	..io.remove(ddfPath);
 	return true,targetPath	 	
 }
 
 file = function( path,targetPath,CompressionType="LZX" ){
+ 
 	path = ..fsys.longpath(  ..io.fullpath(path) )  
 	if(!targetPath){
 		targetPath = ..string.trimright( path,"\/" ) + ".cab" 
@@ -63,17 +67,19 @@ file = function( path,targetPath,CompressionType="LZX" ){
 	else {
 		targetPath = ..io.fullpath(targetPath)
 	} 
-	var tTarget = ..io.splitpath(targetPath) 
-	var parameter = '/V0 /D MaxDiskSize=CDROM /D CompressionType='+CompressionType+' /D CompressionMemory=21 /D Cabinet=ON /D Compress=ON "' + ..fsys.longpath(path) + '" /L ' +  ..fsys.shortpath(tTarget.dir) + '  "' + tTarget.file + '"'
-
-	var prcs = ..process.popen("makecab.exe",parameter );
+	
+	var tTarget = ..io.splitpath(targetPath)
+	var prcs = ..process.popen("makecab.exe", `/V0`,`/D`,`MaxDiskSize=CDROM`,`/D`
+		,`CompressionType=`+CompressionType,`/D`,`CompressionMemory=21`,`/D`,`Cabinet=ON`,`/D`,`Compress=ON`
+		,path,`/L`,tTarget.dir,tTarget.file);
+		
 	if(!prcs){
 		return null,'压缩文件时出错:\r\n' + path;
 	} 
+	 
 	prcs.logger = self.logger;
-	prcs.logResponse();
+	prcs.logResponse();  
 	prcs.close();
-	prcs.close();  
 	
 	return true,targetPath	
 }
@@ -100,6 +106,6 @@ compress = function(path,targetPath,CompressionType="LZX"){
 }
 
 /**intellisense(fsys.cab.maker)
-logger = 指定压缩进度默认回显对象\n该对象必须有log或write成员函数用于输出信息
-compress(.(待压缩目录或文件,输出目录,"MSZIP") = 压缩文件名目录,生成cab文件,\n支持嵌套子目录\n参数二,参数三可省略,默认使用LZX算法(压缩率较高).\n成功返回true,失败返回 null,错误信息
+logger = 指定压缩进度默认回显对象\n该对象必须有 log 或 write 成员函数用于输出信息
+compress(.(待压缩目录或文件,输出目录,"MSZIP") = 压缩文件名目录（路径不能包含Unicode 字符），生成 cab 文件。\n支持嵌套子目录\n参数 @2 ,参数 @3 可省略,默认使用 LZX 算法(压缩率较高).\n成功返回 true,失败返回 null,错误信息
 end intellisense**/

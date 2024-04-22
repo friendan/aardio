@@ -1,7 +1,7 @@
 //入门
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="Edge 浏览器控件 - web.view";right=759;bottom=469;bgcolor=16777215)
+var winform = win.form(text="Edge 浏览器控件 - web.view";right=800;bottom=469;bgcolor=16777215)
 winform.add()
 /*}}*/
 
@@ -48,11 +48,17 @@ wb.external = {
 /*
 导出任意个 Javascript 全局函数, 使用 JSON 自动转换参数和返回值，
 通过 JSON 双向自动转换 —— 可以更好的兼容只能支持纯 aardio 对象 / 纯 JavaScript 对象的代码。
-注意下面的 JS 回调函数内禁止调用 wb.doScript 或  wb.eval 执行Javascript。
+
+在被网页回调的 aardio 函数内部调用 wb.eval, wb.xcall 可能阻塞后续调用。
+应改用非阻塞的 wb.invoke, wb.doScript 。
+或者通过 winform.setTimeout 异步调用 wb.invoke, wb.doScript。
 */
 wb.export({
     alert = function(msg){
 		winform.msgbox(msg) 
+		
+		//要避免重入，例如：不能在 alert 回调中再次调用 alert 函数
+		//wb.invoke("alet('test')");
 	};
 	nativeAdd = function(a,b){ 
 		return a + b; 
@@ -99,14 +105,15 @@ WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的�
 <br>
 WebView2 支持 Win10 以及之后的系统。<br>
 Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。<br>
-现在没有自带 WebView2 的旧系统已经非常罕见，无特殊原因可以忽略不记。<br><br>
+<br>
 
 WebView2 属于公共运行库，如果系统已安装就不需要再安装了。<br>
 未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。<br>
+现在没有自带 WebView2 的旧系统已经非常罕见，无特殊原因可以忽略不记。<br>
 <br>
-在网页上点右键菜单可以打开网页开发工具（ DevTools ），<br>
-在开发工具的「设置 / 语言」界面可切换开发工具的界面语言。<br>
-在 DevTools 控制台可查看程序错误信息。<br>
+在网页上点右键菜单项<b>（Inspect / 检查）</b>或按 F12 键可以打开网页开发工具（ DevTools ），<br>
+在开发工具的「设置 / 语言」<b>（Settings / Language」）</b>界面可切换开发工具的界面语言。<br>
+在 DevTools <b>控制台（Console）</b>可查看程序错误信息。<br>
 </body>
 </html>
 **/

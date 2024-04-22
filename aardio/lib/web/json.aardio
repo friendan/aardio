@@ -305,6 +305,8 @@ stringify = function(tab,prettyPrint,unicodeEscaped,objreferences) {
 		if(prettyPrint){
 			levels--;
 			curIndent = repeat(levels,indent);
+			
+			if(!#array) return "[]";
 		}
    		return concat("[", LFCR, join( array, ","+LFCR ), LFCR, curIndent, "]");
 	}
@@ -331,6 +333,7 @@ stringify = function(tab,prettyPrint,unicodeEscaped,objreferences) {
 	if(prettyPrint){
 		levels--;
 		curIndent = repeat(levels,indent);
+		if(!#map) return "{}";
 	}
 	return  concat("{", LFCR, join( map, ","+LFCR ), LFCR, curIndent, "}" );
 }
@@ -415,8 +418,8 @@ ndParse = function(s,unescape){
 	for i,j in s {
 		if(#j){
 			var ok,d = call(scanAny,self,j,unescape,1,,false);
-			if(!ok) error(d,2); 
-			..table.push(r,d);
+			if(ok)..table.push(r,d);
+			else ..io.stderr.write(d,'\n',j,'\n'); 
 		}
 	}
 	return r; 
@@ -433,16 +436,83 @@ strip = function(v){
 	if(v) return parse(v);
 }
 
-/**details(aardio-json 扩展标准)
+/**details(用前必读，点这里展开)
+
+相关工具与范例
+========================================================================
+『工具 ＞ 编码 ＞ JSON / table 互转』
+『范例 ＞ Web 应用  ＞ JSON 』
+『范例 ＞ Web 应用  ＞ REST ＞ jsonClient』
+
+aardio / JSON 类型转换要点
+========================================================================
+#### 一、区分空对象与空数组
+在 aardio 中对象与数组的数据类型都是 "table"。
+所以在 aardio 中空对象与空数组都是 {} 。
+
+对于 web.json，{} 总是被处理为空对象。
+使用 table.array() 则可以创建 JSON 兼容的空数组。 
+web.json 也会将 JSON 中的 "[]" 解析为 table.array() 创建的空数组。
+
+aardio 通常会在表的 _type 元属性中指定一个表是否数组。
+例 table.array() 创建的空数组是这样 { @{_type="array"}}。
+或者长度非 0 的数组也会被视为数组，例如 { 1,2,3 } 。
+
+但还有很多其他来源的数组（例如 COM 数组，封装外部对象的数组）并不一定符合上面的规则。
+web.json 使用 table.type() 函数来检测一个表是否应当被处理为数组。
+详细规则请查看 table.type() 函数的说明。
+
+也可以使用 web.json.stringifyArray("{}") 得到 "[]"。
+web.json.stringifyArray 总是将参数视为数组处理。
+
+#### 二、保存对象的 null 值。
+在 aardio 中 null 是一个不存在的值。
+例如 { name = null } 等价于空表 {} 。
+
+而在 JSON 中我们有时候需要保存 null 值。
+这在 aardio 中很困难，但我们可以解决这个问题。
+
+例如以下 aardio 代码：
+
+```
+//定义 JSON
+var json = "{name:null,age:22}";
+
+//解析为对象
+var object = web.json.parse(json);
+
+//生成 JSON 
+var json = web.json.stringify(object);
+```
+
+可以正确的保存 name 的 null 值。
+
+aardio 通过在元表的 _defined 字段中指定必须保存 null 值的字段名。
+可以调用 table.define() 定义需要保留 null 值的键名（可以重复调用以添加键名）。
+web.json 或 table.eachName 支持 _defined 元属性。
+
+#### 三、时间 与 buffer 对象
+buffer,time 对象与 JS 一样只负责字符串化，不负责在解析 JSON 时自动还原。
+
+时间对象与 JS 语言相同转换为 ISO8601 格式字符串，
+可使用 time.iso8601 函数解析并还原 iso8601 格式的时间对象。
+
+buffer 类与 node.js 中的 Buffer 类相同,转换结果示例：
+{"data":[230,181,139],"type":"Buffer"}
+其中 type 指明类型,data 为 buffer 字节数组的值。
+这种表可以作为 raw.buffer 的唯一参数快速还原为 buffer 类型。
+
+aardio-json 扩展标准
+========================================================================
 发布日期：2020-12-27
 
 JSON 字符串化时完全符合 JSON 官方标准( https://json.org/json-zh.html )。
-JSON 解析时完全支持 JSON，JSONP，并使用宽松的原则兼容JSON5，兼容部分类YAML语法。
+JSON 解析时完全支持 JSON，JSONP，并使用宽松的原则兼容JSON5，兼容部分类 YAML 语法。
 
 aardio-json 以“宽进严出、简洁高效”为基本原则。
 解析时规则尽可能宽松容错，生成 JSON 字符串则严格遵守标准JSON规则。
 为了让解析器尽可能做到简洁高效，所以 aardio-json 不支持变量，
-真正简洁高效的配置文件不应当出现重复的内容，JSON的目标也不是成为编程语言。
+真正简洁高效的配置文件不应当出现重复的内容，JSON 的目标也不是成为编程语言。
 
 一、可省略和替换的格式标记
 1、允许省略根节点对象外部的 {}
@@ -454,8 +524,8 @@ aardio-json 以“宽进严出、简洁高效”为基本原则。
 1、JSON根节点可以是任意数据类型，单个字符串、数值都可以解析并返回值。
 2、根节点是对象时，可以省略外层的花括号。
 3、根节点是字符串时不可省略引号。
-4、根节点解析成功的JSON后面如果还有多余的文本时忽略。
-5、根节点兼容JSONP格式
+4、根节点解析成功的 JSON 后面如果还有多余的文本时忽略。
+5、根节点兼容 JSONP 格式
 
 三、字符串
 字符串置于双引号中时支持JSON转义符。
@@ -480,24 +550,26 @@ JSON 字符串可省略首尾引号，此时不支持JSON转义符，遇到回�
 可以使用null,undefined,~ 表示null值。
 
 七、日期时间
-可使用ISO 8601格式表示日期时间，合法的格式如下：
+
+可使用 ISO 8601 格式表示日期时间，合法的格式如下：
 2021-01-1
 2021-02-1T15:02:31+08:00
 2021-02-1T15:02:31+08:00Z
+
 数字前可不用补0，但日期分隔符必须使用短横线，时间分隔符必须使用冒号，
 尾部时区不可以包含空白字符，但可以包含 +-: 等字符以及数字、字母。
 end details**/
 
 /**intellisense()
 web.json = JSON 解析器,\n字符串化时完全符合 JSON 官方标准。\n解析使用 aardio-json 扩展语法，兼容JSON，JSONP，JSON5，部分类YAML语法,\n存取大容量数据请改用数据库组件
-web.json.stringify( = 转换为参数@1为json文本\n\n表对象可在元表_defined字段中预定义可能为null值的键,\n也可以在_json元方法中返回一个自定义的对象用于转换为json,\n\n时间对象与JS语言相同转换为ISO8601格式字符串,\nbuffer类与node.js中的Buffer类相同,转换结果示例：\n{"data":[230,181,139],"type":"Buffer"}\n其中type指明类型,data为buffer字节数组的值,\nbuffer,time对象与js一样只负责字符串化,不负责解析JSON时自动还原,\n应使用 time.iso8601函数解析iso8601格式的时间,\n在raw.buffer的参数中使用结构体还原字节数组
+web.json.stringify( = 转换为参数 @1 为 JSON 文本\n\n表对象可在元表 _defined 字段中预定义可能为 null 值的键,\n也可以在 _json 元方法中返回一个自定义的对象用于转换为 JSON。\n注意 {} 为空对象，table.array 创建 JSON 空数组，详见 table.type 函数说明。\n\n关于时间对象也 buffer 对象的转换规则请查看 web.json 文档。\n以及：范例 / web 应用 / JSON / 特殊数据类型
 web.json.stringify(.(对象,是否格式化,是否使用UNICODE编码) =  参数@2,@3可选,默认不格式化,启用UNICODE编码\n如果指定格式化,参数@3则默认为false\n\n注意即使选择了不启用UNICODE编码，单引号，\n以及一些可能无法直接显示的Unicode字符仍然会进行转义,\n表对象中值不是表对象的成员先列出
 web.json.stringifyArray(.(表,是否格式化,是否使用UNICODE编码,是否清除null值) = 如果参数@1未声明数组类型，则添加类型声明,\n空数组会返回[]而不是{},其他参数与web.json.stringify相同
 web.json.parse( = 使用宽松的 JSON 语法解析并返回表对象,\n支持自动检测输入字符串的 Unicode BOM,\n除完全支持 JSON 标准之外，并可兼容 jsonp，json5，支持 aardio-json 扩展标准。
 web.json.parse(.(输入文本,是否解析转义符,输入代码页) = 参数@2默认为 true,\n代码页默认为 65001 即 UTF-8 编码,\n输入文本如使用了 UTF-16 LE/BE 编码则转换为 UTF-8,\n返回对象的元表 _defined 字段记录了所有已定义的键,\n参数传入空值或空字符串返回空值\n解析误到错误的 JSON 语法时会抛出异常
 web.json.tryParse(.(输入文本,是否解析转义符,输入代码页) = 解析 JSON 并返回 aardio 对象\n作用与参数用法与parse函数一样,\n请参考该函数说明\n\n唯一的区别是：\nparse函数遇到JSON语法错误时抛出异常\n而tryParse遇到错误时返回 null,错误信息
 web.json.strip(__) = 将一个对象转换为 JSON ,再转换为 aardio 对象,\n用于将对象转换为 JSON/JS 兼容的对象。\n\n如果提前导入  dotNet.json ，\n则可以用此函数将 .NET 对象转为纯 aardio 对象
-web.json.ndParse( = 解析 ndjson，也就是每行一句 JSON 
+web.json.ndParse( = 解析 ndjson，也就是每行一句 JSON 。\n兼容 JSON 行分隔符： '\r'、'\r\n'、'\n'、'\x1E' 。\n此函数忽略错误行，错误行不会抛出异常。\n但会通过 io.stderr.write 函数输出错误信息与出错 JSON
 web.json.ndParse(.(输入文本,是否解析转义符) = 解析 ndjson。\n只能输入 UTF-8 文本，字符串不能有 BOM 编码头（一般也不可能有）
 end intellisense**/
 

@@ -141,6 +141,7 @@ tostring 函数的第 2 个参数可选指定格式化串（ 语法与 string.fo
 end details**/
  
 /**intellisense() 
+fsys.version = 用于创建与解析版本号。\nfsys.version 对象可作为参数传入 tostring 函数转换为字符串格式。\ntostring 函数的第 2 个参数可选指定格式化串（ 语法与 string.format 函数相同）。\n如果不指定格式化串，默认格式化串为 "%d.%d.%d.%d"，\n如果 revision 为 0 ，默认格式化串为 "%d.%d.%d"。\n如果同时 build 也为 0，默认格式化串为 "%d.%d"
 fsys.version("0->0->0->0__") = 创建版本号,支持大于小于相等比较,可转换为字符串或数值,\n参数可以为空,或者数值,字符串,表对象等\n如果参数为字符串,忽略无关文本,版本号后的文本提取为releaseType\n文本中提取的版本号为2~4组以圆点、或其他标点、空格分隔的数值
 fsys.version() = !fsys_version.
 !fsys_version.major = 发行版本号中的主版本号,8位数值\n表示较大或不兼容的改动

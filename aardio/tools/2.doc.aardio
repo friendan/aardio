@@ -4,7 +4,7 @@ import web.form;
 var winform = win.form(cls="WIN_MARKDOWN";text="aardio库函数文档 ( 按F11切换全屏,编辑器右键菜单可快捷插入标记)";right=1120;bottom=612;scroll=1)
 winform.add(
 btnCopyHtml={cls="button";text="复制HTML";left=671;top=583;right=749;bottom=607;db=1;dr=1;z=6};
-btnOpenMarkdown={cls="button";text="查询库函数文档";left=288;top=583;right=408;bottom=607;db=1;dl=1;z=5};
+btnOpenMarkdown={cls="button";text="查询库函数文档";left=286;top=583;right=406;bottom=607;db=1;dl=1;z=5};
 btnSaveHtml={cls="button";text="另存为HTML文件";left=762;top=583;right=924;bottom=607;db=1;dr=1;z=3};
 btnSaveMarkdown={cls="button";text="另存为Markdown文件";left=762;top=583;right=924;bottom=607;db=1;dr=1;hide=1;z=4};
 btnSwitchView={cls="button";text="切换到Markdow模式";left=936;top=583;right=1080;bottom=607;db=1;dr=1;z=10};
@@ -1009,5 +1009,9 @@ winform.tvKernel.insertItem( {
     }
 }
 
+if(____search_libdoc__key){
+	winform.editLibPath.text = ____search_libdoc__key;
+	winform.btnOpenMarkdown.oncommand();
+}
 
 win.loopMessage();

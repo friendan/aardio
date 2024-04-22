@@ -1,28 +1,42 @@
 //导入名字空间
-import console; 
+import dotNet;
+
+//导入 System，下级名字如果在同一程序集内，那么在使用时按需自动导入。
+dotNet.import("System"); 
+
+//如果下级名字空间不在同一程序集内，必须用哪个导入哪个，不会覆盖已存在的父名字空间。
+dotNet.import("System.Security.Cryptography","mscorlib");
+
+//不会自动导入或替换上级名字空间，例如下面的代码不能替代 dotNet.import("System"); 
+dotNet.import("System.Security.Cryptography.X509Certificates","System"); 
+
+//============================================================================ 
+
+//重复导入同一名字空间被忽略，不报错
+dotNet.import("System"); 
 
 /*
-.NET 名字空间可导入为 aardio 库名字空间。
-右键点下面的 System ，然后点「跳转到定义」，
-可以看到这个库的源代码只有一句 dotNet.import("System")
+如果从不同的程序集导入相同的 .NET 名字空间，
+则不会替换原有名字空间，只能从返回值获取导入的名字空间 
 */
-import System; 
+var SystemCore = dotNet.import("System","mscorlib"); 
 
-//用 System 名字空间下面的类构造对象实例，.NET 名字空间一般首字母大写。
-var uri = System.Uri("https://www.aardio.com/test?q=aardio")
+//============================================================================ 
+//.NET 名字空间按 .NET 规范命名，aardio 名字空间则统一为首字母小写的小驼峰规范。
 
-//读或写 .NET 对象的实例属性
-console.log( uri.Host );
+//aardio 已经提供了一些库可用于导入 .NET 名字空间，例如：
+import System.IO; 
 
-//建议右键点下面的名字空间，然后点「跳转到定义」看下源代码怎么写的。
-import System.IO; //.NET 名字空间按 .NET 规范命名，aardio 名字空间则统一为首字母小写的小驼峰规范。
-
-//创建 System.IO.FileStream 对象实例，注意 aardio 格式的路径要用 io.fullpath 转换为完整路径。
+/*
+创建 System.IO.FileStream 对象实例，
+注意 aardio 格式的路径要用 io.fullpath 转换为完整路径。
+aardio 文件路径开始为单个斜杆（或反斜杠）表示应用程序根目录，相当于 C# 的 System.AppDomain.CurrentDomain.BaseDirectory
+*/
 var fs = System.IO.File.Create( io.fullpath("/.testStream.txt") );
 //var fs = System.IO.FileStream(io.fullpath("/.testStream.txt"),System.IO.FileMode.Create);
-//aardio 文件路径开始为单个斜杆（或反斜杠）表示应用程序根目录，相当于 C# 的 System.AppDomain.CurrentDomain.BaseDirectory
-
-var buf = raw.buffer("测试一下");//buffer 也就是 .NET 中的字节数组
+ 
+//buffer 相当于 .NET 中的字节数组
+var buf = raw.buffer("测试一下");
 fs.Write(buf,0,#buf);
 fs.Close();
 

@@ -3,12 +3,12 @@ namespace inet;
 ::Wininet := ..raw.loadDll("Wininet.dll") 
 
 /*intellisense(::)*/
-::InternetOpen = Wininet.api("InternetOpen","pointer(ustring agent,INT accessType,ustring proxy,ustring proxyBypass,INT flags)" )
-::InternetConnect = Wininet.api("InternetConnect","pointer(POINTER hInet,ustring serverName,INT serverPort,ustring userName,ustring password,INT service,INT flags,INT context)")
-::InternetCloseHandle =Wininet.api("InternetCloseHandle","bool(POINTER hInet)") 
-::InternetSetOption = Wininet.api("InternetSetOptionW","bool(pointer hInet,INT opt,struct buffer,INT len)")
-::InternetSetOptionPtr = Wininet.api("InternetSetOptionW","bool(pointer hInet,INT opt,pointer buffer,INT len)")
-::InternetQueryOption =  Wininet.api("InternetQueryOptionW","bool(POINTER hInet,INT option,struct &buffer,INT &length)")
+::InternetOpen = ::Wininet.api("InternetOpen","pointer(ustring agent,INT accessType,ustring proxy,ustring proxyBypass,INT flags)" )
+::InternetConnect = ::Wininet.api("InternetConnect","pointer(POINTER hInet,ustring serverName,INT serverPort,ustring userName,ustring password,INT service,INT flags,INT context)")
+::InternetCloseHandle = ::Wininet.api("InternetCloseHandle","bool(POINTER hInet)") 
+::InternetSetOption = ::Wininet.api("InternetSetOptionW","bool(pointer hInet,INT opt,struct buffer,INT len)")
+::InternetSetOptionPtr = ::Wininet.api("InternetSetOptionW","bool(pointer hInet,INT opt,pointer buffer,INT len)")
+::InternetQueryOption = ::Wininet.api("InternetQueryOptionW","bool(pointer hInet,INT option,struct &buffer,INT &length)")
 /*end intellisense*/
 
 var getLastResponseInfo =  Wininet.api("InternetGetLastResponseInfo","bool(INT& err, str& buffer,INT& len)")

@@ -881,7 +881,7 @@ getDropFile = function(hDrop,finish=true){
 
 /**intellisense(win)   
 isChild(.(父窗口句柄,子窗口句柄) = 判断参数二指定的窗口是否参数一指定窗口的子窗口或间接子窗口\n任何一个参数为null或0返回false
-isVisible(__/*输入窗口句柄*/) = 判断窗口是否可见\n此函数不会检查伪装为可见的隐形状态（Cloaked）,\nwinex.isVisible 支持检测隐形状态
+isVisible(__/*输入窗口句柄*/) = 判断窗口是否可见。\n如果上级父窗口不可见，则此函数仍然会返回 false。\n如果要检查子窗口本身的可见样式，\n可用 win.getStyle 函数检查是否设置 _WS_VISIBLE 样式。\n如果是 aardio 创建的窗口对象，通过 hide 属性可检查是否设置 _WS_VISIBLE 样式。 \n\n此函数不会检查伪装为可见的窗口隐形状态（Cloaked）,\nwinex.isVisible 支持检测隐形状态
 isWindow(__/*输入窗口句柄*/) = 判断是否有效窗口\n注意 aardio 创建的窗体或控件请使用 valid 属性判断，\naardio 创建的所有控件都有 valid 属性（不一定会出现在提示中）
 isIconic(__/*输入窗口句柄*/) = 判断窗口是否最小化为任务栏图标
 isZoomed(__/*输入窗口句柄*/) = 判断窗口是否最大化

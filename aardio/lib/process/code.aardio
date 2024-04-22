@@ -1,4 +1,4 @@
-﻿//code VSC编辑器
+﻿//code (VS Code)
 import win.reg;
 import fsys;
 import fsys.lnk;
@@ -103,26 +103,21 @@ namespace code{
 				} 	
 			}
 			
-			var url = http.location("https://code.visualstudio.com/sha/download?build=stable&os="+os)
-			if(!url) return;
-			
-			var tUrl = inet.url.split(url);
-			tUrl.host = "vscode.cdn.azure.cn"; 
-			
-			return tostring(tUrl)
+			var url = http.location("https://code.visualstudio.com/sha/download?build=stable&os="+os)  
+			return url
 		},"/SP-  /VERYSILENT /SUPPRESSMSGBOXES /NOCANCEL /NORESTART");
 		
 		if(installed){
 			path = ..io.exist( getInstallPath() );
 			return path;
 		}
-    }   
+    } 
 }
 
 /**intellisense()
-process.code.path = VS Code安装路径
-process.code.install() = 已安装VS Code 则直接返回安装路径,\n如果未安装VS Code 则下载安装,\n安装完成返回安装路径
-process.code.getInstallPath() = 已安装VS Code 则返回安装路径
-process.code(.(文件,参数,->->->) = 启动VS Code
+process.code.path = VS Code 安装路径
+process.code.install() = 已安装 VS Code 则直接返回安装路径,\n如果未安装 VS Code 则下载安装,\n安装完成返回安装路径
+process.code.getInstallPath() = 已安装 VS Code 则返回安装路径
+process.code(.(文件,参数,->->->) = 启动 VS Code
 process.code() = !process.
 end intellisense**/

@@ -7,14 +7,14 @@ class jsonClient{
 	ctor( ... ){
 		this = ..web.rest.client( ... ); 
 		this.stringifyRequestParameters = stringifyRequestParameters;
-		this.parseResponseResult = function(s){
+		this.parseResponseResult = function(s,streamChunk){
 			if( s="" ) return s;
 			var t = this._http.responseContentType; 
 
-			if(t){ 
-				if( ..string.match( t,"[\w\/]*<@@x-ndjson@>![\W]"  ) ) { 
+			if(t){  
+				if( this._http.ndjsonStream && !streamChunk  ) { 
 					return ..web.json.ndParse(s,true);
-				}
+				} 
 				
 				if( ..string.match( t,"[\w\/]*<@@json@>![\W]"  ) ) return ..web.json.parse(s,true); 
 				

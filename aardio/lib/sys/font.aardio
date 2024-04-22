@@ -1,0 +1,104 @@
+﻿//font 字体
+import com;
+import win.reg; 
+import gdip.family;
+import fsys;
+
+namespace sys.font;
+
+open = function(){ 
+	..raw.execute( "Explorer.exe",'"' + ..io.getSpecial(0x14/*_CSIDL_FONTS*/) + '"' );
+}
+
+getName = function(name,langId){
+	var f = ..gdip.family(name);
+	if(f) {
+		var r = f.getName(langId===null?0x409:langId);
+		f.delete();
+		return r;
+	}
+}
+
+exist = function(name){
+	return !!getName(name);
+}
+
+install = function(path,allUser){
+	path = ..io.fullpath(path);
+	
+	var filename = ..fsys.getFileName(path);  
+	var userFontPath = ..fsys.getSpecial(0x1c/*_CSIDL_LOCAL_APPDATA*/,"Microsoft\Windows\Fonts\"+filename);
+	..fsys.delete(userFontPath);//避免存在同名文件（实际已卸载）导致自动改名
+	
+	..com.CreateObject("Shell.Application").Namespace(0x14/*ssfFONTS*/).CopyHere(path);	
+	
+	if(allUser){
+		
+		var fontname;
+		var regUser = ..win.reg("HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Fonts");
+		for(name,value,t in regUser.eachValue()) {
+			if(0==..string.cmp(..fsys.getFileName(value),filename)){
+				fontname = name; 
+				break;
+			}
+		} 
+		
+		var ret;
+		if(fontname){ 
+			
+			var regSys = ..win.reg("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts");
+			
+			if( regSys.setSzValue(fontname,filename) ){
+				regUser.delValue(fontname);
+				
+				var sysFontPath = ..fsys.getSpecial(0x14/*_CSIDL_FONTS*/,filename);
+				..fsys.move(..fsys.getSpecial(0x1c/*_CSIDL_LOCAL_APPDATA*/,"Microsoft\Windows\Fonts\"+filename)
+					,sysFontPath);
+					
+				::Shell32.SHChangeNotifyW(2/*_SHCNE_CREATE*/,5/*_SHCNF_PATH*/,..string.toUnicode(sysFontPath),0);
+				
+				..fsys.delete(userFontPath); 
+				ret = true;
+			}
+		 	
+			regSys.close();
+			regUser.close(); 
+		}
+		
+		return ret;
+	}
+}
+
+getLink = function(fontName){
+	return ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink",fontName);
+}
+
+setLink = function(fontName,v){
+	
+	var r = ..win.reg("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink")
+	if(!#v){
+   		r.delValue(fontName)
+	}
+	else {
+   		if(type.isString(v)){
+   			v = ..string.splitEx(v);
+   		}
+   		
+   		r.setMultiSzValue(fontName,v);
+	}
+	
+	r.close();
+}
+
+/*****intellisense(sys.font)
+install(__) = 安装系统字体，参数@1指定字体路径。\n参数 @2 为 true 为所有用户安装字体（重新登录系统生效），进程需要管理权限。\n否则字体安装到 %LOCALAPPDATA%\Microsoft\Windows\Fonts\ 目录，仅对当前用户生效。\n\n如果希望添加的字体仅对当前进程有效，可以改用 win.font.add 函数
+getLink(__) = 返回链接字体配置，参数指定字体名称 
+setLink(.(fontName,value) = 修改链接字体配置，注销并重登录操作系统后生效。\n参数@1指定字体名称。\n参数@2可传入字符串数组，也可以传入一个多行字符串\n\n注意链接字体必须是为所有用户安装的系统字体，\n也就是安装到 C:\Windows\Fonts 目录下的字体。\n可以调用 sys.font.install 函数安装字体到该目录
+open() = 打开字体文件夹
+getName(.(fontname,langId) = 参数 @fontname 指定字体名，\n返回该字体由 @langId 参数指定语言 ID 的字体名称。\n简体中文语言 ID 为 0x804，英文为 0x409，默认为 0x409
+exist(__) = 检测指定的字体是否可用，参数 @1 指定字体名称。\n支持系统安装的字体，以及仅添加到当前进程的字体
+end intellisense*****/
+
+/*****intellisense()
+sys.font = 用于安装或检查系统字体。\n相关库：win.font,gdi,gdip.family,fonts
+end intellisense*****/

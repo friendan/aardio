@@ -18,7 +18,7 @@ class whttp{
     	}
     	
 		if( proxyBypass === null ) proxyBypass = "";
-		if( agent === null ) agent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";
+		if( agent === null ) agent = self.userAgent;
 		
     	var accessType = 0/*_WINHTTP_ACCESS_TYPE_DEFAULT_PROXY*/;
 	    if( !proxy ){
@@ -251,6 +251,7 @@ class whttp{
 		this.contentLength = tonumber(this.readHeader("Content-Length:"):null); 
 		this.responseContentType = this.readHeader("Content-Type:");
 		this.eventStream = ..string.startWith(this.responseContentType:"","text/event-stream",true);
+		this.ndjsonStream = ..string.startWith(this.responseContentType:"","application/x-ndjson",true);
 		
 		this.responseContentEncoding = this.readHeader("Content-Encoding:");
 		if( this.afterSend){
@@ -314,7 +315,6 @@ class whttp{
 	};
 	read = function(bufferSize){
 		var ok,str,size;
-		 
         ok,size = QueryDataAvailable(this.request,0);
         if (!ok){
         	var e,errCode = ..lasterr(,"read->QueryDataAvailable");
@@ -322,24 +322,29 @@ class whttp{
 			return null,e,errCode;
 		}
 			
-        if (!size)
+        if (!size){
             return null;
-          
-        if(bufferSize && ( bufferSize < size ) ){
-       		size = bufferSize; 
         }
+        
+        if(bufferSize){
+        	if( bufferSize < size ){
+        		size = bufferSize; 
+        	}
+        } 
         elseif( size < 10240 ){
         	size = size + size;
         }
-        
-		ok,str,size = ReadData(this.request,size ,size,0);  
+		
+		var ok,str,newSize = ReadData(this.request,size ,size,0);
 		if (!ok){
         	var e,errCode = ..lasterr(,"read->ReadData");
         	this.lastReadErrCode = errCode;
 			return null,e,errCode;
 		}
 		
-		if ( size ) return ..string.left(str,size),size; 
+		if(!newSize) return;
+		if(newSize==size) return str,size;
+		return ..string.left(str,newSize),newSize; 
 	};
 	readBuffer = function(buffer,l){
 		var m = 0;
@@ -372,6 +377,7 @@ class whttp{
         } 
         
         ok,size = ReadDataByBuffer(this.request,buffer ,size,0); 
+        
         if (!ok){
         	var e,errCode = ..lasterr(,"read->ReadData");
         	this.lastReadErrCode = errCode;
@@ -380,9 +386,28 @@ class whttp{
 		
 		if(size)return size;
 	};
+	eachLine = function(){
+		return function(){
+			var line = "";
+			var r = this.read;
+			while( var char = r(1) ) {  
+				if( char == '\r' ) { 
+					continue;
+				}
+				if( char == '\n' ){ 
+					if(#line){ 
+						if( this.parseStreamData )line = this.parseStreamData(line,true);
+						return line;
+					}		 
+				}
+				
+				line = line ++ char;
+			}
+		}	
+	};
 	eachRead = function(bufferSize){
 		this.lastReadErrCode = null;
-		if(!this.eventStream){
+		if(! (this.eventStream || this.ndjsonStream ) ){
 			return function(){
 				var str,size,errCode = this.read(bufferSize); 
 				if(!str){
@@ -391,6 +416,10 @@ class whttp{
 				}
 				return str,size;
 			}
+		}
+		
+		if(this.ndjsonStream){
+			return this.eachLine();
 		}
 			
 		return function(){
@@ -667,20 +696,10 @@ class whttp{
     			
 		var ret;
     	if( this.onReceive ){ 
-    	    if(this.parseStreamData &&
-    	       ..string.startWith(this.responseContentType:"","application/x-ndjson",true) ){
-    	    	
-    	    	for(str,size in this.eachRead() ){
-    				if( this.onReceive( this.parseStreamData(str) ) === false )
-    					break;
-    			}
-    	    } 
-    	    else {
-    	    	for(str,size in this.eachRead() ){
-    				if( this.onReceive( str,size,total ) === false )
-    					break;
-    			} 
-    	    }
+    	    for(str,size in this.eachRead() ){
+    			if( this.onReceive( str,size,total ) === false )
+    				break;
+    		} 
     	    
     		ret = true;
     	}
@@ -742,6 +761,8 @@ class whttp{
  }
 		
 namespace whttp{ 
+	userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36";
+	
 	::WinHttp := ..raw.loadDll("winhttp.dll") 
 	
 	CloseHandle = ::WinHttp.api("WinHttpCloseHandle","bool(POINTER innet)")
@@ -823,6 +844,7 @@ inet.whttp( = 创建HTTP会话对象,所有参数可选，\n注意提前导入zl
 inet.whttp(.("UserAgent","HTTP://代理服务器IP:端口","绕过代理主机",选项) = 所有参数可以省略,\nUserAgent参数指定发送给服务器的程序名,\n代理指定空字符串为使用默认代理,如果代理设为"IE"则使用IE以及inet.setProxy的代理设置
 inet.whttp.get(.(url,headers,referer) = 用于界面线程创建线程并获取 @url 指定网址的数据,\n此函数等待下载完成但不会阻塞界面消息循环,\n可选用 @headers 指定 HTTP 头,\n可选用 @referer 指定引用网址,\n所有参数用法与 格式请参考 inet.whttp 对象的 get 函数相同
 inet.whttp.status(.(url,noAutoRedirect,httpMethod) = 对 @url 指定网址发送请求并返回 HTTP 状态码。\n如果未成功发送请求则返回 null。\n可选参数 @noAutoRedirect 为 true 则禁止自动重定向，默认为 false。\n可选用 @httpMethod 参数指定 HTTP 请求方法，默认为 "HEAD"。\n\n大部分网址请求成功会返回 200 状态码。\n部分网址会返回 2xx 状态码，重定向返回 3xx 状态码。\n可用状态码请参考 inet.httpStatusCode 库
+inet.whttp.userAgent =  创建 inet.whttp 对象且未明确指定 user agent 参数时使用的默认值
 !inet_whttp.setSessionOption( _WINHTTP_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_whttp.setRequestOption( _WINHTTP_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_whttp.lastRequestUrl = 最后一次请求成功的URL
@@ -867,7 +889,10 @@ inet.whttp.status(.(url,noAutoRedirect,httpMethod) = 对 @url 指定网址发送
 !inet_whttp.read(.(读取长度) = 长度参数可选\n返回读取字符串,以及长度\n该函数必须在send请求以后调用
 !inet_whttp.readAll() = 读取所有返回数据\n该函数必须在send请求以后调用
 !inet_whttp.eachRead = @for(str,size in ??.eachRead() ){ 
-	table.push(__,str ) ; 
+	__/*循环读取数据，可选在 eachRead 的参数@1 指定缓冲区大小*/  
+} 
+!inet_whttp.eachLine = @for(str,size in ??.eachLine() ){ 
+	__/*每次读取一行数据，忽略回车，去掉换行符*/ 
 } 
 !inet_whttp.onSendBegin = @.onSendBegin = function(){
 	return len__/*上传长度*/;

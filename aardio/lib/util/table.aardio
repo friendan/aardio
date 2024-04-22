@@ -59,7 +59,12 @@ var strRepeat = ..string.repeat;
 stringifyTable = function(t,keys,prettyPrintLevel,prettyPrintIndent,objreferences){
 	if( t@ ? t@._tostring ) return tostring(t);
 	
-	if( ! next(t) ) return "{}";
+	if( ! next(t) ){
+		if(t@[["_type"]]=="array"){
+			return `{ @{_type="array"} }`;
+		}
+		return "{}";
+	}
 	
 	var LFCR = "";
 	var curIndent = "";
@@ -95,6 +100,8 @@ stringifyTable = function(t,keys,prettyPrintLevel,prettyPrintIndent,objreference
 		prettyPrintLevel--;
 		curIndent = strRepeat(prettyPrintLevel,prettyPrintIndent);
 	}
+	
+	
 	push( s,LFCR,curIndent,"}");
 	
 	return join(s);

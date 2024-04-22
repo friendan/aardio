@@ -101,6 +101,8 @@ class client{
 
 		this.lastResponseData = null;
 		this.lastStatusCode = null;
+		this.lastResponseErrorData = null;
+		
 		this._http.beforeSend = this.beforeSend;
 		this._http.afterSend = this.afterSend;
 		this._http.addHeaders = this.addHeaders;
@@ -211,9 +213,14 @@ class client{
 				}
 			}
 			
-			if( type(errMsg) == type.string ) {
-				if( !utf8 )errMsg = ..string.fromto( errMsg,codepage,65001); 
-				this.lastResponseData = errMsg;
+			if( type(errMsg) == type.string ) { 
+				
+				if(this.lastStatusCode){
+					if( !utf8 ) errMsg = ..string.fromto( errMsg,codepage,65001);  
+					
+					this.lastResponseData = errMsg;
+					this.lastResponseErrorData = errMsg; 
+				}
 			}
 			return null,errMsg,errCode;
 		}
@@ -246,10 +253,12 @@ class client{
 	lastResponseString = function(){
 		return this.lastResponseData;
 	};
-	lastResponse = function(){
-		var s = this.lastResponseData;
-		if( ..console && _STUDIO_INVOKED ) ..console.log(s) else ..io.print(s);
-		return s;
+	lastResponseError = function(field){
+		if(this.lastResponseErrorData){
+			var e = this.parseResponseResult(this.lastResponseErrorData);
+			if( field ) return e[[field]];
+			return e;
+		}
 	};
 	lastResponseHeaders = function(name){
 		return this._http.responseHeaders; 
@@ -390,7 +399,7 @@ class client{
 namespace client { 
  	charset2Codepage = ..string.encoding.getCodepage;
  	
-	parseResponseResult = function(ret){
+	parseResponseResult = function(ret,streamChunk){
 		return ret; 
 	} 
 	 
@@ -507,6 +516,10 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 	__/*参数是表对象时调用此函数转换为字符串\n此函数一般由库文件定义，一般调用不应修改此函数\n注意返回的文本格式应与 owner.contentType 一致\n在该函数中可获取或修改对象的 lastRequestUrl, lastRequestMethod 属性*/
 	return params;
 } 
+!web_restClient.parseResponseResult(响应数据,单个流式数据块) = @.parseResponseResult = function(resp,streamChunk){
+	__/*用于解析服务器应答数据。\n此函数一般由库文件定义，一般调用不应修改此函数。\nresp 为服务器应答字符串，\nstreamChunk 指示是否在 SSE 或 ndjson 流回调函数中解析单个块*/
+	return resp;
+} 
 !web_restClient.beforeStringifyRequestParameters(提交参数,代码页) = @.beforeStringifyRequestParameters = function(params,codepage){
 	__/*可以在该函数中修改提交提交参数表,或在此添加默认参数\n此函数在stringifyRequestParameters之前调用\n参数可能是字符串或者表*/
 	return params; 
@@ -541,7 +554,8 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 !web_restClient.lastStatusMessage() = 获取最近返回的HTTP状态码文本描述\n第二个返回值为状态码
 !web_restClient.lastResponseHeaders() = 如果调用了head方法\n该函数返回所有应答HTTP头,文本格式,每行以冒号分隔的名值对
 !web_restClient.lastResponse() = 获取最后一次服务器返回的数据,\n如果控制台已打开或在开发环境中导入 console 库则在控制台输出数据\n下载文件时该值为空
-!web_restClient.lastResponseString() =  获取最后一次服务器返回的原始数据,\n下载文件时该值为空
+!web_restClient.lastResponseString() =  获取最后一次服务器返回的原始数据，\n请求失败，或者下载文件时此属性值为空
+!web_restClient.lastResponseError() =  返回服务器最后一次返回的错误响应，并转换为错误对象。\n与调用 API 时转换响应数据一样，支持相同的服务器响应格式 。\n如果错误来自本地（lastStatusCode 属性为 null）则此函数返回 null 。\n如果最后一次发生请求成功，则此函数返回 null 。\n\n如果在参数 @1 中指定返回字段，且错误对象包含该字段则使用直接下标获取并返回字段值。\n获取字段失败返回 null 而非抛出异常
 !web_restClient.lastRequestUrl = 获取最后一次请求的URL
 !web_restClient.lastRequestMethod = 最后一次请示使用的HTTP方法
 !web_restClient.lastRequestInfo = 最后一次请示使用的所有参数信息

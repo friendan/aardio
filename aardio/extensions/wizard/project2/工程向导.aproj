@@ -42,11 +42,13 @@
 			<file name="htmlayout.jpg" path="forms\images\htmlayout.jpg" comment="forms\images\htmlayout.jpg"/>
 			<file name="winform.jpg" path="forms\images\winform.jpg" comment="forms\images\winform.jpg"/>
 		</folder>
-		<folder name="plus" path="forms\plus" comment="forms\plus">
+		<folder name="plus" path="forms\plus" comment="forms\plus" local="false" embed="false" ignored="false">
+			<file name="bat.aardio" path="forms\plus\bat.aardio" comment="forms\plus\bat.aardio"/>
 			<file name="first.aardio" path="forms\plus\first.aardio" comment="forms\plus\first.aardio"/>
 			<file name="icon.aardio" path="forms\plus\icon.aardio" comment="forms\plus\icon.aardio"/>
+			<file name="sfx.aardio" path="forms\plus\sfx.aardio" comment="forms\plus\sfx.aardio"/>
 			<file name="tabs.aardio" path="forms\plus\tabs.aardio" comment="forms\plus\tabs.aardio"/>
-			<folder name="images" path="forms\plus\images" comment="forms\plus\images" local="false" embed="false" ignored="false">
+			<folder name="images" path="forms\plus\images" comment="forms\plus\images">
 				<file name="1.jpg" path="forms\plus\images\1.jpg" comment="forms\plus\images\1.jpg"/>
 			</folder>
 		</folder>
@@ -61,8 +63,11 @@
 		<folder name="winform" path="forms\winform" comment="forms\winform" local="false" embed="false" ignored="false">
 			<file name="blank.aardio" path="forms\winform\blank.aardio" comment="forms\winform\blank.aardio"/>
 			<file name="demo.aardio" path="forms\winform\demo.aardio" comment="forms\winform\demo.aardio"/>
-			<file name="bat.aardio" path="forms\winform\bat.aardio" comment="forms\winform\bat.aardio"/>
+			<file name="java.aardio" path="forms\winform\java.aardio" comment="forms\winform\java.aardio"/>
 			<file name="python.aardio" path="forms\winform\python.aardio" comment="forms\winform\python.aardio"/>
+			<folder name="images" path="forms\winform\images" comment="forms\winform\images">
+				<file name="paint.png" path="forms\winform\images\paint.png" comment="forms\winform\images\paint.png"/>
+			</folder>
 		</folder>
 	</folder>
 </project>

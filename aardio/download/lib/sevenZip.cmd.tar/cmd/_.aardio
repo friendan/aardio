@@ -1,4 +1,5 @@
 import process.popen;
+import fsys;
 
 namespace sevenZip.cmd;
 
@@ -21,23 +22,116 @@ write7zHeader = function(path){
     }
 }
 
+compressSfx = function(src,dst,proc,level,password,...){
+	var file = ..io.open(dst,"w+b")
+	if(!file){
+		error("创建自解压文件失败",2);
+	}
+	
+	file.write($"~/lib/sevenZip/cmd/.bin/7z.sfx"); 
+	file.write( '7z\xBC\xAF\x27\x1C\0\x03\x8D\x9B\xD5\x0F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0' );
+	file.close(); 
+	
+	return compress(src,dst,proc,level,password,...);
+}
+
+compressInstall = function(src,dst,config,proc,level,password,...){
+	var file = ..io.open(dst,"w+b")
+	if(!file){
+		error("创建自解压文件失败",2);
+	}
+	
+	file.write($"~/lib/sevenZip/cmd/.bin/7zSD.sfx");
+	file.write(";!@Install@!UTF-8!",'\r\n');
+	
+	//https://7zip.bugaco.com/7zip/MANUAL/cmdline/switches/sfx.htm
+	for k,v in ..table.eachName(config){
+		file.write(k,"=",'"',tostring(v),'"','\r\n');
+	}
+  
+	file.write(";!@InstallEnd@!");
+	file.write( '7z\xBC\xAF\x27\x1C\0\x03\x8D\x9B\xD5\x0F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0' );
+	file.close(); 
+	
+	return compress(src,dst,proc,level,password,...);
+}
+
+sfx = function(src,dst){
+	var fileR = ..io.open(src,"rb");
+	if(!fileR){
+		error("打开压缩文件失败",2);
+	}
+	
+	var fileW = ..io.open(dst,"w+b")
+	if(!fileW){
+		fileR.close();
+		error("创建自解压文件失败",2);
+	}
+	
+	fileW.write($"~/lib/sevenZip/cmd/.bin/7z.sfx"); 
+	
+	var buf = ..raw.buffer(0xA00000);
+	while( var size = fileR.readBuffer(buf) ){
+		fileW.writeBuffer(buf,size);
+	} 
+	
+	fileW.close();
+	fileR.close();
+} 
+
+sfxInstall = function(src,dst,config){
+	var fileR = ..io.open(src,"rb");
+	if(!fileR){
+		error("打开压缩文件失败",2);
+	}
+	
+	var fileW = ..io.open(dst,"w+b")
+	if(!fileW){
+		fileR.close();
+		error("创建自解压文件失败",2);
+	}
+	
+	fileW.write($"~/lib/sevenZip/cmd/.bin/7zSD.sfx");
+	fileW.write(";!@Install@!UTF-8!",'\r\n');
+	
+	//https://7zip.bugaco.com/7zip/MANUAL/cmdline/switches/sfx.htm
+	for k,v in ..table.eachName(config){
+		fileW.write(k,"=",'"',tostring(v),'"','\r\n');
+	}
+  
+	fileW.write(";!@InstallEnd@!");
+	
+	var buf = ..raw.buffer(0xA00000);
+	while( var size = fileR.readBuffer(buf) ) {
+		fileW.writeBuffer(buf,size);
+	} 
+	
+	fileW.close();
+	fileR.close();
+} 
+
 compress = function(src,dst,proc,level=9,password,...){
     if( ! #src ) error("源目录错误",2)
     if( ! dst ) error("请指定生成压缩包路径",2);
     
-    if( ..io.exist(dst) && ..string.endWith(dst,".exe",true) ){
+    var oldDst =  dst;
+    if( ..io.exist(dst) && ..string.endWith(dst,".exe",true) ){ 
     	write7zHeader(dst);
     }
     
-    var prcs = ..process.popen(zPath, 
+    ..fsys.createParentDir(dst);
+    var prcs,err = ..process.popen(zPath, 
         ' a "'  + (..io.fullpath(dst)) + '" -t7z ' //a命令表示压缩
         + ( password? " -mhe=on -p"+password : "")
         + ( " -mx=" ++ level )
         + ' -mmt=on ' 
         ++ ..string.join({...}, " ")
-        + ' "' + ..io.fullpath(src) + '\*"' 
-        )
+        + ' "' + ..io.fullpath(src) + '\*"',{
+        	workDir = ..io.splitpath(dst).dir
+        })
    
+   	if(!prcs) error(err,2);
+   	
     for( all,out,err in prcs.each() ){
        if(proc) proc( out,err );
     } 
@@ -62,7 +156,11 @@ extract = function(src,dst,proc,password, ...){
 }  
 
 /**intellisense(sevenZip.cmd)
-compress(.("源路径","压缩文件路径",回显函数,压缩级别,密码,其他命令参数) = 压缩\n源路径可以使用星号表示压缩目录下的文件\n回显函数,压缩级别,密码都是可选参数\n压缩级别可选值为0到9,默认值为9
+compressSfx(.("源路径","自解压文件路径",回显函数,压缩级别,密码,其他命令参数) = 生成自解压 EXE 文件。\n参数 @2 必须指定 exe 后缀的文件路径。\n源路径可以使用星号表示压缩目录下的文件\n回显函数,压缩级别,密码都是可选参数\n压缩级别可选值为0到9,默认值为9
+compressInstall(.("源路径","安装文件路径",配置表,回显函数,压缩级别,密码,其他命令参数) = 生成自解压安装文件。\n参数 @2 必须指定 exe 后缀的文件路径。\n配置表指定一个包含配置名值对的表对象，可用配置请参考7zip文档。\nhttps://7zip.bugaco.com/7zip/MANUAL/cmdline/switches/sfx.htm\n源路径可以使用星号表示压缩目录下的文件\n回显函数,压缩级别,密码都是可选参数\n压缩级别可选值为0到9,默认值为9
+compress(.("源路径","压缩文件路径",回显函数,压缩级别,密码,其他命令参数) = 压缩\n源路径尾部自动添加 \* 表示压缩目录下的所有文件。\n回显函数,压缩级别,密码都是可选参数\n压缩级别可选值为0到9,默认值为9
 extract(.("压缩文件路径","解压目录",回显函数,密码,其他命令参数) = 解压缩\n回显函数,密码都是可选参数
 write7zHeader(.("文件路径") = 保持文件已有内容不变,并追加7z格式头\ncompress函数当压缩包参数为exe文件时自动调用此函数
+sfxInstall(.("压缩文件路径","安装文件路径",配置文件) = 将 7z 压缩文件转换为安装文件。\n配置表参数请参考 compressInstall 函数说明
+sfx(.("压缩文件路径","自解压文件路径") = 将 7z 压缩文件转换为自解压文件
 end intellisense**/

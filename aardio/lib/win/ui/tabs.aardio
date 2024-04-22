@@ -1050,10 +1050,10 @@ namespace tabs{
 				if(!strip) error("错误的选项卡索引",2);
 				
 				var lastsel = owner.selHistory[#owner.selHistory];
+				
 				if( ( lastsel == strip ) && strip.checked ){
-					
 					if( (  (!owner.forms[i]) && (!strip.preloadFormArgs) )  
-						|| (owner.forms[i] && ..win.isVisible(owner.forms[i].hwnd)) )
+						|| (owner.forms[i] && !owner.forms[i].hide) )
 						return;
 				}
 				
@@ -1068,20 +1068,22 @@ namespace tabs{
 					}	
 				}
 				
-				strip.show(4/*_SW_SHOWNOACTIVATE*/); 
-				strip.checked = true;
+				strip.show(4/*_SW_SHOWNOACTIVATE*/);  
 				
 				..table.push(owner.selHistory,owner.strips[i]);
 				if(#owner.selHistory > 10) owner.selHistory = ..table.slice(owner.selHistory,-10);
-				
+				 
 				if(owner.container){
 					owner.container.showChildren(false);
 					owner.preloadForm(i);
-					
+					 
 					if(owner.forms[i]){
+						owner.forms[i].setRect(owner.container.getClientRect());
 						owner.forms[i].show(true);
-					}; 
+					};
 				};
+				
+				strip.checked = true;
 				
 				if( owner.onSelchange ) owner.onSelchange(i,owner.strips[i],owner.forms[i]); 
 			} 	

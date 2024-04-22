@@ -284,7 +284,7 @@ namespace table{
 		var t = v@[["_type"]];
 		if( t == "object" ) return "object";
 		if( t == "array" ) return "array";
-		if( ( v@[["_keys"]] !== null ) || (v[["_struct"]]) ) return "object";
+		if( ( v@[["_keys"]] !== null ) || (v@[["_defined"]] !== null ) || (v[["_struct"]]) ) return "object";
 		if( v@[["_safearray_type"]] !== null ) return "array";
 		if( v@[["length"]] !== null ) return "array";
 		if( ( type(v.length) == "number" ) && (v[["length"]]===null) ) return "array";
@@ -331,10 +331,10 @@ namespace table{
 cache() = 创建并返回弱引用缓存表,\n弱引用指的是加入表中的键或值不会增加引用计数,\n不会阻止对象被回收,\n返回的弱引用表适合用于缓存对象
 cache(.(getter) = 创建并返回弱引用缓存表,\n可选用参数 @getter 指定读取值函数,\n该函数的参数为当前读取的键,函数应返回对应的值,\n在返回读取值以前,该值会被临时存入缓存表
 cache(.(kv,getter) = 创建并返回弱引用缓存表,\n可选用参数 @kv 指定弱引用类型,\n参数@1为字符串 "k" 时仅弱引用键,为 "v" 仅弱引用值,\n不指定刚默认为 "kv", 指弱引用键与值。\n可选用参数 @getter 指定读取值函数,\n该函数的参数为当前读取的键,函数应返回对应的值,\n在返回读取值以前,该值会被临时存入缓存表
-type(__) = 检测传入值的表类型\n如果不是一个表返回null，\n如果表的_type元属性声明了"object"或"array"的值返回该值，\n如果表在元表中定义了 length 属性或 length 元属性,返回"array"，\n如果使用#操作符取数组长度返回值不是0,返回"array"，\n其他一律返回"object"\n\nweb.json使用此函数区分对象的类型，\n并且在解析JSON以后会通过_type元属性设置"aaray"或"object"的值
-isArray(__) = 检查传入参数是否一个数组，\n可传入任何数据类型参数，\n\n如果参数对象不是table类型返回false,\n参数的_type元属性为"object"返回false,\n参数对象的_type元属性为"array"返回true,\n参数对象指定了length元属性或length属性返回true,\n参数对象包含数组成员返回true,\n其他情况返回false\n\n使用table.array函数可以创建一个符合此检测条件的数组
+type(__) = 参数 @1 指定表（table），返回表的实际类型。 \n此函数返回 "object" 则表为对象，返回 "array" 则表为数组。\n如果参数不是一个表（table）返回 null。\n\n检测步骤如下：\n如果表的 _type 元属性为 "object" 或 "array" 则返回该值，\n如果表的 _key 或 _defined 元属性非空则返回  "object" 。\n如果表是结构体则返回  "object" 。\ncom.SafeArray 创建或相兼容的 COM 数组返回 "array" 。\n如果表的 length 元属性非空则返回 "array" 。\n如果在表的元表中定义了 length 属性且为数值。返回"array"。\n如果使用#操作符取数组长度返回值不是 0, 返回"array"。\n其他表一律返回 "object"\n\n可用 {} 创建空对象，table.array 函数可创建空数组 \n\nweb.json使用此函数区分数组与对象，解析 JSON 时会自动指定表的 _type 元属性
+isArray(__) = 此函数调用 table.type 函数检测表的类型是否为数组。\n如果表的类型为 "array" 则返回 true ，否则返回 false 。\n\n表的 _type 元属性为 "array" 则直接返回 true。\n其他检测规则请参考 table.type 函数说明。 \n\n使用 table.array 函数可以创建一个符合此检测条件的数组
 len(.(数组) = 获取数组长度\n在数组本身的长度,数组的length属性,以及数组的元表length属性中取最大值返回\nweb.json调用此函数以支持定长数组
-define(.(表对象,->->->) = 预定义一个或多个键名\n即使对应键的值为null,仍然在eachName迭代器中显示出来\n注意该迭代器的预定排序对null值无效,\n此函数在对象的元表中_define元属性添加键名,如果_define已经定义为函数对象则会失败\ntable.eachName,webs.json等自动支持_define元属性
+define(.(表对象,->->->) = 预定义一个或多个键名\n即使对应键的值为 null,仍然在 eachName 迭代器中显示出来\n注意该迭代器的预定排序对null值无效,\n此函数在对象的元表的 _define 元属性添加键名，\n如果 _define 为数组或 null 则可重复调用此函数。\n如果 _define 已经定义为函数对象则会失败\n table.eachName,webs.json 等自动支持 _define 元属性
 define(.(表对象) = 清空预定义键名
 keys(.(表对象,排序函数,优先前排键名) = 获取表中的所有字符串类型的键名,不包含_struct\n\n如果元表中定义了_keys元方法,则调用该方法获取全部自定义键名取代表本身的键名列表\n_keys元方法可以是一个键名数组，或者是返回键名数组的函数,\n\n如果元表中定义了_defined元方法,则使用该方法获取允许为null的键值,\n_defined可以是一个键名数组，或者是返回键名数组的函数,_defined返回的键,\n名数组不会覆盖表本身的键名数组或者_keys元方法定义的数组,仅起到键名占位的作用,\n\n可选指定键名排序函数,如果不指定则使用默认字典序排序,\n可选使用参数@3预定优先排序在最前面的键名数组
 eachIndex(数组) = @for i,v in table.eachIndex(__/*指定数组对象\n按数组索引大小顺序遍历数组\n支持使用表对象的 length 属性,_length 元方法确定数组的长度,\n支持表对象使用 _startIndex 元属性自定义下标\n如果是普通的纯数组不需要用到这些功能,\n改用计数 for 循环会更快*/){

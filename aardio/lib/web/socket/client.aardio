@@ -460,7 +460,8 @@ namespace client{
 }
 
 /**intellisense()
-web.socket.client = 支持单线程异步的WebSocket客户端\n可直接在界面线程中使用，不会阻塞界面，不需要创建多线程\n支持服务端心跳(Ping/Pong帧)，客户端单向心跳(Pong帧)机制,\n可调用close函数断线，并可调用connect函数实现重析连接服务器
+web.socket = 纯 aardio 代码实现的轻量 WebSocket 组件。\n仅支持 ws 协议，改用 web.SocketSharp 可支持 wss 协议
+web.socket.client = 支持单线程异步的 WebSocket 客户端\n可直接在界面线程中使用，不会阻塞界面，不需要创建多线程\n支持服务端心跳(Ping/Pong帧)，客户端单向心跳(Pong帧)机制,\n可调用 close 函数断线，并可调用 connect 函数实现重析连接服务器
 web.socket.client() = !stdwebsocketclient.
 web.socket.client.sha1(__) = 使用sha1算法取哈希值，并使用Base64编码为普通文本
 web.socket.client.getSecKey() = 获取WebSocket客户端密钥

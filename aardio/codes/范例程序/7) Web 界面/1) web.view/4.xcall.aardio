@@ -41,6 +41,15 @@ wb.html = /**
 winform.btnCallJavaScript.oncommand = function(id,event){
 	
 	/*
+	注意 wb.invoke, wb.doScript 都是非阻塞异步调用 JS。
+	但 wb.eval, wb.xcall 都会阻塞等待 JS 返回值。
+	
+	在被网页回调的 aardio 函数内部调用 wb.eval, wb.xcall 可能阻塞后续调用。
+	应改用非阻塞的 wb.invoke, wb.doScript 。
+	或者通过 winform.setTimeout 异步调用 wb.invoke, wb.doScript。
+	*/
+
+	/*
 	调用 JS 全局函数，参数 @1 指定函数名，
 	可传任意个数参数（参数用 JSON 转换为纯 JS 对象）。
 	*/

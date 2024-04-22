@@ -19,6 +19,7 @@ class driver{
 			if(!chromePath) return null;
 			
 			driverPath = ..io.exist( ..fsys.path.replaceFile(chromePath,"chromedriver.exe") );
+			
 			if(!driverPath){
 				var vInfo = ..fsys.version.getInfo(chromePath);
 				if(!vInfo[["productVersion"]][["major"]]){
@@ -109,6 +110,7 @@ class driver{
 		if( this.chromeArguments ) {
 			cap.chromeOptions.args = ..table.append(cap.chromeOptions.args:{},this.chromeArguments);
 			enableLogging = ..table.some(this.chromeArguments ,lambda(v) ..string.indexOf(v,"--enable-logging") );
+			this.isHeadless = ..table.some(this.chromeArguments ,lambda(v) ..string.indexOf(v,"--headless") );
 		}
 		
 		if(!enableLogging){
@@ -157,7 +159,11 @@ class driver{
 				desiredCapabilities = this.getCapabilities(desiredCapabilities);
 				requiredCapabilities = requiredCapabilities; 
 			);
-	
+			 
+			if(this.isHeadless){ 
+				return ses;	
+			}
+	 
 			for hwnd,title,threadId,processId in ..winex.each( "Chrome_WidgetWin_1") { 
 				if(!chromeWins[hwnd]){
 					if( !..win.isVisible(hwnd) ) continue;
@@ -182,8 +188,11 @@ class driver{
 			if(ses){ 
 				ses[["sessionInfo"]] = sessionInfo; 
 				ses =  chromeSessionEx(ses);
-				ses.hwndChrome = sessionInfo.hwndChrome;
 				ses.restClient = this.client;
+				
+				//null 值要转为 0 或 false，避免不存在的值触发元方法返回 API 对象
+				ses.hwndChrome = sessionInfo.hwndChrome || 0; 
+				ses.isHeadless = !!this.isHeadless;
 				return ses;
 			}
 		}
@@ -547,17 +556,32 @@ namespace driver{
 	requirePath = function(vc,installTitle,productName){
 		
 		if(productName === "Microsoft Edge"){
-			var ver = ..fsys.version(vc);
-			if(ver.major>=80){
-				var dir = ..io.appData("aardio/edgeDriver/" + tostring(ver) ); 
+			var edgeVersionInfo = ..fsys.version(vc);
+			if(edgeVersionInfo.major >= 85){
+
+				var dir = ..io.appData("aardio/edgeDriver/" + tostring(edgeVersionInfo) ); 
 				var path = ..io.joinpath(dir,"msedgedriver.exe") ;
 		
 				if( ..io.exist(path) ) return path;
 				
-				..zlib.httpFile.download("https://msedgedriver.azureedge.net/"+tostring(ver)+"/edgedriver_win32.zip"
+				var driverUrl = "https://msedgedriver.azureedge.net/"+tostring(edgeVersionInfo)+"/edgedriver_win32.zip";
+				if( 200 != ..inet.http.status(driverUrl) ){
+					
+					var versionUtf16 = ..inet.http.get("https://msedgedriver.azureedge.net/LATEST_RELEASE_"+edgeVersionInfo.major+"_WINDOWS")
+					if(versionUtf16){
+						driverUrl = "https://msedgedriver.azureedge.net/"
+							+..string.removeBom(versionUtf16)+"/edgedriver_win32.zip";
+					}
+					else {
+						edgeVersionInfo.revision = 0; 
+						driverUrl = "https://msedgedriver.azureedge.net/"+tostring(edgeVersionInfo)+"/edgedriver_win32.zip";
+					}
+				}
+				
+				..zlib.httpFile.download( driverUrl
 						,installTitle : "正在下载本程序必须的组件：Edge Driver",..io.joinpath(dir,"\.download"),dir,"edgedriver_win32.zip"); 
 		 		
-				return ..io.exist( path);
+		 		return ..io.exist(path);
 			}
 		}
 		
@@ -573,20 +597,25 @@ namespace driver{
 			driverVersion =  tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
 		
 			var platform = (_WIN_64?"win64":"win32");  
+			
 			driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
 				+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";; 
 				
 			if( 200 != ..inet.http.status(driverUrl) ){
-				chromeVersionInfo.revision = 0;
-				driverVersion = tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
+				
+				driverVersion = ..inet.http.get("https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_"+tostring(chromeVersionInfo,"%d.%d.%d") )
+				
+				if(!driverVersion){
+					chromeVersionInfo.revision = 0;
+					driverVersion = tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
+				}  
 				
 				driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
-				+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";; 
+					+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";;
 			}
 			
 			driverDir = ..io.appData("aardio/chromeDriver/" + driverVersion); 
-			driverPath = ..io.joinpath(driverDir,"/chromedriver-" + platform,"chromedriver.exe") ;  
-			
+			driverPath = ..io.joinpath(driverDir,"/chromedriver-" + platform,"chromedriver.exe") ;   
 		}
 		else {
 			driverVersion = matchPredatesChromeDriverVersion(chromeVersionInfo, predatesChromeDriverVersion,false);
@@ -601,15 +630,14 @@ namespace driver{
 
 		if( ..io.exist(driverPath) ) return driverPath;
 		
-		if( 200 == ..inet.http.status(driverUrl) ){
-			..zlib.httpFile.download( driverUrl
-				,installTitle : "正在下载本程序必须的组件：Chrome Driver"
-				,..io.joinpath(driverDir,"\.download")
-				,driverDir
-				,"chromedriver_win32.zip"); 
-				
-			return ..io.exist( driverPath ); 
-		} 
+		 
+		..zlib.httpFile.download( driverUrl
+			,installTitle : "正在下载本程序必须的组件：Chrome Driver"
+			,..io.joinpath(driverDir,"\.download")
+			,driverDir
+			,"chromedriver_win32.zip"); 
+			
+		return ..io.exist( driverPath );  
 	}
 	
 	versionConvert = {
@@ -711,6 +739,9 @@ chrome.driver.KEYS = 这是一个表，\n表的键值定义了可用于 sendKeys
 end intellisense**/
 
 /**intellisense(!chromeDriver)
+isHeadless = 启动参数是否指定了 --headless
+chromePath = 浏览器程序路径
+driverPath = ****driver.exe 程序路径
 setProxy(代理配置) = @.setProxy(\n	proxyType = "manual";\n	httpProxy = "127.0.0.1:12043"\n)
 startServer( = 启动ChromeDriver服务端
 startServer(.(端口,其他启动参数) = 启动ChromeDriver服务端,所有参数可选,\n不指定端口时自动分配空闲端口,不会与其他程序冲突\n如果指定参数@2会作为process.popen的附加启动参数,\n返回process.popen对象
@@ -742,6 +773,7 @@ end intellisense**/
 
 /**intellisense(!chromeDriverSes)
 ? = 可输入任意资源名\n对象负责转换为资源请求URL\n!web_rest_api.
+isHeadless = 启动参数是否指定了 --headless
 sessionInfo = 浏览器会话信息
 head = HEAD方法提交请求\n如果该函数返回非null值为成功,请使用lastResponseHeaders获取应答HTTP头\n调用时可以写 head() 或 head.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串
 get = GET方法提交请求,获取资源\n调用时可以写 get() 或 get.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n!web_rest_api.

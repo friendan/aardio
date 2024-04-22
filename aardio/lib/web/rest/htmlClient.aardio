@@ -9,7 +9,7 @@ class htmlClient{
 		 
 		this.parseResponseResult = function(s){
 			var t = this._http.responseContentType;
-			if( t &&  ..string.match( t,"[\w\/]*<@@xml@>![\W]"  ) )
+			if( t &&  ..string.match( t,"[\w\/]*<@@html@>![\W]"  ) )
 				return  ..string.html( s );
 				
 			s = ..string.trim(s);
@@ -18,7 +18,7 @@ class htmlClient{
 			}
 			return;
 		}
-		this.acceptType = "application/xml,text/xml,*/*";
+		this.acceptType = "application/html,text/html,*/*";
 	}; 
 }
 

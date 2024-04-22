@@ -40,7 +40,7 @@ namespace CSharpLibrary
             tab.InvokeMember("执行aardio", " console.log('在C#中执行aardio代码') ");
             
              //调用 对象自身（如果对象不是函数而是表，调用表对象的 _call 元方法）
-            tab.Invoke(12, 3);
+            tab.Invoke(12, 3, this);
 
             //遍历 aardio 对象
             foreach (object item in tab)
@@ -71,7 +71,27 @@ var aardioObject =  {
         return 123;
     }; 
     @{
-    	_call = function(a,b){
+    	_call = function(a,b,netObject){
+    	    
+    	    /*
+			aardio 函数传给 .NET 时（委托、事件），
+			aardio 会在原函数外包装一层代理函数，并自动处理回调参数。
+			回调 aardio 函数的参数中的 .NET 对象会自动封装为 dotNet.object 。 
+		
+			但 .NET 反过来直接回调 aardio 对象的成员函数时，
+			回调 aardio 函数的参数中的 .NET 对象没有经过处理，不会自动封装为 dotNet.object 。 
+			
+			原生 .NET 对象在 aardio 中存为 COM 对象，
+			而原生 COM 接口不支持 .NET 的很多特性，例如重载（函数名相同，参数不同）。
+			
+			.NET 原生对象传入 com.IsNetObject() 会返回非 0 值。
+    	    而 dotNet.object 传入 dotNet.getObject() 会返回非 null 值。 
+			
+			解决方案：
+			如下将原生 .NET 对象转换为 aardio 中的 dotNet.object 。  
+    	    */
+    	    netObject = dotNet.object(netObject);
+    	    
     		console.log("aardio 对象被 C# 调用了，参数:",a,b)
 			return a + b; 
     	} 

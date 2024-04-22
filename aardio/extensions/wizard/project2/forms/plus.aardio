@@ -60,6 +60,14 @@ tbs.add({
     text="横版大图标"; 
 },"\forms\plus\first.aardio")
 
+tbs.add({
+    text="自解压"; 
+},"\forms\plus\sfx.aardio")
+
+tbs.add({
+    text="批处理"; 
+},"\forms\plus\bat.aardio")
+
 tbs.selIndex = 1;
 
 tbs.closeButton.skin(

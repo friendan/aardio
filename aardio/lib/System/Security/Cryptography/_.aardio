@@ -1,0 +1,38 @@
+﻿import dotNet;
+import System;
+
+//.NET 名字空间。
+dotNet.import("System.Security.Cryptography","mscorlib");
+
+//子名字空间不在同一程序集，用哪个导入哪个，不会覆盖已存在的父名字空间
+dotNet.import("System.Security.Cryptography.X509Certificates","System");
+
+//子名字空间不在同一程序集，用哪个导入哪个，不会覆盖已存在的父名字空间
+dotNet.import("System.Security.Cryptography.X509Certificates.X509Certificate","mscorlib");
+dotNet.import("System.Security.Cryptography.X509Certificates.X509ContentType","mscorlib");
+dotNet.import("System.Security.Cryptography.X509Certificates.X509KeyStorageFlags","mscorlib");
+
+try{
+    dotNet.import("System.Security.Cryptography.X509Certificates.CertificateRequest","System.Core"); 
+    dotNet.import("System.Security.Cryptography.X509Certificates.CertificateRequestLoadOptions","System.Core"); 
+}
+
+/*
+在不同的程序集导入相同名字路径的 .NET 名字空间，
+则后面导入的名字空间不能覆盖替换先前导入的 .NET 名字空间。
+也无法自动合并，只能通过 dotNet.import 函数的返回值获取导入的新名字空间。
+
+所以为了减少 dotNet.import 调用次数。
+要检查某个名字空间的主要成员是在哪个程序集里。
+
+请参考：范例 / 调用其他语言 / dotNet / 进阶 / 名字空间分析
+*/
+ 
+/*****intellisense()
+System.Security.Cryptography = .Net 名字空间 System.Security.Cryptography 导入库。\n导入了:\nSystem.Security.Cryptography\n \nSystem.Security.Cryptography.X509Certificates\nSystem.Security.Cryptography.X509Certificates.CertificateRequest\n!dotNetNameSpace.
+end intellisense*****/
+
+
+
+
+ 

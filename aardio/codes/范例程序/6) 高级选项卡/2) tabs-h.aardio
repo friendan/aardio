@@ -5,8 +5,8 @@ import win.ui;
 var winform = win.form(text="简单多标签浏览器 —— 使用「高级选项卡」实现";right=992;bottom=623;bgcolor=16777215)
 winform.add(
 custom={cls="custom";left=-2;top=53;right=989;bottom=622;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=4};
-nav1={cls="plus";text="网页开发";left=-1;top=0;right=149;bottom=32;bgcolor=16777215;border={bottom=1;color=-16744448};dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=2};
-nav2={cls="plus";text="JavaScript 脚本";left=149;top=0;right=299;bottom=32;bgcolor=16777215;border={bottom=1;color=-16744448};dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=3};
+nav1={cls="plus";text="网页开发";left=-1;top=0;right=149;bottom=32;bgcolor=16777215;border={bottom=1;color=-16744448};dl=1;dt=1;font=LOGFONT(h=-14);z=2};
+nav2={cls="plus";text="JavaScript 脚本";left=149;top=0;right=299;bottom=32;bgcolor=16777215;border={bottom=1;color=-16744448};dl=1;dt=1;font=LOGFONT(h=-14);z=3};
 navEnd={cls="bkplus";left=-2;top=31;right=991;bottom=32;bgcolor=32768;border=1;disabled=1;dl=1;dr=1;dt=1;z=1}
 )
 /*}}*/

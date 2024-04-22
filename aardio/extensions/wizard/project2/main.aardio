@@ -7,7 +7,7 @@ bk={cls="bk";left=0;top=0;right=923;bottom=92;background="\res\images\bg.gif";dl
 btnCreateProject={cls="plus";text="创建工程(Enter)";left=718;top=653;right=851;bottom=677;db=1;dr=1;font=LOGFONT(h=-13);notify=1;tabstop=1;z=13};
 btnDlgDir={cls="plus";text="浏览";left=698;top=575;right=758;bottom=602;db=1;dr=1;font=LOGFONT(h=-13);notify=1;z=12};
 btnEsc={cls="plus";text="取消(Esc)";left=595;top=653;right=692;bottom=677;db=1;dr=1;font=LOGFONT(h=-13);notify=1;tabstop=1;z=14};
-btnNav1={cls="plus";text="高级界面";left=22;top=5;right=119;bottom=88;background="\res\images\icon_bg.jpg";bkBottom=3;bkLeft=7;bkRight=8;bkTop=2;color=16777215;dl=1;dt=1;font=LOGFONT(h=-14);foreground="\res\icons\plus.png";notify=1;paddingBottom=7;paddingLeft=5;paddingRight=5;paddingTop=5;valign="bottom";x=0.5;y=0.2;z=6};
+btnNav1={cls="plus";text="更多";left=22;top=5;right=119;bottom=88;background="\res\images\icon_bg.jpg";bkBottom=3;bkLeft=7;bkRight=8;bkTop=2;color=16777215;dl=1;dt=1;font=LOGFONT(h=-14);foreground="\res\icons\plus.png";notify=1;paddingBottom=7;paddingLeft=5;paddingRight=5;paddingTop=5;valign="bottom";x=0.5;y=0.2;z=6};
 btnNav2={cls="plus";text="窗口程序";left=122;top=5;right=219;bottom=88;background="\res\images\icon_bg.jpg";bkBottom=3;bkLeft=7;bkRight=8;bkTop=2;color=16777215;dl=1;dt=1;font=LOGFONT(h=-14);foreground="\res\icons\winform.png";notify=1;paddingBottom=7;paddingLeft=5;paddingRight=5;paddingTop=5;valign="bottom";x=0.5;y=0.2;z=5};
 chkArgv={cls="plus";text="启动参数";left=204;top=653;right=294;bottom=677;align="left";db=1;dl=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=24;y=0.5;z=16};
 chkRunAs={cls="plus";text="管理权限";left=99;top=653;right=189;bottom=677;align="left";db=1;dl=1;font=LOGFONT(h=-13);foreground="\res\images\uncheck1.png";notify=1;paddingLeft=24;y=0.5;z=15};
@@ -15,6 +15,7 @@ chkSaveToDefaultDir={cls="plus";text="设为默认目录";left=761;top=575;right
 custom={cls="custom";left=3;top=93;right=913;bottom=570;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;tabstop=1;z=7};
 editProjectDir={cls="edit";left=104;top=578;right=687;bottom=602;bgcolor=16777215;db=1;dl=1;dr=1;font=LOGFONT(h=-13);tabstop=1;z=8};
 editProjectName={cls="edit";left=104;top=617;right=687;bottom=641;bgcolor=16777215;db=1;dl=1;dr=1;font=LOGFONT(h=-13);tabstop=1;z=10};
+lnkCmdline={cls="plus";text="启动参数解析规则";left=303;top=653;right=448;bottom=677;align="left";color=8388608;db=1;dl=1;font=LOGFONT(h=-13);hide=1;notify=1;textPadding={left=5};z=17};
 plus2={cls="plus";left=100;top=601;right=691;bottom=643;border={bottom=1;color=-8355712};clip=1;db=1;dl=1;dr=1;tabstop=1;z=4};
 plus3={cls="plus";left=101;top=562;right=692;bottom=604;border={bottom=1;color=-8355712};clip=1;db=1;dl=1;dr=1;tabstop=1;z=3};
 static={cls="static";text="工程目录:";left=3;top=582;right=93;bottom=610;align="right";db=1;dl=1;font=LOGFONT(h=-13);transparent=1;z=9};
@@ -287,6 +288,22 @@ mainForm.chkArgv.onMouseLeave = function(wParam,lParam){
 	argvTipCtrl.trackPopup(false); //手动关闭提示
 }
 
+mainForm.lnkCmdline.oncommand = function(id,event){
+	ide.libDocument("string.cmdline");
+}
+
+mainForm.chkArgv.oncommand = function(id,event){
+	mainForm.lnkCmdline.hide = !mainForm.chkArgv.checked;
+}
+
+mainForm.lnkCmdline.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000
+	}
+})
 
 mainForm.show();
 win.loopMessage();

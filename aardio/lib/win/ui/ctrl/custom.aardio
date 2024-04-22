@@ -80,6 +80,23 @@ namespace custom {
     			code.setRect(this.getClientRect());
     			code.invalidate(); 
     			
+    			code._beforeShowWindowInCustom = function(shown,status){
+    				if(shown){
+    					for(i,f in this._forms){ 
+    						if(f!=code) f.show(false); 
+    					}
+    					this.selForm = code;  
+    					 
+    					code.setRect(this.getClientRect());
+    				} 
+    				elseif(this.selForm == code) {
+    					this.selForm = null;
+    				}
+    			} 
+    			code._onDestroyInTabs = function(){
+    				..table.removeByValue(this._forms,code);
+    			}
+    			
     			return code;
 			} 
 			
@@ -96,7 +113,9 @@ namespace custom {
     		form._beforeShowWindowInCustom = function(shown,status){
     			if(shown){
     				for(i,f in this._forms){ if(f!=form) f.show(false); }
-    				this.selForm = form;
+    				this.selForm = form;  
+    				 
+    				form.setRect(this.getClientRect());
     			} 
     			elseif(this.selForm == form) {
     				this.selForm = null;
@@ -129,6 +148,8 @@ namespace custom {
     				if(shown){
     					for(i,f in this._forms){ if(f!=form) f.show(false); }
     					this.selForm = form;
+    					 
+    					form.setRect(this.getClientRect());
     				}
     				elseif(this.selForm == form) {
     					this.selForm = null;

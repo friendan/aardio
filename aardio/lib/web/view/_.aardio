@@ -205,15 +205,20 @@ class view {
 			} 
 
 			var urlPath,extraInfo = ..string.match(this.$location,"([^\#]+)(.*)"); 
-			if(this.$readyUrl && #extraInfo){
-				urlPath = ..inet.url.canonicalize( ..inet.url.encodeMbcs(urlPath) );
+			if(this.$readyUrl && #extraInfo){ 
 				readyPath = ..string.match(this.$readyUrl,"([^\#]+)"); 
-				 
-				if(..string.cmp(urlPath,readyPath)==0 ){
+				  
+				if(..inet.url.cmp(urlPath,readyPath)==0 ){ 
 					var path = ..string.match(urlPath,"([^\?]+)"); 
-					if(..string.endWith(path,".pdf",true)){
+					if(..string.endWith(path,".pdf",true)){ 
+						
 						//https://github.com/MicrosoftEdge/WebView2Feedback/issues/2409
 						_dll.webview_navigate(this.browser, "about:blank");
+					 
+						this.$readyUrl = null;
+						this._form.wait(function(){
+							return this.$readyUrl;
+						},,10);  
 					}
 					else{
 						_dll.webview_navigate(this.browser, this.$location);
@@ -285,7 +290,12 @@ class view {
 		..raw._release(callback);
 		return result;
 	};
-	xcall = function(method,...){
+	xcall = function(method,...){ 
+		/*
+		能调用非阻塞的 webView.invoke ，就尽量不要用阻塞的 webView.xcall，webView.eval
+		在被网页回调 aardio 函数内部，直接调用 webView.xcall，webView.eval 可能会导致阻塞后续调用。
+		此时应当改用 webView.invoke，或者通过 winform.setTimeout 异步调用 webView.xcall，webView.eval 。
+		*/
 		var jsThis = "null";
 		if(!..string.find(method,"[\r\n\;\{\}\(\)]")){
 			jsThis = ..string.match(method,"(.+)\.[^.]+$") : "null";
@@ -460,6 +470,9 @@ class view {
 			if( ws.waitForConnected(this._form.hwnd) ) return ws;
 		}
 	};
+	setTimeout = function(...){
+		return this._form.setTimeout(...);
+	};
 	@_metaProperty;
 }
 
@@ -593,8 +606,8 @@ namespace view{
 		return installRuntime(winform);
 	}
 	
-	//此地址不作任何保证，请修改 web.view.win7installer 为您自己提供的网址。
-	win7installer = "http://d.aardio.com/web-view-109/";
+	//此地址不作任何保证，请修改 web.view.legacyInstaller 为您自己提供的网址。
+	legacyInstaller = "http://d.aardio.com/download/web-view-109/";
 	
 	installRuntime = function(winform){
 		//https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/#download-section
@@ -602,9 +615,9 @@ namespace view{
 		var downloadUrl = "https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617");
 		
 		if(!_WIN10_LATER){ 
-			if(_WIN7_LATER && win7installer){
+			if(_WIN7_LATER && legacyInstaller){
 				
-				downloadUrl  = ..inet.http.get(win7installer);
+				downloadUrl  = ..inet.http.get(legacyInstaller);
 				if(!#downloadUrl) return;
 				
 				if(downloadUrl[[1]] == "="){
@@ -655,15 +668,15 @@ go(.(url,devPort,devTimeout) = 打开 @url 参数指定的网址。\n\n如果提
 preloadScript(__/*JS 脚本*/) = 将 字符串参数@1 指定的 JS 脚本添加为网页默认加载脚本,\n在网页初始化时执行，保证在 window.onload 事件前执行,\n不会覆盖之前添加的脚本
 doScript(__/*JS 脚本*/) = 执行 字符串参数@1 指定的 JS 脚本
 html = @.html = /**\n<!doctype html>\n<html>\n<head>\n    <meta charset="utf-8">\n    <style type="text/css">\n    html,body{ height:100%; margin:0; } __/*将网页写入内存。\n支持 aardio 模板语法，模板的 owner 参数为当前 web.view 对象。\n包含 HTML 的段注释可赋值为字符串，首尾星号数目要一致。\n\n如果要引用其他本地文件，必须改用 wb.go 打开 html 文件。*/\n    </style>\n    <script type="text/javascript"></script>\n</head>\n<body>\n    <div id="header"></div>\n    <div id="container"> \n        <div class="lside"> </div> \n        <div class="rside"> </div>  \n    </div>\n</body>\n</html>\n**/
-export( = 导出aardio函数为JS全局变量\n注意JS调用这里导出的本地函数时，\n传入JS参数通过JSON转换为 aardio对象,\n返回值通过 JSON 转换为 JS 对象\n注意export导出的函数内禁止执行 Javascript
+export( = 导出 aardio 函数为 JS 全局变量\n注意 JS 调用这里导出的本地函数时，\n传入 JS 参数通过 JSON 转换为 aardio对象,\n返回值通过 JSON 转换为 JS 对象\n\n在被网页回调 aardio 函数内执行 JS 时要避免在 JS 中再次回调此 aardio 函数。\n\n被网页回调的 aardio 函数内不要调用可能阻塞的 webView.xcall，webView.eval 函数。\n应改用非阻塞的 webView.invoke 函数，或通过 winform.setTimeout 异步调用 webView.xcall，webView.eval 函数
 export(.(JS变量名,回调函数) = 导出aardio函数为JS全局变量,\n参数也可以使用一个表包含多个需要绑定到JS的变量名值对,值必须是函数。\nJS脚本中调用这里绑定的本地函数返回值为 Promise 对象
 exportHostObject( = 直接导出 aardio 对象到 JavaScript，\n直接转换为 COM 对象，中间不需要经过 JSON 转换,\n用法请参考: https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.705.50#addhostobjecttoscript
 exportHostObject(.(变量名,对象) = 直接导出 aardio 对象到 JavaScript，\n可导出表对象、函数对象、COM 对象等,\n在js中通过 chrome.webview.hostObjects的成员访问此对象,\n中间不会经过JSON转换，而是直接转换为 COM 对象，\n用这个方法导出函数时，\n要特别注意参数中的 JavaScript 对象会被转换为 COM 对象，\n而返回给 JavaScript 的 aardio 对象会被转换为 Promise 对象
 doScript(.(js) = 执行JS代码，\n不指定回调函数时，JS代码放入匿名函数体内执行
 doScript(.(js,callback) = @.doScript(js,function(result){\n	__/*执行JS代码成功在当前界面线程异步回调此函数，\n@result参数为JS代码的返回值*/\n} )
-eval( = 运算 JS 代码并返回值\n返回值使用 JSON 转换为 aardio 值
+eval( = 运算 JS 代码并返回值\n返回值使用 JSON 转换为 aardio 值。\n此函数会阻塞直到调用返回。\n在被网页回调 aardio 函数内调用 webView.xcall，webView.eval 可能导致阻塞，\n应改用非阻塞的 webView.invoke 函数，或用 winform.setTimeout 异步调用 webView.xcall，webView.eval 函数
 eval(.(js,->->->) = 运算JS代码并返回值，\n等待返回值过程中会继续处理界面消息,\n如果指定多个参数，则首先调用 string.format 格式化所有参数
-xcall( = 调用JS函数并返回值。\n如果不需要返回值建议改用 invoke 函数。\n\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值
+xcall( = 调用JS函数并返回值。\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值\n\n此函数会阻塞直到调用返回。\n如果不需要返回值建议改用异步非阻塞的 webView.invoke 函数。\n在被网页回调 aardio 函数内调用 webView.xcall，webView.eval 可能导致阻塞，\n应改用非阻塞的 webView.invoke 函数，或用 winform.setTimeout 异步调用 webView.xcall，webView.eval 函数
 xcall(.("object->func",->->->) = 调用 JS 函数并返回值，\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值。\n\n等待返回值过程中会继续处理界面消息,\n参数@!指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
 invoke( = 调用 JS 函数但不会等待返回值。\n\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值
 invoke(.("object->func",->->->) = 调用 JS 函数但不会等待返回值，\n等待返回值过程中会继续处理界面消息。\n\n参数 @1 指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1最后一个点号前的对象作为调用 JS 函数的 this 参数
@@ -683,7 +696,7 @@ waitEle(.(selector,callback,timeout) = 异步等待网页创建指定节点\n@se
 waitEle(.(selector,js,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n找到节点执行参数@2指定的 JavaScript 代码,\n执行JS代码时自动绑定this对象为找到的节点,\n可选用参数@3指定超时，单位毫秒
 adjust() = 调整页面大小到适合窗口
 external = @.external = {
-	__/*导出为 JavaScript 中可访问的全局对象 aardio\nJS中该对象的所有成员都是 Promise 对象。\n\n通过此对象调用 aardio 函数时参数中的 JS 对象会转换为 COM 对象，\n而返回给 JS 的 aardio 对象会被转换为 Promise 对象*/
+	__/*导出为 JavaScript 中可访问的全局对象 aardio\nJS中该对象的所有成员都是 Promise 对象。\n\n通过此对象调用 aardio 函数时参数中的 JS 对象会转换为 COM 对象，\n而返回给 JS 的 aardio 对象会被转换为 Promise 对象\n\n被网页回调的 aardio 函数内不要调用可能阻塞的 webView.xcall，webView.eval 函数。\n应改用非阻塞的 webView.invoke 函数，或通过 winform.setTimeout 异步调用 webView.xcall，webView.eval 函数*/
 }
 onFullScreen = @.onFullScreen = lambda(enabled) owner.fullscreen(enabled);__/*响应网页全屏事件，\n参数 enabled 表示网页是否请求全屏，此函数忽略返回值。\n设为 null 移除事件*/
 fullscreen(__) = 全屏。\n参数指定是否全屏，不指定参数则切换全屏。\n返回值为当前是否全屏
@@ -707,6 +720,8 @@ hwndChrome = 网页窗口句柄
 cdpSubscribe( = 订阅 CDP 事件
 cdpSubscribe(.(事件名,回调函数) = 回调函数的参数为参数表对象。\n如果回调函数返回一个函数，则先结束事件，然后异步执行该函数。\n调用此函数总是会取消之前订阅的同名事件。\n如果回调函数为 null，则仅取消订阅
 onNewWindow(callback) = @.onNewWindow = function(url){\n	__/*返回 false 继续打开新窗口。\n返回 true 阻止打开新窗口。\n返回函数则阻止打开新窗口，并异步执行该函数。\n耗时或阻塞浏览器控件的操作应放入返回的异步函数内执行*/\n}
+setTimeout( = 推迟执行指定的函数或代码。\n此函数异步执行参数中指定的函数，不会阻塞当前代码继续执行。\n\n网页回调 aardio 函数时，\n如果要使用 webView.eval, webView.xcall 等阻塞调用网页的函数，\n应通过 setTimeout 函数异步调用
+setTimeout(.(函数或代码,延时,其他附加参数) = 延时参数是可选参数，以毫秒为单位，默认为0毫秒。\n可选用附加参数指定调用延时函数的实参。\n返回值为定时器 ID
 end intellisense****/
 
 /**details(必读)
@@ -720,7 +735,7 @@ Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 We
 WebView2 属于公共运行库，如果系统已安装就不需要再安装了。
 未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。
 
-在网页上点右键菜单可以打开网页开发工具（ DevTools ），
-在开发工具的「设置 / 语言」界面可切换开发工具的界面语言。
-在 DevTools 控制台可查看程序错误信息。
+在网页上点右键菜单项（Inspect / 检查）或按 F12 键可以打开网页开发工具（ DevTools ），
+在开发工具的「设置 / 语言」（Settings / Language」）界面可切换开发工具的界面语言。
+在 DevTools 控制台（Console）可查看程序错误信息。
 end details**/

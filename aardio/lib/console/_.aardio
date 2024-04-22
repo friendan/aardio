@@ -644,9 +644,19 @@ box = function(x,y,x2,y2,clr,title){
 	return x,y,x2,y2;
 }
 
-readOutputCharacter = function(){
-	var buffer = {WORD value[1000]}
-	var ok = ::Kernel32.ReadConsoleOutputCharacterW( getOutputHandle(),buffer,1000,0,{INT charsRead})
+readOutputCharacter = function(size){
+	if(size===null){
+		var csbi = CONSOLE_SCREEN_BUFFER_INFO(); 
+	
+		::Kernel32.GetConsoleScreenBufferInfo(getOutputHandle(),csbi)
+		size = csbi.size.x * csbi.size.y;
+	}
+
+	
+	var buffer = ..raw.toarray(size:1000,"WORD","value");
+	buffer.value = null;
+	
+	var ok = ::Kernel32.ReadConsoleOutputCharacterW( getOutputHandle(),buffer,size:1000,0,{INT charsRead})
 	return ..string.trim(buffer.value);
 }
 
@@ -869,7 +879,7 @@ getInputHandle() = 标准输入句柄
 getErrorHandle() = 错误输出句柄
 getCodePage() = 获取输入代码页,输出代码页
 setCodePage(.(输入代码页,输出代码页) = 设置代码页\n应在打开控制台后使用该函数
-readOutputCharacter() = 读取标准输出缓冲区文本
+readOutputCharacter() = 读取标准输出缓冲区文本。\n可选用参数 @1 指定要读取的缓冲区大小，\n如果不指定则自动获取缓冲区长度
 setColor(.(前景色,背景色) = 设置控制台前景色与背景色\n参数必须使用 console.color 的成员值\n无参数恢复默认颜色
 getTextAttribute() = 获取控制台文本颜色,\n返回颜色值为 背景色 * 0x10 + 前景色
 setTextAttribute( = 设置文本前景色与背景色,\n设置整个窗口的背景色请使用 console.setColor;

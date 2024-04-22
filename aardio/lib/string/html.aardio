@@ -135,7 +135,7 @@ fromText = function(v){
 ncr =  ..string.xml.ncr;
 /**intellisense()
 string.html = HTML简单解析器\n\n严格的校验HTML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写\n支持识别HTML空标签、省略闭合标签规则
-string.html(__) = 创建HTML解析器,参数请指定包含HTML代码的字符串,\n调用string.xml解析HTML代码,用法与string.xml相同\n但支持识别HTML空标签、省略闭合标签规则
+string.html(__) = 创建HTML解析器,参数请指定包含HTML代码的字符串,\n调用string.xml解析HTML代码,用法与string.xml相同\n但支持识别HTML空标签、省略闭合标签规则\n\n此对象不支持 table.tostring , console.dump 函数，不能跨线程传递
 string.html() = !string_xml.
 string.html.ncr(__) = NCR字符编码、HTML实体字符还原为UTF8文本
 string.html.toText(__/*HTML代码*/) = 将HTML代码转换为文本

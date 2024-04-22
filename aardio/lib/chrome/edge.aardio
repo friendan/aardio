@@ -14,12 +14,11 @@ class app{
 	}; 
 }
 
-
 getPath = function(){
     if(!_WIN7_LATER) return;
     
 	var path = ..chrome.path.findPath({"msedge.exe"})
-	if(!path){
+	if(_WIN10_LATER && (!path)){
 		..chrome.path.installChrome();
 		path = ..chrome.path.findPath({"msedge.exe"})
 	}
@@ -28,7 +27,7 @@ getPath = function(){
 } 
 
 /**intellisense()
-chrome.edge.app = 调用系统已安装的 Edge Chromium 创建应用程序，\n如果没有该浏览器会自动下载安装，\n仅支持 WIN7 以及 WIN7 以后的系统，不支持 WIN XP
+chrome.edge.app = 调用系统已安装的 Edge Chromium 创建应用程序，\n如果没有该浏览器会自动下载安装，\n仅支持 Win10 以及 Win10 以后的系统，不支持 Win XP。\nWin7 必须自行安装 Edge Chromium 109 ，无法自动安装
 chrome.edge.app(.(父窗口) = 调用系统已安装的 Edge Chromium 创建应用程序，\n如果没有该浏览器会自动下载安装\n!processchromeapp.
 chrome.edge.app() = !processchromeapp.
 chrome.edge.getPath() = 返回Edge Chromium路径，\n如果没有该浏览器会自动下载安装

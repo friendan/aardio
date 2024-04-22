@@ -1365,16 +1365,16 @@ getInfo( = 获取进程信息
 getInfo(.(handle) = 获取进程信息，参数 @1 指定进程句柄
 getInfo(.(handle,infoClass,infoStruct) = 参数 @1 指定进程句柄。\n如果参数 infoClass 指定非 null 数值，\n并且 infoStruct 指定结构体。\n在 Win8 以及之后系统获取信息到该结构体。\n成功返回原结构体
 getInfo() = !stdProcessInfo.
-shellAs( = 以管理权限运行exe应用程序,返回进程对象
-shellAs(.("__", parameters="",showCmd,workDir,hwnd,fmask) = 参数@1指定要运行的执行程序路径,\n参数@2可用一个字符串或字符串数组指定启动参数,\n其他参数详细用法请参考本函数源码以及WINAPI中ShellExecuteEx函数用法\n除参数@1以外所有参数可选
+shellAs( = 以管理权限运行 EXE 应用程序,返回进程对象
+shellAs(.("__", parameters="",showCmd,workDir,hwnd,fmask) = 参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数。\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
 shell( = 运行exe应用程序,返回进程对象
-shell(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 参数@1指定要运行的执行程序路径,\n参数@2可用一个字符串或字符串数组指定启动参数,\n其他参数详细用法请参考本函数源码以及WINAPI中ShellExecuteEx函数用法\n除参数@1以外所有参数可选
-executeEx(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 运行exe应用程序,返回SHELLEXECUTEINFO结构体,\n参数@1指定要运行的执行程序路径,\n参数@2可用一个字符串或字符串数组指定启动参数,\n其他参数详细用法请参考本函数源码以及WINAPI中ShellExecuteEx函数用法\n除参数@1以外所有参数可选
+shell(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数,\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
+executeEx(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 运行 EXE 应用程序,返回 SHELLEXECUTEINFO 结构体,\n参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数。\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
 execute( = 运行exe应用程序,成功返回进程ID,\n参数详细用法请参考本函数源码以及 WINAPI 中 ShellExecuteEx 函数用法\n运行 UWP 应用请使用 com.shell.activateApp 函数\n\nraw.execute 提供了与本函数类似的功能
-execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数@1为程序路径或系统命 令\n参数@parameters 可以是字符串或字符串数组，用于指定启动参数,\n参数@operation 为启动模式\n参数@showCmd使用_SW_前缀常量与win.show参数用法相同\n参数@workdir为工作目录\n参数@hwnd 为父窗口句柄
-executeWait(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待应用程序关闭\n除参数@1以外所有参数可选
-executeWaitInput(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待进程初始化完成并接受输入\n除参数@1以外所有参数可选
-executeInvoke(.(path, parameters,operation,showCmd,workDir,hwnd) = 创建临时的后台线程运行应用程序\n在打开网址前退出主线程可能无法执行操作,\n参数与process.execute函数用法一样,除指定参数@1或参数@2,其他所有参数可选
+execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数 @1 为程序路径或系统命令。\n\n可选参数 @parameters 可以是字符串或字符串数组，用于指定启动参数。\n如果指定数组则由 process.joinArguments 自动处理转义并支持命名参数。\n如果启动参数只指定一个文件路径，为避免可能包含空格或以反斜杆结尾等需要转义的情况，\n建议写为 process.execute(exePath,{path}) 这种格式，让 aardio 自动处理转义。\n\n可选参数 @operation 为启动模式\n可选参数 @showCmd 使用 _SW_ 前缀常量，与win.show参数用法相同。\n可选参数 @workdir 为工作目录\n可选参数 @hwnd 可指定父窗口句柄
+executeWait(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待应用程序关闭\n除参数@1以外所有参数可选，所有参数用法与 process.execute 相同
+executeWaitInput(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待进程初始化完成并接受输入\n除参数@1以外所有参数可，所有参数用法与 process.execute 相同
+executeInvoke(.(path, parameters,operation,showCmd,workDir,hwnd) = 创建临时的后台线程运行应用程序\n在打开程序前退出主线程可能无法执行操作,\n参数与 process.execute 函数用法一样,除指定参数@1或参数@2,其他所有参数可选
 openUrl(__) = 调用默认浏览器打开网址,用于窗口程序,\n如果不用这个方法创建线程去打开网址,可能会出现界面卡顿不流畅的现象,\n在打开网址前退出主线程可能无法执行操作\n控制台程序应调用 process.execute 以避免后台线程不能阻止控制台关闭
 exploreSelect("__/*文件路径*/") = 打开资源管理器,选定该文件
 explore("__/*目录路径*/") = 使用资源管理器打开目录\n打开WIN10应用这样写:process.explore("shell:appsFolder\appPath")\n使用 com.shell.eachApp 可列出WIN10所有appPath

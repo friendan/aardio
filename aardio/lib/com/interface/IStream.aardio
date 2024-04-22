@@ -22,5 +22,5 @@ class IStream{
 IStream.IID = "{0000000c-0000-0000-C000-000000000046}";
 
 /**intellisense()
-com.interface.IStream = IStream
+com.interface.IStream = IStream 接口。\n用 fsys.stream 可更方便地操作 IStream 接口对象
 end intellisense**/

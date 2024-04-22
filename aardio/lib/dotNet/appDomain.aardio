@@ -156,6 +156,7 @@ class appDomain{
 									} 
 									else {
 										if(!owner[["_dotNetObject"]]){
+											if(methodName==="length") return null;//table.type 取 length 
 											owner[[methodName]] = asm[["import"]](typeName + "." + methodName); 
 										}
 										else {
@@ -164,8 +165,8 @@ class appDomain{
 												owner[[methodName]] = asm[["import"]](typeName + "+" + methodName); 
 												..com.Release(memberType);
 											} 	
-											else {//函数
-												return invoke(owner@._get,owner,methodName,true);
+											else { 
+												return ..table.getCall(owner,methodName);
 											}
 										}
 									}
@@ -356,8 +357,9 @@ class appDomain{
 		} 
 	};
 	object = function(v,ref){
-		if(v[["_dotNetObject"]]) return v;
-		return { _dotNetObject = this.utility.CreateAnyObject(v,ref); _dotNetAppDomain = this; 	@_objectMeta; 	} 
+		if(v[["_dotNetObject"]] && !ref) return v;
+		if(!IsNetObject(v) || ref)  v = this.utility.CreateAnyObject(v,ref);
+		return { _dotNetObject = v; _dotNetAppDomain = this; @_objectMeta; 	} 
 	};
 	byte = function(v,ref){
 		return this.object(..com.byte(v),ref);	
@@ -413,7 +415,7 @@ class appDomain{
 			for(i=1;#tab){
 				v = tab[i];
 				t = type(v);
-				if(t = "function") list.Add( this.safeCallback(v) );  
+				if(t = "function" || t = "class" ) list.Add( this.safeCallback(v) );  
 				elseif(t = "table" && #v && v[1][["_dotNetObject"]]) {
 					var arr = this.createArray(v[1].GetType(),#v);
 					for(i=1;#v;1) arr[i] = v[i]; 
@@ -884,9 +886,9 @@ load(.("程序集名") = 使用当前线程默认应用程序域载入并返回�
 load(.("程序集名",虚拟程序集数据或路径) = 首先在『虚拟程序集引用表』中注册程序集名，\n参数 @2 指定对应的内存 DLL 数据或 DLL 路径（支持 EXE 内嵌资源）。\n然后再调用 load 函数加载并返回该虚拟程序集
 loadFile( = 使用当前线程默认应用程序域载入程序集（DLL）。\n参数可以是 DLL 路径，内存 DLL，或 EXE 内嵌资源。\n此函数并不支持 『虚拟程序集引用表』，无法在内存添加依赖 DLL\n程序集如果引用了自身路径必须改用 load 函数加载
 loadFile(.("程序集路径") = 使用当前线程默认应用程序域载入程序集,\n参数可以是 DLL 路径，内存 DLL，或 EXE 内嵌资源。\n\n在路径字符串前加$符号可将文件编译并嵌入 aardio 代码,\n可选在第2个参数中指定pdb调试数据或pdb调试文件路径
-import( = 加载参数@1指定名字的程序集\n将 参数@1指定的名字空间或类导入 aardio 全局名字空间。\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n在同一程序集中不会重复导入名字空间。\n\n如果程序集用其他函数加载，则有可能重复导入名字空间,\n重复导入 .NET 名字空间不会修改已存在的全局名字空间，\n但此函数总是会返回当前调用实际创建的名字空间
-import(.(名字空间) = 加载参数@1指定名字的程序集\n将 参数@1指定的名字空间或类导入 aardio 全局名字空间。\n必须指定完整名字空间,不传入参数则默认指定参数为程序集名称。\n\n返回名字空间可作为类构造函数调用并创建对象\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n重复导入 .NET 名字空间不会修改已存在的全局名字空间，\n但此函数总是会返回当前调用实际创建的名字空间
-import(.(名字空间,程序集名) = 加载参数@2指定名字的程序集\n将 参数@1指定的名字空间或类导入 aardio 全局名字空间。\n必须指定完整名字空间,不传入参数则默认指定参数为程序集名称。\n\n返回名字空间可作为类构造函数调用并创建对象\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n重复导入 .NET 名字空间不会修改已存在的全局名字空间，\n但此函数总是会返回当前调用实际创建的名字空间
+import( = 加载程序集，导入 .NET 名字空间、类、枚举。\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n同一程序集中不会重复导入相同的名字空间。 \n\n如果已存在同名的全局名字空间但元表为空（并未导入 .NET 名字空间），\n则导入 .NET 名字空间到已存在的名字空间。\n\n如果已存在同名的全局名字空间但元表非空（通常为已导入的  .NET 名字空间 ），\n则不会覆盖已存在的名字间，而是在返回值返回当前调用实际创建的名字空间。
+import(.(名字空间) = 加载参数 @1 指定文件名的程序集，并导入同名的 .NET 名字空间或类。\n当程序集文件名与导入名字相同时，可以省略 指定程序集名称的参数 @2。\n\n返回名字空间可作为类构造函数调用并创建对象。\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n导入的 .NET 名字空间在正常访问其成员时会触发元方法以获取并创建下级名字空间、类、枚举等。\n但导入名字空间的函数（以及 namespace 语句）创建的上级名字空间并不会主动导入同名 .NET 名字空间\。\n\n此函数会尽可能重用已存在的 aardio 全局名字空间导入 .NET 名字空间。\n如果该全局名字空间已导入其他 .NET 名字空间则不会覆盖已存在的名空间。\n此函数总是会返回当前调用实际创建的名字空间。
+import(.(名字空间,程序集名) = 加载参数@2指定文件名字的程序集\n将 参数@1指定的空间、类、枚举等导入 aardio 全局名字空间。\n必须指定完整名字空间。\n\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n同一程序集中不会重复导入相同的名字空间。 \n\n返回名字空间可作为类构造函数调用并创建对象。\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n导入的 .NET 名字空间在正常访问其成员时会触发元方法以获取并创建下级名字空间、类、枚举等。\n但导入名字空间的函数（以及 namespace 语句）创建的上级名字空间并不会主动导入同名 .NET 名字空间。\n\n此函数会尽可能重用已存在的 aardio 全局名字空间导入 .NET 名字空间。\n如果该全局名字空间已导入其他 .NET 名字空间则不会覆盖已存在的名空间。\n此函数总是会返回当前调用实际创建的名字空间
 import() = !dotNetNameSpace.
 load() = !dotNetCrlAssembly.
 loadFile() = !dotNetCrlAssembly.
@@ -911,8 +913,8 @@ reference( = 在『虚拟程序集引用表』注册一个或多个虚拟程序�
 reference(.(simpleAssemblyName,pathOrData) = 在『虚拟程序集引用表』注册虚拟程序集（DLL）。\n@simpleAssemblyName 指定程序集短名称（虚拟 DLL 文件名）\n@pathOrData 指定程序集路径或内存数据，支持内嵌资源路径\n@pathOrData 也可以是返回程序集路径或数据的回调函数
 reference(.(assemblyName2pathOrData) = 在『虚拟程序集引用表』注册多个虚拟程序集（DLL）。\n@assemblyName2pathOrData 指定一个表：\n表的「键」为虚拟程序集短名称（ DLL 文件名 ），\n\n键对应的「值」指定程序集内存数据或程序集路径（支持内嵌资源）
 wrapObject(__) = 如参数是原生 .NET 对象,则返回 dotNet.object 对象，否则直接返回参数。\n\n所有 .NET 原生对象已经自动转换为 dotNet.object 对象，\n除非 .NET 调用普通 aardio 对象的成员函数而非回调特定的委托或事件函数。\n这时候回调参数中的 .NET 对象需要用此函数转换，但数值和字符串不需要转换。\n\n参数传入 com.IsNetObject 函数会返回非 0 值即为原生 .NET 对象，\n非原生 .NET 对象转换为 dotNet.object 应当直接调用 dotNet.object 函数。
-object( = 转换参数指定的 aardio 值或数组为 dotNet.object 对象
-object(.(value,byRef) = 转换参数 @value 指的的 aardio 值或数组为 .NET 对象。\n参数 @byRef 为 true 则支持 .NET 的输出或引用参数\n\n参数如果是 .NET 原生对象,\n也就是传入 com.IsNetObject 会返回非 0 值,\n不应传入此函数,而应改用 dotNet.wrapObject 函数\n所有 .NET 返回的对象已经自动调用 dotNet.wrapObject 转换为 dotNet.object 对象
+object( = 转换参数 @1 指定的 aardio 值或数组为 .NET 原生 DispatchableObject 对象，\n并返回为 aardio 可操作的 dotNet.object 对象。\n\n也可用于转换 原生 .NET 对象为 dotNet.object ，\n或转换 dotNet.object 为支持引用 dotNet.object。\n\ndotNet.object 如果存储的是 Primitive,enum,string 类型或这些类型的数组，\n则可以使用 Value 属性读写值。\n\ndotnet.object 对象支持用 tostring 转换为字符串，\n如果存储的是数值则支持调用 tonumber 函数转为普通数值。
+object(.(value,byRef) = 参数 @byRef 为 true 则支持 .NET 的输出或引用参数\n\n参数 @value 如果指定纯 aardio 对象或数组。\n则转换为 .NET 原生 DispatchableObject 对象，并封装为 dotNet.object 后返回。\n\n如果参数 @1 指定 dotNet.object 对象且参数 @2 不为 true 则直接返回。\n如果参数传入原生 .NET 对象且参数 @2 不为 true 则仅转换为 dotNet.object。\n如果参数 @2 为 true，则这些对象都会转换为 DispatchableObject 并返回新的 dotNet.object
 byte( = 创建 .NET System.SByte 类型数值或数组
 byte(.(value,byRef) = 创建 .NET System.SByte 类型数值或数组，\n用于存储8位整数。\n\n参数 @value 可以为数值或数组，\n参数 @byRef 为 true 则支持 .NET 的输出或引用参数
 ubyte( = 创建 .NET System.Byte 类型数值或数组

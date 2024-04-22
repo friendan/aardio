@@ -43,17 +43,35 @@ HTTP 接口对象的每个下级成员名都追加在网址尾部
 var ret = api.name.get( a = 1,b = 2);
 
 //发送 POST 请求
-var ret = api.name.post( a = 1,b = 2);
+//var ret = api.name.post( a = 1,b = 2);
 
 //发送 PATCH 请求
-var ret = api.name.patch( a = 1,b = 2);
+//var ret = api.name.patch( a = 1,b = 2);
 
 //发送 PUT 请求
-var ret = api.name.put( a = 1,b = 2);
+//var ret = api.name.put( a = 1,b = 2);
 
 //发送 DELETE 请求
-var ret = api.name.delete( a = 1,b = 2);
+//var ret,err = api.name.delete( a = 1,b = 2);
 
-//输出服务端返回对象 —— 这个接口返回的是 HTTP 请求信息 
-console.dumpJson(ret);
+//第一个返回值可转换为逻辑真表示 API 调用成功
+if(ret){
+	//输出服务端返回对象 —— 这个接口返回的是 HTTP 请求信息 
+	console.dumpJson(ret);
+}
+else {
+	//err 为错误信息（字符串）
+	console.log(err) //可能为本地错误，也可能是服务器应答的错误信息
+	
+	/*
+	返回服务器应答的错误对象，如果也是此客户端可解析的响应格式（这里指 JSON ）则解析并返回解析结果。
+	如果发生了其他错误，服务器并未应答则返回 null 。
+	如果请求成功则返回 null 。
+	*/
+	var errObject = http.lastResponseError();
+	
+	//也要吧指定要返回的字段，如果找不到返回 null ，不会抛出异常
+	var errorMessage = http.lastResponseError("error");
+}
+
 console.pause();

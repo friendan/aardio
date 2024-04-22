@@ -3,7 +3,9 @@ import console;
 import dotNet;
  
 //导入程序集与名字空间 https://docs.microsoft.com/zh-cn/dotnet/api/?view=netframework-2.0
-dotNet.import("System"); 
+dotNet.import("System"); //System 也可以用 import System 导入
+
+//=============================================================================
 
 //调用类的静态成员函数，当然也可以这样读写类的其他静态成员属性。
 var isValidHost = System.Uri.CheckHostName("www.aardio.com") 
@@ -16,9 +18,18 @@ console.log( uri.Host )
 
 //调用 .NET 对象实例的成员函数
 console.log( uri.GetHashCode() )
- 
+
 //.NET 对象还可以用 tostring 转换为字符串
 console.log( tostring(uri) ) //这里的 tostring可以省略。
+
+//=============================================================================
+
+//获取 .NET 实例对象的成员函数并保存到其他变量必须这样写
+var GetHashCode = table.getCall(uri,"GetHashCode");
+//或者 var GetHashCode = lambda(...) uri.GetHashCode(...)
+
+//但静态函数可以直接赋值到其他变量，例如：
+var CheckHostName = System.Uri.CheckHostName;
 
 console.pause(); 
 

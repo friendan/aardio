@@ -1,0 +1,166 @@
+﻿//cmdline.argv2 命令行参数
+
+import string.cmdline;
+
+namespace string.cmdline;
+
+class argv2{
+	ctor(cmd,opt){
+		var cmdline = ..string.cmdline(cmd); 
+		
+		var n1,n2;
+		var p1,p2;
+		var nn1;
+		
+		var r = {}
+		for(i=1;#cmdline){
+			n2 = cmdline[i];
+			p2 = n2[1]
+			
+			if(n1 && p2!=p1) {
+				r[n1] = n2; 
+				
+				if(opt ? type(opt[n1])=="function"){
+					opt[n1]( n2 : "",r );
+				} 
+			}
+			elseif(p2=='-'# || p2=='/'#){
+				if(n2="--" || n2="//" ){
+					for(j=i+1;#cmdline;1){
+						..table.push(r,cmdline[j]);
+					}
+					
+					return r;
+				}
+				
+				if(opt ? nn1 ? type(opt[nn1])=="function"){
+					opt[nn1]( "",r ); 
+				} 
+				nn1 = null;
+				
+				n2 = ..string.trimleft(n2,n2[[1]]);
+				if( #n2>1 && p2=='-'# && n2[1]!='-'# ){
+					if( opt ? ..table.some(opt,function(v2,k2){ 
+						..console.log("-->",n2,k2)
+						if( ..string.startWith(n2,k2) ){
+							k = k2;
+							v = ..string.right(n2,-#k2-1)
+							
+							r[k] = v : "";
+					
+							if(type(v2)=="function"){
+								v2( v : "",r );
+							} 
+							
+							return true;
+						}
+					}) ){
+						
+						
+						n1 = null;
+						p1 = null;
+						continue;
+					}
+					
+
+					var k,v = ..string.match(n2,"([a-zA-Z])(\S*)") 
+	 				
+					if(k && v ){
+						var items = ..string.split(v); 
+						if( opt ? ..table.every(items,lambda(v2)opt[v2]) ){
+							for(i,v2 in items){
+								r[v2] = "";
+								if(type(opt[v2])=="function") opt[v2]("",r); 
+							} 
+						}
+						else{
+							r[k] = v : "";
+						
+							if( opt ? type(opt[k])=="function"){
+								opt[k]( v : "",r );
+							} 
+						}
+						
+						n1 = null;
+						p1 = null;
+						continue;
+					}
+
+				}
+				
+				var k,v = ..string.match(n2,"(.+?)\=(.+)");
+				if(k && v){
+					r[k] = v;
+					
+					if(opt ? type(opt[k])=="function"){
+						opt[k]( v : "",r);
+					} 
+				}
+				else{
+					r[n2] = ""
+					n1 = n2;
+					nn1 = n1;
+					p1 = p2; 
+					continue;
+				}
+			}
+			else {
+				..table.push(r,n2);
+			} 
+		
+			n1 = null;
+			p1 = null;
+		}
+		
+		if(opt ? nn1 ? type(opt[nn1])=="function"){
+			opt[nn1]( "",r ); 
+		} 
+		return r; 
+	}; 
+}
+
+/*****intellisense()
+string.cmdline.argv2( = 解析命令行并返回参数表。\nstring.cmdline.argv 函数的增强版本。\n\n命令行基础转义规则请参考 string.cmdline 文档说明。\n解析时忽略索引为 0 的参数，解析 _CMDLINE 时应在前面补上空格避免忽略第一个参数
+string.cmdline.argv2(.("命令行",option) =  所有非命名参数都会添加到返回参数表的数组成员。\n-- 或 // 之后的参数都视为非命名参数。\n\n命名参数解析规则如下： \n1、参数名区分大小写\n2、以斜杠或短横线开始的前导参数作为键名(键名移除一个或多个相同的前导字符，区分大小写)，\n   如果前导参数包含等号，则以等号拆分为键值对，等号前后不应有空格，\n   否则检查下一参数如果没有相同的首字符则设为此键名对应的值，\n   如果一个前导参数没有指定值，则默认值为空字符串（逻辑值为 true）。\n3、单个 - 开头的命名参数解析为短参数。\n   短参数可以用空格分隔参数值，也可以省略分隔符（等号不作为分隔符）。\n\n可在第 2 个调用参数中指定一个 @option 选项表。\n@option 的所有键名用于指定待解析的命令行参数名字。\n@option 预定义的单字符或多字符名字可作为短参数名、长参数名使用。\n@option 预定义的单字母参数名允许作为短参数名合并到一个参数段。\n\n@option 中参数名对应的值可以为任何非 false 值。\n如果 @option 表中定义的值是函数，则每次解析对应名称参数时都会回调该函数。\n回调参数 @1 为解析得到的参数值，而回调参数 @2 为将要返回的解析结果（参数表）。   
+end intellisense*****/
+
+/**details(参数解析规则)
+命令行基础转义规则请参考 string.cmdline 文档说明。
+解析时忽略索引为 0 的参数，解析 _CMDLINE 时应在前面补上空格避免忽略第一个参数。
+
+所有非命名参数都会添加到返回参数表的数组成员。
+-- 或 // 之后的参数都视为非命名参数。
+
+命名参数解析规则如下：
+
+1、参数名区分大小写
+2、以斜杠或短横线开始的前导参数作为键名(键名移除一个或多个相同的前导字符，区分大小写)，
+   如果前导参数包含等号，则以等号拆分为键值对，等号前后不应有空格，
+   否则检查下一参数如果没有相同的首字符则设为此键名对应的值，
+   如果一个前导参数没有指定值，则默认值为空字符串（逻辑值为 true）。
+3、单个 - 开头的命名参数解析为短参数。
+   短参数可以用空格分隔参数值，也可以省略分隔符（等号不作为分隔符）。
+
+可在第 2 个调用参数中指定一个 @option 选项表。
+@option 的所有键名用于指定待解析的命令行参数名字。
+@option 预定义的单字符或多字符名字可作为短参数名、长参数名使用。
+@option 预定义的单字母参数名允许作为短参数名合并到一个参数段。
+
+@option 中参数名对应的值可以为任何非 false 值。
+如果 @option 表中定义的值是函数，则每次解析对应名称参数时都会回调该函数。
+回调参数 @1 为解析得到的参数值，而回调参数 @2 为将要返回的解析结果（参数表）。 
+
+示例：
+
+```
+var argv = string.cmdline.argv2(` -a -deffff  "c:\test.txt" "c:\test2.txt"`,{
+    m = true;
+    n = function(value,argv){
+
+    } 
+});
+
+console.dump(argv)
+```
+
+end details**/

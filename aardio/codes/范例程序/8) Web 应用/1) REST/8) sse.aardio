@@ -18,6 +18,15 @@ var url = wsock.tcp.simpleHttpServer.startUrl(function(response,request,session)
  
   		sleep(1000);
 	} 
+	
+	/*
+	//推送 ndjson 流
+	response.contentType = "application/x-ndjson";
+	while (true) {    
+ 		response.write( { time = time() },'\n' )
+  		sleep(1000);
+	} 
+	*/
 })
 
 thread.invoke( 
@@ -29,7 +38,7 @@ thread.invoke(
 		
 		//参数 @2 或 参数@3 指定接收数据回调函数则自动支持 SSE，兼容 ndjson 流。
 		eventSource.get( , function(message){   
-			//注意这里的 message 已经由 JSON 解析为对象
+			//注意这里的 message 已经由 JSON 解析为单个对象
 			winform.edit.print("HTTP 服务端推送了事件",type(message))
 			winform.edit.print(message);
 		} ) 
