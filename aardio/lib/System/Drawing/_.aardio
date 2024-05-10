@@ -2,5 +2,5 @@
 dotNet.import("System.Drawing");
 
 /**intellisense()
-System.Drawing = .Net System.Drawing 名字空间\n!dotNetNameSpace.
+System.Drawing = .NET System.Drawing 名字空间\n!dotNetNameSpace.
 end intellisense**/

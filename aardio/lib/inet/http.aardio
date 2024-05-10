@@ -330,6 +330,8 @@ class http{
 		
 			if( name && ! ..string.startWith(line,name,true) ) continue;
 			kv = ..string.splitEx(line,"\s*\:\s*",2);  
+			if(#kv<2) continue;
+			
 			k = ..string.lower(kv[1])
 			if(!list[k]) list[k] = {};
 			..table.push(list[k],kv[2]); 
@@ -470,7 +472,11 @@ class http{
 		return url;
 	};
 	down = function(url,postdata,headers,referer,accept,method,flags,connectFlags,noReceiveData){  
-		if( method === null ) method = "GET";
+		if( method === null ) method = "GET"; 
+		elseif( (#method > 4) && (..string.left(method,4) == "HEAD") ){
+			method = ..string.right(method,-5); //例如 "HEADGET","HEADPOST"
+			noReceiveData = true;
+		}
 		
 		if( method == "GET" && #postdata ){
 			url = ..inet.url.appendExtraInfo(url,postdata);
@@ -815,9 +821,9 @@ inet.http() = !inet_http.
 !inet_http.responseContentEncoding = 应答HTTP头的Content-Encoding值\n如果该值为"gzip",通过readAll函数一次读取下载数据时会自动解压,\n解压后该值将设为null值
 !inet_http.responseHeaders = 无参数调用 readHeader 函数时会保存HTTP头在该属性中\n即使在请求结束以后，所有读取HTTP头的函数都可以继续使用\n调用head函数发送请求时会自动读取所有HTTP头到该属性中\n该属性值每次发送新的请求前会自动清空
 !inet_http.readHeader( = 获取返回的HTTP头
-!inet_http.readHeader(.() = 获取返回的HTTP头,必须在send发送请求以后才能调用此函数,\n如果调用head函数发送请求,则请求结束该函数仍然可用\n如果是调用get,post,down等函数,可以在afterSend事件中调用此函数\n返回的HTTP头以回车换行作为分隔符\n如果无参数调用了此函数，则直到下次请求以前，HTTP响应头会保存在responseHeaders属性中，\n即使在请求结束以后，所有读取HTTP头的函数都可以继续使用
-!inet_http.readHeader(.("Content-Length:") = 获取指定的HTTP头,参数指定HTTP头名字或部分名字,忽略冒号以后部分,\n该函数在调用send函数以后或afterSend事件中可用\n必须在send发送请求以后才能调用此函数\n调用head函数发送请求成功以后,则请求结束后该函数仍然可用\n如果是调用get,post,down等函数,可以在afterSend事件中调用此函数
-!inet_http.readHeaderList("set-cookie__") = 获取指定HTTP头开始段的HTTP头,不忽略冒号以后部分,参数可省略,\n返回键值对组成的表对象,键名小写,每个值都是一个数组\n必须在send发送请求以后才能调用此函数\n如果调用head函数发送请求,则请求结束该函数仍然可用\n如果是调用get,post,down等函数,可以在afterSend事件中调用此函数
+!inet_http.readHeader(.() = 获取服务器返回的 HTTP 响应头，\n必须在 send 发送请求以后才能调用此函数。\n如果调用 get,post,down 函数可在 afterSend 事件中调用此函数。 \n\n默认在请求结束后此函数不可用。\n除非调用 head 函数发送请求，或调用 down 函数指定不返回数据，\n则请求结束 readHeader 等读取 HTTP 头的函数仍然可用。\n\n如果无参数调用了此函数，则返回全部请求头（以回车换行作为分隔符）。\n并且直到下次请求以前，HTTP 响应头都会缓存在 responseHeaders 属性中，\n后续就可以自由使用所有读取 HTTP 头的函数
+!inet_http.readHeader(.("Content-Length:") = 获取单个指定的 HTTP 服务器响应头，返回字符串。\n参数指定HTTP头名字或部分名字，忽略大小写，忽略冒号以后部分。\n\n必须在 send 发送请求以后才能调用此函数。\n如果调用 get,post,down 函数可在 afterSend 事件中调用此函数。 \n\n默认在请求结束后此函数不可用。\n除非调用 head 函数发送请求，或调用 down 函数指定不返回数据，\n则请求结束 readHeader 等读取 HTTP 头的函数仍然可用。\n\n如果无参数调用了此函数，则返回全部请求头（以回车换行作为分隔符）。\n并且直到下次请求以前，HTTP 响应头都会缓存在 responseHeaders 属性中，\n后续就可以自由使用所有读取 HTTP 头的函数
+!inet_http.readHeaderList("__") = 获取所有指定字符串作为开始段的 HTTP 头。\n忽略大小写，不忽略冒号以后部分。\n不指定参数则读取全部响应头。\n返回键值对组成的表对象，键名转为小写，每个值都是一个数组。\n必须在 send 发送请求以后才能调用此函数。\n如果调用 get,post,down 函数可在 afterSend 事件中调用此函数。 \n\n默认在请求结束后此函数不可用。\n除非调用 head 函数发送请求，或调用 down 函数指定不返回数据，\n则请求结束 readHeader 等读取 HTTP 头的函数仍然可用。\n\n如果无参数调用了此函数，则返回全部请求头（以回车换行作为分隔符）。\n并且直到下次请求以前，HTTP 响应头都会缓存在 responseHeaders 属性中，\n后续就可以自由使用所有读取 HTTP 头的函数
 !inet_http.writeHeader("Name:value__") = 写入请求 HTTP 头,\n参数可以是 web.joinHeaders 函数支持的字符串、表（数组、键值）。\n如果存在相同的 HTTP 头则覆盖，否则添加 HTTP 头。\n函数执行成功返回 true\n\n必须在 send 发送请求以前调用, \n可在 beforeSend 事件内调用
 !inet_http.replaceHeader("Name:value__") = 写入请求 HTTP 头,\n参数可以是 web.joinHeaders 函数支持的字符串、表（数组、键值）。\n如果存在相同的 HTTP 头则覆盖，否则忽略。\n函数执行成功返回 true\n\n必须在 send 发送请求以前调用, \n可在 beforeSend 事件内调用
 !inet_http.mergeHeader("Name:value__") = 写入请求 HTTP 头,\n参数可以是 web.joinHeaders 函数支持的字符串、表（数组、键值）。\n如果存在同名 HTTP 头则合并，\n可使用第二个参数指定分隔符为逗号或分号，默认为逗号。\n函数执行成功返回 true\n\n必须在 send 发送请求以前调用, \n可在 beforeSend 事件内调用

@@ -1,4 +1,4 @@
-﻿//Excel 表格
+//Excel 表格
 import crypt;
 import process;
 import win.ui;
@@ -28,9 +28,9 @@ wb.html = /**
     <meta charset="utf-8">
     <style type="text/css">
     html,body{ height:100%; margin:0; } 
-    </style>
-    <script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/shim.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    </style> 
+    <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/shim.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/handsontable/8.3.2/handsontable.full.min.js"></script>
     <link rel="stylesheet" href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/handsontable/8.3.2/handsontable.full.min.css" />
 </head>

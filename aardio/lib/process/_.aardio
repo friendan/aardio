@@ -1214,18 +1214,30 @@ namespace process{
 			..table.append(out,parameters); 
 			parameters = out;
 			
+			var v,vt;
 			for(i=1;#parameters){ 
 				if(parameters[i]===null) {
 					parameters[i] = "";
 					continue;
 				}
-				v = ..string.trim(tostring(parameters[i]));
-				
-				if( v[1] != '"'# || v[#v] != '"'#  ){
-					if( ! ..string.find(v,`^[^"\\]+"[^"]+"\s*$`) ){
-						v = escapeArgument(v)
-					}
+				 
+				v = parameters[i]
+				vt = type(v);
+				if(vt=="table"){
+					v = joinArguments(v);
 				}
+				else {
+					v = tostring(v);
+					
+					v = ..string.trim(v);
+				
+					if( v[1] != '"'# || v[#v] != '"'#  ){
+						if( ! ..string.find(v,`^[^"\\]+"[^"]+"\s*$`) ){
+							v = escapeArgument(v)
+						}
+					}
+				} 
+				
 				parameters[i] = v;
 			} 
 			
@@ -1261,7 +1273,8 @@ import process.job.limitKill;
 end details**/
 
 /**intellisense()
-process.joinArguments(.(参数表) = 参数可以是一个数组或多个非 null 参数,\n调用 tostring 转换参数项为字符串,合并为单个命令行参数并返回,\n不在双引号内、且包含空白字符或 ^ | && 等字符 的参数转义处理后首尾添加双引号\n\n如果参数是一个表，\n则表中以键名以 - 或 / 开头的键值对自动合并为命令行参数，\n键值对参数总是置于数组参数之前
+process.joinArguments( = 用于安全地合并与转换进程启动命令行参数，并自动处理转义字符。
+process.joinArguments(.(参数表,->->->) = 可传入一个参数表（可包含数组成员）或多个非 null 参数。\n自动合并为单个进程启动命令行参数并返回一个字符串值。\n如果传入参数是一个表对象（可包含数组），\n则表中以键名以 - 或 / 开头的键值对自动合并为命令行参数，\n如果是 process.arguments 表，则自动转换驼峰式参数名为 -- 开头的连字符格式。\n同一个参数表的键值对参数总是置于数组参数之前（改用多个表参数可保留传入顺序）。\n\n如果传入参为是多个参数则先转换为数组再调用 joinArguments 处理。\n如果数组成员仍是表对象，则仍用 joinArguments 转换并将结果直接置入返回字符串。\n否则调用 tostring 转换参数项为字符串，并按需添加引号进行必要的转义处理。\n不在双引号内、且包含空白字符或 ^ | && 等字符 的参数转义处理后首尾添加双引号
 process.escapeArgument(.("命令行参数") = 转义命令行参数\n关于命令行参数转义规则,请参考 string.cmdline 的说明
 process.STARTUPINFO() = 创建进程启动参数\n!startinfo. 
 process( = 运行执行文件或关联文档。\n如果省略所有参数则打开当前进程\n失败则返回 null,错误信息,错误代码\n成功返回进程对象
@@ -1334,14 +1347,14 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.suspend() = 暂停进程
 !process.terminate() = 强行终止进程\n可在参数中指定退出代码
 !process.kill() = 杀除进程
-!process.eachModule = @for moduleEntry in ??.eachModule() { \n__//io.print( moduleEntry.szExePath  )\n \n}
+!process.eachModule = @for moduleEntry in ??.eachModule() { \n__//此函数仅支持 32 位进程\n \n}
 !process.eachThread = @for threadEntry in ??.eachThread() { \n__//io.print( threadEntry.th32ThreadID  )\n \n}
 !process.getPath() = 返回执行程序文件完整路径。\n如果该进程以管理权限运行，\n则调用函数的进程也必须以管理权限运行\n才能获取到路径
 !process.asm(.(机器码数组,函数原型,调用约定) = 使用table数组指定任意个机器码参数,使用分号隔开,\n机器码可以是字符串,结构体,数值或指针,\n函数原型可省略,调用约定默认为"cdecl"
 !process.asmCdecl(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
 !process.asmStdcall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
 !process.asmThiscall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
-!process.getModuleBaseAddress(.(模块名) = 返回模块基址,\n模块名忽略大小写,\n不指定模块名则返回应用程序基址
+!process.getModuleBaseAddress(.(模块名) = 返回模块基址。\n模块名忽略大小写,\n不指定模块名则返回应用程序基址。\n\n此函数仅支持 32 位程序。\n取 64 位进程基址方法:\nprcs.readStruct( prcs.getInfo().pebBaseAddress+16,{LONG v=math.size64()})
 !process.isWow64() = 进程是否在64位系统上运行的32进程
 !process.isX64() = 是否64位进程
 !process.getUiInfo() = 获取UI线程窗口焦点,光标等信息\n!guithreadinfo.

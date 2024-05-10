@@ -536,6 +536,9 @@ class xml{
 
 xml.ncr = ncr;
 xml.elementPattern = "\<([\/]?)([\d\s]?![\?!\w_\-\::]+)(.*?)([\/\?]?)\>";
+xml.escape = function(v){
+	if(v) return ..string.replace(v,`[\&\<\>\"\']`,{`&`:'&amp;',`<`:"&lt;",`>`:"&gt;",`"`:"&quot;",`'`:"&apos;"})
+}
 
 /**intellisense()
 string.xml = 简单XML解析,\n严格的校验XML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写
@@ -570,4 +573,5 @@ string.xml() = !string_xml.
 !string_xml.getParent() = 获取父节点
 !string_xml.remove() = 如果存在父节点,在父节点中移除此节点
 string.xml.ncr(__) = NCR字符编码、HTML实体字符还原为UTF8文本
+string.xml.escape(__) = 转义编码字符串中的 < > " ' & 等 XML 标记字符。\n如果参数为非 null 值则返回转换后的字符串。\n参数只能是 null 或字符串、buffer
 end intellisense**/

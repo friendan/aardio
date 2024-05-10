@@ -274,6 +274,9 @@ class crypt{
 		var r = h.getHexValue(upper ); 
 		h.destroy();
 		if(b16){
+			if(type(b16)==="number"){
+				return ..string.slice(r,b16>0?1:b16,b16>0?b16:-1);
+			}
 			return ..string.slice(r,9,24);
 		}
 		return r;
@@ -483,17 +486,17 @@ namespace crypt{
 	md4 = function(data,upper,b16) {
 		return ..crypt().hash( data,upper,b16,0x8002/*_CALG_MD4*/ );   
 	};
-	sha1 = function(data,upper) {
-		return ..crypt().hash( data,upper, ,0x8004/*_CALG_SHA1*/ );   
+	sha1 = function(data,upper,b16) {
+		return ..crypt().hash( data,upper,b16,0x8004/*_CALG_SHA1*/ );   
 	};
-	sha512 = function(data,upper) {
-		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper, ,0x800E/*_CALG_SHA_512*/ );   
+	sha512 = function(data,upper,b16) {
+		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper,b16,0x800E/*_CALG_SHA_512*/ );   
 	};
-	sha384 = function(data,upper) {
-		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper, ,0x800D/*_CALG_SHA_384*/);   
+	sha384 = function(data,upper,b16) {
+		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper,b16,0x800D/*_CALG_SHA_384*/);   
 	};
-	sha256 = function(data,upper) {
-		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper, ,0x800C/*_CALG_SHA_256*/);   
+	sha256 = function(data,upper,b16) {
+		return ..crypt(,0x18/*_PROV_RSA_AES*/).hash( data,upper,b16,0x800C/*_CALG_SHA_256*/);   
 	};
 }
 
@@ -544,8 +547,8 @@ setHashPassword(.("__/*密码*/",HASH算法ID,加密算法ID,选项) = 设置会
 setHashPassword() = !crypt.
 setPlainPassword() = !crypt.
 exportPlainTextKeyBlob() = !plaintextkeyblob.
-hash(.(字符串,是否大写,返回16位结果,算法) = 计算哈希值,\n除第一个参数以外,其他参数可选\n默认使用MD5算法
-hashFile(.(文件路径,是否大写,算法) = 计算哈希值,\n除第一个参数以外,其他参数可选,\n参数 @3 省略时默认使用MD5算法。\n\n此函数执行失败会返回2个值，分别为：null,错误信息,\n创建 crypt 对象时参数@2 请指定为 _PROV_RSA_AES 才能支持 SHA-256（SHA-2）算法,\n也可以改用 crypt.aes 或 crypt.rsa 创建 crypt 对象
+hash(.(字符串,是否大写,返回字符个数,算法) = 计算哈希值,\n除参数 @1 以外,其他参数可选。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符。\n参数 @4 为可选参数，默认使用MD5算法
+hashFile(.(文件路径,是否大写,算法) = 计算哈希值,\n除参数 @1 以外,其他参数可选。\n参数 @3 省略时默认使用MD5算法。\n\n此函数执行失败会返回2个值，分别为：null,错误信息,\n创建 crypt 对象时参数@2 请指定为 _PROV_RSA_AES 才能支持 SHA-256（SHA-2）算法,\n也可以改用 crypt.aes 或 crypt.rsa 创建 crypt 对象
 lastHash = 最后一次调用createHashXXX() 系列函数创建的哈希对象
 decrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 encrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
@@ -565,13 +568,13 @@ release() = 释放密码服务对象(CSP)\n此函数可在对象析构时自动�
 end intellisense**/
 
 /**intellisense(crypt)
-md5(.(字符串,是否大写,返回16位结果) = 计算哈希值,\n参数2可选,默认大写\n参数3可选,默认返回32位结果
-md4(.(字符串,是否大写,返回16位结果) = 计算哈希值,\n参数2可选,默认大写\n参数3可选,默认返回32位结果
-md2(.(字符串,是否大写,返回16位结果) = 计算哈希值,\n参数2可选,默认大写\n参数3可选,默认返回32位结果
-sha1(.(字符串,是否大写) = 计算sha1哈希值,\n参数2可选,默认大写
-sha512(.(字符串,是否大写) = 计算sha512哈希值,\n参数2可选,默认大写
-sha384(.(字符串,是否大写) = 计算sha384哈希值,\n参数2可选,默认大写
-sha256(.(字符串,是否大写) = 计算sha256哈希值,\n参数2可选,默认大写
+md5(.(字符串,是否大写,返回位数) = 计算哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符。\n默认返回32个字符
+md4(.(字符串,是否大写,返回位数) = 计算哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符。\n默认返回32个字符
+md2(.(字符串,是否大写,返回位数) = 计算哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符。\n默认返回32个字符
+sha1(.(字符串,是否大写,返回位数) = 计算sha1哈希值,\n参数2可选,默认大写
+sha512(.(字符串,是否大写,返回位数) = 计算sha512哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
+sha384(.(字符串,是否大写,返回位数) = 计算sha384哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
+sha256(.(字符串,是否大写,返回位数) = 计算sha256哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
 encodeBin(.(字符串,长度,选项) = Base64或hex编码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_BASE64
 decodeBin(.(字符串,长度,选项) = Base64或hex解码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_ANY
 pem(.(字符串,标题) = PEM编码字符串,\n如果参数@1是空值时不操作直接返回null

@@ -269,7 +269,7 @@ class pefile{
 		for i,v in ..table.eachIndex(names){ 
 			var func,calling,proto = ..string.match(v.name,"^\?(\w+)[\@\w]*?\@\@(<YA>|<YG>|<YI>)(.+?)[\@X]Z$");
 			if(!func) continue; 
-			
+
 			var types = getDecoratedTypes(proto); 
 			if(!#types){ 
 				continue;
@@ -294,6 +294,7 @@ class pefile{
 			}
 				
 			var retType = ..table.shift(types);
+			if(retType=="void") retType = "";
 			if(defaultCalling==calling){
 				..table.push(declaration,..string.format(`%s = dll.api("%s","%s(%s)")`,func,v.name,retType,..string.join(types,",") ) )
 			}
@@ -341,7 +342,7 @@ namespace pefile{
 		['X'#]="void";
 	}
 	
-	getDecoratedTypes = function(types){
+getDecoratedTypes = function(types){
 		var i=1;
 		
 		var nextType;
@@ -358,7 +359,7 @@ namespace pefile{
 				i++;
 				
 				if(c=='W'#){return "WORD","wchar_t"} 
-				if(c=='N'#){return "byte"}
+				if(c=='N'#){return "bool"}
 					
 				return decoratedCharToTypes[c];
 			}
@@ -379,11 +380,27 @@ namespace pefile{
 			if(c=='P'#){
 				c = types[i];
 				i++;
+				
+				//函数指针
+				if(c>='0'# && c<='9'# ){ 
+					var j = ..string.indexOf(types,"@Z",i); 
+					if(j){ 
+						i = j+2;
+						return "pointer"	
+					} 
+				}
+				
+				//指针
 				if(c=='A'#){
 					
 					if(..string.slice(types,i,i+8)=="UHWND__@@"){
 						i=i+9;
 						return "addr"; 
+					}
+					
+					if(..string.slice(types,i,i+7)=="UHDC__@@"){
+						i=i+8;
+						return "pointer"; 
 					}
 					
 					var t,raw = nextType();
@@ -411,6 +428,8 @@ namespace pefile{
 					
 					return "pointer";
 				} 
+				
+				//const 指针
 				if(c=='B'#){                                     
 					var t,c = nextType();
 					if(!t){ return }
@@ -453,7 +472,7 @@ namespace pefile{
 				if(!t){ return; } 
 			}
 			
-			..table.push(result,t);
+			..table.push(result,t); 
 		}
 		
 		return result;

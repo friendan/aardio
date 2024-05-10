@@ -30,11 +30,11 @@ groupbox={cls="groupbox";text="匹配模式:";left=9;top=6;right=829;bottom=120;
 groupbox2={cls="groupbox";text="匹配结果:";left=579;top=123;right=830;bottom=578;ah=1;aw=1;bgcolor=16777215;db=1;dr=1;dt=1;edge=1;tabstop=1;z=2};
 groupbox3={cls="groupbox";text="测试文本:";left=9;top=123;right=575;bottom=579;ah=1;aw=1;bgcolor=16777215;db=1;dl=1;dt=1;edge=1;tabstop=1;z=3};
 lbReplace={cls="static";text="替换次数:";left=663;top=59;right=719;bottom=81;center=1;dl=1;dt=1;hide=1;tabstop=1;transparent=1;z=34};
-lstMatch={cls="listbox";left=585;top=138;right=823;bottom=572;ah=1;aw=1;bgcolor=16777215;db=1;dr=1;dt=1;edge=1;hscroll=1;items={"这里显示模式匹配结果:"};tabstop=1;vscroll=1;z=26};
+lstMatch={cls="listbox";left=584;top=138;right=822;bottom=572;ah=1;aw=1;bgcolor=16777215;db=1;dr=1;dt=1;edge=1;hscroll=1;items={"这里显示模式匹配结果:"};tabstop=1;vscroll=1;z=26};
 static={cls="static";text="文件路径：";left=47;top=143;right=114;bottom=159;dt=1;tabstop=1;transparent=1;z=20};
 txtBrowser={cls="button";text="浏览...";left=449;top=137;right=505;bottom=161;aw=1;dt=1;tabstop=1;z=16};
 txtPath={cls="edit";text="选择浏览读取要匹配的文本...";left=120;top=138;right=440;bottom=162;aw=1;dt=1;edge=1;multiline=1;tabstop=1;z=9};
-txtPattern={cls="edit";text="请输入模式表达式...";left=57;top=88;right=425;bottom=112;aw=1;dr=1;dt=1;edge=1;tabstop=1;z=27};
+txtPattern={cls="edit";text="";left=57;top=88;right=425;bottom=112;aw=1;dr=1;dt=1;edge=1;tabstop=1;z=27};
 txtRep={cls="edit";text="请输入替换内容";left=552;top=59;right=656;bottom=81;dl=1;dt=1;edge=1;hide=1;multiline=1;tabstop=1;z=33};
 txtRepCount={cls="edit";text="默认替换全部";left=725;top=59;right=817;bottom=81;dl=1;dt=1;edge=1;hide=1;multiline=1;tabstop=1;z=35};
 txtResult={cls="edit";text="显示模式替换结果...";left=585;top=140;right=815;bottom=569;ah=1;aw=1;db=1;dr=1;dt=1;edge=1;hide=1;hscroll=1;multiline=1;tabstop=1;vscroll=1;z=17};
@@ -158,9 +158,6 @@ insertExpression =  function( strInsert, cursorPos = 0 ){
    	winform.txtPattern.color = 0;
 	winform.txtPattern.redraw();
 
-	if( winform.txtPattern.text == "请输入模式表达式..." ){
-    		winform.txtPattern.text = "";
-    	}
     var strExpression = winform.txtPattern.text;
   
     var strLastchar = string.right(strExpression,1);
@@ -286,7 +283,10 @@ winform.chkMatch.oncommand = function(hwnd,event){
 
 import win.clip;
 winform.button3.oncommand = function(hwnd,event){ 
-	win.clip.write( winform.editAardioCode   );
+	if(!#winform.aardioCode){
+		return winform.txtPattern.showWarningTip("请输入模式串，然后点击测试运行以生成示例代码。");
+	}
+	win.clip.write( winform.aardioCode );
 }
  
 winform.txtResult.oncommand = function(hwnd,event){
@@ -310,14 +310,6 @@ winform.txtRep.oncommand = function(hwnd,event){
 		winform.txtRep.text = "";
 		winform.txtRep.color = 0;
 		winform.txtRep.redraw();
-	}
-}
-
-winform.txtPattern.oncommand = function(hwnd,event){
-	if( winform.txtPattern.text == "请输入模式表达式..."){
-		winform.txtPattern.text = "";
-		winform.txtPattern.color = 0;
-		winform.txtPattern.redraw();
 	}
 }
 
@@ -459,7 +451,7 @@ i,j = string.find( str,  pattern );
 		winform.txtSource.setsel( i, j );
 	}
 	else{
-		strtemp1 = "没找到相应串!";
+		strtemp1 = "没有找到相匹配的文本!";
 		strtemp2 = strtemp1;
 	}
  
@@ -474,7 +466,7 @@ i,j = string.find( str,  pattern );
 }
  
 winform.button2.oncommand = function(hwnd,event) {  
-	var strtemp,aardioCode = "请输入模式测试内容", "匹配内容和匹配式内容为空,生成代码失败!";
+	var strtemp,aardioCode = "请输入测试模式串", "匹配文本和模式串为空,生成 aardio 示例代码失败!";
 	var pattern,str = winform.txtPattern.text,winform.txtSource.text;
 	var patternType = ( winform.chkFind.checked ? winform.chkFind.id) or ( winform.chkMatch.checked ? winform.chkMatch.id) or ( winform.chkReplace.checked ? winform.chkReplace.id );
 	var replaceText, replacecount = winform.txtRep.text,   winform.txtRepCount.text ;
@@ -483,8 +475,7 @@ winform.button2.oncommand = function(hwnd,event) {
 	if( ..string.find(pattern,'["\']') ){
 		patternTemplate = "//" + pattern ; 
 	}
-	
- 
+	 
 	select(patternType) {
 	
 		case winform.chkFind.id	 {
@@ -492,7 +483,7 @@ winform.button2.oncommand = function(hwnd,event) {
 				aardioCode = patternFind( str, pattern ,patternTemplate)
 			}
 			else{
-				aardioCode = "请输入要查找的目标内容和匹配式";
+				aardioCode = "请输入要查找的目标文本和模式串";
 			}		
 		}
 		case  winform.chkMatch.id {
@@ -505,7 +496,7 @@ winform.button2.oncommand = function(hwnd,event) {
 				winform.txtResult.text = strtemp;
 			}
 			else{
-				aardioCode = "错误,请输入要查找的目标内容和匹配式";
+				aardioCode = "错误,请输入要查找的目标文本和模式串";
 				winform.txtResult.text = "错误,请输入需要替换的目标文本!"
 			}
 			
@@ -517,12 +508,15 @@ winform.button2.oncommand = function(hwnd,event) {
    	winform.txtResult.redraw();
 
 	//显示自动生成的代码
-	winform.editAardioCode  = aardioCode;
+	winform.aardioCode  = aardioCode;
+	winform.txtPattern.showInfoTip(winform.aardioCode); 
 	
 	//启用复制代码和保存结果按钮
 	winform.button3.disabled = false;
 	winform.btnSave.disabled = false;
 }
+
+winform.txtPattern.setCueBannerText("请输入测试模式串 ...");
  
 winform.show(true) 
 win.loopMessage( winform );

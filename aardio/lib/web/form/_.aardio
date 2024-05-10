@@ -47,7 +47,9 @@ namespace form {
 	var delay = ..win.delay;
 	var isWnd = ..win.isWindow; 
 	_metaProperty = ..util.metaProperty( 
-	 
+	
+	 	_serialize = ..thread._callableSerialize;
+	 	
 		["type"] = {
 			_get = function(){ 
 				return  owner._browser.getType()
@@ -752,6 +754,11 @@ namespace form {
 			owner.waitDoc();
 			return owner._browser.ExecWB(id,opt : 0/*_OLECMDEXECOPT_DODEFAULT*/,val) 
 		}  
+		zoom = function(v){
+			owner._form.enableDpiScaling("init")
+			owner.execWb( _WINXP ? 0x13/*_OLECMDID_ZOOM*/ : 63/*_OLECMDID_OPTICAL_ZOOM*/
+				,owner._form.dpiScale(100),2 )
+		}
 		openproxy = {
 			_get = function(){  
 				if(! owner[["_proxyOpen"]] ){
@@ -964,8 +971,8 @@ namespace form {
 }
  
 /******intellisense( ) 
-web.form = web窗体,\n基于系统自带IE内核WebBrowser浏览器控件.\n注意新版系统虽移除IE，但 WebBrowser 属于系统组件仍可正常使用.\n\n导入此库时已默认设为启用IE最高兼容版本,\n可调用web.form.emulation函数修改,或在网页HTML中设置,例如:\n<meta http-equiv="X-UA-Compatible" content="IE=edge" />\n可自动启用IE最高版本
-web.form( = 创建web窗体,基于系统自带IE内核WebBrowser浏览器控件.\n注意新版系统虽移除IE，但 WebBrowser 属于系统组件仍可正常使用.\n\n自IE11开始会默认阻止 ajax 请求本地文件,\n改用 wsock.tcp.simpleHttpServer/asynHttpServer 访问本地文件即可
+web.form = web 窗体。\n基于系统自带 IE 内核 WebBrowser 浏览器控件。\n注意新版系统虽移 除IE，但 WebBrowser 属于系统组件仍可正常使用.\n\n导入此库时已默认设为启用IE最高兼容版本,\n可调用web.form.emulation函数修改,或在网页HTML中设置,例如:\n<meta http-equiv="X-UA-Compatible" content="IE=edge" />\n可自动启用IE最高版本
+web.form( = 创建web窗体。基于系统自带IE内核WebBrowser浏览器控件。 \n此对象支持多线程界面回调，可传入工作线程使用。\n\n自IE11开始会默认阻止 ajax 请求本地文件,\n改用 wsock.tcp.simpleHttpServer/asynHttpServer 访问本地文件即可
 web.form(.(winform,hostFlags,dlControl,userAgent,securityTrusted) = 创建Web窗体,可调用IE内核浏览器控件加载网页,\n\n参数说明：\n@winform 指定嵌入网页的窗体或 static,custom 等控件对象。\n@hostFlags 可使用一个或多个_UIFLAG_ 前缀的常量自定义外观,多个常量用位或操作符( | ) 连接\n@dlControl 可使用_DLCTL_前缀的常量以控制下载行为,多个常量用位或操作符( | ) 连接\n@userAgent 设置浏览器User Agent,\n@securityTrusted 是否信任打开的网页（服务器上避免弹出警告），默认值为true\n\n关于创建参数的更多说明,请参考《aardio使用手册->Web程序设计->创建Web窗体》
 web.form.emulation(11001) = 允许启用IE11渲染模式,\n11001为IE11,9999为IE9,8888为IE8,7000为IE7。\n应在进程创建第一个web窗体创建以前设置，\n导入 web.form 时已默认执行此函数（参数设为 11001）。\n\n也可以在网页HTML中设置IE兼容版本,例如启用IE最高版本:\n<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 web.form.featureControl(.("FEATURE_BROWSER_EMULATION",11001 ,false) = 改变注册表设置,\n参数(注册表键名,值,是否刷新)
@@ -1366,8 +1373,8 @@ document.compatMode = "BackCompat" 对应 quirks mode(无DTD声明)\n"CSS1Compat
 !wb.select("控件名字",__/*输入选项索引,或选项值、选项文本*/) = 查找下拉选框的指定选项,选中并返回选项节点\n第一个参数也可以是ele对象
 !wb.select("控件名字",__/*输入选项索引,或选项值、选项文本*/,false) = 查找下拉选框的指定选项,取消选定并返回选项节点\n第一个参数也可以是ele对象
 !wb.exec("__") = 执行命令\n参数@2为传入参数,可省略\n参数@3指定是否显示交互界面,布尔值,可省略
-!wb.execEle(ele,"__") = 执行命令\n参数@2为传入参数,可省略\n参数@3指定是否显示交互界面,布尔值,可省略
-!wb.execWb( _OLECMDID__ , ,2 ) = 执行命令,\n参数@2为传入参数,可省略,\n参数@3指定UI交互选项:\n    1/*_OLECMDEXECOPT_PROMPTUSER*/为显示界面,\n    2/*_OLECMDEXECOPT_DONTPROMPTUSER*/为不显示界面
+!wb.execEle(ele,"__") = 指定网页元素上执行命令。\n一定要在打开网页后调用，不然会因为等待文档对象卡住。参数@2为传入参数,可省略\n参数@3指定是否显示交互界面,布尔值,可省略
+!wb.execWb( _OLECMDID__ , ,2 ) = 执行网页命令。\n一定要在打开网页后调用，不然会因为等待文档对象卡住。\n参数@2为传入参数,可省略,\n参数@3指定UI交互选项:\n    1/*_OLECMDEXECOPT_PROMPTUSER*/为显示界面,\n    2/*_OLECMDEXECOPT_DONTPROMPTUSER*/为不显示界面
 !wb.external = @.external = {
 	__/*输入要公开的成员*/
 }
@@ -1416,6 +1423,7 @@ document.compatMode = "BackCompat" 对应 quirks mode(无DTD声明)\n"CSS1Compat
 !wb.scrollPos(.( ,-1,-1) = 滚动到页面最右、以及最下面\n负数表示以右下角为起点的滚动条坐标
 !wb.getPos(ele__) = x,y,cx,cy = wb.getPos(ele)\n返回对象的窗口客户区坐标
 !wb.getPos(ele__,true) = x,y,cx,cy = wb.getPos(ele)\n返回对象的屏幕坐标
+!wb.zoom(__) = 缩放页面，参数指定 100 为 100% 缩放。\n必须在打开网页后再调用函数。\n如果要禁止触屏双击放大，可在 CSS 样式中指定 html{   \n   	-ms-touch-action: none;\n	-ms-content-zooming: none;\n}
 ?web.form = !wb.
 web.form() = !wb.
 ?.getWebForm = !wb.
@@ -1538,6 +1546,7 @@ _OLECMDID_REDO=@0x10/*_OLECMDID_REDO*/
 _OLECMDID_SELECTALL=@0x11/*_OLECMDID_SELECTALL*/
 _OLECMDID_CLEARSELECTION=@0x12/*_OLECMDID_CLEARSELECTION*/
 _OLECMDID_ZOOM=@0x13/*_OLECMDID_ZOOM*/
+_OLECMDID_OPTICAL_ZOOM=63/*_OLECMDID_OPTICAL_ZOOM*/
 _OLECMDID_GETZOOMRANGE=@0x14/*_OLECMDID_GETZOOMRANGE*/
 _OLECMDID_UPDATECOMMANDS=@0x15/*_OLECMDID_UPDATECOMMANDS*/
 _OLECMDID_REFRESH=@0x16/*_OLECMDID_REFRESH*/

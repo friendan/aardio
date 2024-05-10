@@ -10,8 +10,7 @@ global.onError = function( err,over ){
 	ide.setConfig("startpage","off");
 	mainForm.msgboxErr('抱歉！\n开始页遇到错误，\n已自动禁用开始页。',"aardio")
 	ide.pluginViewShow(mainForm);
-	win.close(win.getParent(win.getParent(mainForm.hwnd)));
-
+	win.close(win.getParent(win.getParent(mainForm.hwnd))); 
 }
 
 if( _WINE ){
@@ -52,8 +51,8 @@ loadRecentProjectFromFile = function(){
 	}	
 	return recentList;
 }
-
-refreshRecentProject = function(){
+ 
+refreshRecentProject = function(){ 
 	var ltList = wbLayout.getEle("recent-projects-list"); 
 	ltList.innerHTML = "";
 	
@@ -81,18 +80,30 @@ refreshRecentProject = function(){
 }
 refreshRecentProject(); 
 
+var isCurrentProject = function(projPath){
+	var curProjPath= ide.getProjectPath();
+	if( fsys.path.cmp(projPath,curProjPath) === 0 ){
+		
+		var mainFile = ide.getProjectMainFile();
+		ide.openDocument(mainFile);
+		return true;
+	}
+}
+
 import process;
 wbLayout.sinking = { 
 	onHyperlinkClick = {
 		["recent-project-item"] = function (ltTarget,ltEle,reason,behaviorParams) {
 			
-			var path = ltEle.href; 
-			if( io.exist(path) ){ 
+			var projPath = ltEle.href;
+			if( io.exist(projPath) ){ 
+				if(isCurrentProject(projPath)) return true;
+				
 				thread.invoke( 
 					function(path){
 						import ide;
 						ide.openDocument(path);
-					},path
+					},projPath
 				) 
 			}
 			return true;
@@ -211,26 +222,40 @@ wbLayout.onButtonClick = {
 	} 
 }
 
-
 wbLayout.onMenuItemClick  = {
 	["open-project"] = function (ltTarget,ltOwner,reason,behaviorParams) {
 		var ltPopupOwner = ..web.layout.element( behaviorParams.he )
+		
+		var projPath = ltPopupOwner.href;
+		if(isCurrentProject(projPath)) return true;
+				
 		..thread.invoke( 
 			function(path){
 				import ide;
 				ide.openDocument(path);
-			},(ltPopupOwner.href)
+			},projPath
 		)
 		
 	}
 	["open-project-as"] = function (ltTarget,ltOwner,reason,behaviorParams) {
 		var ltPopupOwner = ..web.layout.element( behaviorParams.he )
+		var projPath = ltPopupOwner.href;
+		 
+		var curProjPath= ide.getProjectPath();
+		if(isCurrentProject(projPath)) return true;
+		
+		var title = ltPopupOwner.innerHTML;
+		ltPopupOwner.innerHTML = `<img src="images/loading.png" />`;
+		
 		..thread.invoke( 
 			function(path){
 				import process;
-				process.execute(io._exepath,path);
-			},(ltPopupOwner.href)
+				process.execute(io._exepath,{ path });
+			},projPath
 		)
+		
+		thread.delay(2000);
+		ltPopupOwner.innerHTML = title;
 	}
 	["explore-project"] = function (ltTarget,ltOwner,reason,behaviorParams) {
 		var ltPopupOwner = ..web.layout.element( behaviorParams.he )

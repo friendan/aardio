@@ -7,5 +7,7 @@ System.IO.Compression.ZipFile.CreateFromDirectory( = 简单压缩目录到 zip �
 System.IO.Compression.ZipFile.CreateFromDirectory(.(源目录路径,zip文件路径,压缩级别,是否包含根目录名) = 简单压缩目录到 zip 文件\n如果 zip 文件存在会报错，请先用 io.exist 判断一下,\n路径请用 io.fullpath 转换为绝对路径。\n压缩级别为 0 表示优化，为 1 表示速度优化，为 2 不压缩
 System.IO.Compression.ZipFile.ExtractToDirectory( = 简单解压缩 zip 文件，\n如果需要更多功能请改用 zlib.unzip 库
 System.IO.Compression.ZipFile.ExtractToDirectory(.(zip文件路径,目标目录路径) = 简单解压缩 zip 文件\n路径请用 io.fullpath 转换为绝对路径
+System.IO.Compression.ZipFile.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+System.IO.Compression.ZipFile.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
 end intellisense**/
 

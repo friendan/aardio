@@ -1,4 +1,6 @@
 ﻿//WebDriver 自动化
+//aardio 也提供 dotNet.Selenium 扩展库可调用 Selenium .NET 版
+
 import chrome.driver;
 
 /*

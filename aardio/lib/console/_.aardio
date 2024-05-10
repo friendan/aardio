@@ -443,10 +443,11 @@ writeText = function(s,...){
 
 print = function(...){ 
 	openForWrite();
+	
 	var args = {...};
 	var output = {};
 	for(i,v in ..table.eachArgs(args) ){ 
-		if(i>1)writeText('\t'); 
+		if(i>1)writeText('\t');
 		writeText(tostring(v)); 
 	}
 	writeText('\n');
@@ -662,7 +663,8 @@ readOutputCharacter = function(size){
 
 dump = function(v,...){
 	openForWrite();
-	if( type(v) == type.table ) {
+	
+	if( type(v) == "table" ) {
 		if(..com ){
 			if(v[["_dotNetObject"]]){
 				writeText("dotNet.object:",..com.DumpTypeInfo(v[["_dotNetObject"]]))
@@ -685,11 +687,19 @@ dump = function(v,...){
 		
 		writeText( ..table.tostring(v)) 
 	}
-	else writeText( (tostring(v) ) )  
-	if(...===null ){
+	if(type(v)==="number" || ..math.isSize64(v)){
+		writeText( (..math.stringify(v) ) ) 	
+	}
+	else {
+		writeText( (tostring(v) ) )  
+	}
+	
+	var a,b,c = ...;
+	if(a===null && b===null && c===null){
 		writeText('\n');
 		return;
 	}
+	
 	writeText('\t')
 	return dump(...);
 } 
@@ -936,5 +946,3 @@ afterConsoleOpen = @ if(::Kernel32.GetConsoleWindow()){\n	\n }\n ..subscribe("af
 !console_kbevent.isCapsLkOn = 是否打开大写
 !console_kbevent.isEnhanced = 是否扩展键
 end intellisense**/
-
-getOutPutHandle = getOutputHandle;

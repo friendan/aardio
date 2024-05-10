@@ -1,0 +1,81 @@
+﻿//slice 切片
+namespace golang{
+	
+	class slice{
+		ctor( items ){{
+			var t,n = ..raw.typeOfArray(items);  
+			if(n!="value") error("请在 value 字段中指定静态数组",2);
+	
+			this["(type)"] = t;
+	 	}} 
+		ptr p_________________ = ..raw.buffer(items);
+		int length = #items.value; 
+		int cap_______________ = #items.value;
+		["(items)"] = items;
+		@meta;
+	}
+	
+	slice.meta = {
+		_type = "array";
+		_toComObject = lambda() owner["(items)"]; 
+		_serialize = lambda() ..table.tostring( owner.value );
+		_get = function(k,ownerCall){ 
+		 	if(k=="value"){
+		 		var r,u;
+		 		if(type(owner.p_________________)!="buffer"){ 
+		 			owner["(items)"].value.length = owner.length;
+		 			u = 1;
+		 		}
+		 		
+		 		r = ..raw.convert(owner.p_________________
+		 			,owner["(items)"])["value"];
+		 		 
+		 		//安全地指向 aardio 内存
+		 		if(u) owner.p_________________ = ..raw.buffer(owner["(items)"]);
+		 		
+		 		return r;
+		 	}
+		 	elseif(type(k)=="number"){
+		 		return owner.value[k];
+		 	} 
+		};
+		_set = function(k,v){
+			if(type(k)=="number"){
+				var v = owner.value;
+				owner["(items)"][k] = v;
+				owner.p_________________ = ..raw.buffer(owner["(items)"]);
+			}
+			elseif(k=="value"){ 
+				owner["(items)"].value = v;
+				owner.p_________________ = ..raw.buffer(owner["(items)"]); 
+				owner.length=#v; 
+				owner.cap_______________= #v;
+			}
+			else {
+				owner[[k]] = v;
+			} 
+		};
+		_add = function(b){
+			var v = owner.value;
+			
+			if(type(b)=="table"){
+				..table.append(owner["(items)"].value,b);
+			}
+			else {
+				..table.push(owner["(items)"].value,b);
+			}
+			owner.length = #owner["(items)"].value;
+			owner.cap_______________= #owner["(items)"].value;
+			owner["(items)"].value.length = null;
+			  
+			owner.p_________________ = ..raw.buffer(owner["(items)"]); 
+			return owner; 
+		}; 
+	}  
+}
+
+/**intellisense()
+golang.slice(__) = 创建 Go 切片。\n参数@1可用结构体指定静态数组，数组字段名必须为 value。\nGo 函数的参数类型必须声明为相同静态类型的数组指针。\n\n自 Go 调用返回以后，建议立即访问 value 字段获取 Go 返回的数组。\n因为 Go 的内存回收器稍后会回收 Go 数组的内存（至少在调用结束那一刻并不会立即回收）。\n转换以后此对象的内部指针即安全地指向 aardio 分配的内存。\n只要正确使用，go.slice 不会造成内存泄漏。\n\n如果不需要在 Go 中修改数组，则 value 字段总是指向  aardio 分配的内存。
+golang.slice() = !stdGoSlice.
+!stdGoSlice.value = 返回或设置静态数组的值
+end intellisense**/

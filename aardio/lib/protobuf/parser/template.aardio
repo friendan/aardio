@@ -27,6 +27,7 @@ ${subEnums}
 		_tostring = function(){
 			return owner.serializeToString();
 		};
+		parseValue = lambda() ..table.parseValue(owner);
 		eachName = function(){
 			return ..table.eachName(owner); 
 		};	

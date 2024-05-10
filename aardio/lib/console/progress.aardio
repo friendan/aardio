@@ -6,7 +6,7 @@ class console.progress{
 		this.backTextColor = ..console.color.darkGray;
 		this.foreTextColor = ..console.color.yellow;
 		this.doneColor = ..console.color.green;
-		this.doneText = "Done!";
+		this.doneText = "已完成!";
 		this.backText = backText : "─";
 		this.foreText = foreText : backText : "─"; 
 		this.percent = 0;

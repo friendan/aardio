@@ -12,7 +12,7 @@ using System.Web.Services.Description;
 using Microsoft.CSharp;
 using System.Net;
 
-namespace Aardio.InteropServices
+namespace aardio.Interop
 {
 	[ClassInterface(ClassInterfaceType.AutoDispatch), ComVisible(true)]
 	public class CCodeCompiler

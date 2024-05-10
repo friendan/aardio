@@ -305,11 +305,15 @@ namespace driver{
 				["css selector"] = css;
 			)
 		};
-		doCdpCmd = function(cmd, cmd_args){
+		cdp = function(cmd, cmd_args){
 			return owner.goog.cdp.execute(
 				cmd=cmd;
 				params=cmd_args
 			)
+		};
+		//@Deprecated
+		doCdpCmd = function(...){
+			return owner.cdp(...);
 		};
 		doScript = function(script,...){
 			var ret =  owner.execute/*.sync*/(
@@ -400,7 +404,7 @@ namespace driver{
 		findUrl = function(str){
 			var cur = this.getCurrentWindow();
 			for( index,window,title,url in this.eachWindow() ){
-				if( url ? ..string.find(url,str) ) return true;
+				if( url ? ..string.find(url,str) ) return url;
 			}
 			this.switchWindow( cur );
 		};
@@ -413,6 +417,9 @@ namespace driver{
 		};
 		waitUrl = function(str,...){
 			return ..win.wait( lambda() this.findUrl(str),owner.hwndChrome,... ) 
+		};
+		waitUrlParam = function(str,k,... ){ 
+			return ..win.wait( lambda() ..inet.url.getParams(this.findUrl(str),k),owner.hwndChrome,... )  
 		};
 		eachWindow = function(){
 			var info = this.window_handles.get();
@@ -813,7 +820,7 @@ window.rect(__) = 前进\POST	/session/{session id}/window/rect
 window.maximize() = 最大化\nHTTP接口：POST /session/{session id}/window/maximize
 window.minimize() = 最小化\nHTTP接口：POST /session/{session id}/window/minimize
 source.get() = 获取页面源码\nHTTP接口：GET /session/{session id}/source
-doCdpCmd( = 执行CDP命令\nHTTP接口：POST /session/{session id}/goog/cdp/execute
+cdp( = 执行CDP命令\nHTTP接口：POST /session/{session id}/goog/cdp/execute
 doScript( = 执行脚本\nHTTP接口：POST /session/{session id}/execute/sync
 doScript(.("JS脚本",其他调用参数) = JS脚本会被放到一个匿名函数中执行,\n可添加任意个调用参数,节点对象可作为参数\n成功返回该匿名函数的返回值,\n失败返回null,以及REST API返回的响应对象
 execute.async(__) = 异步执行脚本\nHTTP接口POST /session/{session id}/execute/async
@@ -838,6 +845,7 @@ findTitle(__) = 查找并等待出现网页窗口标题并切换到该窗口,\n�
 findUrl(__) = 使用网址查找网页窗口并切换到该窗口,\n参数指定网址,支持模式匹配语法,成功返回true
 waitTitle(__) = 等待指定标题的网页窗口并切换到该窗口。\n参数 @1 指定窗口标题，支持模式匹配语法。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\n成功返回true
 waitUrl(__) = 等待指定网址的网页窗口并切换到该窗口。\n参数 @1 指定网址，支持模式匹配语法。\n可选用参数 @2 指定超时（毫秒），可选用参数 @3 指定检测间隔（毫秒）。\n成功返回true
+waitUrlParam("__","") = 等待参数@1指定的网址打开，支持模式匹配。\n参数 @1 的等待规则与 waitUrl 函数相同。\n\n参数 @2 指定要等待的 URL 参数名，\n如果找到该参数则返回参数值，否则继续等待到参数出现或社会窗口关闭
 eachWindow() = @for( index,window,title,url in ??.eachWindow() ){
 	__/*遍历所有窗口,已自动切换焦点到当前遍历的窗口*/
 }

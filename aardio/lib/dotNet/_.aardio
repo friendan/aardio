@@ -29,6 +29,7 @@ try{
 	ulong = app.ulong;
 	float = app.float;
     double = app.double;
+    buffer = app.buffer;
     reference = app.reference;
     each = app.each;
 	self.import = app.import;
@@ -66,8 +67,8 @@ dotNet = dotNet 支持库\n此名字空间下的函数由当前线程默认应�
 end intellisense**/
 
 /**intellisense(dotNet)
-import( = 加载程序集，导入 .NET 名字空间、类、枚举。\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n同一程序集中不会重复导入相同的名字空间。 \n\n如果已存在同名的全局名字空间但元表为空（并未导入 .NET 名字空间），\n则导入 .NET 名字空间到已存在的名字空间。\n\n如果已存在同名的全局名字空间但元表非空（通常为已导入的  .NET 名字空间 ），\n则不会覆盖已存在的名字间，而是在返回值返回当前调用实际创建的名字空间。
-import(.(名字空间) = 加载参数 @1 指定文件名的程序集，并导入同名的 .NET 名字空间或类。\n当程序集文件名与导入名字相同时，可以省略 指定程序集名称的参数 @2。\n\n返回名字空间可作为类构造函数调用并创建对象。\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n导入的 .NET 名字空间在正常访问其成员时会触发元方法以获取并创建下级名字空间、类、枚举等。\n但导入名字空间的函数（以及 namespace 语句）创建的上级名字空间并不会主动导入同名 .NET 名字空间\。\n\n此函数会尽可能重用已存在的 aardio 全局名字空间导入 .NET 名字空间。\n如果该全局名字空间已导入其他 .NET 名字空间则不会覆盖已存在的名空间。\n此函数总是会返回当前调用实际创建的名字空间。
+import( = 加载程序集，导入 .NET 名字空间、类、枚举。\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n同一程序集中不会重复导入相同的名字空间。 \n\n如果已存在同名的全局名字空间但元表为空（并未导入 .NET 名字空间），\n则导入 .NET 名字空间到已存在的名字空间。\n\n如果已存在同名的全局名字空间但元表非空（通常为已导入的  .NET 名字空间 ），\n则不会覆盖已存在的名字间，而是在返回值返回当前调用实际创建的名字空间。\n加载程序集或依赖程序集失败时此函数会抛出异常。
+import(.(名字空间) = 加载参数 @1 指定文件名的程序集，并导入同名的 .NET 名字空间或类。\n当程序集文件名与导入名字相同时，可以省略 指定程序集名称的参数 @2。\n\n返回名字空间可作为类构造函数调用并创建对象。\n也可以用成员操作符获取静态成员，或调用静态函数。\n\n导入的 .NET 名字空间在正常访问其成员时会触发元方法以获取并创建下级名字空间、类、枚举等。\n但导入名字空间的函数（以及 namespace 语句）创建的上级名字空间并不会主动导入同名 .NET 名字空间\。\n\n此函数会尽可能重用已存在的 aardio 全局名字空间导入 .NET 名字空间。\n如果该全局名字空间已导入其他 .NET 名字空间则不会覆盖已存在的名空间。\n此函数总是会返回当前调用实际创建的名字空间。
 import(.(名字空间,程序集名) = 加载参数@2指定文件名字的程序集\n将 参数@1指定的空间、类、枚举等导入 aardio 全局名字空间。\n必须指定完整名字空间。\n\n在当前应用程序域 import,load 等函数不会导入重复的程序集，\n同一程序集中不会重复导入相同的名字空间。 \n\n返回名字空间可作为类构造函数调用并创建对象。\n也可以用成员操作符返回静态成员，或调用静态函数。\n\n导入的 .NET 名字空间在正常访问其成员时会触发元方法以获取并创建下级名字空间、类、枚举等。\n但导入名字空间的函数（以及 namespace 语句）创建的上级名字空间并不会主动导入同名 .NET 名字空间。\n\n此函数会尽可能重用已存在的 aardio 全局名字空间导入 .NET 名字空间。\n如果该全局名字空间已导入其他 .NET 名字空间则不会覆盖已存在的名空间。\n此函数总是会返回当前调用实际创建的名字空间。
 load( = 使用当前线程默认应用程序域载入并返回程序集（DLL）。\n在当前应用程序域如果已使用此函数导入同名程序集，\n则直接返回该程序集
 load(.("程序集名") = 使用当前线程默认应用程序域载入并返回程序集。\n参数可以是程序集（DLL）名称或路径。\n\n此函数会按以下顺序调用 .NET 函数尝试加载程序集：\n└── Assembly.LoadWithPartialName\n└── Assembly.Load\n└── Assembly.LoadFrom\n└── Assembly.LoadFile
@@ -92,9 +93,9 @@ createArrayList(.(初始化数组) = 创建 System.Collections.ArrayList 对象\
 createArrayList() = !dotNetCrlArrayList.
 createNameValueList(.(names,values) = 创建 List<NameValue<K,V>> 列表对象,\n参数@name,@value 必须是长度相等的非空数组,\n返回 List 对象的每个元素都具有 Name,Value 属性，\n其值由 @names,@values 参数按数组索引顺序分配
 delegate = 用于操作 .NET 委托（Delegate）或事件（event），\n在 .NET 里函数要转换为委托对象才能作为回调函数传输，\n在 aardio 里对所有 .NET 对象的委托字段直接赋值总是覆盖而不是追加，\n对所有 .NET 事件赋值时总是追加而不是覆盖，\n!dotNetDelegate.
-reference( = 在『虚拟程序集引用表』注册一个或多个虚拟程序集，\n这些虚拟程序集可以是内存程序集、本地程序集、EXE 内嵌资源中的程序集。\n\naardio 加载的 .NET 程序找不到程序集（DLL）时，\n会查找『虚拟程序集引用表』并加载已注册的虚拟 DLL
+reference( = 在『虚拟程序集引用表』注册一个或多个虚拟程序集，\n这些虚拟程序集可以是内存程序集、本地程序集、EXE 内嵌资源中的程序集。\n\naardio 加载的 .NET 程序找不到程序集（DLL）时，\n会查找『虚拟程序集引用表』并加载已注册的虚拟 DLL。\n\n同时复制多个 DLL 路径的方法：\n在资源管理器多选 DLL 文件，按住 Shift 点右键菜单项『复制为路径』
 reference(.(simpleAssemblyName,pathOrData) = 在『虚拟程序集引用表』注册虚拟程序集（DLL）。\n@simpleAssemblyName 指定程序集短名称（虚拟 DLL 文件名）\n@pathOrData 指定程序集路径或内存数据，支持内嵌资源路径\n@pathOrData 也可以是返回程序集路径或数据的回调函数
-reference(.(assemblyName2pathOrData) = 在『虚拟程序集引用表』注册多个虚拟程序集（DLL）。\n@assemblyName2pathOrData 指定一个表：\n表的「键」为虚拟程序集短名称（ DLL 文件名 ），\n\n键对应的「值」指定程序集内存数据或程序集路径（支持内嵌资源）
+reference(.(assemblyName2pathOrData) = 在『虚拟程序集引用表』注册多个虚拟程序集（DLL）。\n@assemblyName2pathOrData 指定一个表：\n表的「键」为虚拟程序集短名称（ DLL 文件名 ），\n\n键对应的「值」指定程序集内存数据或程序集路径（支持内嵌资源）。\n\n同时复制多个 DLL 路径的方法：\n在资源管理器多选 DLL 文件，按住 Shift 点右键菜单项『复制为路径』
 setParent( = 嵌入 .NET 窗口到 aardio 窗口，作用类似 win.setParent 函数。\n此函数必须在导入 win.ui 的界面线程中使用\n\n嵌入 .NET 控件而不是窗口对象，\n请改用 System.Windows.Forms.CreateEmbed 函数
 setParent(.(netForm,aarForm) = 嵌入 .NET 窗口到 aardio 窗口，\n@netForm 参数指定 System.Windows.Forms.Form 对象，不能是控件，\n@aarForm 参数指定 aardio 中的窗体对象或 custom 控件对象,\n\n此函数设置 aarForm 为 netForm 的父窗口，\n并禁止 aarForm 窗口绘制窗口背景，\n控件自动填满 aarForm 内部并自适应窗口缩放\n\n也可在 win.ui.ctrl 名字空间下创建自定义控件
 wrapObject(__) = 如参数是原生 com.NetObject 对象,则返回 dotNet.object 对象，否则直接返回参数。\n\n所有 .NET 原生对象已经自动转换为 dotNet.object 对象，\n除非 .NET 调用普通 aardio 对象的成员函数而非回调特定的委托或事件函数。\n这时候回调参数中的 .NET 对象需要用此函数转换，但数值和字符串不需要转换。\n\n参数传入 com.IsNetObject 函数会返回非 0 值即为原生 com.NetObject 对象，\n非原生 com.NetObject 对象转换为 dotNet.object 应当直接调用 dotNet.object 函数。
@@ -123,6 +124,10 @@ float( = 创建 .NET System.Single 类型数值或数组
 float(.(value,byRef) = 创建 .NET System.Single 类型数值或数组，\n用于存储32位浮点数。\n\n参数 @value 可以为数值或数组，\n参数 @byRef 为 true 则支持 .NET 的输出或引用参数
 double( = 创建 .NET System.Double 类型数值或数组
 double(.(value,byRef) = 创建 .NET System.Double 类型数值或数组，\n用于存储64位浮点数。\n\n参数 @value 可以为数值或数组，\n参数 @byRef 为 true 则支持 .NET 的输出或引用参数,\n\n注意普通数值传入 .NET 函数时，\n整数默认转为32位整数,小数默认按double类型处理
+buffer( = \n 调用 raw.buffer 分配可读写的、固定长度的字节数组，\n\n 并返回封包 buffer 的 dotNet.object 对象。\n \n 可用[]下标操作符读写 8 位无符号字节数值。\n 可用 Value 属性获取 buffer 对象，用法请参考 raw.buffer 文档。\n 可用 Length 属性获取数组长度。\n \n 在 .NET 中对应类型为 byte[] 字节数组。\n 可作为 .NET 引用、输出参数使用。
+buffer(.(初始值) = 分配可读写的、固定长度的字节数组。\n参数可以是一个结构体、字符串、或 buffer,传入{ }返回null,\n重新分配内存并复制初始值指定的数据。\n返回封包 buffer 的 dotNet.object 对象
+buffer(.(长度,初始值) = 分配可读写的、固定长度的字节数组。\n\n参数一指定需要分配的内存大小,\n,内存初始值可以用结构体、指针、buffer、或字符串指定一段内存数据,\n也可用一个数值指定所有字节的初始值,不指定默认初始化所有字节为0,\n\n如果初始值指定为字符串或buffer类型，\n填充初始数据以后剩余的字节会全部初始为为0\n返回封包 buffer 的 dotNet.object 对象
+buffer() = !dotNetObject.
 each(netObj) = @for i,v in ??.each(__/*输入需要遍历的 .NET 对象或普通数组，\n返回值 i 为当前索引,v 为当前值，\n注意并非所有 .NET 类型都支持此接口*/) {
 	
 } 
@@ -140,18 +145,25 @@ end intellisense**/
 
 /*****intellisense()
 !dotNetObject.Value = 如果 dotNet.object 对象存储的是\n .NET 中的 Primitive,enum,string 类型或这些类型的数组，\n则可以使用 Value 属性读写值
+!dotNetObject.Length = 如果 dotNet.object 对象存储的是数组，可用些属性获取数组长度。\n并可以用数值下标读写指定索引的值
 end intellisense*****/
 
 
-/**details(用法说明)
+/**details(用前必读，点这里展开)
 
 一) 关于 .NET 运行时
+============================================================
+只要简洁，不求完美！
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。
 
 Win7 自带 .NET 3.5.1，支持 lambda
 Win8 自带 .NET 3.5.1 + .NET 4.5
 Win10 自带 .NET 4.6
+Win10 1511 自带 .NET 4.6.1
+Win10 1607 自带 .NET 4.6.2
 Win10 1709 自带 .NET 4.7.1 ，支持 ValueTuple
-Win11 自带 .NET 4.8
+Win10 1809 自带 .NET 4.7.2
+Win11 以及 Win10 1903 自带 .NET 4.8
 
 Net 虽然有很多版本，但核心运行时只有 CLR 2.0 与 CLR 4.0 的区别。
 .NET 2.x, .NET 3.x 都是基于 CLR 2.0，而之后版本目前都是 CLR 4.0。
@@ -163,19 +175,21 @@ aardio + .NET 开发有更好的兼容性，对 .NET 版本没有严格要求，
 并且编写出体积小、无额外依赖(系统自带 CLR 运行时除外)的独立 EXE 文件（支持内存加载程序集）。
 
 二) .了解应用程序域
---------------------------------------------------------
+============================================================
 应用程序域是 .NET 里的程序隔离边界，
 一个进程可以包含多个应用程序员。
 
 在 aardio 中应用程序域就是 dotNet.appDomain 对象。
 在 aardio 中一个不怕复杂的、完整的创建应用程序域的代码如下：
 
-	var clr = dotNet.clr("v4.0")
-	var appDomain = clr.createAppDomain() //可选在参数中指定域名称
-	var SystemAssembly = appDomain.load("System"); 
-	var System = dll.import("System");
-	//.....
-	appDomain.unload() //卸载应用程序域
+```
+var clr = dotNet.clr("v4.0")
+var appDomain = clr.createAppDomain() //可选在参数中指定域名称
+var SystemAssembly = appDomain.load("System"); 
+var System = dll.import("System");
+//.....
+appDomain.unload() //卸载应用程序域
+```
 	
 这个看起来似乎很强大的一大堆代码，其实 99% 的时候我们用不到，
 99% 的时候我们不需要应用程序域，但我们要千万遍写这些复杂代码很不合算。
@@ -186,13 +200,16 @@ aardio + .NET 开发有更好的兼容性，对 .NET 版本没有严格要求，
 在同一线程始终返回相同的实例，而且你不用卸载，线程结束 aardio 会自动卸载这个应用程序域。
 
 我们甚至不必要去调用 dotNet.appDomain()，aardio 会自动帮我们调用。
+
 所以上面的代码我们可以简化如下：
 
-	var SystemAssembly = dotNet.load("System"); 
-	var System = dll.import("System");
+```
+dotNet.load("System").import("System");
+```
+只要简洁，不求完美！
 
 三) .关于 .NET 版本
---------------------------------------------------------
+============================================================
 前面我们提到了，用下面的代码可以指定 .NET 的版本并创建新的应用程序域。
 dotNet.clr("v4.0").createAppDomain()
 
@@ -200,64 +217,110 @@ dotNet.clr("v4.0").createAppDomain()
 而 aardio 可以兼容不同的版本，所以大多时候不需要去指定版本，
 更不需要自己去创建应用程序域。
 
-四) .NET / aardio 对象封包、解包原理
---------------------------------------------------------
-所有原生 .NET 中的值在 aardio 中分为两类：
-null值、数值、字符串、枚举、 System.Drawing.Color 等简单值类型，以及这些值类型的数组可以直接交换。
-aardio 中的 buffer 在 .NET 中对应字节数组。
+四) .NET / aardio 数据类型转换
+============================================================
 
-其他原生 .NET 对象在 aardio 中存为 com.NetObject 对象（对应 .NET 中的 System.__ComObject 类型），
+aardio / C# 常用类型对应关系
+-------------------------------------------------
+aardio | C#  
+bool   | bool 
+string | string 
+buffer | byte[]         
+number(整数) | int             
+number(小数) | double 
+number数组   | double[]   
+string 数组  | string[] 底层是 COM 中的 BSTR 数组
+其他数组     | object[] 底层是 COM 中的 Variant 变体类型数组
+table        | object,System.__ComObject,dynamic
+pointer      | 不支持(只能先转为数值)
 
-com.NetObject 分为：
-1、普通 .NET 对象，传入 com.IsNetObject() 返回1 
-2、封包其他原始 .NET 对象的 DispatchableObject 对象，传入 com.IsNetObject() 返回2
-一些特殊的 .NET 对象（例如 struct,ValueTuple）会被自动封包到 DispatchableObject 内 (在传回 .NET 时会自动解包)。
+.NET 特殊类型处理
+-------------------------------------------------
 
-上面 2 种 .NET 对象在 aardio 中都会被封装为 dotNet.object 对象，用法没有区别。
-DispatchableObject 对象如果存储的是 Primitive,enum,string 类型或这些类型的普通数组则可使用 Value 属性读写原始值
+1、enum 枚举：
+在 aardio .NET 的枚举自动转换为数值，
+aardio 数值也可自动转换为 .NET 枚举参数。
 
-五) .NET / aardio 参数类型转换规则
---------------------------------------------------------
-.NET / aardio 交换数据底层基于 COM，调用 COM 函数传参时，
-如果 COM 函数支持参数自动类型识别 —— 则 aardio 优先使用 COM 函数需要的类型。
+2、颜色数值
+.NET 的 System.Drawing.Color 在 aardio 则会自动转换为 ARGB 格式的颜色数值。
+调用 .NET 时 ARGB 格式的颜色数值也能自动转换为 System.Drawing.Color 对象。
+注意 GDI+ 使用 ARGB 格式颜色值，与 gdip库，plus 控件等兼容。
 
-但 .NET 并不会通过 COM 接口提供参数类型，在此情况下：
-COM 函数参数中的整数默认处理为 32 位整型(int,int32)，小数默认处理为64位浮点数(double)。
-如果是 aardio 数组，纯数值数组一律转为 double 类型 COM 数组，纯字符串数组一律转为 BSTR 数组,
-其他数组转为 Variant 变体类型数组。
+3、aardio 函数
+aardio 函数可自动转换为 .NET 委托、事件所需要的委托类型。
+并且自动处理调用参数与返回值的数据类型。
 
-.NET 使用静态类型，只要参数类型不正确就会报错找不到函数，
-但是 aardio 中的 dotNet.object 基于 .NET 类型反射支持了更强大的类型非动识别与转换功能。 
-所以大多时候我们不需要自己处理这些问题。
+但在 .NET 中通过 InvokeMember,dynamic 直接调用 aardio 对象成员时，
+回调参数中的 .NET 原生对象为原生 COM 对象，需要自己调用 dotNet.object 转换为更易操作的 dotNet.object 对象。
 
-.NET 中的 enum 枚举会自动转换为 aardio 中的数值(支持双向自动转换类型)，
-.NET 中的 struct,tuple 由 .NET 对象 DispatchableObject 封包后再返回 aardio 。
-aardio 函数则自动转换为委托、事件所需要的委托类型。
-
+4、指针句柄
 .NET 中的 System.IntPtr,System.UIntPtr 类型在 aardio 中会自动转换为整数值，
 aardio 中的指针类型（pointer）必须使用 tonumber() 函数转换为数值才能传入 .Net。
 HWND 在 aardio 以整数值表示，可以直接传入 .Net。
 
-System.Drawing.Color 在 aardio 则会自动转换为 ARGB 格式的颜色数值。
-调用 .NET 时 ARGB 格式的颜色数值也能自动转换为 System.Drawing.Color 对象。
-注意 GDI+ 使用 ARGB 格式颜色值，与 gdip库，plus 控件等兼容。
-
-六) 在 aardio 中创建 dotNet.object 对象
+dotNet.object  对象封包、解包原理
 --------------------------------------------------------
 
-在 aaardio 中可调用以下函数创建 dotNet.object 对象：
-dotNet.object(value,byRef) 将参数 @value 指定值或数组转换为 .NET 对象。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.byte(value,byRef) 将参数 @value 指定的数值或数组转换为 8 位整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.ubyte(value,byRef) 将参数 @value 指定的数值或数组转换为 8 位无符号整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.word(value,byRef) 将参数 @value 指定的数值或数组转换为 16 位整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.uword(value,byRef) 将参数 @value 指定的数值或数组转换为 16 位无符号整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.int(value,byRef) 将参数 @value 指定的数值或数组转换为 32 位整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.uint(value,byRef) 将参数 @value 指定的数值或数组转换为 32 位无符号整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.long(value,byRef) 将参数 @value 指定的数值或数组转换为 64 位整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.ulong(value,byRef) 将参数 @value 指定的数值或数组转换为 64 位无符号整型数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.float(value,byRef) 将参数 @value 指定的数值或数组转换为 32 位浮点数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
-dotNet.double(value,byRef) 将参数 @value 指定的数值或数组转换为 64 位浮点数值。@byRef 参数值为 true 则支持.NET 输出或引用参数。
+所有原生 .NET 中的值在 aardio 中分为两类：
+null值、数值、字符串、枚举、 System.Drawing.Color 等简单值类型，以及这些值类型的数组可以直接交换。 
+其他原生 .NET 对象在 aardio 中存为 com.NETObject 对象（对应 .NET 中的 System.__ComObject 类型）。
 
-以上函数会将所有对应的参数值存为 .NET 对象 DispatchableObject 封包后再返回 dotNet.object 对象，
-即使简单的值类型也会转换为 dotNet.object 对象，这可以让 aardio 直接引用 .NET 中的对象，方便实现 ref,out 等输出参数。
+com.NetObject 分为：
+1、普通 .NET 对象，传入 com.IsNetObject() 返回1 
+2、封包其他原始 .NET 对象的 DispatchableObject 对象，传入 com.IsNetObject() 返回2
+一些 aardio 无法直接转换的 .NET 对象（例如 struct,ValueTuple,交错数组）会被自动封包到 DispatchableObject 内 (在传回 .NET 时会自动解包)。
+
+.NET / aardio 底层交互基于 COM 接口， 
+但 COM 接口 难以兼容 .NET 对象复杂的数据类型与语法特性（例如无法支持函数重载）， 
+aardio 为了解决这个问题，将 com.NetObject  自动封包为了更易使用的 dotNet.object。
+
+普通 .NET 对象自动封装为 dotNet.object 以后就可以直接使用。
+ 
+如果 DispatchableObject 存储的是Primitive,enum,string 类型或这些类型的普通数组。
+则在自动封装为 dotNet.object 以后，可以使用 Value 属性读写 .NET 对象原始值。 
+
+在 aardio 中可调用以下函数创建指定 .NET 类型的 dotNet.object 对象：
+
+dotNet.object(value,byRef) 
+将参数 @value 指定值或数组转换为 .NET 对象。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.buffer(size,value) 或 dotNet.buffer(value)
+等价于调用 dotNet.object( raw.buffer(...),true ) 。
+返回封包 buffer 的 dotNet.object，在 .NET 中可作为 byte[] 使用，支持.Net 输出或引用参数。 
+
+dotNet.byte(value,byRef) 
+将参数 @value 指定的数值或数组转换为 8 位整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.ubyte(value,byRef) 
+将参数 @value 指定的数值或数组转换为 8 位无符号整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.word(value,byRef) 
+将参数 @value 指定的数值或数组转换为 16 位整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.uword(value,byRef) 
+将参数 @value 指定的数值或数组转换为 16 位无符号整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.int(value,byRef) 
+将参数 @value 指定的数值或数组转换为 32 位整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.uint(value,byRef) 
+将参数 @value 指定的数值或数组转换为 32 位无符号整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.long(value,byRef) 
+将参数 @value 指定的数值或数组转换为 64 位整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.ulong(value,byRef) 
+将参数 @value 指定的数值或数组转换为 64 位无符号整型数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.float(value,byRef) 
+将参数 @value 指定的数值或数组转换为 32 位浮点数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+dotNet.double(value,byRef) 
+将参数 @value 指定的数值或数组转换为 64 位浮点数值。@byRef 参数值为 true 则支持.Net 输出或引用参数。
+
+以上函数会将所有对应的参数值存为 .NET 对象 DispatchableObject 以后，
+再封包为 dotNet.object 对象。
+
+即使简单的值类型也会转换为 dotNet.object 对象，
+这可以让 aardio 直接引用 .NET 中的对象，方便实现 .NET 的 ref,out 输出参数。  
 end details**/

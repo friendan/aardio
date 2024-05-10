@@ -215,7 +215,7 @@ class asynHttpServer{
 		var lastHeaderKey;
 		for(i=#requestHeaders;2;-1){
 			var line = requestHeaders[i];
-			if(line[1]==' ' || line[1]=='\t'){
+			if(line[1]==' '# || line[1]=='\t'#){
 				if(lastHeaderKey){
 					requestHeaders[ lastHeaderKey ] = requestHeaders[ lastHeaderKey ] ++ ..string.trimleft(line);
 				}

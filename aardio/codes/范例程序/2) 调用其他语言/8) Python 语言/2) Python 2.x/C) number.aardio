@@ -25,5 +25,8 @@ var pyFloat = pyFloat / 0xFFFFFF;
 //转换为普通 aardio 数值
 var num = tonumber(pyFloat);
 
+//调用 Python 内建函数转换数值
+var num = py2.builtin.abs(-12);
+
 console.log(num);
 console.pause(); 

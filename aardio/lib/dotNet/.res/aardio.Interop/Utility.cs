@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Collections.Generic;
 
-namespace Aardio.InteropServices
+namespace aardio.Interop
 {
     [Guid("7C856F49-0310-40F6-A1F2-B7BBB4C48F30")] //不可修改 GUID
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -92,23 +92,30 @@ namespace Aardio.InteropServices
             if (ret == null) return ret;
 
             Type t = ret.GetType();
-            if (t.IsPrimitive || t.IsEnum) return ret;
+            if (t.IsPrimitive || t.IsEnum) return ret; 
 
             if (!t.IsValueType)
             {
                if(t.IsArray){
-                    Type tEle = t.GetElementType();
+                    Type tEle = t.GetElementType(); 
                     Array arr = ret as Array;
 
-                    if (arr.GetLength(0) ==0 ) return new Aardio.InteropServices.DispatchableObject(ret, false);
+                    if (arr.GetLength(0) ==0 ) return new aardio.Interop.DispatchableObject(ret, false);
                     if (tEle.IsPrimitive || tEle.IsEnum || (typeof(string) == tEle) ) return ret;
 
                     if (tEle.IsArray)
                     {
-                        object first = WrapNonPrimitiveValueToAnyObjectRef(arr.GetValue(0));
-                        if( (first!=null) && (first.GetType() == DispatchableObjectType))
+                        if ( t.GetArrayRank() == 1 )
                         {
-                            return new Aardio.InteropServices.DispatchableObject(ret, false);
+                            return new aardio.Interop.DispatchableObject(ret, false);
+                        }
+
+                        object first = WrapNonPrimitiveValueToAnyObjectRef(arr.GetValue(0));
+                        if(first != null) { 
+                            if( first.GetType() == DispatchableObjectType ) 
+                            {
+                                return new aardio.Interop.DispatchableObject(ret, false);
+                            }
                         }
                     }
                     else
@@ -126,7 +133,7 @@ namespace Aardio.InteropServices
                     }
                     catch (InvalidOperationException)
                     {
-                        return new Aardio.InteropServices.DispatchableObject(ret, false);
+                        return new aardio.Interop.DispatchableObject(ret, false);
                     }
                     catch (Exception)
                     {
@@ -171,7 +178,19 @@ namespace Aardio.InteropServices
 
         public object GetTypeByName(object assembly, string typeName)
         {
-            return (assembly as Assembly).GetType(typeName,false);
+            Type t = null;
+            try { 
+                t = (assembly as Assembly).GetType(typeName,true);
+            }
+            catch (TypeLoadException)
+            {
+
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+            return t;
         }
 
         public object GetClassTypeByName(object assembly, string typeName)

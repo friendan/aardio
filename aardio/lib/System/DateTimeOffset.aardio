@@ -3,6 +3,6 @@ import dotNet;
 dotNet.import("System.DateTimeOffset","mscorlib") 
 
 /**intellisense()
-System.DateTimeOffset = .Net System.DateTimeOffset 结构体\n!dotNetNameSpace.
+System.DateTimeOffset = .NET System.DateTimeOffset 结构体\n!dotNetNameSpace.
 System.DateTimeOffset.Now() = 当前时间
 end intellisense**/

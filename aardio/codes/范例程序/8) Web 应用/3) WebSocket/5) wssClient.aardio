@@ -11,7 +11,10 @@ edit={cls="edit";left=25;top=21;right=733;bottom=424;edge=1;multiline=1;z=1}
 import web.SocketSharp;
 
 //此客户端支持 wss 协议
-var ws = web.SocketSharp.WebSocket ("wss://websocket-echo.com") 
+var ws = web.SocketSharp.WebSocket ("wss://websocket-echo.com"); 
+
+//自定义 HTTP 头
+ws.Headers["User-Agent"] = "my-websocket"; 
 
 ws.OnOpen = function(sender, e){
 	ws.Send("发送消息");
@@ -26,7 +29,7 @@ ws.OnError = function(sender, e){
 }
 
 ws.OnMessage = function(sender, e){
-	winform.edit.print("收到服务端消息:",e.Data)
+	winform.edit.print("收到服务端消息:",e.Data);
 }
  
 //异步连接服务端

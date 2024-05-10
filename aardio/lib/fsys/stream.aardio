@@ -45,7 +45,7 @@ class stream{
 		} 
 		else{
 			var hMemory;
-			if( str || len ){
+			if( #str || len ){
 				if(!len) len = #str;
 				len = ..math.max(len,#str) 
 				hMemory= ::GlobalAlloc( 0x2 /*_GMEM_MOVEABLE*/, len);
@@ -82,31 +82,36 @@ namespace stream{
 		read = function(len){
 			if( len === null ){
 				var d = {};
+				var buf = ..raw.buffer(1);
 				while( 
-			    	var hr,s,size;
-			    	hr,s,size = owner.stream.Read(1,1,0); 
+			    	var hr,size;
+			    	hr,size = owner.stream.Read(buf,1,0); 
 			    	( (hr)>=0/*_SUCCEEDED*/ && size )
 				) {
-					if( s == '\n' ) return ..string.join(d);
-					if(s!='\r')..table.push(d,s);
+					if( buf[1] == '\n'# ) return ..string.join(d);
+					if( buf[1]!='\r'#)..table.push(d,tostring(buf));
 				}
 				return; 
 			}
+			
 			if( len[["_struct"]] ){
 					var t = len;
-					var len =  ..raw.sizeof(t)
-					var hr,s,size = owner.stream.Read(len,len,0);
+					var buf =  ..raw.buffer(t)
+					var hr,size = owner.stream.Read(buf,#buf,0);
+
 					if(  (hr)>=0/*_SUCCEEDED*/ ) { 
-						if(size == len) return ..raw.convert(s,t);
+						if(size == #buf) return ..raw.convert(buf,t);
 					}
 					return;
 				}
 					
 			if( len < 0 ) len = ( owner.size() - owner.seek() ) + len + 1; 
-			var hr,s,size = owner.stream.Read(len,len,0);
+			
+			var buf =  ..raw.buffer(len)
+			var hr,size = owner.stream.Read(buf,len,0);
 			if(  (hr)>=0/*_SUCCEEDED*/ ) { 
-				if(size != len)return ..string.left(s,size);
-				return s;
+				if(size != len)return ..string.left(buf,size);
+				return tostring(buf);
 			}
 		};
 		readTo = function(ends){  
@@ -114,13 +119,15 @@ namespace stream{
 			var lends = #ends; 
 			var bytes = {}  
 			var push = ..table.push;
+			
+			var buf = ..raw.buffer(1);
 			while( 
 				var hr,byte,size;
-				hr,byte,size = owner.stream.Read(1,1,0);
+				hr,size = owner.stream.Read(buf,1,0);
 				(  (hr)>=0/*_SUCCEEDED*/ ) && size 
 			) {    
-				push(bytes,byte); 
-				if( byte == ends[[lends]]){ 
+				push(bytes,tostring(buf)); 
+				if( buf[1] == ends[lends]){ 
 					var l = #bytes;
 					for(i=lends-1;1;-1){ 
 						if( ends[[i]] != bytes[l-lends + i ] ){ 
@@ -134,7 +141,7 @@ namespace stream{
 		}; 
 		readBuffer = function(buf,len){
 			if(len===null) len=#buf;
-			var hr,s,size = owner.stream.Read(buf,len,0);
+			var hr,size = owner.stream.Read(buf,len,0);
 			if(  (hr)>=0/*_SUCCEEDED*/ ) {  
 				return size;
 			}
@@ -256,8 +263,8 @@ fsys.stream() = !fsys_stream.
 !fsys_stream.size() = 得到数据长度
 !fsys_stream.write( = 写数据
 !fsys_stream.write(.(数据,长度) = 写入数据\n参数@1可使用字符串、buffer、指针、结构体等\n如果指定指针就必须明确指定写入长度
-!fsys_stream.readBuffer(.(buffer,读取长度) = 读取数据到 buffer,\n参数@1应是 buffer 对象,参数@2省略则默认为缓冲区长度
-!fsys_stream.writeBuffer(.(buffer,读取长度) = buffer 写入流,\n参数@1应是 buffer 对象,参数@2省略则默认为缓冲区长度
+!fsys_stream.readBuffer(.(buffer,读取长度) = 读取数据到 buffer,\n参数@1应是 buffer 对象或指针，\n参数@2省略则默认为缓冲区长度。\n成功返回读取长度
+!fsys_stream.writeBuffer(.(buffer,读取长度) = buffer 写入流,\n参数@1应是 buffer 对象或指针，\n参数@2省略则默认为缓冲区长度
 !fsys_stream.seek("end") = 移动指针至结束处
 !fsys_stream.seek("end",__) = 移动至相对结束处的指定偏移量
 !fsys_stream.seek() = 得到当前位置

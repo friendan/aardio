@@ -8,6 +8,8 @@ import dotNet;
 
 aardio 加载的 .NET 程序找不到程序集（DLL）时，
 会查找『虚拟程序集引用表』并加载已注册的虚拟 DLL
+
+可用『 aardio 工具 / 转找工具 / .NET 引用表转换 』自动生成下面的代码。
 */
 dotNet.reference({
 	//「键」为程序集短名称（ DLL 文件名 ）。

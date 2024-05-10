@@ -106,10 +106,13 @@ WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的�
 WebView2 支持 Win10 以及之后的系统。<br>
 Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。<br>
 <br>
+实际上现在 WebView2 已经是无法卸载的系统级组件。<br>
+没有自带 WebView2 的旧系统已经非常罕见，可以忽略不记。<br>
+<br>
 
-WebView2 属于公共运行库，如果系统已安装就不需要再安装了。<br>
-未安装 WebView2 的系统 —— aardio 也会自动安装（不需要写任何代码）。<br>
-现在没有自带 WebView2 的旧系统已经非常罕见，无特殊原因可以忽略不记。<br>
+只要简洁，不求完美！<br>
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。<br>
+当然：目前 aardio 的 web.view 仍然支持在 Win7 上快速自动安装 WebView2 。<br> 
 <br>
 在网页上点右键菜单项<b>（Inspect / 检查）</b>或按 F12 键可以打开网页开发工具（ DevTools ），<br>
 在开发工具的「设置 / 语言」<b>（Settings / Language」）</b>界面可切换开发工具的界面语言。<br>

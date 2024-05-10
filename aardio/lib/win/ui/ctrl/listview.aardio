@@ -1179,7 +1179,7 @@ namespace listview{
 !listview.clear() = 清空所有项
 !listview.clear(true) = 清空所有项,并且删除所有列
 !listview.getNextItem(.(起始索引,选项) = 参数二为一个或多个 _LVNI_ 前缀的常量合并\n默认为 _LVNI_ALL \n起始索引默认为0 
-!listview.getFocused(返回字段列号) = 获取当前焦点项位置,返回数值,不存在焦点项则返回0,\n\n返回字段列号为可选参数，\n返回值2为参数为返回行指定列的文本值
+!listview.getFocused(.(返回字段列号) = 返回表示当前焦点项位置的数值。不存在焦点项则返回0。\n\n如果指定返回字段列号，则第 2 个返回值为指定列的文本值。\n不指定参数时返回值与 selIndex 属性相同。\n设置 selIndex 属性可修改当前焦点项
 !listview.getSelection(.(起始索引,返回字段列号)  = 获取选中项,返回数值,不存在选中项则返回0\n可选指定起始索引,默认为0,\n\n返回字段列号为可选参数，\n返回值2为参数为返回行指定列的文本值		
 !listview.addItem(.(文本,位置,图像索引) = 位置参数可省略,默认为count值\n图像索引可省略,默认为-1\n文本可以是一个指定多列文本的table数组,\n如果列文本不是指针、空值则自动转换为字符串,\n返回新增项行号
 !listview.addItem(.(LVITEM对象,位置) = 参数一可以是指定一个或多个LVITEM对象成员的table对象\ntext成员指定项目文件,也可以是一个指定多列文本的数组\n位置参数可省略,默认为count值\n返回新增项行号
@@ -1196,7 +1196,7 @@ namespace listview{
 !listview.setChecked(.(索引,是否勾选) = 勾选指定索引项前面的复选框，需要启用复选框支持\n参数@1为0则设置全部项目,\n参数@2省略则默认为true
 !listview.setItemState(.(项索引,状态位,掩码) = 设置状态,参数三如果省略则使用参数二的值.\n参数@1为0则设置全部项目,
 !listview.getItemState(.(项索引,状掩码 ) = 读取状态值
-!listview.selIndex = 当前获得输入焦点的选中项,\n这指的是最后一次用鼠标点击且选中的项
+!listview.selIndex = 当前获得控件内部输入焦点的选中项。\n这指的是最后一次用鼠标点选的项。\n\n如果要设置控件本身为输入焦点请调用 setFocus 函数
 !listview.fullRow = 是否选中整行
 !listview.hwnd = 控件句柄
 !listview.id = 控件ID
@@ -1241,7 +1241,7 @@ namespace listview{
 !listview.getExtended() = 获取树视图扩展样式
 !listview.getExtended(_LVS_EX__) = 获取树视图指定扩展样式
 !listview.gridLines = 是否显示网格线
-!listview.setFocus() = 设置焦点 
+!listview.setFocus() = 设置窗口的焦点到当前控件。\n如果要改变控件内部的焦点到某一行，请设置 selIndex 属性 
 !listview.setPos(.(x坐标,y坐标,宽,高,插入位置,参数) = 调整窗口位置或排序,所有参数可选\n同时指定x,y坐标则移动位置\n同时指定宽高则改变大小\n指定插入位置(句柄或_HWND前缀常量)则调整Z序
 !listview.getPos() = 返回相对坐标,宽,高\nx,y,cx,cy=win.getPos(hwnd)
 !listview.getTileViewInfo() = 返回排列显示相关属性\n!tileviewinfo.

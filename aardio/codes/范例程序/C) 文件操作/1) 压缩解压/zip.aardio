@@ -1,4 +1,4 @@
-//zip 文件压缩
+//zip 压缩
 io.open()
 
 import zlib.zip

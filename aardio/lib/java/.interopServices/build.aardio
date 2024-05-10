@@ -1,4 +1,5 @@
-import java;
+import java.jdk.v6ora;
+
 var javaCode = /****
 package aardio.interopServices;
 import java.lang.reflect.Method;
@@ -82,14 +83,20 @@ public class utility{
      	Object[] args2 = new Object[args.length-2]; 
      	boolean numberTest = false;
      	Method method = null;
+     	String methodName = (String)args[1];
      	
      	if( ownerClass.equals( Class.class ) ) ownerClass = (Class)args[0];
-  
+     	 
+     	for (int i = 2, j = args.length; i < j; i++) {    
+        	args2[i-2] = args[i];  
+        }
+         
   		try{
      		for (int i = 2, j = args.length; i < j; i++) {   
 		
          		argsClass[i-2] = args[i].getClass(); 
-         		args2[i-2] = args[i];  
+         		//args2[i-2] = args[i];  
+         		
           		if( argsClass[i-2].equals(Integer.class) ){
 					argsClass[i-2] = int.class;
 				}
@@ -157,7 +164,13 @@ public class utility{
      							method = ownerClass.getMethod((String)args[1],argsClass);	
 							}
 							catch(NoSuchMethodException e5){
-								throw e5;
+								
+								//转换测试失败，还原参数
+								for (int i = 2, j = args.length; i < j; i++) {   
+									if( args[i].getClass().equals(Double.class) ){ 
+										args2[i-2] = ((double)(Double)(args[i])); 
+									}
+     							} 
 							}	
 						}
 					}	
@@ -165,7 +178,32 @@ public class utility{
 			}
 		}    
       	
-     	return method.invoke(args[0], args2);
+      	if( method != null ){
+     		return method.invoke(args[0], args2);
+     	}
+     	
+     	Method[] methods = ownerClass.getDeclaredMethods();
+        for (Method method2 : methods) {
+            if (method2.getName().equals(methodName)) {
+                Class<?>[] parameterTypes = method2.getParameterTypes();
+                
+                if (parameterTypes.length == args.length - 2) {
+                	boolean match = true;
+                	for (int i = 2; i < args.length; i++) {
+                    	if (!parameterTypes[i - 2].isInstance(args[i])) { 
+                        	match = false;
+                        	break;
+                    	} 
+                	}
+                	
+                	if (match) {
+                    	 return method2.invoke(args[0], args2);
+                	}
+            	} 
+            }
+        } 
+        
+        throw new NoSuchMethodException("No such method found: " + methodName);
 	}     
 	public static Object createInstance(Object[] args) throws Exception {   
      	Class ownerClass = (Class)args[0];
@@ -173,12 +211,39 @@ public class utility{
      	Object[] args1 = new Object[args.length-1]; 
      	boolean numberTest = false;
      	Constructor method = null; 
-  
+     	 
+     	for (int i = 1, j = args.length; i < j; i++) {    
+         		args1[i-1] = args[i];  
+        }
+        
+     	Constructor[] constructors = ownerClass.getDeclaredConstructors();
+        for (Constructor constructor : constructors) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            if (parameterTypes.length == args.length - 1) {
+                boolean match = true;
+                for (int i = 1; i < args.length; i++) {
+                    if (!parameterTypes[i - 1].isInstance(args[i])) { 
+                        match = false;
+                        break;
+                    } 
+                }
+                if (match) {
+                    method = constructor;
+                    break;
+                }
+            }
+        }
+
+		if(method!=null){
+			return method.newInstance(args1);
+		}
+		
   		try{
      		for (int i = 1, j = args.length; i < j; i++) {   
 		
          		argsClass[i-1] = args[i].getClass(); 
-         		args1[i-1] = args[i];  
+         		//args1[i-1] = args[i];  
+         		
           		if( argsClass[i-1].equals(Integer.class) ){
 					argsClass[i-1] = int.class;
 				}

@@ -31,7 +31,7 @@ class struct {
 				this[["_structObject"]] = ..table.assign({},cls);
 			}
 			
-			var t,n = ..string.match(this[["_structObject"]]._struct,"(\a+)\s+([^,\[\s]+)\[");
+			var t,n = ..raw.typeOfArray(this[["_structObject"]]);
 			if(t && n){
 				this[["_arrayValue"]] = {_struct = t + " v";[n]=this[["_structObject"]][n][[1]]}
 			}
@@ -47,10 +47,23 @@ namespace struct{
 	var convert = ..raw.convert;
 	var copy = ..raw.copy;
 	
-	_meta = {
+	var func = {
+		get = function(){
+			return convert(owner[["_structPointer"]],owner[["_structObject"]]); 
+		};
+		set = function(v){
+			..table.assign(owner[["_structObject"]],v);
+			copy(owner[["_structPointer"]],owner[["_structObject"]]);
+		} 
+	}
+	
+	_meta = { 
 		_topointer = function(){  
 			return owner[["_structPointer"]]; 
 		}
+		_json = function(){
+			return owner.get();
+		} 
 		_call = function(...){
 			var obj = ..table.assign({},owner[["_structObject"]],...); 
 			return ..raw.struct(obj,..raw.buffer(obj));
@@ -66,10 +79,14 @@ namespace struct{
 				return ..table.tostring(struct);
 			}
 		}
-		_get = function(k){ 
+		_get = function(k,ownerCall){ 
+			if(ownerCall){
+				return func[k]
+			}
+			
 			var t = type(k);
 			if( t === "number" ){
-				if(owner[["_arrayValue"]]){
+				if(owner[["_arrayValue"]]){ 
 					convert(owner[["_structPointer"]],owner[["_arrayValue"]],,k-1);
 					return owner[["_arrayValue"]].v;
 				} 
@@ -113,4 +130,8 @@ raw.struct( = 创建静态内存结构体。\n静态内存结构体可直接传�
 raw.struct(.(结构体类) = 返回用于创建静态内存结构体的类对象,\n返回类创建静态内存结构体时自动分配 buffer 并绑定该 buffer 指针
 raw.struct(.(结构体对象) = 创建并返回静态内存结构体实例,\n返回的静态内存结构体将自动分配 buffer 并绑定该 buffer 指针
 raw.struct(.(结构体类,内存指针) = 创建并返回返回静态内存结构体实例,并绑定参数@2指定的内存指针,\n参数@1可以是结构体类或结构体实例对象
+raw.struct() = !stdRawStruct.
+!stdRawStruct.? = 读写结构体的字段值。\n每次读写都会访问绑定的原生内存并交换数据。\n\n可以使用 get 函数读出为普通结构体。\n或用 set 函数一次写入普通结构体。\n这样有更好的性能
+!stdRawStruct.get() = 读出为普通结构体。\n普通结构体操作更快，在修改完成以后\n再调用 set 函数写回去就可以了。\n\nget 函数只能用 . 成员操作符访问，且只能用于函数调用语句。\n仅获取 get 字段时作为结构体字段使用。
+!stdRawStruct.set() = 用参数 @1 指定的结构体更新对象并写入绑定的原生内存。\n参数 @1 也可以是仅指定部分结构体字段的普通表对象。\n\nset 函数只能用 . 成员操作符访问，且只能用于函数调用语句。\n仅获取 set 字段时作为结构体字段使用
 end intellisense**/

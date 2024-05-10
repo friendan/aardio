@@ -23,7 +23,7 @@ static4={cls="static";text="如果需要在运行时加载单个原始程序集�
 这时可以改用 dotNet.reference() 函数注册多个内存程序集到『虚拟程序集引用表』，
 aardio 或 .NET 程序集本身都支持这种『虚拟程序集』（除非存在访问本地程序集文件的代码）。
 但如果程序中用到相互不兼容但名字相同的程序集，用 ILMerge 合并程序集也许能解决问题。";left=133;top=431;right=735;bottom=503;notify=1;transparent=1;z=15}
-)  
+)
 /*}}*/
 
 import fsys;
@@ -37,7 +37,7 @@ winform.btnMerge.oncommand = function(id,event){
 	
 	var ilMerge = dotNet.merge(winform.editWorkDir.text);
 	ilMerge.debug = winform.chkDebug.checked;
-	ilMerge.target = winform.cmbTargetPlatform.selText;
+	ilMerge.targetPlatform = winform.cmbTargetPlatform.selText;
 	ilMerge.log = true;
 	
 	var prcs = ilMerge.popen(winform.editOutput.text,string.splitEx(winform.editInput.text,"[,\r\n]"));

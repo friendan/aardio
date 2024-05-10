@@ -24,7 +24,23 @@ namespace CSharpLibrary
  
 compiler.import("CSharpLibrary"); 
 
-//简单的数值、字符串数组可以直接交换
+/*
+1、基本纯值类型兼容的 .NET 数组、多维数组在 aardio 中
+存为 com.SafeArray 数组。COM 数组与普通 aardio 数组操作完全相同。
+
+2、交错数组在 aardio 中被封包为 DispatchableObject 对象并存为 dotNet.object 对象。
+
+3、其他 .NET 类型数组由 aardio 自转换为 .NET 类型化数组。
+并存为 dotNet.object 对象。
+
+存为 dotNet.object 的数组支持：
+1）可用 Length 属性获取数组长度。
+2）可用 1 起始的下标访问数组成员。
+3）支持 dotNet.each 遍历数组成员。
+4）可用 table.parseValue 展开。
+*/
+
+//基本纯值类型兼容的 .NET 数组、多维数组可以直接交换
 var safeArray = CSharpLibrary.Object.TestSafeArray({1,2,3});
 console.dump(safeArray); //会转换为 aardio 数组兼容的 com.SafeArray
 
@@ -33,21 +49,13 @@ var objArray = dotNet.createArray( CSharpLibrary.Object, 2 )
 objArray[1] = CSharpLibrary.Object(); //默认数组是空的
 objArray[2] = CSharpLibrary.Object(); 
 
-//这样写也可以，如果不指定数组长度，参数 @1 可以直接传入数组（传其他类型直接返回）
+//下面这样写也可以
 var objArray = dotNet.createArray( { CSharpLibrary.Object(),CSharpLibrary.Object() }  )
 
-/*
-如果普通数组首元素为 .NET 对象，
-aardio 会自动调用 dotNet.createArray() 创建一个临时的类型化数组作为参数。
-
-所以下面这样写，也不会报错。
-*/
+//下面这样写也可以，aardio 会自动转换为类型化数组。
 var objArray = { CSharpLibrary.Object(),CSharpLibrary.Object() } 
 
-//类型化数组正确匹配参数类型，不会报错
-var objArray = CSharpLibrary.Object.TestObjectArray(objArray);
-
-//但是这种数组是  .NET 对象，例如取长度要用 Length 属性而不是#。
+//.NET数组取长度要用 Length 属性而不是#。
 console.log("数组长度",objArray.Length)
 
 //访问数组的第 1 个元素（ aardio 中起始下标为 1 ）

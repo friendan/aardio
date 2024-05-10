@@ -3,5 +3,5 @@ import dotNet;
 dotNet.import("System.Console","System") 
 
 /**intellisense()
-System.Console = .Net System.Console 名字空间\n!dotNetNameSpace.
+System.Console = .NET System.Console 名字空间\n!dotNetNameSpace.
 end intellisense**/

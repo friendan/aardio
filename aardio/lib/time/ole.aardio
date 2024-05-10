@@ -19,6 +19,8 @@ class ole {
         };
         else {
         	tm = ..time( value, ... )
+        	if(!tm) return;
+        	
         	var re,n = SystemTimeToVariantTime(tm,0)
         	VariantTimeToSystemTime(n,tm) 
         }

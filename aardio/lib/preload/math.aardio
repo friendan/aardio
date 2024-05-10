@@ -17,7 +17,7 @@ _size64_meta._mod = function(b){
 };
 
 _size64_meta._div = function(b){
-	return size64(owner).div(b);
+	return size64(owner).divf(b);
 };
 
 _size64_meta._mul = function(b){
@@ -42,7 +42,15 @@ _size64_meta.swap = function(){
 };
 
 _size64_meta.divf = function(b){
-	return tonumber( owner / b )  + ( tonumber(  owner % b ) / tonumber(b) )
+	if(!tonumber(b)) return tonumber(owner)/0;
+	
+	var a = size64(owner)  
+	if(a>=b){
+		return tonumber( a.div(b) )  + ( tonumber(  owner % b ) / tonumber(b) ); 
+	}
+	else {
+		return 1 / size64(b).divf(a); 
+	}
 }
 
 isSize64  = function(v){
@@ -61,6 +69,8 @@ isInteger = function(v) {
 };
 
 stringify = function(v,p){  
+	if(isSize64(v)) return tostring(v);
+	
     var i,f = modf(v);
     return (!f) ? ..string.format("%.0f",v) : ..string.trimright(..string.format("%."+(p:15)+"f",v),"0"); 
 };
@@ -87,5 +97,5 @@ roundToEven(.(数值,精度) = 使用改良版银行家舍入法转换并返回�
 isSize64(__) = 判断参数是否 math.size64 长整数对象
 isFinite(__) = 如果参数是一个有效数值,\n并且不是正负无穷大则返回 true，否则返回 false。\n如果传入字符串会直接返回 false
 isInteger(__) = 参数是一个数值并且是整数返回true，否则返回false。\n如果传入字符串会直接返回 false
-stringify(.(数值,最大精度) = 数值转换为10进制字符串,最大精度默认为15,\n不使用科学计数法，小数尾部不会有0
+stringify(.(数值,最大精度) = 数值或 math.size64 对象转换为10进制字符串,最大精度默认为15,\n不使用科学计数法，小数尾部不会有0
 end intellisense**/

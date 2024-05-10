@@ -1,22 +1,33 @@
 //入门
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="web.form 入门";right=1151;bottom=745;parent=...;scroll=1)
+var winform = win.form(text="web.form 入门";right=892;bottom=566;parent=...;scroll=1)
 winform.add()
 /*}}*/
 
-//web.form 使用系统自带的 IE 内核，生成的 EXE 体积很小，
-//注意 Win10/11 自带 IE11，不自带 IE11 的旧系统已经很罕见一般没必要再考虑
-//即使系统删除 IE 浏览器，IE 内核浏览器的控件仍作为操作系统组件被保留。
-//改用 web.view 库可支持系统自带的 Edge Chromium 内核。
+/*
+只要简洁，不求完美！
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。
+注意 Win10/11 自带 IE11，不自带 IE11 的旧系统已经很罕见一般没必要再考虑。
+即使系统删除 IE 浏览器，IE 内核浏览器的控件仍作为操作系统组件被保留。
 
+web.form 使用系统自带的 IE 内核，生成的 EXE 体积很小。
+改用 web.view 库可支持系统自带的 Edge Chromium 内核。
+
+不要拿 web.form 去跟 web.view 比，
+请拿 web.form 跟 static 控件比。
+
+凡事多看优点，扬其长避其短：
+static 都有用，web.form 当然更有用。 
+其实 web.form 轻量，接口简洁并易于使用，还是非常好的。
+*/
 import web.form;
 var wb = web.form( winform );//参数 @1 指定嵌入窗口（可以是 winform 或 static,custom 等控件对象）。
 
 import console;
 wb.external={
 	tab = {abc=1;b=2};
-	getAardioArray = function(){
+	aardioArray = function(){
 		return wb.jsArray({12;23;34}); 
 	};
 	log = function(...){
@@ -77,17 +88,32 @@ wb.html = /**
     }
     </style> 
 </head>
-<body>
+<body style="margin:50px">
 	<button id="myId">  
-		点这里试试
+		点这里试一试
 	</button>
+<br><br>	
+只要简洁，不求完美！<br>
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。<br>
+注意 Win10/11 自带 IE11，不自带 IE11 的旧系统已经很罕见一般没必要再考虑。<br>
+即使系统删除 IE 浏览器，IE 内核浏览器的控件仍作为操作系统组件被保留。<br> 
+<br>
+web.form 使用系统自带的 IE 内核，生成的 EXE 体积很小。<br> 
+改用 web.view 库可支持系统自带的 Edge Chromium 内核。<br>
+<br>
+不要拿 web.form 去跟 web.view 比，<br>
+请拿 web.form 跟 static 控件比。<br>
+<br>
+凡事多看优点，扬其长避其短：<br>
+static 都有用，web.form 当然更有用。 <br>
+其实 web.form 轻量，接口简洁并易于使用，还是非常好的。<br>
 </body>
 </html>
 **/
   
 var js = /**
-	external.log( "Hello,Aardio!" )
-	external.log( "Welcome to Aardio!",event.srcElement.id );
+	external.log( "Hello, aardio!" )
+	external.log( "Welcome to aardio!",event.srcElement.id );
 	//枚举js数组
 	$enum(
 		[1,2,3],
@@ -104,7 +130,7 @@ var js = /**
 	)
 	//枚举aardio数组
 	$enum(
-		external.getAardioArray(),
+		external.aardioArray(),
 		function(k,v){
 			external.log(k,v)
 		}

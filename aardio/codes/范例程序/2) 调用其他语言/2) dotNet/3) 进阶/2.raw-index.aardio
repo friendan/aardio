@@ -6,8 +6,25 @@ import dotNet;
 dotNet.import("System"); 
 
 /*
-下面扩展 .NET 类的构造函数，
-只要（且仅仅）在 aardio 代码内构造 .NET 对象，就会触发这个扩展构造函数。 
+导入的 .NET 类如果定义名为 "ctor(...)" 的扩展构造函数。
+则该函数将在 aardio 构造 .NET 类之前执行。
+*/
+System.Uri[["ctor(...)"]] = function(netCtor,url,...){
+	
+	//在这里可以改动、检测构造参数
+	if(!url) error("参数 @1 请指定网址",3);
+	
+	//调用真实的构造函数 netCtor 创建对象，该函数成功返回对象，失败返回 null,错误信息
+	var obj,err = netCtor(url,...); //返回新的构造参数
+	
+	//返回创建的对象
+	return obj,err;
+} 
+
+/*
+在 aardio 中实例化 .NET 类以后，
+可自动调用名为 "ctor" 的扩展构造参数（不能拦截构造参数，也不需要返回值）。 
+这个函数的参数就是已经创建的 .NET 对象实例。
 */
 System.Uri[["ctor"]] = function(this){ //this 参数为已创建的 .NET 对象实例
 	
@@ -24,4 +41,4 @@ System.Uri[["ctor"]] = function(this){ //this 参数为已创建的 .NET 对象�
 var uri = System.Uri("https://www.aardio.com/test?q=aardio")
  
 //调用 .NET 对象实例的成员函数
-console.log( uri.getHostAndHashCode() );
+console.log( uri.getHostAndHashCode() ); 

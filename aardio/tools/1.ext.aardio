@@ -180,6 +180,9 @@ var openSample = function(libName){
 	 		..process.explore("/.sampleCode/" + libName)
 	 	} 
 	}
+	elseif( libInfo.codeDir){
+		process.execute(  libInfo.codeDir )
+	}
 	elseif( libInfo.codePath ){
 		ide.openDocument(  libInfo.codePath )
 	}

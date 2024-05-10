@@ -92,6 +92,7 @@ var aardioObject =  {
     	    */
     	    netObject = dotNet.object(netObject);
     	    
+    	    //无论.NET 回调是否在同一线程，被 .NET 回调的 aardio 函数总是在原调用线程执行（不必考虑多线程规则与同步）。  
     		console.log("aardio 对象被 C# 调用了，参数:",a,b)
 			return a + b; 
     	} 

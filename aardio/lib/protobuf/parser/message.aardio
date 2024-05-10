@@ -32,9 +32,38 @@ class message{
 					 
 				return ".." + t;
 			}
-		
+			
+			if(msg.isRootPackage){
+				break;
+			}
+		 
 			msg = msg.parent
 		}while(msg) 
+		
+		var package = this.parentPackageNode; 
+		var msg = package[name];
+			
+		if(!msg){ 
+			
+			msg = ..table.getByNamespace(name,this.packageTree);
+			if( msg && !msg.isClass){
+				error("Error message type:" + name,2)
+			}
+		}
+		
+		if( msg && msg.isClass){ 
+			var t = combineNamespace( this.nameSpace,name);
+			if(member) t = combineNamespace( t,member)
+					
+			return ".." + t;
+		}
+		
+		if( msg &&( msg.subMessage[name] || msg.subEnum[name]) ){   
+			var t = combineNamespace( msg.nameSpace,name);
+			if(member) t = combineNamespace( t,member)
+					
+			return ".." + t;
+		} 
 		 
 		error("Error message type:" + name,2)
 		 
@@ -185,6 +214,7 @@ class message{
 		intellisense ++= intellPath + " = " + 'Protobuf 消息对象\r\n'
 		intellisense ++= intellPath + "() = " + '创建 Protobuf 消息对象。\\n' + intellClsDot + '\r\n' 
 		intellisense ++= intellClsDot  + 'parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\\n因此应对新创建的对象调用此函数.\r\n'
+		intellisense ++= intellClsDot  + 'parseValue() = 调用 table.parseValue 获取纯值表。\\n纯值表只包含纯值类型数据，\\n纯值类型指的是：字符串、数值、布尔值、buffer、指针、纯值表。\\n纯值表要么是数组，要么是包含名值对的表。\\n\\n纯值表是可保持原值序列化的表，并且兼容 JSON\r\n'
 		intellisense ++= intellClsDot  + 'serializeToString() = 序列化消息对象,返回二进制字符串\r\n'
 		intellisense ++= intellClsDot  + 'eachName() = @for k,v in ??.eachName(){\n	__/*遍历此消息对象的所有字段，\nk 为字段名,v 为字段值。*/\n}\r\n'
 
@@ -247,6 +277,19 @@ class message{
 	
 	serialize = function(indentSpace=""){
 		var template = ..protobuf.parser.template;
+		
+		if( !this.isClass ){ //package
+			var clsNamespace = template.classNamespace.format(
+				className = this.name;
+				fieldMetas = fieldMetas;
+				subClasses = this.serializeSubMessage(indentSpace);
+				subEnums = this.serializeSubEnum(indentSpace);
+				fieldKeys = fieldKeys;
+			);
+			clsNamespace = indentString(clsNamespace,indentSpace);	
+			return '\r\n' + clsNamespace + '\r\n';
+		}
+		
 		var fileds,fieldMetas,fieldKeys = this.serializeField(indentSpace);
 		
 		var clsDefine = template.classDefine.format(

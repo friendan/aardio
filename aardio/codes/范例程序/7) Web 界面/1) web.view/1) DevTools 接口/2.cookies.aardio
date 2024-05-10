@@ -19,12 +19,20 @@ wb.waitEle("body"); //等待 CSS 选择器指定的节点
 wb.cdp("Network.getCookies",
 	{urls={"https://bbs.aardio.com"}},//参数可省略
 	function(result){
+		//上面的 CDP 调用会立即返回，不会阻塞等待 CDP 调用结果
 		import console;
 		console.dumpJson(result.cookies);
 		//https://chromedevtools.github.io/devtools-protocol/tot/Network/#method-getCookies
 	} 
 );
-//上面的 CDP 调用会立即返回，不会阻塞等待 CDP 调用结果
+
+/*
+web.rest 所有客户端可自动获取 web.view 的 Cookies ：
+
+import web.rest.jsonLiteClient;
+var http = web.rest.jsonLiteClient();
+http.setCookies(wb);
+*/
  
 winform.show();
 win.loopMessage();

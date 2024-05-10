@@ -3,5 +3,5 @@ import dotNet;
 dotNet.import("System.Array","mscorlib")
 
 /**intellisense()
-System.Array = .Net System.Array 名字空间\n!dotNetNameSpace.
+System.Array = .NET System.Array 名字空间\n!dotNetNameSpace.
 end intellisense**/

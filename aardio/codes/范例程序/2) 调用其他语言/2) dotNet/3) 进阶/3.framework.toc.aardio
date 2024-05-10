@@ -12,6 +12,80 @@ static2={cls="static";text="版本：";left=549;top=10;right=597;bottom=35;align
 )
 /*}}*/
 
+winform.edit.limit = -1;
+winform.button.oncommand = function(id,event){
+	if(!#winform.editNameSpace.text){
+		return winform.editNameSpace.showErrorTip("请输入 .NET 名字空间")
+	}
+	winform.edit.text = "";
+	 
+	thread.invoke( 
+		function(winform,netNamespace,netVersion){
+			winform.button.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}	
+			
+			//创建 HTML + HTTP 客户端
+			import web.rest.htmlClient;
+			var htmlClient = web.rest.htmlClient();
+			
+			//创建 JSON + HTTP 客户端
+			import web.rest.jsonClient; 
+			var jsonClient = web.rest.jsonClient();  
+			
+			//声明远程 API
+			var apiUrl = "https://learn.microsoft.com/en-us/dotnet/api/_splitted/{namespace}/toc.json?view=netframework-"+netVersion;
+			var tocApi = jsonClient.api(apiUrl);	
+			
+			//抓取 JSON 并自动解析
+			var tocInfo = tocApi[netNamespace].get(); 
+			if(!tocInfo){
+				winform.button.disabledText = null;
+				winform.msgboxErr("获取数据失败");
+				return;
+			}
+			 
+			var map = {} 
+			for(i,item in tocInfo.items[1][["children"]] ){ 
+				var apiName = item.uid;
+    			var url = inet.url.joinpath(apiUrl,item.href);
+				url = inet.url.canonicalize(url) 
+			   
+			   	//抓取 HTML 并解析
+				var htmlDoc = htmlClient.get( url,{view="netframework-"+netVersion}); 
+				
+				//查找程序集名称
+				var assembly;
+				for ele in htmlDoc.eachQuery(tagName="dl"){
+					
+					var moniker = ele["data-moniker"]; 
+					if( moniker && string.find(moniker,"netframework-"+netVersion)){
+						if(ele.dd[1]){
+							assembly = ele.dd[1].innerText() 
+							if(..string.endWith(assembly,".dll")){
+								break;
+							} 
+						}
+					}
+				}
+				
+				if(!assembly) continue;
+				
+    			winform.edit.print(apiName,assembly) 
+				
+				if(!map[assembly]){
+					map[assembly] = {}	
+				}
+				
+				table.push(map[assembly],apiName);
+			}
+			
+			import web.json;
+			winform.edit.text = web.json.stringify(map,true);
+			winform.button.disabledText = null;
+			
+		},winform,winform.editNameSpace.text,winform.editNetVersion.text
+	)
+}
+
 winform.edit.text = /***************** 
 //aardio 导入 .NET 名字空间示例
 import dotNet;
@@ -31,83 +105,6 @@ dotNet.import("System.Security.Cryptography.X509Certificates","System");
 就用该 DLL 导入该名字空间，可以少写 dotNet.import 语句。
 */
 *****************/
-
-winform.edit.limit = -1;
-winform.button.oncommand = function(id,event){
-	if(!#winform.editNameSpace.text){
-		return winform.editNameSpace.showErrorTip("请输入 .NET 名字空间")
-	}
-	winform.edit.text = "";
-	 
-	thread.invoke( 
-		function(winform,netNamespace,netVersion){
-			winform.button.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}	
-			
-			import string.html;
-			import web.rest.client; 
-			var http = web.rest.client(); 
-			
-			var apiUrl = "https://learn.microsoft.com/en-us/dotnet/api/_splitted/"+netNamespace+"/toc.json?view=netframework-"+netVersion;
-			var html = http.get(apiUrl);
-			
-			if(!html){
-				winform.button.disabledText = null;
-				winform.msgboxErr("获取数据失败");
-				return;
-			}
- 			
- 			var lenNameSpace = #string.split(netNamespace,".")+1;
- 			
-			var map = {} 
-			for href in string.gmatch( html,`"href"\:\s*"(.+?)"`) {  
-    			var url = inet.url.joinpath(apiUrl,href);
-				url = inet.url.canonicalize(url) 
-				
-				var filename = inet.url.getFileName(url);
-				if(#string.split(filename,".")>lenNameSpace){
-					continue
-				}
-				
-				var bin = http.get(url+"?view=netframework-"+netVersion) 
-				var htmlDoc = string.html(bin)
-				
-				for ele in htmlDoc.eachQuery(tagName="dl"){
-					if(ele["data-moniker"] && string.find(ele["data-moniker"],"netframework-4.0")){
-						if(ele.dd[1]){
-							dll = ele.dd[1].innerText() 
-							if(..string.endWith(dll,".dll")){
-								break
-							} 
-						}
-					}
-				}
-				
-				for ele in htmlDoc.eachQuery(tagName="meta",name="APIName"){
-					if(ele["content"] && string.cmp(ele["content"],filename)==0){
-			 			filename = ele["content"];
-					}
-				} 
-			
-    			winform.edit.print(filename,dll)
-				
-				if(!dll){
-					continue
-				}
-				
-				if(!map[dll]){
-					map[dll] = {}	
-				}
-				
-				table.push(map[dll],filename)
-	 			
-			}
-			
-			import web.json;
-			winform.edit.text = web.json.stringify(map,true);
-			winform.button.disabledText = null;
-		},winform,winform.editNameSpace.text,winform.editNetVersion.text
-	)
-}
 
 winform.show();
 win.loopMessage();

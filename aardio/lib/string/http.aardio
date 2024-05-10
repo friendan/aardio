@@ -1,0 +1,99 @@
+﻿//http 消息格式
+
+import web;
+import web.json;
+
+namespace string;
+
+class http{
+	ctor(startLine,header,...){
+		var args = {
+			startLine,header,...
+		}
+		
+		var bodyIndex;
+		if(type(startLine)=="string" && type(header)=="table"){ 
+			args[2] = ..web.joinHeaders(args[2]);
+			bodyIndex = 3;
+		}
+		elseif( type(startLine)=="table" ){
+			args[1] = ..web.joinHeaders(args[1]);
+			bodyIndex = 2;
+		}
+		
+		if(#args==bodyIndex){
+			if(type(args[bodyIndex])=="table"){
+				if(!header["Content-Type"]){
+					header["Content-Type"] = "application/json; charset=utf-8"
+				}
+				
+				args[bodyIndex] = ..web.json.stringify(args[bodyIndex]);
+			}
+		}
+	
+		args = ..table.map(args,lambda(v)tostring(v)); 
+		return ..string.join(args,'\r\n');
+	}; 
+} 
+
+http.parse = function(respData){
+	var headers,body = ..string.match(respData,'(.+?)<\r\n\r\n>(.+)');
+	if(!headers){
+		
+		headers = {};
+		
+		//获取符合 HTTP 头格式的行
+		var bodyPos; 
+		for line,pos in ..string.gmatch(respData ,"\s*([^\:]+?\s*\:\s*\N+?)\s*\r\n()") { 
+			bodyPos = pos;
+			..table.push(headers,line); 
+		}
+		 
+		//剩余数据为 body
+		if(bodyPos){
+			body = ..string.slice(respData,bodyPos);
+		}
+	}
+	else {
+		headers = ..string.splitEx(headers,"\r\n");
+	} 
+	
+	if(!#headers) return headers,body;
+	
+	if(..string.startWith(headers[1],"HTTP")){
+		headers[0] = ..table.shift(headers,1);
+	}
+	
+	var lastHeaderKey;
+	for(i=#headers;1;-1){
+		var line = headers[i];
+		if(line[1]==' '# || line[1]=='\t'#){
+			if(lastHeaderKey){
+				headers[ lastHeaderKey ] = headers[ lastHeaderKey ] ++ ..string.trimleft(line);
+			}
+			continue;
+		};
+			
+		var h = ..string.splitEx(line,"\:\s*",2); 
+		if(#h!=2) {
+			break;
+		}
+		
+		h[1] = ..string.trim(h[1]); h[2] = ..string.trim(h[2]);
+		
+		lastHeaderKey = ..string.lower(h[1])
+		headers[ lastHeaderKey ] = h[2]; 
+		headers[i] = {lastHeaderKey;h[2]};
+	}
+	
+	headers@ = { _type="object" };
+	
+	return headers,body;
+}
+
+/*****intellisense()
+inet.http = 用于构建类 HTTP 请求消息，并解析类 HTTP 应答消息
+inet.http( = 构建类 HTTP 请求消息
+inet.http(.(header,body) = header 可以是指定请求头名值对的表，\n也可以是任何 web.joinHeaders 兼容的表或数组。\nbody 可以是任何数据。\n如果 body 是一个表则转换为 JSON ，\n如果未指定请求头  Content-Type，\n则同时修改其值为 "application/json; charset=utf-8"\n\n可选在第一个参数前面添加一个字符串参数以加在 HTTP 请求头之前。\n如果有更多参数，则不转换 JSON 且全部转为字符串拼接。\n拼接分隔符为 '\r\n'，header 与 body 间则为 '\r\n\r\n'
+inet.http.parse() = 按 HTTP 协议兼容规则解析响应消息。\n参数支持字符串或 buffer。\nHTTP 头解析为表对象，头名字转为小写。\nbody 作为第二个返回值。\n如果 header 与 body 间只用了单个 '\r\n' 分隔。\n则最后一行转换为 body 返回
+end intellisense*****/

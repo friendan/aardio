@@ -3,5 +3,5 @@ import dotNet;
 dotNet.import("System.DateTime","mscorlib") 
 
 /**intellisense()
-System.DateTime = .Net System.DateTime 结构体\n!dotNetNameSpace.
+System.DateTime = .NET System.DateTime 结构体\n!dotNetNameSpace.
 end intellisense**/

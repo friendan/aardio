@@ -22,7 +22,7 @@ addElement.Item["name"] = "aardio";
 addElement.Item["path"] = "*.aardio";
 addElement.Item["verb"] = "*";
 addElement.Item["modules"] = "FastCgiModule";
-addElement.Item["scriptProcessor"] = "D:\AardioCGI\Publish\AardioCGI.exe";
+addElement.Item["scriptProcessor"] = "D:\aardioCGI\Publish\aardioCGI.exe";
 handlersCollection.AddAt(0, addElement);
 */
 

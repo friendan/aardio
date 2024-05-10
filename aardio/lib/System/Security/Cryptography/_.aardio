@@ -29,7 +29,9 @@ try{
 */
  
 /*****intellisense()
-System.Security.Cryptography = .Net 名字空间 System.Security.Cryptography 导入库。\n导入了:\nSystem.Security.Cryptography\n \nSystem.Security.Cryptography.X509Certificates\nSystem.Security.Cryptography.X509Certificates.CertificateRequest\n!dotNetNameSpace.
+System.Security.Cryptography = .NET 名字空间 System.Security.Cryptography 导入库。\n导入了:\nSystem.Security.Cryptography\n \nSystem.Security.Cryptography.X509Certificates\nSystem.Security.Cryptography.X509Certificates.CertificateRequest
+System.Security.Cryptography.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+System.Security.Cryptography.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
 end intellisense*****/
 
 

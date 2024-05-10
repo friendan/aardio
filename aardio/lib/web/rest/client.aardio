@@ -31,8 +31,8 @@ class client{
 	};
 	request = function(url,params,httpMethod,urlParams,receiveCallback,...){
 		
-		if(owner.__httpFileMethod){
-			var send = this[owner.__httpFileMethod];
+		if(owner.__clientMethod){
+			var send = this[owner.__clientMethod];
 			var ok,err = send(params,urlParams,receiveCallback,...);
 			urlParams,receiveCallback = null,null;
 			
@@ -41,6 +41,7 @@ class client{
 		}
 		
 		httpMethod = !httpMethod ? owner.__httpMethod  : httpMethod;
+		
 		this.lastRequestInfo = {
 			url = url,
 			params = type(params) =="table" ? ..table.assign({},params) : params,
@@ -132,6 +133,7 @@ class client{
 			,headers,this.referer,this.acceptType,this.lastRequestMethod,owner[["__httpFlags"]]); 
 			
 		this.contentType = this.defaultContentType;
+		this.lastResponseContentType =  this._http.responseContentType;
 		
 		if(receiveCallback){
 			this._http.onReceive = null;
@@ -154,7 +156,7 @@ class client{
 		}
 
 		this.lastStatusCode = this._http.statusCode;  
-		if( ret ) {
+		if( ret ) {  
 			if( this._http.responseContentType ){
 				var charset = ..string.match(this._http.responseContentType,";\s*charset\s*=\s*([^;\s]+)");
 				if( charset ) {
@@ -163,7 +165,11 @@ class client{
 				}
 			}
 			
-			if( ret === true ) return ret; 
+			//HEAD 请求
+			if(!type.isString(ret)){
+				return ret;
+			}
+			 
 			if(  ret[1] == 0xEF  && ret[2] == 0xBB && ret[3] == 0xBF ){
 				ret = ..string.right(ret,-4) ;
 				utf8 = true;
@@ -225,6 +231,12 @@ class client{
 			return null,errMsg,errCode;
 		}
 	};
+	headPost = function(url,params){
+		return this.request(url,params,"HEADPOST");	
+	};
+	headGet = function(url,params){
+		return this.request(url,params,"HEADGET");	
+	};
 	head = function(url,params){
 		return this.request(url,params,"HEAD");	
 	};
@@ -250,6 +262,11 @@ class client{
 	lastStatusMessage = function(){
 		if(this.lastStatusCode)return ..inet.httpStatusCode[this.lastStatusCode],this.lastStatusCode;
 	};
+	lastResponse = function(){
+		var s = this.lastResponseData;
+		if( ..console && _STUDIO_INVOKED ) ..console.log(s) else ..io.print(s);
+		return s;
+	};
 	lastResponseString = function(){
 		return this.lastResponseData;
 	};
@@ -260,8 +277,11 @@ class client{
 			return e;
 		}
 	};
-	lastResponseHeaders = function(name){
-		return this._http.responseHeaders; 
+	lastResponseHeaders = function(name,index){
+		return this._http.readHeader(name,index);
+	}; 
+	lastResponseHeaderList = function(name){
+		return this._http.readHeaderList(name);
 	};
 	api = function(urlTemplate,httpMethod="POST",pattern,httpFlags ){
 		if(!urlTemplate){
@@ -391,6 +411,9 @@ class client{
 	
 		return true;
 	};
+	setCookie = function(...){
+		return ..inet.setCookie(...);
+	};
 	close = function(){
 		this._http.close();
 	};
@@ -428,15 +451,21 @@ namespace client {
 				} 
 				
 				if(#defMethod){
-					api.__httpMethod = defMethod;
+					if(owner[["__httpMethod"]]!="HEAD"){
+						api.__httpMethod = defMethod;
+					}
+					else {
+						api.__httpMethod = "HEAD" + defMethod;
+					} 
+					
 					if(#k > #defMethod){
 						api = api[ _defaultMethodUrl[k] ]
 					}
 				}
 				else {
-					if(k==="getUrl") return lambda() owner.__urlReal;
+					if(k==="getUrl") return lambda()  owner.__urlReal; 
 					api.__httpMethod = owner[["__httpMethod"]];
-					api.__httpFileMethod = k;
+					api.__clientMethod = k;
 				}
 				
 				owner[[k]] = api;
@@ -535,7 +564,7 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 !web_restClient.encodeKey = 自定义替换 API 网址变量值使用的编码函数,\n此函数接收一个资源名参数,返回编码后的资源名,\n必须在定义 API 对象之前指定,\n默认已指定为 inet.url.encodeMbcs 函数
 !web_restClient.defaultUrlTemplate = 默认API网址模板
 !web_restClient.extraParameters = 指定附加到所有请求参数中的默认参数\n该值应当是一个表,请求参数指定表对象时或为null才会附加extraParameters
-!web_restClient.extraUrlParameters  = 指定附加到所有请求URL的默认参数\n该值可以是一个表或字符串
+!web_restClient.extraUrlParameters  = 指定附加到所有请求 URL 的默认参数。\n该值可以是一个表或字符串。\n表参数使用 inet.url.stringifyParameters 转换为字符串。\n表中的值如果是函数则每次请求都调用该函数取值
 !web_restClient.acceptType = 期望返回的MIME内容类型,多个类型用逗号分隔
 !web_restClient.contentType = 写入HTTP头ContentType属性的内容类型\n设为null空值,或每次请求完成将自动重置为defaultContentType
 !web_restClient.defaultContentType = 默认内容类型
@@ -545,14 +574,23 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 !web_restClient.referer = 引用页地址\n如果此属性指定了一个值，则每次请求都会使用该引用页\n如果不指定，每次请求都会自动设置上次请求的网址为引用页\n这个属性不像inet.http对象的referer属性那样每次请求结束都会清空
 !web_restClient.charset = 指定服务端使用的编码,默认为"UTF-8",\n服务端HTTP响应头里如果显式指定了编码，会自动修改此属性\n对于服务端返回的数据,会根据charset自动转换为aardio默认的UTF8编码\n对于请求参数,如果使用JSON编码统一转换为Unicode编码格式,不需要考虑编码转换,\n如果使用UrlEncode编码与浏览器的规则一致，根据charset转换为对应编码后提交，\n开发服务端接口应统一使用UTF8编码,可避免任何乱码问题
 !web_restClient.getUserAgent() = 返回HTTP客户端请求HTTP头中用户代理头的值,\n该值可在创建HTTP客户端的构造参数中指定
-!web_restClient.setAuth( = 设置登录名,密码
+!web_restClient.setAuth( = 设置登录名,密码，或者设置 API Key 与 Secret Key
 !web_restClient.setAuth(.("登录名","密码") = 设置登录名,密码,\n默认用于HTTP登录认证\n,\n支持 Basic , Digest 认证\n\n此函数会清空 setAuthToken 设置的认证令牌（token）
+!web_restClient.setAuth(.("API Key","Secret Key") = 设置 API Key，Secret Key。\n此函数会清空 setAuthToken 设置的认证令牌（token）
 !web_restClient.setAuthToken( = 设置认证令牌（token）
-!web_restClient.setAuthToken(.(token,tokenType) = 设置认证令牌（token）。\n@token 可指定令牌，也可以指定返回令牌的网址。\n@tokenType 为可选参数，默认为"Bearer"。\n如果指定了令牌，则会添加请求头 "Authorization:Bearer 令牌"\n\n此函数会清空 setAuth 设置的用户名与密码
+!web_restClient.setAuthToken(.(token,tokenType) = 设置认证令牌（token）。\n@token 可指定令牌，也可以指定返回令牌的网址。\n@tokenType 为可选参数，默认为"Bearer"。\n如果指定了令牌，则会添加请求头 "Authorization:Bearer 令牌"。\n@tokenType 也可以指定为空字符串。\n\n此函数会清空 setAuth 设置的用户名与密码
+!web_restClient.setCookie( = 调用 inet.setCookie 设置 Cookies 。\nweb.rest,inet.http,web.form 等共享 Cookies 设置。\n\n此函数用法与 inet.setCookie 函数完全相同。\n这里仅列出几种常用的参数用法，\n其他用法请查看 inet.setCookie 函数说明
+!web_restClient.setCookie(.("网址","值","键",过期时间或天数) = 设定指定网址的 Cookie。\n第一个参数指定 Cookie 生效的网址。\n如果不指定值则删除删除指定名字的会话 cookie 与持久 Cookie，\n如果指定名字与值则设置 Cookie，如果不指定过期时间则仅设置会话 Cookie，\n否则设置为持久 Cookie。\n可选参数 @4 使用 time 对象指定过期时间，或用数值指定过期天数
+!web_restClient.setCookie(.(webView) = 传入 web.view 可直接获取浏览器控件的 Cookies\n作为 inet.setCookie 的参数，设置为 inet.http 可用的 Cookies 。\nweb.form,web.rest,inet.http 共享此 Cookies 设置
+!web_restClient.? = web.rest.client 或继承自 web.rest.client 的对象的其他成员函数或属性。\n请查看相关库函数文档或源码
 !web_restClient.ok() = 最后一次请求是否成功\n服务器应答并且状态码为2XX该函数返回真
 !web_restClient.lastStatusCode = 获取最近一次请求返回的HTTP状态码\n100 ~ 101 为信息提示\n200 ~ 206 表示请求成功\n300 ~ 305 表示重定向\n400 ~ 415 表求客户端请求出错\n500 ~ 505 表示服务端错误
 !web_restClient.lastStatusMessage() = 获取最近返回的HTTP状态码文本描述\n第二个返回值为状态码
-!web_restClient.lastResponseHeaders() = 如果调用了head方法\n该函数返回所有应答HTTP头,文本格式,每行以冒号分隔的名值对
+!web_restClient.lastResponseContentType = 服务器响应头 Content-Type 的值
+!web_restClient.lastResponseHeaders( = 获取返回的 HTTP 响应头
+!web_restClient.lastResponseHeaders(.() = 获取返回的 HTTP 响应头。\n如果调用 head, headGet, headPost 等函数。\n或调用 或 API 对象的 head.get,head.post 等函数，\n则在请求成功后可调用此函数读取 HTTP 头
+!web_restClient.lastResponseHeaders(.("Content-Length:") = 获取单个指定的 HTTP 服务器响应头，返回字符串。\n参数指定HTTP头名字或部分名字，忽略大小写，忽略冒号以后部分。\n如果调用 head, headGet, headPost 等函数。\n或调用 或 API 对象的 head.get,head.post 等函数，\n则在请求成功后可调用此函数读取 HTTP 头
+!web_restClient.lastResponseHeaderList("__") = 获取所有指定字符串作为开始段的 HTTP 头。\n忽略大小写，不忽略冒号以后部分。\n不指定参数则读取全部响应头。\n返回键值对组成的表对象，键名转为小写，每个值都是一个数组。\n如果调用 head, headGet, headPost 等函数。\n或调用 或 API 对象的 head.get,head.post 等函数，\n则在请求成功后可调用此函数读取 HTTP 头 
 !web_restClient.lastResponse() = 获取最后一次服务器返回的数据,\n如果控制台已打开或在开发环境中导入 console 库则在控制台输出数据\n下载文件时该值为空
 !web_restClient.lastResponseString() =  获取最后一次服务器返回的原始数据，\n请求失败，或者下载文件时此属性值为空
 !web_restClient.lastResponseError() =  返回服务器最后一次返回的错误响应，并转换为错误对象。\n与调用 API 时转换响应数据一样，支持相同的服务器响应格式 。\n如果错误来自本地（lastStatusCode 属性为 null）则此函数返回 null 。\n如果最后一次发生请求成功，则此函数返回 null 。\n\n如果在参数 @1 中指定返回字段，且错误对象包含该字段则使用直接下标获取并返回字段值。\n获取字段失败返回 null 而非抛出异常
@@ -592,7 +630,9 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 !web_restClient.requestEx(.(lastRequstInfo) = 用于重新发送请求，\n参数必须指定当前对象的lastRequestInfo属性
 !web_restClient.request( = 发送请求,\n该函数不会解析URL中的模板参数
 !web_restClient.request(.(网址,参数表,"HTTP动词",URL参数表) = 除参数@1以外，其他所有参数都可以省略,\n省略参数@3则使用默认的调用方法\n成功返回数据,失败返回空值,错误信息,错误代码
-!web_restClient.head(.(网址,参数表) = 使用该HEAD方法提交请求\n如果该函数返回非null值为成功,请使用lastResponseHeaders获取应答HTTP头\n成功返回数据,失败返回空值,错误信息,错误代码
+!web_restClient.headGet(.(网址,参数表) = 使用 GET 方法提交请求，但仅获取 HTTP 头。\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头\n成功返回数据,失败返回空值,错误信息,错误代码
+!web_restClient.headPost(.(网址,参数表) = 使用 POST 方法提交请求，但仅获取 HTTP 头。\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头\n成功返回数据,失败返回空值,错误信息,错误代码
+!web_restClient.head(.(网址,参数表) = 使用 HEAD 方法提交请求\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头。\n成功返回 true,失败返回 null,错误信息,错误代码
 !web_restClient.get(.(网址,参数表,接收数据回调函数) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度
 !web_restClient.post(.(网址,参数表,接收数据回调函数) = 使用该POST方法提交请求,新增或修改资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度
 !web_restClient.get(.(网址,参数表) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码

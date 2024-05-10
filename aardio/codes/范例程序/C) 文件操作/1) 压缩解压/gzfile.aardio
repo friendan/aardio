@@ -1,4 +1,4 @@
-//读写 gzip 文件
+//gzip 读写
 
 import zlib;
 

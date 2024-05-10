@@ -1,60 +1,30 @@
 //入门
-import console;//此库函数打开控制台会自动绑定 Python 标准输出输入。
-
-//在开发环境运行代码 —— aardio 会自动安装缺少的 py3 扩展库，很简单！
+import console.int;  
 import py3;
-
-//aardio + Python 入门教程系列：
-//https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA3Njc1MDU0OQ==&action=getalbum&album_id=2270340412479438855#wechat_redirect
-//aardio 语法速览: https://mp.weixin.qq.com/s/wk2oe5USuBvTs3QWdjyYhw
-//Python 语法速览: https://quickref.me/zh-CN/docs/python.html
-
+ 
 //导入 Python 模块
 var math = py3.import("math");
 
-//调用 Python 模块的函数，可使用纯 aardio 类型的调用参数。
+/*
+调用 Python 模块的函数。
+Python 函数返回的所有值都是 pyObject 引用。
+哪怕是一个整数值，也是  pyObject 对象。 
+*/
 var pyInt = math.floor(22.3);
 
-// Python 函数返回的值都是 pyObject —— 在 aardio 中都基于 py3.object 构建。 
-console.log("返回 Python 对象的类型:",pyInt.type() );
+//调用 pyObject 的成员函数获取类型名：
+var typename = pyInt.type(); 
 
-//pyObject 可用 parseValue() 可转换为纯 aardio 对象。
+//转换为纯 aardio 数值，pyObject 支持 tonumber(),tostring() 等类型转换函数。
+var n = tonumber( pyInt );  
+
+//所有 pyObject 都可以调用 parseValue() 转换为 aardio 纯值类型。
 var v = pyInt.parseValue();
+/*
+pyObject 也支持用 table.parseValue 转换为 aardio 纯值类型。
+aardio 纯值类型指的是字符串、数值、布尔值、buffer、指针、纯值表。
+纯值类型可以保持原值序列化，并与 JSON 兼容。
+*/
 
-//pyObject 也支持 tonumber(),tostring() 等类型转换函数。
-var n = tonumber( pyInt ); 
-console.dump( n );
-
-//调用 Python 内建函数
-var n = py3.builtin.abs(-12);
-console.log(n);
-
-//定义 Python 函数
-var pyCode = /**  
-def getList(items):  
-    return items
-**/ 
-
-//执行 Python 代码
-py3.exec( pyCode );
-
-//从 py3.main 模块获取并调用 Python 创建的函数 
-var pyList = py3.main.getList({1,2,3});
-
-// pyObject 提供 each 迭代器
-for( item in pyList.each() ){
-	console.log(item);
-}
-
-// pyObject 支持 table.eachIndex 创建的迭代器
-for i,v in table.eachIndex(pyList){
-	console.log(i,v);
-}
-
-// pyObject 支持 web.json 
-console.log( web.json.stringify(pyList) );
-
-// pyObject 支持 tostring() 等函数，注意 console.log() 已默认调用 tostring() 转换参数
-console.log( tostring(pyList) );
-
-console.pause();
+//pyObject 自动支持 web.json
+console.dumpJson(pyInt)

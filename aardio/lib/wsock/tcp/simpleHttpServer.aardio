@@ -111,7 +111,7 @@ class simpleHttpServer{
 					var lastHeaderKey;
 					for(i=#httpHeaders;1;-1){
 						var line = httpHeaders[i];
-						if(line[1]==' ' || line[1]=='\t'){
+						if(line[1]==' '# || line[1]=='\t'#){
 							if(lastHeaderKey){
 								httpHeaders[ lastHeaderKey ] = httpHeaders[ lastHeaderKey ] ++ ..string.trimleft(line);
 							}

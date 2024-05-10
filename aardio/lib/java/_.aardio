@@ -131,6 +131,21 @@ class java{
 		this.jDoubleClass = this.import("java.lang.Double");
 		this.jStringClass = this.import("java/lang/String"); 
 		this.jNetUrlClass = this.import( "java.net.URL");
+		
+		this.jFileInputStreamClass = this.import("java.io.FileInputStream");
+		this.jObjectInputStreamClass = this.import("java.io.ObjectInputStream");
+  
+		this.loadFileObject = function(path){
+			var input = this.jFileInputStreamClass(path);
+			if(input){
+ 				var stream = this.jObjectInputStreamClass(input);
+ 				if(stream){
+ 					var r = stream.readObject();;
+ 					stream.close();
+ 					return r;
+ 				}
+			}
+		} 
 	};
 	object = function(jInstance){
 		return ..java.object(this, jInstance );
@@ -165,7 +180,7 @@ class java{
 		return this.jBooleanClass.createInstanceEx("void(boolean)",v);
 	};		
 	array = function(atype,...){ 
-	 	var jtype = typeNameFromAardio(atype)
+	 	var jtype = aardioTypToJava(atype)
 	 	
 		var arr = ...
 		if(type(arr)!="table" || (arr@ ? arr@._topointer) ){
@@ -268,7 +283,7 @@ class java{
 			return {};
 		}
 	
-		var jtype = typeNameFromAardio(atype) 
+		var jtype = aardioTypToJava(atype) 
 		if( jtype == "Object" ){ 
 			var array = {};
 			for(i=1;len;1){
@@ -868,13 +883,13 @@ namespace java {
 		F = "float"; 
 	}
 	
-	typeNameFromAardio = function(t){
+	aardioTypToJava = function(t){
 		if(!#t) return "Void"; 
 		if( ..string.find(t,"\;") ) return "Object"; 
 		return typename_a2j[t] || "Object"
 	} 
 	
-	typeNameToAardio = function(t){
+	aardioTypeFromJava = function(t){
 		if( typename_a2j[t] ) return t;
 		t = typename_j2a[t];
 		if( t ) return t;
@@ -981,6 +996,7 @@ java.version = JVM 虚拟机接口版本,\n在进程首次创建虚拟机以前�
 !java.object2String(__) = java字等串对象转换为 aardio 字符串
 !java.reopen("setErr","conerr$") = 重定向错误输出到控制台
 !java.reopen("setOut","conout$") = 重定向标准输出到控制台,\n如果在创建 Java 虚拟机以后打开控制台,\n需要调用此函数才能在控制台看到 Java 的标准输出
+!java.loadFileObject(__) = 自参数 @1 指定的文件路径反序化化 Java 对象
 !java.import() = !stdJavaClass.
 !stdJavaClass.registerNative(函数,函数名,签名) = @.registerNative(\n	function(env,jobject,jstring){\n		var str = owner.parseString(jstring)\n		\n		return owner.string( func() )\n	},"__/*函数名*/","string(string)"\n)
 !stdJavaClass.unregisterNatives() = 注销所有注册到Java类中的函数

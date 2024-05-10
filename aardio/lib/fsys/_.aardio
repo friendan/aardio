@@ -53,14 +53,14 @@ getParentDir = function(path){
 	if( tPath ? #tPath.file ) return tPath.dir;
 }
 
-createParentDir = function(dir,clear){
+createParentDir = function(dir,clearFiles){
 	if(!#dir)error("路径不能为空",2);
 	var dir = getParentDir(dir);
-	if(dir) return createDir( dir,clear);
+	if(dir) return createDir( dir,clearFiles);
 }
 
-createDir = function(dir,clear){
-	if( clear === true ){
+createDir = function(dir,clearFiles){
+	if( clearFiles === true ){
 		if( ! ( ::Kernel32.GetFileAttributesW(dir) & 4/*_FILE_ATTRIBUTE_SYSTEM*/) )
 			delete(dir)
 	}
@@ -188,6 +188,16 @@ operation = function( op,from,to,flag,title,hwnd ) {
     self.opError = SHFileOperation(fo);
     return self.opError == 0; 
 } 
+
+clear = function(path,p){
+	if( isDir(path) ){
+		enum( path, p||"*.*",
+			function(dir,filename,fullpath){ 
+				 delete(fullpath);
+			} ,false
+		);
+	}
+}
 
 delete = function(path,flag,title,hwnd){
 	return operation(3,path, ,flag,title,hwnd);
@@ -434,6 +444,7 @@ delete( = 删除文件或目录,成功返回 true,\n删除含畸形路径的目�
 delete(.("路径",FOF选项,进度标题,父窗口句柄) = 删除文件或目录,成功返回 true,\n路径参数可以是多个路径组成的数组,其他参数可选\n支持非空目录,文件名支持通配符\n\nFOF选项为 0 或 不指定该选项但 fsys.opFlags 为 0\n则显示操作界面与错误信息
 deleteEx( = 删除文件或目录,成功返回true,\n此函数失败返回 false 时可用 fsys.opError 获取错误代码
 deleteEx(.("路径",FOF选项,进度标题,父窗口句柄) = 删除文件或目录,成功返回true,\n路径参数只能是字符串,其他参数可选\n如果删除失败,则在下次系统重启时删除文件,\n重启删除目录之前必须先清空目录,\n重启删除文件的顺序与调用时的顺序相同
+clear(.("路径","*->*") = 清空目录但不删除目录自身。\n可选用参数 @2 指定要删除的子文件或子目录通配符。\n\n如果参数 @1 指定的不是目录，则忽略不操作
 move( = 移动文件或目录。\n此函数失败返回 false 时可用 fsys.opError 获取错误代码
 move(.(源路径,目标路径,FOF选项,进度标题,父窗口句柄) = 移动文件或目录,\n源路径参数可以是多个路径组成的数组,其他参数可选。\n如果目标路径已存在或源路径含通配符则移动到目标目录下面,\n否则复制文件或目录到参数@2指定的目标路径。\n\n如果目标路径的父目录可能不存在，请先用 io.createDir 创建该目录\n\nFOF选项为 0 或 不指定该选项但 fsys.opFlags 为 0\n则显示操作界面与错误信息
 copy( = 复制文件或目录,\n此函数失败返回 false 时可用 fsys.opError 获取错误代码\n\n注意：包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看

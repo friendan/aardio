@@ -1,9 +1,7 @@
-﻿import win;
-import process;
+﻿import process;
 import console;
 import zlib.httpFile;
 import win.path;
-import fsys.lnk;
 import fsys;
 import string.cmdline;
 
@@ -76,7 +74,6 @@ class golang{
     	..string.save(..io.joinpath(this.root,"/src/aardio/jsonrpc/tcp/tcp.go"),$"~\lib\golang\.res\aardio\jsonrpc\tcp\tcp.go");
     	
     	..win.path.add( ..io.joinpath(this.root,"\bin") );
-    	..string.setenv("GOCACHE",..io.joinpath(this.root,"\.cache") );
     	this.path = ..io.joinpath(this.root,"\bin\go.exe") 
  
 		this.environment = {};

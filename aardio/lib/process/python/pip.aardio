@@ -100,8 +100,7 @@ class pip {
 			} 
 		}
 		
-		..table.unshift(args,"pip");
-		var python = ..process.python.module(args);
+		var python = ..process.python.module("pip",args);
 		python.logResponse();
 		python.close();
 	}; 
@@ -132,6 +131,22 @@ namespace pip{
 			..process.python.pip("install "+name);
 		}	
     } 
+    
+    github = function(url){
+    	import web.rest.github;
+		var r = web.rest.github.getContent(url);
+		if(r){
+			var name = ..string.random(10)+"requirements.txt";
+			var path = ..io.joinpath( ..process.python.workDir,name);
+			..string.save(path,r);
+			
+			var r,e = ..process.python.pip("install","-r",name);
+			..io.remove(path);
+			
+			return re,e;
+		}
+    }
+    
 }
 
 /**intellisense()
@@ -139,5 +154,6 @@ process.python.pip = Python 模块安装工具。\n\n如果 process.python.path 
 process.python.pip("install","__/*模块名称*/") = 执行 pip 命令，只能在开发环境单独运行。\n可用一个字符串参数指定多个 pip 参数，空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n\n默认安装模块到 "/py/site-packages" 目录下\n\n如果不指定任何参数，直接返回 pip 模块对象。\n可用一个字符串数组指定 pip.main 函数的启动参数
 process.python.pip.setIndexUrl("aliyun") = 设置镜像源。\n参数指定源网址，支持常用镜像源缩写。\n"aliyun" 表示阿里云源，\n"tsinghua" 表示清化源，\n"tencent" 表示腾讯源，\n"douban" 表示豆瓣源
 process.python.pip.require("__") = 如果没有安装指定的模块，则调用 pip 安装
+process.python.pip.github("__") =  自动安装 GitHub 的 Python 项目依赖模块。\n参数中指定 GitHub 上 Python 项目 requirements.txt 地址。\n如果网址包含 blob 或 raw 则不用指定域名
 process.python.pip.target = 指定安装模块的目录，\n此目录仅用于安装，不会被添加到 process.python 的模块搜索路径
 end intellisense**/

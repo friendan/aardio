@@ -6,6 +6,7 @@ import process.job.limitKill;
 import web.json;
 import win.reg;
 import process.rpc.jsonClient;
+import web.rest.github;
 
 namespace process{
     
@@ -85,36 +86,29 @@ namespace process{
 			return client;
         }
         
-    	command = function(code,...){ 
-    		var args = ..string.cmdline.arguments(...); 
+    	command = function(code,...){
     		if( type.isString(code) &&  ..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>') ){
     		    var err;
 				code,err = ..string.loadcode(code);
 				if(err) error(err,2);
-			}
+			} 
 			
-			..table.unshift(args,"-c",code);
+			var args = ..process.joinArguments("-c",code,...);
     		return ..process.python(args);
     	}        
     	
-    	module = function(name,...){ 
-    	    var args = ..string.cmdline.arguments(name,...); 
-    	    ..table.unshift(args,"-m");
-    	    
+    	module = function(name,...){   
+    	    var args = ..process.joinArguments("-m",name,...);
     		return ..process.python(args);
     	} 
     	
-    	execfile = function(path,...){
-    	    var args = ..string.cmdline.arguments(...); 
-    	    ..table.unshift(args,..io.fullpath(path));
-    	    
+    	execfile = function(path,...){ 
+    	    var args = ..process.joinArguments(..io.fullpath(path),...);
     		return ..process.python(args);
     	}
     	
-        exec = function(code,...){
-             var args = ..string.cmdline.arguments(...); 
-    	    ..table.unshift(args,`-`); 
-    	    
+        exec = function(code,...){  
+            var args = ..process.joinArguments(`-`,...);
         	var py = ..process.python(args);
         	
         	if( type.isString(code) ){
@@ -134,6 +128,15 @@ namespace process{
         	py.writeClose( code );
         	return py;
         }
+        
+    	github = function(url,...){
+    		
+			var code = ..web.rest.github.getContent(url);
+			if(code){ 
+				return exec(code,...);
+			}
+			return null,"获取 GitHub 代码失败，请检查网络连接";
+    	}
         
         test = function(code,...){
         	 var python = command(code,...)
@@ -357,11 +360,13 @@ command( = 创建 Python 进程运行 Python 代码
 command(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@code 指定要执行的 Python 代码。\n如果代码开始为 aardio 模板标记，则启用模板语法： chm://the%20language/template_syntax.html 。\n参数 @2 可以用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
 test(.(code,->->->) = 执行 @code 指定的 Python 代码。\n成功返回 true，否则返回 null 或 false。\n\n参数 @2 可以用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
 module( = 创建 Python 进程运行 Python 模块
-module(.(name,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@name 指定要执行的 Python 模块名称。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+module(.(name,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@name 指定要执行的 Python 模块名称。\n参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
 execfile( = 创建 Python 进程运行 Python 代码文件
-execfile(.(path,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@path 指定要执行的 Python 代码文件（*.py）路径。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+execfile(.(path,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n@path 指定要执行的 Python 代码文件（*.py）路径。\n参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
 exec( = 创建 Python 进程运行 Python 代码。\n此函数在写入 Python 代码以后会自动关闭 Python 标准输入。\n改用 process.python.command 函数不会关闭标准输入
-exec(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。\n@code 指定要执行的 Python 代码，用进程的标准输入写入代码。\n如果代码开始为 aardio 模板标记，则启用模板语法： chm://the%20language/template_syntax.html 。\n@code 也可以指定一个包含 *.aardio 代码文件，支持模板语法。\n@code 也可以指定指定 *.py 文件。\n@code 可指定资源文件，注意这是内存加载 Python 代码，\nPython 并不知道文件路径。\n如果希望 Python 直接加载文件，请改用 execfile 函数。\n参数 @2 可用一个字符串参数指定多个启动参数，空格分隔多参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+exec(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。\n@code 指定要执行的 Python 代码，用进程的标准输入写入代码。\n如果代码开始为 aardio 模板标记，则启用模板语法： chm://the%20language/template_syntax.html 。\n@code 也可以指定一个包含 *.aardio 代码文件，支持模板语法。\n@code 也可以指定指定 *.py 文件。\n@code 可指定资源文件，注意这是内存加载 Python 代码，\nPython 并不知道文件路径。\n如果希望 Python 直接加载文件，请改用 execfile 函数。\n参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
+github( = 调用 exec 函数运行 GitHub 上的 Python 代码。
+github(.(url,->->->) = url 指定包含 blob,raw 的GitHub网址时可以省略域名。\n创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
 jsonRpc( = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象
 jsonRpc(.(code,->->->) = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象。\n@code 参数可以指定 *.py 文件路径、Python 模块名称、Python 代码都行。\n如果指定 *.aardio 路径，则以模板语法解析并内存执行返回的 Python 代码。\n\n函数执行成功返回 process.rpc.jsonClient 对象
 jsonRpc() = !process_rpcJsonClient.
@@ -369,6 +374,7 @@ command() = !process_popen.
 module() = !process_popen.
 execfile() = !process_popen.
 exec() = !process_popen.
+github() = !process_popen.
 codepage = 代码页，默认为 65001（UTF-8 编码）\nPython 2.x 需要改为 0，Python 3.x 不用修改
 checkPath() = 检查 Python.exe 路径。\n如果未找到 Python.exe 则尝试自动安装。\n成功则返回 Python.exe 路径
 path = python.exe 路径，\n默认为 "/py/python.exe"。\n如果路径不存在会自动下载 process.python.version\n指定版本号的 Python 绿色版，\n64位系统默认下载 64 位 Python

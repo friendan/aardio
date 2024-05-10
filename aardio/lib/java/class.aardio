@@ -77,7 +77,7 @@ self.class = class {
         	error("查找字段名失败。方法名:" + fname,2); 
     	}
     	
-		var jTypeName = typeNameFromAardio(asign); 
+		var jTypeName = aardioTypToJava(asign); 
 		var jGetterName = ..string.format("GetStatic%sField",jTypeName )
 		var jGetter = jniEnv[jGetterName]
 		if(!jGetter) error("查找字段调用方法" + jGetterName + "失败,Java字段名:" + fname,2); 
@@ -132,7 +132,7 @@ self.class = class {
     	}
     	
         var retype = ..string.match(asign, "\s*(.+)\s*\(");
-		var jRettype = typeNameFromAardio(retype);
+		var jRettype = aardioTypToJava(retype);
 		
 		var jCallerName;
 		if( static){
@@ -149,7 +149,7 @@ self.class = class {
 		
 		var argType = ..string.match(asign,"\(\W*([\w\/\.\[]+)\W*\)");
 		var argTypeNoArray = argType ? ..string.replace( argType,"[\[\]]","");
-		var argname =  "j" + ..string.lower( typeNameFromAardio(argTypeNoArray) );    
+		var argname =  "j" + ..string.lower( aardioTypToJava(argTypeNoArray) );    
 		 
 		var safeRet = function(ret){
 		 	if ( jvm.exceptionClear() ) { return; } 
@@ -159,7 +159,7 @@ self.class = class {
 		if(retype){
 		 	if( jRettype = "Object"){
 				if(..string.find(retype,"\[")  ){
-					var feildType = typeNameToAardio(..string.match(retype,"[^\[]+"));
+					var feildType = aardioTypeFromJava(..string.match(retype,"[^\[]+"));
 					safeRet = function(ret){
 		 				if ( jvm.exceptionClear() ) { return; } 
 		 				return jvm.parseArray(feildType,ret);
@@ -290,6 +290,6 @@ namespace class{
 	
 	jvalue =  ..java.jvalue;
 	getSignature =  ..java.getSignature;
-	typeNameToAardio = ..java.typeNameToAardio;
-	typeNameFromAardio = ..java.typeNameFromAardio;
+	aardioTypeFromJava = ..java.aardioTypeFromJava;
+	aardioTypToJava = ..java.aardioTypToJava;
 }

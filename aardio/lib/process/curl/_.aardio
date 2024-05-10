@@ -58,7 +58,9 @@ namespace process{
 				param = ..string.cmdline.arguments(param,...);
 				..table.unshift(param,"-s");
 				
-				this = ..process.popen.wow64(..process.curl.path,param,{workDir=..process.curl.workDir});
+				this,err = ..process.popen.wow64(..process.curl.path,param,{workDir=..process.curl.workDir});
+				if(this)this.codepage = 65001;
+				return this,err;
 			}; 
 		}
 	}
@@ -67,6 +69,7 @@ namespace process{
 /**details(必读与参考文档)
 默认调用系统自带的 "curl.exe"，适用于 Win10 1803 及之后操作系统。
 导入 process.curl.7.81 可兼容更低版本的操作系统。
+XP，Win7 在市场上已经接近消失，现在开发软件再处处考虑这些已经不重要了。
 
 process.curl.open 会显示控制台与进度（可用 console.open 提前打开控制台，curl 就不会创建新控制台）。
 process.curl.popen 返回的是进程管道，不会显示控制台与进度。

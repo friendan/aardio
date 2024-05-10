@@ -1,22 +1,121 @@
-﻿namespace golang{
+﻿//string 字符串
+import web.json;
+
+namespace golang{
     
     class string{
     	ctor( str ){
-        	this.p = str;
-        	this.n = #str;
+    	    owner.data = str;
+    	    
+    	    if(!..type.isString(str) && (str!==null ) ){
+    	    	str = toJson(str);
+    	    	this.$isJson____ = true;
+    	    }
+    	     
+    	    this.p_________________ = str;
+        	this.n = #str; 
     	};
-    	ptr p;
+    	ptr p_________________;
     	addr n;
     	@_meta;
     }
     
-    string._meta = {
+    var fromJson = ..web.json.tryParse;
+    string._meta = {  
         _tostring = function(){
-        	return ..raw.tostring(owner.p,1,owner.n);
+            var s = owner.p_________________;
+            if(type(s)==="pointer"){
+                
+             	//尽快转为 aardio 字符串
+        		s = ..raw.tostring(s,1,owner.n);
+        		
+        		//不再引用原来的 Go 内存
+        		owner.p_________________= s;	
+        		
+        		if(!owner.$isJson____){ 
+        			owner[["data"]] = s;
+        		}
+        		else {
+        		    var e;
+        			owner[["data"]],e = fromJson(s); 
+        			
+        			if(e){
+        				error(e,2);
+        			}
+        		} 
+            }
+            
+        	return s;
+        }  
+        _get = function(k){
+        	if(k=="value"){
+        	     if(type(owner.p_________________)==="pointer") tostring(owner);
+        	     return owner[["data"]]; 
+        	}
+        };
+        _set = function(k,str){
+        	if(k=="value"){
+        	    owner.data = str;
+        	    
+        		if(!..type.isString(str) && (str!==null ) ){
+    	    		str = toJson(str);
+    	    		owner.$isJson____ = true;
+    	    	}
+    	    	else {
+    	    		owner.$isJson____  = false;
+    	    	} 
+    	    	
+    	    	owner.p_________________ = str;
+        		owner.n = #str; 
+        	}
+        	else {
+        		owner[[k]] = str;
+        	}
+        }; 
+        _json = function(){
+        	return owner.value; 
+        };
+        _tonumber = function(){
+        	tonumber(tostring(owner));
         } 
+        _concat = function(b) {
+			return tostring(owner) ++ tostring(b); 
+		}
+		_add = function(b) {
+			return tostring(owner) ++ tostring(b); 
+		}
     }
+    
+    string.toJson = ..web.json.stringify; 
 }
 
 /**intellisense()
-golang.string(__) = 创建 Go 字符串。\n参数@1可指定 buffer、string、null 类型的值。\n作为调用 Go函数的参数使用时,\nGo 语言的 API 参数类型必须声明为 *string 指针。\n不建议在 Go 中修改或在 aardio 调用返回后继续保存该字符串指针。\n也不应用这种方法获取并保存 Go 字符串指针。\n\n一般也不建议使用 golang.string 传字符串。\n更稳妥的方法是用 Go 类型 *C.char 接收 aardio 字符串指针，并且 C.GoString 转换
+golang.string(__) = 创建 Go 字符串。\n参数@1可指定 buffer、string、null 类型的值。\n如果指定其他类型值自动转换为 JSON 字符串。\nGo 修改字符串后 aardio 也会自动解析为对象。\n使用 golang.string 对象的 value 属性可以读写存储值。\n\nGo 函数的参数类型必须声明为 *string 指针。\n\n自 Go 调用返回以后，建议立即用 tostring 转换为 aardio 字符串。\n因为 Go 的内存回收器稍后会回收 Go 字符串的内存（至少在调用结束那一刻并不会立即回收）。\n转换以后此对象的内部指针即安全地指向 aardio 分配的内存。\n只要正确使用，go.string 不会造成内存泄漏。\n\n如果不需要在 Go 中修改字符串，\n更简单的方法是直接传 2 个参数（aardio 字符串，字符串长度）\n代替 Go 字符串。 这种方式是传值，不是传指针
 end intellisense**/
+
+/**details(必读，点这里展开)
+golang.string() 创建 Go 字符串。
+在 Go 函数中可作为 *string 类型指针参数使用。
+Go 函数中用 * 号解引用访问 aardio 字符串。
+
+在 Go 中可修改字符串。
+在 aardio 中使用 tostring 转换 golang.string 对象为字符串，
+或者访问 golang.string 对象的 value 属性
+都可以获取到 Go 修改后的值。
+
+应在调用 Go 函数后立即访问 value 属性，或调用 tostring 转换字符串。
+aardio 会立即重新分配安全的内存存储新的值，Go 随后会安全回收分配的内存（不会泄漏）。
+而且只有在 Go 修改内存后 aardio 才会转换，不修改不会浪费内存，也不会有多余的转换。
+
+如果 golang.string 的构造参数是非字符串、非 buffer、非 null 参数，
+aardio 会先将其转换为 JSON，再转为 Go 字符串。
+
+如果以 JSON 存储了这样的 Go 字符串，
+则 Go 修改字符串时必须同样写入 JSON，
+aardio 在读取新的字符串值时，也同样会用 JSON 自动解析为对象。
+使用 golang.string 的 value 属性可以读取解析后的对象值。
+
+任何时候都可以通过 value 属性重新设置 golang.string 存储的值。
+
+请参考：aardio 范例 / 调用其他语言 / Go 语言
+end details**/

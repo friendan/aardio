@@ -288,6 +288,7 @@ namespace table{
 		if( v@[["_safearray_type"]] !== null ) return "array";
 		if( v@[["length"]] !== null ) return "array";
 		if( ( type(v.length) == "number" ) && (v[["length"]]===null) ) return "array";
+		if( ( type(v.Length) == "number" ) && (v[["Length"]]===null) ) return "array";
 		if( #v ) return "array";
 		return "object";
 	};
@@ -319,6 +320,49 @@ namespace table{
 	getCall = function(t,k){
  		return t[[k]] || invoke(t@._get,t,k,true);
  	};
+ 	
+	var strip;	
+	var __nvType = {"function":1,"class":1,"fiber":1,"cdata":1}
+	strip = function(t,ref) { 
+
+		if(ref[t]) return {}; 
+   		ref[t] = true;  
+
+   		var json = t@[["_json"]]
+   		if(json && json!=parseValue) {
+   			var j,s = invoke(json,t)  
+   			if(!s && (j!==null) && (j!==t))return j;
+   		}
+
+		var vt;
+ 		var r = {}   
+ 		if( self.type(t) == "array" ){
+ 			r@ = {_type="array"}
+ 		  
+			for k,v in eachIndex(t){    
+				vt = type(v);
+				if(vt=="table") v =  strip(v,ref) 
+				elseif(__nvType[vt]) continue;  
+				push(r,v); 
+			} 
+			
+			return r;
+ 		}; 
+	  
+		for k,v in eachName(t){    
+			vt = type(v);
+			if(vt=="table") v =  strip(v,ref) 
+			elseif(__nvType[vt]) continue;  
+			r[k] = v;	
+		} 
+		
+		return r;
+	}
+	
+	parseValue = function(v){
+		if( type(v) != "table" ) return v ; 
+		return strip(v,{});
+	} 
 	
 	mixin = assign; // 废弃
 	mixr = assignDeep; // 废弃
@@ -389,4 +433,5 @@ removeByValue(.(数组,值,true) = 在数组中查找指定值并将找到的值
 clear(__) = 清空参数 @1 指定的表对象内所有键值
 flat(.(array,depth) = 展开@array 参数指定的数组中嵌套的数组并返回新数组,\n此函数不会修改传入参数而是返回新数组,\n可选用 @depth 参数指定要允许展开的嵌套深度,默认值为1
 getCall(.(object,funcName) = 如果对象实际包含 funcName 成员则直接返回。\n否则模拟 object.funcName() 格式触发 _get 元方法，获取函数对象（但不会调用该函数）。\n调用 _get 元方法时 ownerCall 参数为 true。\n\n适用于对 object.funcName() ， object["funcName"] 区分处理的对象，\n例如 .NET 对象。
+parseValue(__) = 如果参数不是表则直接返回，\n否则将表（table）转换为纯值表。\n如果对象定义了 _json 元方法，则调用该元方法（返回值 2 为 true 时不采用其结果）。\n\n纯值表只包含纯值类型数据。\n纯值类型指的是字符串、数值、布尔值、buffer、指针、纯值表。\n纯值表必须遵守规则如下：\n1、索引只能为数值或者字符串，移除其他索引。\n2、移除类型为 function,class,fiber,cdata 成员，值为表则必须也是纯值表。\n3、表要么是索引自1开始的有序数组，要么是只包含名值对的对象，只能二选一（数组优先）。\n4、纯值表的所有数据都直接保存在表中，也就是用直接下标可以获取所有值。\n5、纯值表是可保持原值序列化的表，并且兼容 JSON。 \n\nweb.json.strip 函数的转换结果也属于纯值
 end intellisense**/

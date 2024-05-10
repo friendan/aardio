@@ -1,5 +1,11 @@
 //dynamic
-import dotNet.v4;//.NET 4.x 才支持 dynamic 对象
+
+/*
+只要简洁，不求完美！
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。
+Win10 已自带.NET 4.6 以上，而 .NET 4.x 都支持  dynamic 对象
+*/
+import dotNet.v4;
 var compiler = dotNet.createCompiler("C#"); //创建C#编译器
 
 //必须引入下面的几个 DLL
@@ -79,6 +85,9 @@ var ret = cSharpObj.Hello(
 		所以这里的 netObj 是 dotNet.object 对象，不需要转换。
 		*/
     	console.log("aardio 函数被 C# 调用了,参数:",a,b)
+    	
+    	//无论.NET 回调是否在同一线程，被 .NET 回调的 aardio 函数总是在原调用线程执行（不必考虑多线程规则与同步）。  
+    	
 		return a + b; 
 	} 
 ); 

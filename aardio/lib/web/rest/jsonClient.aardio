@@ -9,7 +9,7 @@ class jsonClient{
 		this.stringifyRequestParameters = stringifyRequestParameters;
 		this.parseResponseResult = function(s,streamChunk){
 			if( s="" ) return s;
-			var t = this._http.responseContentType; 
+			var t = this.lastResponseContentType; 
 
 			if(t){  
 				if( this._http.ndjsonStream && !streamChunk  ) { 

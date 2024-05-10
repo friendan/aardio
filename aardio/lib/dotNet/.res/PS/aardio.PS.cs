@@ -10,7 +10,7 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
-namespace Aardio
+namespace aardio
 {
     public class PS
     {

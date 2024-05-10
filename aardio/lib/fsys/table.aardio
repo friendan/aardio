@@ -4,7 +4,7 @@ import util.metaProperty
 namespace fsys;
 
 class table{ 
-	ctor( file,dt ){{
+	ctor( path,dt ){{
 		this@ = ( 
 			..util.metaProperty(
 				load = function(){
@@ -14,7 +14,7 @@ class table{
 							this[k] = null;
 					}
 					
-					var s = ..string.load(file);
+					var s = ..string.load(path);
 					if(#s){
 						if(  ! ( s[1] == 0xEF  && s[2] == 0xBB && s[3] == 0xBF )  ) {
 							s = ..string.fromto(s,0,65001);
@@ -23,12 +23,8 @@ class table{
 						var ok,t = call(eval,,s);
 						var err = t;
 						if(!ok){
-							var s2 = ..string.match(s,"%{}");
-							if(#s2){
-								ok,t = call(eval,,s2);
-							}
-						
-							if(!ok) error(..string.concat('配置文件出现错误:\n',file,'\n\n错误信息：\n',err),2);
+							t = {}; 
+							errput(..string.concat('配置文件已损坏:\n',path,'\n\n错误信息：\n',err),2);
 						}
 						..table.assign(this,t );
 					} 
@@ -43,8 +39,8 @@ class table{
 					}
 					
 					var str = ..table.tostring(this)
-					if( !..io.exist(file) )
-						..fsys.createParentDir(file);
+					if( !..io.exist(path) )
+						..fsys.createParentDir(path);
 					
 					/*
 					fsys.table 并非实时读写，而是将配置读入内存。
@@ -53,14 +49,17 @@ class table{
 					
 					多对象、多线程、多进程共享配置文件时，应改为实时读写配置文件，
 					并尽量多读少写，避免同时写，同时写出现冲突请参考下面的代码重试。
-					*/
+					*/ 
+					var pathTemp = path + ".tmp"
 					for(i=1;3;1){
-						var file = ..io.open(file,"w+",0x20 /* _SH_DENYWR */ );
+						var file = ..io.open(pathTemp,"w+",0x20 /* _SH_DENYWR */ );
 						if(file){
 							file.write('\xEF\xBB\xBF');
 							file.write( str );
 							file.close();
 							
+							..io.remove(path);
+							..io.rename(pathTemp,path);
 							return this;
 						}
 						sleep(100);
@@ -83,7 +82,7 @@ class table{
 			) 
 		);
 		
-		var s = ..string.load(file);
+		var s = ..string.load(path);
 					
 		if(#s){
 			if(  ! ( s[1] == 0xEF  && s[2] == 0xBB && s[3] == 0xBF )  ) {
@@ -93,12 +92,8 @@ class table{
 			var ok,t = call(eval,,s);
 			var err = t;
 			if(!ok){
-				var s2 = ..string.match(s,"%{}");
-				if(#s2){
-					ok,t = call(eval,,s2);
-				}
-			
-				if(!ok) error(..string.concat('配置文件出现错误:\n',file,'\n\n错误信息：\n',err),2);
+				t = {}
+				errput(..string.concat('配置文件出现错误:\n',path,'\n\n错误信息：\n',err),2);
 			}
 			..table.assign(this,t );
 		} 

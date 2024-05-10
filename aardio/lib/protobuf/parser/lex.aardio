@@ -24,27 +24,31 @@ class lex{
 		return this.token == _tk_keyword; 
 	};
 	
+	getRemainString = function(){
+		return ..string.sub(this.code,this.current_pos,this.current_pos+20);
+	};
+	
 	check = function(tk,lev=2){
 		if( this.token != tk ){ 
-			error("expect token:"+this.getTokenName(tk) + ", but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line,lev)
+			error("expect token:"+this.getTokenName(tk) + ", but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line + '\n' + this.getRemainString(),lev)
 		}
 	};
 	
 	checkNumber = function(lev=2){
 		if( this.token != _tk_number ){ 
-			error("expect token: number, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line,lev)
+			error("expect token: number, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line + '\n' + this.getRemainString(),lev)
 		}	
 	};
 	
 	checkKeyword = function(lev=2){
 		if( this.token != _tk_keyword ){ 
-			error("expect token: keyword, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line,lev)
+			error("expect token: keyword, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line + '\n' + this.getRemainString(),lev)
 		}	
 	};
 	
 	checkString = function(lev=2){
 		if( this.token != _tk_string ){ 
-			error("expect token: string, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line,lev)
+			error("expect token: string, but found:" + this.getTokenName(this.token) + " DATA: """ +(this.data : "") + '"\nline:' + this.line + '\n' + this.getRemainString(),lev)
 		}	
 	};
 	

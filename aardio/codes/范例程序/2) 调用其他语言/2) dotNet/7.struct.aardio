@@ -69,7 +69,7 @@ var testStruct = CSharpLibrary.TestStruct("测试",12345);
 console.log(testStruct.Name,testStruct.Value);
 
 /*
-aardio 结构体更简洁，与 C 结构体完全兼容，不用像 C# MarshalAs …… UnmanagedType …… 搞得晕头转向,
+aardio 结构体更简洁，与 C 结构体完全兼容，不用像 C# MarshalAs …… UnmanagedType …… 转来转去,
 当然不同语言目标不一样，C# 结构体如果不用做这种原生内存转换，MarshalAs …… UnmanagedType …… 这些不必写。
 */
 class TestStruct{

@@ -1,5 +1,4 @@
 ﻿//cmdline.argv2 命令行参数
-
 import string.cmdline;
 
 namespace string.cmdline;
@@ -40,8 +39,7 @@ class argv2{
 				
 				n2 = ..string.trimleft(n2,n2[[1]]);
 				if( #n2>1 && p2=='-'# && n2[1]!='-'# ){
-					if( opt ? ..table.some(opt,function(v2,k2){ 
-						..console.log("-->",n2,k2)
+					if( opt ? ..table.some(opt,function(v2,k2){
 						if( ..string.startWith(n2,k2) ){
 							k = k2;
 							v = ..string.right(n2,-#k2-1)

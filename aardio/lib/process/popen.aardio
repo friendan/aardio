@@ -149,22 +149,30 @@ class popen{
 		}
 
 		return ..table.unpackArgs(out);
-	};
-	lines = function(pattern){
+	}; 
+	lines = function(pattern,usePeek){
+		 	
+		var read = this.read;
+		if(usePeek){ 
+			read = function(){ 
+				return this.peekTo('\n');
+			} 	
+		}
+		
 		if(!pattern) return function(){
-			var l = this.read() 
+			var l = read() 
 			if(l) return ..string.trimright(l);
 		}
 
 		return function() {
-			while( var l = this.read() ) {
+			while( var l = read() ) {
 				l = ..string.trimright(l);
 				if(..string.find(l,pattern)){
 					return ..string.match(l,pattern);
 				}
 			}
 		}
-	};
+	}; 
 	readErr = function(...){
 		if(!this.stdErr){
 			return;
@@ -240,7 +248,12 @@ class popen{
 					return str,err;
 				}
 			}
-		}while(  !( closed || ..win[["closed"]]  || endWith(str,tag) || endWith(err,tag) ) ) 
+
+			if(closed || ..win[["closed"]]  ){
+				return null,..string.concat(str,err);
+			}
+			
+		}while(  !( endWith(str,tag) || endWith(err,tag) ) ) 
 		 
 		return str,err;
 	}; 
@@ -388,7 +401,14 @@ class popen{
 		var ret = ..thread.waitOne(this.process.handle,timeout)  
 		sleep(10);
 		
-		if( ret ){
+		if(ret){
+			if(this.echoTimerId) {
+				while(this.echoTimerId){
+					..thread.delay(10);
+				}
+				
+				return ret;
+			}
 			return true,this.read(-1),this.readErr(-1),(this.process.getExitCode());
 		} 
 	};
@@ -530,8 +550,8 @@ process.popen.detached() = !process_popen.
 !process_popen.each( 间隔时间,超时时间 ) = @for( all,out,err in ??.each() ){
     io.stdout.write( out,err );__/*读取进程输出直到进程关闭，不阻塞界面线程消息*/
 }
-!process_popen.lines(模式表达式) = @for i,k,v in ??.lines("^(\s*)(\S.*?)[\s.]*\:\s*(.*)"){
-	__/*按行读取进程输出,移除每行尾部的空白字符,\n指定模式表达式则返回匹配结果，否则直接返回当前读取的文本。\n如果模式匹配用圆括号创建捕获分组，则每个捕获分组对应一个返回值。\n\n以上示例模式表达式匹配用 : 号分隔键值对的行，\n其中 \s 匹配空白字符，大写的 \S 匹配非空白字符*/
+!process_popen.lines(模式表达式,允许处理窗口消息) = @for i,k,v in ??.lines("^(\s*)(\S.*?)[\s.]*\:\s*(.*)"){
+	__/*按行读取进程输出,移除每行尾部的空白字符,\n指定模式表达式则返回匹配结果，否则直接返回当前读取的文本。\n如果模式匹配用圆括号创建捕获分组，则每个捕获分组对应一个返回值。\n\n以上示例模式表达式匹配用 : 号分隔键值对的行，\n其中 \s 匹配空白字符，大写的 \S 匹配非空白字符\n\n如果参数 @2 为 true 则读取进程输出时不会阻塞窗口消息*/
 }
 !process_popen.beforeClose = @.beforeClose = function(){
 	owner.process.terminate();__/*释放管道以前触发此事件,可强制关闭进程*/
@@ -539,7 +559,7 @@ process.popen.detached() = !process_popen.
 !process_popen.logger = 指定 logResponse 的默认回显对象\n该对象必须有log或write成员函数用于输出回显\nlogger 对象用于logResponse 时将同步获取输出并等待进程结束\n\n如果不指定此属性,且已导入 console 则默认输出到控制台
 !process_popen.logResponse( = 回显进程的标准输出以及错误输出
 !process_popen.logResponse(.(回显函数,间隔时间) = 自动同动获取进程输出,并直到进程结束,所有参数可省略,\n如果之前定义了logger成员对象，则调用logger输出进程回显\n未指定logger对象则默认回显到控制台
-!process_popen.logResponse(.(异步回显文本框,间隔时间) = 不会阻塞并等待进程结束,\n而是在传入文本框控件上创建定时器异步回显进程输出,\n回显文本框必须指定edit或richedit控件,间隔时间可省略。\n\n调用此函数后不应再调用 waitOne 函数以避免该函数提前读取输出
+!process_popen.logResponse(.(异步回显文本框,间隔时间) = 不会阻塞并等待进程结束,\n而是在传入文本框控件上创建定时器异步回显进程输出,\n回显文本框必须指定edit或richedit控件,间隔时间可省略。\n\n如果正在进行异步回显，则调用 waitOne 函数不会读取任何输出。\n并且 waitOne 函数会等待异步回显结束
 !process_popen.stopLogResponse() = 清除异步回显文本框的定时器。\n关闭进程对象时也会自动清除此定时器
 !process_popen.peek(__) = 检测标准输出管道中可读取的数据长度。\n有数据则读取数据,无数据则返回空值\n如果 stderr 中有错误信息,则第二个返回值为错误信息\n此函数不会因为等待输入而阻塞\n参数可指定等待目标进程执行的延时时间
 !process_popen.peekTo( = 读取数据直到数据以指定的字符串结束
@@ -553,7 +573,7 @@ process.popen.detached() = !process_popen.
 !process_popen.printf(__) = 清空标准输出然后写数据\n调用string.format函数格式化全部参数,尾部添加换行\n\n成功返回 true，失败返回 null ，错误代码，错误信息。
 !process_popen.write(__) = 写数据,支持一个或多个参数\n成功返回 true，失败返回 null ，错误代码，错误信息。\n如果目标进程已关闭，但标准输入管道未释放仍可能返回 true。\n\n\nwaitOne 函数返回 true，或 each ，expect 等函数检测到进程退出，\n或readAll 或 read 函数参数为 -1 时\n会自动关闭目标进程标准输入管道\n并导致 write 函数返回 null 值
 !process_popen.writeClose(__) = 写数据并关闭进程输入流,\n可选指定一个或多个参数\n不指定参数则直接关闭输入流\n注意:有些进程会一直等待输入流关闭再继续下一下操作
-!process_popen.waitOne() = 等待进程关闭，不会阻塞当前线程窗口消息。\n可用一个毫秒值参数设定超时。\n\n超时或失败返回 null，进程已退出则返回值1为true，\n返回值2为标准输出,返回值3为错误输出,返回值4为退出代码\n\n如果被调用进程写满输出缓冲区，而调用进程没有读取，\n则被调用进程会一直等待，此函数将无法返回。\n改用 readAll 函数读取输入可避免该问题。\n\n注意调用此函数后，可能在异步 logResponse 之前读取输出
+!process_popen.waitOne() = 等待进程关闭，不会阻塞当前线程窗口消息。\n可用一个毫秒值参数设定超时。\n\n超时或失败返回 null，进程已退出则返回值1为true，\n返回值2为标准输出,返回值3为错误输出,返回值4为退出代码\n\n如果被调用进程写满输出缓冲区，而调用进程没有读取，\n则被调用进程会一直等待，此函数将无法返回。\n改用 readAll 函数读取输入可避免该问题。\n\n注意如果正在调用异步 logResponse 回显到窗口对象。\n则 waitOne 函数仅返回单个值，不读取任何输出
 !process_popen.wait() = 等待进程关闭,可选使用一个毫秒值参数设定超时。\n超时或失败返回 null，进程退出则返回值1为true，\n返回值2为标准输出，返回值3为错误输出，返回值4为退出代码\n\n如被调用进程写满输出缓冲区，而调用进程没有读取，\n则被调用进程会一直等待，此函数将无法返回。\n改用 readAll 函数读取输入可避免该问题。
 !process_popen.stillActive() = 检查进程是否仍在运行，仍在运行返回 true
 !process_popen.getExitCode() = 该函数调用成功有两个返回值:进程退出代码,进程是否已退出

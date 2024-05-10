@@ -1,4 +1,4 @@
-//MSXML读写XML
+//MSXML 读写
 
 import console;
 import web.msxml

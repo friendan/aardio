@@ -38,7 +38,7 @@ console.log( CSNET2ClassLibrary.CSSimpleObject.GetStringLength("HelloWorld")  );
 console.pause(); 
 
 /****
-\CSNET2ClassLibrary.dll 的 C#源码如下：
+CSNET2ClassLibrary.dll 的 C#源码如下：
 
 using System;
 using System.Runtime.InteropServices;

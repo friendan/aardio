@@ -4,7 +4,7 @@ import fonts.fontAwesome;
 /*DSG{{*/
 var winform = win.form(cls="AFORM";text="API 转换工具 ";left=0;top=0;right=845;bottom=513;bgcolor=16777215;parent=...;style=0)
 winform.add(
-btnStruct2Aardio={cls="button";text='\uF1C9  C/C++ 函数声明/结构体/类型名转换为 aardio 格式';left=14;top=2;right=375;bottom=34;dl=1;dt=1;font=LOGFONT(h=14;name='FontAwesome');z=1};
+btnStruct2aardio={cls="button";text='\uF1C9  C/C++ 函数声明/结构体/类型名转换为 aardio 格式';left=14;top=2;right=375;bottom=34;dl=1;dt=1;font=LOGFONT(h=14;name='FontAwesome');z=1};
 lbTip={cls="static";left=584;top=8;right=832;bottom=500;db=1;dr=1;dt=1;transparent=1;z=3};
 static={cls="static";text="aardio 默认加载的 DLL 模块为 ::User32, ::Kernel32, ::Ntdll, ::Shell32 ";left=13;top=490;right=621;bottom=509;transparent=1;z=4};
 txtCode={cls="richedit";text="请输入要转换的代码，转换结果仅供参考......";left=14;top=37;right=576;bottom=487;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;tabstop=1;vscroll=1;z=2}
@@ -40,7 +40,7 @@ winform.txtCode.oncommand = function(id,event){
 }
 
 import string.list;
-winform.btnStruct2Aardio.oncommand = function(id,event) { 
+winform.btnStruct2aardio.oncommand = function(id,event) { 
 
 var byval=/*
 LONG=int
@@ -530,14 +530,14 @@ PULONG64=LONG
 		
 	}
 	
-	winform.btnStruct2Aardio.disabled = true;
+	winform.btnStruct2aardio.disabled = true;
 	win.delay(100);
 	
 	var ccode = winform.txtCode.text;
 	ccode =  string.replace( ccode,"\/\*.+?\*\/",""); 
 	winform.txtCode.text = struct2aardio(ccode); 
 	
-	winform.btnStruct2Aardio.disabled = false;
+	winform.btnStruct2aardio.disabled = false;
 } 
 
 import web.form;

@@ -106,10 +106,11 @@ decode = function(s,cp){
 stringifyParameters = function(param,cp,cmp){ 
 	if( type(param) != "table" ) return param;
 	
-	var lst,k,v = {};
+	var lst,k,v,t = {};
 	for(k,v in ..table.eachName(param,cmp) ){
 		k = encode(k,cp);
-		if(type(v)===type.table){
+		t = type(v)
+		if(t===type.table){
 			for(i=1;#v;1){
 				..table.push( lst,k,"[]=",( encode(tostring(v[i]),cp) ),"&" )
 			}
@@ -117,8 +118,9 @@ stringifyParameters = function(param,cp,cmp){
 			for p,v in ..table.eachName(v,cmp){
 				..table.push( lst,k,"[",encode(p,cp),"]=",( encode(tostring(v),cp) ),"&" )
 			} 
-		}
+		} 
 		else {
+			if(t==="function") v = v();
 			..table.push( lst,k,"=",( encode(tostring(v),cp) ),"&" )
 		} 
 	}
@@ -263,6 +265,14 @@ getFilePath = function(url){
 	} 
 }
 
+getParams = function(url,k){ 
+	if(!url) return;
+	var tUrl = ..inet.url.split(url);
+	var p = ..inet.url.splitParameters(tUrl.extraInfo);
+	if(k) return p[..string.lower(k)];
+	return p;
+};
+
 /**intellisense(inet.url)
 is(url,_URLIS__) = 检测URL 
 joinpath( = 当对于当前URL的相对路径转换为完整 URL 。\n注意该函数忽略文件名,简单拼接请使用 append 函数替代
@@ -279,7 +289,7 @@ stringify(urlInfo) = @.stringify(\n	scheme = "https";\n	user = "";\n	password ="
 splitParameters( = 拆分URL参数并返回名值对组成的表对象\n名字都转换为小写,如果名字尾部有[]或[键名]则值转换为表\n如果只指定名字不指定值,则值为空字符串
 splitParameters(.(URL参数,分隔符,输入UTF8编码) = 拆分URL参数并返回表对象,分隔符支持模式语法,默认为'\&&'\n如果不指定分隔符,并且首字符是?号,此函数自动移除首字符,\n使用URL解码键值文本,参数二指定解码前是否UTF8编码,不指定则自动检测
 stringifyParameters( = 将URL参数表转换为字符串
-stringifyParameters(.(参数表,输出代码页,排序函数) = 使用'='分隔键值对,使用'&&'分隔不同参数,\n如果值为表,则转换为多个键值对,键名后添加[]或[子键名],\n对所有值使用UrlEncode编码,\n参数@2指定输出编码（codepage）,默认为65001（UTF8代码页)\n省略排序函数则使用默认字典序排序
+stringifyParameters(.(参数表,输出代码页,排序函数) = 使用'='分隔键值对,使用'&&'分隔不同参数,\n如果值为表,则转换为多个键值对,键名后添加[]或[子键名]。\n如果值为函数则调用该函数取返回值。\n所有值转换为字符串并使用 UrlEncode 编码。\n参数@2指定输出编码（codepage）,默认为65001（UTF8代码页)\n省略排序函数则使用默认字典序排序
 encode(.(字符串,输出代码页) = 除字母数字以及-._~等非保留字符以外的字符进行URL编码,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
 decode(.(字符串,输入代码页) = URL解码并返回文本,失败返回空值,\n参数二指定输入编码(codepage),省略自动检测输入编码\n此函数返回数据转换为UTF8编码
 encodeMbcs(.(字符串,输出代码页) = 如果字符串包含多字节字符,\n使用URL编码其中的汉字和%符号,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
@@ -287,6 +297,7 @@ decodeUnicode(.(字符串) = 解码%uXXXX或%uXX编码的字符串\n失败返回
 encodeUri(.(字符串,输出代码页) = URL编码,\n字母数字以及 URL 非保留字符、URL 保留字符都不编码（RFC3986）,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
 getFileName(.(网址,默认文件名) = 获取URL中的文件名\n参数2可选,默认为"index.html"
 getFilePath(__) = 如果 URL 为 file: 协议开头，\n则返回 URL 解码后的文件路径，否则返回 null
+getParams(__) = 返回 URL 的参数表，参数名都转为小写。\n参数 @1 指定 URL，如果不指定则直接返回 null 。\n如果参数 @1 指定了参数名（忽略大小写），则返回对应的字符串值
 cmp(__) = 比较参数@1与参数@2指定的网址是否相同。\n相同则返回 0 ，否则返回其他数值。\n比较前进行 URL 解码，并调用 inet.url.canonicalize 规范格式，\n比较时忽略大小写
 end intellisense**/
 

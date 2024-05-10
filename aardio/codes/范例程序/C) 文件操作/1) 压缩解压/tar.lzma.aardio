@@ -1,4 +1,4 @@
-
+//tar.lzma 打包压缩
 import console;
 import fsys.dlg.dir;
 import fsys.tar;

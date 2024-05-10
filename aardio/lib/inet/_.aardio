@@ -203,7 +203,7 @@ clearSesseion = function(){
 }
 
 var GetCookieA = Wininet.api("InternetGetCookieA","bool(str url,str name,str &data,INT & size)")
-var SetCookieA = Wininet.api("InternetSetCookieA","int(str url,str name,str data)") 
+var SetCookieA = Wininet.api("InternetSetCookieA","bool(str url,str name,str data)") 
 getCookie = function(url){
 	url = ..string.replace(url,"^Cookie\:.+?\@","http://"); 
 	var ok,v,size = GetCookieA(url,"",0,0); 
@@ -211,32 +211,61 @@ getCookie = function(url){
 	if(ok)return v,url;
 }
 
-setCookie = function(url,v,k){
-    if( type(k) == type.number ) k = ..time().addday(k);
-    
-	if( ..time.istime(k) ){  
-		SetCookieA(url, ,v );
-		return  SetCookieA(url, ,v + "; expires=" + tostring( ..time.gmt(k) ) );
-	}
-	else {
-		if( !#v  ) {
-			if( type(k) != type.string ) 
-				error("请使用参数@3指定cookie键名",2);
-			
-			SetCookieA(url,k ,"deleted" );
-			v = k + "=deleted; expires=" + tostring( ..time.gmt(1) );
+setCookie = function(url,v,k,expires){ 
+	if(url===null) return false;
+	
+	if(type(url)=="table"){
+		
+		if(url.cdp){
+			url = url.cdp("Network.getCookies");
+ 			url = url[["cookies"]];
+ 			if(!url) return;
+ 		}
+ 		
+		for i,cookie in ..table.eachIndex(url){
+			setCookie("https" + "://" + cookie.domain ++ (cookie.path:"/"),cookie);
 		}
-		return  SetCookieA(url,k,v )	
+		
+		return true;
 	}
 	
-	if(ok)return data;
+	if(type(v)=="table"){
+		if(v.expires)expires = ..time(v.expires); 
+		k = v.name;
+		v = v.value; 
+	}
+	
+	if(!type.isString(k)){
+		expires = k;
+		k = null;
+	}
+	
+    if( type(expires) == type.number ) 	expires = ..time().addday(expires); 
+    
+    if(!#v){
+    	v = "deleted";
+    	expires = ..time.gmt(1); 
+    }
+    
+    SetCookieA(url, k,v );//不指定 expires 设置会话 Cooki
+    
+    if(k) v = k + "=" + v;
+	elseif(v == "deleted")  error("Cookie 的名字或值不能都为 null");
+	
+    v = ..string.hex(v,"%",'\x80');
+ 
+	SetCookieA(url, ,v );//不指定 expires 设置会话 Cookie
+	return  !expires || SetCookieA(url, ,v + "; expires=" + tostring( ..time.gmt(expires) ) );
 }
 
 /**intellisense(inet)
-getCookie("http://__") = 返回指定网址的Cookie\n一般指定根域名就可以了，最好不要指定子域名\n注意不能获取HttpOnly Cookie、不能获取其他进程的会话Cookie
-setCookie(.("http://x.com","值","键") = 设置cookie,\n如果不指定值则删除cookie,\n如果指定键,值则设置会话cookie,\n第一个参数指定Cookie生效的域名\n注意cookie应该使用UrlEncode编码非ASCII字符
-setCookie(.("http://x.com","键=值",过期时间) = 设置cookie,\n参数@3使用time对象指定过期时间,\n如果不指定过期时间则设置会话cookie,\n否则修改持久化cookie,\n第一个参数指定Cookie生效的域名\n注意cookie应该使用UrlEncode编码非ASCII字符
-setCookie(.("http://x.com","键=值",过期天数) = 设置cookie,\n如果不指定过期天数则设置会话cookie,\n否则修改持久化cookie,\n第一个参数指定Cookie生效的域名\n注意cookie应该使用UrlEncode编码非ASCII字符
+getCookie("https__") = 返回指定网址的 Cookie \n一般指定根域名就可以了，最好不要指定子域名\n注意不能获取 HttpOnly Cookie、不能获取其他进程的会话 Cookie
+setCookie( = 设定 Cookie。\nweb.form,web.rest,inet.http 共享此 Cookies 设置。\n此函数兼容 fsys.cookies 格式，\n兼容 CDP 方法 Network.getCookies 返回的数据格式
+setCookie(.("网址","值","键",过期时间或天数) = 设定指定网址的 Cookie。\n第一个参数指定 Cookie 生效的网址。\n如果不指定值则删除删除指定名字的会话 cookie 与持久 Cookie，\n如果指定名字与值则设置 Cookie，如果不指定过期时间则仅设置会话 Cookie，\n否则设置为持久 Cookie。\n可选参数 @4 使用 time 对象指定过期时间，或用数值指定过期天数
+setCookie(.("网址","键=值",过期时间或天数) = 设定指定网址的 Cookie。\n可选参数@3使用 time 对象指定过期时间，或用数值指定过期天数。\n如果不指定过期时间则设置会话cookie,\n否则修改持久化 Cookie,\n第一个参数指定 Cookie 生效的网址
+setCookie(.("网址",表) = 设定指定网址的 Cookie。\n参数 @2 用一个表指定要设置的 Cookie 参数。\n可指定 name,value,expires 字段。\nname （Cookie 名字）与 value （Cookie 值）必须指定一个。\nexpires 可不指定（设置会话 Cookie）。\nexpires 如果为数值则应当是时间戳
+setCookie(.(数组) = 设定数组参数指定的多个 Cookie。\n数组中的每个 Cookie 都必须是一个表。\n表中 domain 指定域名, path 指定网站目录（可省略）。\nname 字段（Cookie 名字）与 value 字段（Cookie 值）必须指定一个。\nexpires 字段可不指定（设置会话 Cookie）。\nexpires 字段如果为数值则应当是时间戳\n\n如果参数 @1 为 null 则返回 false ，不会报错。\n如果参数 @1 为表参数则返回 true
+setCookie(.(webview) = 传入 web.view 可直接获取浏览器控件的 Cookies\n作为 inet.setCookie 的参数，设置为 inet.http 可用的 Cookies 。\nweb.form,web.rest,inet.http 共享此 Cookies 设置
 deleteCache(__/*缓存URL*/) = 删除指定的缓存
 clearCookie(__/*可选输入查找模式串*/) = 清除指定Cookies
 clearVisited(__/*可选输入查找模式串*/) = 清除指定历史记录

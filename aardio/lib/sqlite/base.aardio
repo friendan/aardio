@@ -1,13 +1,28 @@
 //base 数据库
+import inet.url;
 var push = ..table.push;
 
 class sqlite {
 
 	ctor( filename,pwd,flag,vfsName ){ {
-		if( !filename ) error("数据库路径不能为空",2)
-		var db,err,errcode  = open(filename,pwd,flag,vfsName)  
+		if( !filename ) error("数据库路径不能为空",2);
+		
+		var db,err,errcode = open(filename,pwd/*仅用于 URI 参数*/,flag,vfsName)  
 		if(!db) return null,err,errcode;
 		this.db = db;
+		
+		if(self.__initialize__){
+			self.__initialize__(db,filename);
+		}
+		
+		if( type.isString(pwd)  ){
+			var ok,err,errcode = key(db,pwd);
+			if( !ok ) {
+				close( db );
+				return null,err,errcode;
+			}
+		} 
+	
 		..table.gc( this,"close");
 	} };
 	key =  function(pwd){ 
@@ -16,6 +31,12 @@ class sqlite {
 	rekey =  function(pwd){ 
 		return rekey(this.db,pwd);
 	};
+	config = function(name,value){ 
+    	return config(this.db,name,value);
+    };
+    configCipher = function(cipherName,name,value){ 
+    	return configCipher(this.db,cipherName,name,value);
+    };
 	close = function(){
 		close( this.db);
 		this.db = null;
@@ -143,9 +164,14 @@ class sqlite {
     walCheckpoint = function(){
 		return wal_checkpoint(this.db);
 	};
+	@_meta;
 };
 
 namespace sqlite;
+
+_meta = {
+	_topointer = lambda() owner.db;
+}
 
 if( ! ..___sqlite_dll__ ) error("sqlite.base禁止直接导入",2);
 _dll = ..___sqlite_dll__;
@@ -441,26 +467,34 @@ class statement{
             push(tab,row);    
         } 
         return tab; 
-    };	
+    }; 
 }; 
 
 sqlite3_open_v2 = dll.api("sqlite3_open_v2","int(STRING filename,pointer &ppDB,int flags,pointer zVfs)"); 
 open = function(filename,pwd,flag=0x10006/*SQLITE_OPEN_NOMUTEX|OPEN_CREATE|SQLITE_OPEN_READWRITE*/,vfsName ){ 
 	if( !filename ) error("数据库路径不能为空",2)
-	filename = ..io.localpath(filename) : filename
+	 
+	//https://www.sqlite.org/uri.html
+	if(..string.startWith(filename,"file:",true)){
+		if(type(pwd)=="table") filename = ..inet.url.appendExtraInfo(filename,pwd);
+ 		var scheme,path,ex = ..string.match(filename,"(file\:)\s*<//>?\s*([^\?\#]*)(.*)")
+		if(!(path[3]===':'# && path[1]=='/'#)){ 
+			path = "/" + ..io.fullpath(path);
+		}
+		filename = scheme  ++ ..string.replace(path,"\\","/") ++ ex;
+			  
+		flag = flag | 0x40/*_SQLITE_OPEN_URI */;	 
+	}
+	else {
+		filename = ..io.localpath(filename) : filename
+	} 
+		
 	var failed,db =  sqlite3_open_v2( filename,null,flag, vfsName );
 	if( failed || (!db) ){
 		if( db ) close(db);
 		return null,lasterr(db,failed)
 	}
  
-	if( pwd ){
-		var ok,err,errcode =  key(db,pwd);
-		if( !ok ) {
-			close( db );
-			return null,err,errcode;
-		}
-	} 
 	return db;
 }
 
@@ -602,24 +636,25 @@ format = function(sql,...) {
 }
 formatSqlParameters =  format;
  
-try{
-	sqlite3_key = dll.api("sqlite3_key","int(POINTER db,string key,int nkey)") 
-	sqlite3_rekey = dll.api("sqlite3_rekey","int(POINTER db,string key,int nkey)")  
-	key = function(db,pwd){
-		var err = sqlite3_key(db,pwd,#pwd)
-		if(err) return false,lasterr(db,err);
+if(dll.api("sqlite3_key")){
+	key = function(db,pwd,schema){
+		var err;
+		if(schema) err = dll.sqlite3_key_v2(db,schema,pwd,#pwd)
+		else err = dll.sqlite3_key(db,pwd,#pwd)
 		
-		err = sqlite3_rekey(db,pwd,#pwd) 
-		if(err) return false,lasterr(db,err); 
+		if(err) return false,lasterr(db,err);
 		return true; 
 	}
-	rekey = function(db,pwd){ 
-		var err = sqlite3_rekey(db,pwd,#pwd) 
+	rekey = function(db,pwd,schema){ 
+		var err 
+		if(schema) err = dll.sqlite3_rekey(db,pwd,#pwd) 
+		else err = dll.sqlite3_rekey_v2(db,schema,pwd,#pwd) 
+		
 		if(err) return false,lasterr(db,err);
 		return true; 
 	}
 } 
-catch(e){
+else{
 	key = function(){
 		return null,'请导入支持加密的 sqlite.aes256 或 sqlite.aes128 扩展库',2)
 	}
@@ -676,11 +711,7 @@ formatResult = function(failed,pErrmsg,db){
 _dll = !dllModule.
 lasterr(.(db,errcode) = 参数1:指定数据库连接句柄,\n参数2:可选使用此参数指定错误代码,\n返回最后一次发生错误的错误信息,以及错误代码.
 assertf(__/*调用sqlite API函数*/) = 第一个参数是API返回的状态值 \n如果发生错误则抛出异常终断程序,并显示错误信息
-open("/__/*数据库路径*/") =  参数一指定数据库路径,支持自动创建数据库文件.\n成功返回数据库对象,失败返回null,错误信息,错误代码\n第二个参数(可选参数)指定数据库密钥,需要加密DLL支持.\n第三个参数(可选参数)使用一个或多个_SQLITE_OPEN_前缀常量指定连接选项\n默认启用多线程模式,多线程共用单个数据连接不安全,否则就是安全的\n多线程模式可并发读,但不可同时写入
-open(":memory:") = 打开内存数据库
 time(__/*表示时间的字符串或数值*/) = 参数可以是时间数值、时间字符串、或其他datetime对象\n返回time对象,默认使用格式化串"%Y-%m-%d %H:%M:%S" 
-key(.(数据库句柄,密钥) = 验证数据库密钥\n加密的数据库必须首先调用此函数输入正确密钥\n成功返回true,失败返回false,错误信息,错误代码
-rekey(.(数据库句柄,密钥) = 添加密钥\n变更或清空密钥( 必须在此之前执行sqlite3.key()函数输入旧密码 )\n成功返回true,失败返回false,错误信息,错误代码
 checkResult(.(failed,err,level) = 参数一: sqlite API的第一个返回值\n参数二(可选参数):sqlite返回的错误信息指针\n参数三(可选参数): 抛出异常的调用级别,2为调用checkResult的函数,3为调用当前函数的函数
 formatResult.(failed,err) = 参数一: sqlite API的第一个返回值\n参数二(可选参数):sqlite返回的错误信息指针\n对于原始Sqlite API返回的err指针,必须调用此函数转换为字符串并释放该指针
 end intellisense**/ 
@@ -731,7 +762,7 @@ prepare = dll.api("sqlite3_prepare","int(POINTER db,string szSql,int nByte,point
 prepare2 = dll.api("sqlite3_prepare_v2","int(POINTER db,string szSql,int nByte,pointer &stmt,pointer& pzTail)");
 step = dll.api("sqlite3_step","int(POINTER stmt)");
 finalize= dll.api("sqlite3_finalize","int(POINTER stmt)");
-reset= dll.api("sqlite3_reset","int(POINTER stmt)");
+reset = dll.api("sqlite3_reset","int(POINTER stmt)");
 
 /*end intellisense*/ 
 namespace column{
@@ -834,9 +865,10 @@ version = function(){
 /**intellisense() 
 sqlite = SQLite（嵌入式数据库）支持库\n此支持库使用的 SQLite 组件体积较小，但并非最新版。\n功能一般够用，但不支持一些 SQLite 新版才有的特性。\n\n如果将 sqlite 导入语句替换为 sqlite.latest 扩展库导入语句，\n则会改用新版 SQLite 组件，体积会大一些，但支持的功能更多一些。\n其他代码中的 sqlite 不需要替换为 sqlite.latest\n\n如果需要自定义 SQLite 版本，请参考 sqlite.latest 扩展库源码
 sqlite(":memory:") = 创建内存数据库
-sqlite("\数据库路径") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.\n第三个参数(可选参数)使用一个或多个_SQLITE_OPEN_前缀常量指定连接选项\n默认启用多线程模式,多线程共用单个数据连接不安全,否则就是安全的\n多线程模式可并发读,但不可同时写入
-sqlite.aes128("\数据库路径") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.
-sqlite.aes256("\数据库路径") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.
+sqlite("\__/*数据库路径*/") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.\n第三个参数(可选参数)使用一个或多个_SQLITE_OPEN_前缀常量指定连接选项\n默认启用多线程模式,多线程共用单个数据连接不安全,否则就是安全的\n多线程模式可并发读,但不可同时写入
+sqlite("file:__/*数据库路径*/) = 使用 URI 指定数据库路径与参数。\n参数@2 可选用表指定 URI 参数，或用字符串指定密钥。\n也可以在参数 @1 的 URI 后面直接写参数。\n文档 https://www.sqlite.org/uri.html
+sqlite.aes128("\__/*数据库路径*/") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.
+sqlite.aes256("\__/*数据库路径*/") =  参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数(可选参数)指定数据库密钥,sqlite.aes128或sqlite.aes256支持该参数.
 sqlite() = !sqliteConn.
 sqlite.aes256() = !sqliteConn.
 sqlite.aes128() = !sqliteConn.
@@ -890,7 +922,11 @@ sqlite.format(.(SQL语句,格式化参数->->->) = 格式化 SQL 查询语句。
 !sqliteConn.prepare_insert = @.prepare("INSERT INTO [表名__] VALUES (?1,?2,?3,?4);")\n//创建插入数据SQL命令对象,问号表示参数,可在问号后指定索引
 !sqliteConn.prepare_select_distinct = @.prepare("SELECT DISTINCT 去重字段 FROM [表名__]") 
 !sqliteConn.prepare() = !sqlite_stmt.
-!sqlite_stmt.sql = sql指令
+!sqliteConn.config( = 配置数据库。\n仅 sqlite.ciphers 等 sqlite 增强扩展库支持此函数。\n用法参考相关扩展库文档。
+!sqliteConn.config(.(name,value) = 配置数据库。\n成功返回当前配置值，失败返回 -1。\n@name 指定要修改的配置名，也可以指定包含多个配置名值对的表。\n@value 指定配置值，不指定值则用返回当前值。
+!sqliteConn.configCipher( = 配置加密算法参数。\n仅 sqlite.ciphers 等 sqlite 增强扩展库支持此函数。\n用法参考相关扩展库文档。
+!sqliteConn.configCipher(.(cipherName,name,value) = 配置加密算法参数。\n成功返回当前配置值，失败返回 -1。\n@cipherName 指定加密算法名称。
+!sqlite_stmt.sql = SQL 指令
 !sqlite_stmt.bind.parameterIndex("@__/*参数名*/") = 返回命名参数的索引值,参数名可以'@',':','$'等符号作为首字符,\n成功返回索引,如果在SQL 语句中未找到该名字则返回0
 !sqlite_stmt.bind.blob(__/*二进制字符串*/) = 绑定一个参数,参数在SQL 语句中用问号表示\n可使用第二个参数指定问号的位置\n返回命令对象自身
 !sqlite_stmt.bind.cdata(__) = 将cdata类型转换为blob类型存储

@@ -92,8 +92,7 @@ aardio 对象传入 Python 仍是传值而不是传址。
 四、使用限制
 -----------------------------------------------------------
 注意 py3.export 只能在 Python 启动线程中使用,
-这是 Python 的限制与 aardio 无关！不信可以换个编程语言试试。
-要解决 Python 这个限制很容易，Python 开源的，请放开手干！！！
+这是 Python 的限制与 aardio 无关！ 
 
 在非 Python 主线程下，py3.export 为 null 值,
 使用 py3.mainThread 也可以检测是否  Python 主线程， 

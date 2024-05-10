@@ -92,8 +92,7 @@ aardio 对象传入 Python 仍是传值而不是传址。
 四、使用限制
 -----------------------------------------------------------
 注意 py2.export 只能在 Python 启动线程中使用,
-这是 Python 的限制与 aardio 无关！不信可以换个编程语言试试。
-要解决 Python 这个限制很容易，Python 开源的，请放开手干！！！
+这是 Python 的限制与 aardio 无关！ 
 
 aardio 可以支持真多线程，也提供了 py2.lock 简化了 Python 全局锁操作，支持除 py2.export 以外的接口。
 但要注意：py3.export 与 Python 多线程模式不兼容。

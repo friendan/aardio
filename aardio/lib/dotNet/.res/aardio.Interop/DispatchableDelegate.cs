@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace Aardio.InteropServices
+namespace aardio.Interop
 {
     public class DispatchableDelegate
     {
@@ -70,14 +70,14 @@ namespace Aardio.InteropServices
                                 Type tEle = t.GetElementType();
                                 Array arr = arg as Array;
 
-                                if (arr.GetLength(0) == 0) args[i] = new Aardio.InteropServices.DispatchableObject(arg, false);
+                                if (arr.GetLength(0) == 0) args[i] = new aardio.Interop.DispatchableObject(arg, false);
                                 else if(typeof(string) == tEle) continue;
                                 else if(tEle.IsArray)
                                 {
-                                    object first = Aardio.InteropServices.Utility.WrapNonPrimitiveValueToAnyObjectRef(arr.GetValue(0));
-                                    if ((first != null) && (first.GetType() == Aardio.InteropServices.Utility.DispatchableObjectType))
+                                    object first = aardio.Interop.Utility.WrapNonPrimitiveValueToAnyObjectRef(arr.GetValue(0));
+                                    if ((first != null) && (first.GetType() == aardio.Interop.Utility.DispatchableObjectType))
                                     {
-                                        args[i] = new Aardio.InteropServices.DispatchableObject(arg, false);
+                                        args[i] = new aardio.Interop.DispatchableObject(arg, false);
                                     }
                                 }
                                 else if (!(tEle.IsPrimitive || tEle.IsEnum))
@@ -94,7 +94,7 @@ namespace Aardio.InteropServices
                                 }
                                 catch (InvalidOperationException)
                                 {
-                                    args[i] = new Aardio.InteropServices.DispatchableObject(arg, false);
+                                    args[i] = new aardio.Interop.DispatchableObject(arg, false);
                                 }
                                 catch (Exception)
                                 {

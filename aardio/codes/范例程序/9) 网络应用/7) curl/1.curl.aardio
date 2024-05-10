@@ -3,6 +3,7 @@ import console;
 
 //默认调用 Win10 1803 及之后系统自带的 curl 。
 //改为 import process.curl.7.81 可兼容到 XP 系统 
+//XP，Win7 在市场上已经接近消失，现在开发软件再处处考虑这些已经不重要了。
 import process.curl;
 
 /*

@@ -13,7 +13,7 @@ dotNet.import("System.Security.Cryptography.X509Certificates","System");
 //============================================================================ 
 
 //重复导入同一名字空间被忽略，不报错
-dotNet.import("System"); 
+dotNet.import("System"); //可用 System.__assembly 得到导入该名字空间的程序集
 
 /*
 如果从不同的程序集导入相同的 .NET 名字空间，
@@ -28,12 +28,14 @@ var SystemCore = dotNet.import("System","mscorlib");
 import System.IO; 
 
 /*
-创建 System.IO.FileStream 对象实例，
-注意 aardio 格式的路径要用 io.fullpath 转换为完整路径。
-aardio 文件路径开始为单个斜杆（或反斜杠）表示应用程序根目录，相当于 C# 的 System.AppDomain.CurrentDomain.BaseDirectory
+创建 System.IO.FileStream 对象实例， 
+因为 System.IO 库已经预处理了路径参数。
+所以不需要再调用 io.fullpath 转换。
 */
-var fs = System.IO.File.Create( io.fullpath("/.testStream.txt") );
-//var fs = System.IO.FileStream(io.fullpath("/.testStream.txt"),System.IO.FileMode.Create);
+var fs = System.IO.File.Create( "/.testStream.txt" );
+
+//也可以这样写，支持 aardio 兼容的读写模式
+//var fs = System.IO.FileStream("/.testStream.txt","w+");
  
 //buffer 相当于 .NET 中的字节数组
 var buf = raw.buffer("测试一下");

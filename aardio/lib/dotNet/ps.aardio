@@ -139,8 +139,8 @@ namespace ps {
 		3、支持动态添加参数等。
 		*/
 		compile.Source = { 
-			$"~\lib\dotNet\.res\Aardio.PS\Aardio.PS.DynObject.cs",
-			$"~\lib\dotNet\.res\Aardio.PS\Aardio.PS.cs"
+			$"~\lib\dotNet\.res\PS\aardio.PS.DynObject.cs",
+			$"~\lib\dotNet\.res\PS\aardio.PS.cs"
 		};
 		
 		var assembly = compile.Compile()  
@@ -154,7 +154,7 @@ namespace ps {
 			return null,"系统未安装 PowerShell"
 		}
 		
-		powerShellRunner = assembly.createInstance("Aardio.PS");
+		powerShellRunner = assembly.createInstance("aardio.PS");
 		return powerShellRunner;	
 	}
 }

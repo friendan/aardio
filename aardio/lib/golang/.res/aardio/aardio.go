@@ -41,4 +41,18 @@ func CallJson(fn uintptr,params ...interface{}) (int,error){
 	var r1,_,_ = syscall.Syscall(fn,2,uintptr(unsafe.Pointer(&jsonParam[0])),uintptr(len(jsonParam)),0)
 	return int(r1),nil
 }
- 
+
+func JsonParam(jsonStr *string, v interface{}) (func()){  
+	var bytes = []byte( *jsonStr ) 
+	err := json.Unmarshal( bytes, v) 
+	if( err!= nil ){  panic(err) } 
+
+	return func(){ 
+		bytes,err = json.Marshal( v ) 
+		if( err!= nil ) {  panic(err) } 
+
+		*jsonStr = string(bytes) 
+	};
+}
+
+

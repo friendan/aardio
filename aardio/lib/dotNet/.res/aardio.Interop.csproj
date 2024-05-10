@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
-    <AssemblyName>Aardio.InteropServices</AssemblyName>
+    <AssemblyName>aardio.Interop</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkProfile />
@@ -42,9 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aardio.InteropServices\CCodeCompiler.cs" />
-    <Compile Include="Aardio.InteropServices\DispatchableDelegate.cs" />
-    <Compile Include="Aardio.InteropServices\Utility.cs" />
+    <Compile Include="aardio.Interop\CCodeCompiler.cs" />
+    <Compile Include="aardio.Interop\DispatchableDelegate.cs" />
+    <Compile Include="aardio.Interop\Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

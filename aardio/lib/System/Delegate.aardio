@@ -3,5 +3,5 @@ import dotNet;
 dotNet.import("System.Delegate","mscorlib")
 
 /**intellisense()
-System.Delegate = .Net System.Delegate 名字空间\n!dotNetNameSpace.
+System.Delegate = .NET System.Delegate 名字空间\n!dotNetNameSpace.
 end intellisense**/

@@ -35,6 +35,9 @@ winform.static.createEmbed() 函数不会创建默认代理，如果希望更精
 embedObject.StatusTextChange = function(text) { 
 	winform.lbStatus.text = text;
 } 
+
+//下面这样写是错的，原生 COM 控件不是事件监听表
+//embedObject._object.StatusTextChange = function(text) {} 
  
 //通过控件容器调用 COM 对象打开指定的网页
 embedObject.Navigate("about:test");

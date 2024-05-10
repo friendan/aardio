@@ -42,8 +42,10 @@ var output,err = dotNet.ps(pScript,{
 console.log(output);
 if(err) console.log("
 Win10/Win11 自带的 PowerShell 5.1 已经可以直接回调参数中的 aardio 对象。
-如果希望兼容到 Win7 自带的 PowerShell 2.0，则可用 dotNet.ps.export() 
-将 aardio 对象转换为可回调的 PowerShell 参数对象。
+如果希望兼容到 Win7 自带的 PowerShell 2.0，则可用 dotNet.ps.export() 导出 aardio 对象到 PowerShell 。
+
+只要简洁，不求完美！
+Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。
 ");
 
 /*

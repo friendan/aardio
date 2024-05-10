@@ -43,8 +43,10 @@ compiler.import("CSharpLibrary"); //编译 C# 代码并导入名字空间
 var netObj = CSharpLibrary.Object();//创建 .NET 对象
 
 import console;
+
 //函数参数传入委托
 netObj.Hello(function(){
+	//无论.NET 回调是否在同一线程，被 .NET 回调的 aardio 函数总是在原调用线程执行（不必考虑多线程规则与同步）。  
   	console.log("3、aardio 函数被 C# 调用了,参数:",a,b)
 	return 2; //如果不返回委托指定类型的返回值会导致报错，委托返回值类型为 void 时这里可以不返回值。
 })

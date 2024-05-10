@@ -1,4 +1,4 @@
-//解压 zip 文件
+//zip 解压
 import console;
 import fsys.dlg; 
 import zlib.unzip;

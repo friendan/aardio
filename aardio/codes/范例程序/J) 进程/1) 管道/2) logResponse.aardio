@@ -32,17 +32,18 @@ for( all,out,err in prcs.each() ){
 
 /*
 也可以用 prcs.logResponse 指定回显函数，或者回显控件。
-如果指定回显函数，则等待进程结束。如果指定回显控件，则函数立即返回，
-并创建定时器异步回显进程输出
+如果指定回显函数，则等待子进程结束。
+如果指定回显控件，则函数立即返回，并创建定时器异步回显进程输出。
 */
 prcs.logResponse(winform.edit);
 
 /*
 如果在控制台调用 prcs.logResponse() 且未指定参数，
 则默认会使用 prcs.logger 属性指定的回显函数或回显控件作为参数。
+即使 logger 属性指定控件，prcs.logResponse() 仍然会等待子进程结束。
 
 如果未指定 prcs.logger，且事先引入了 console 库，
-则默认会使用 console.log 作为回显函数（如果）。
+则默认会使用 console.log 作为回显函数。
 */
 
 win.loopMessage();

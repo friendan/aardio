@@ -35,9 +35,13 @@ string.save("/py/myHttp.py",pyCode );//创建一个自定义模块文件
  
 //试试在 Python 中 import 上面保存的测试模块（当然也可以在 Python 代码中 import）
 var myHttp = py3.import("myHttp");
+
+//如果导入模块出错，打错错误信息。
+console.log( py3.lasterr() );
+
 var str = myHttp.getHtml("http://www.aardio.com" );
 
-import console;
+import console; 
 console.log( str.toString() );
 console.pause()
 

@@ -3,5 +3,5 @@ import dotNet;
 dotNet.import("System.TimeSpan","mscorlib") 
 
 /**intellisense()
-System.TimeSpan = .Net System.TimeSpan 结构体\n!dotNetNameSpace.
+System.TimeSpan = .NET System.TimeSpan 结构体\n!dotNetNameSpace.
 end intellisense**/

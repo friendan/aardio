@@ -173,9 +173,9 @@ isEnumerator(__/*对象*/) = 检查并返回参数指定的对象是否 COM 迭�
 ConnectWeak( = 注册弱引用自身的事件接收表\n此函数返回sink,cookie 共2个返回值，\nsink为事件接收器,cookie是一个数字值,用来记录连接点，\n这2个返回值可以用于 com.ReleaseConnection 释放事件表
 ConnectWeak(.(COM对象,事件接收表) = 参数@2指定一个table类型的表对象\n该表对象被创建为COM对象的默认事件接口并注册为事件接收器。\n\n在COM对象销毁前，com.Connect绑定的事件接收表会被强引用并被阻止回收，\n如果COM对象与事件接收表存在循环引用自身会导致COM对象无法释放,\ncom.ConnectWeak函数通过创建一个中间代理对象弱引用事件接收表，可以避免该问题，\n但要注意回调事件访问的owner对象是代理对象,使用owner.realSink可以获取真正的事件表
 Connect( = 注册事件接收表\n此函数返回sink,cookie 共2个返回值，\nsink为事件接收器,cookie是一个数字值,用来记录连接点，\n这2个返回值可以用于 com.ReleaseConnection 释放事件表。
-Connect(.(COM对象,事件监听表) = 参数@2指定一个 table 类型的表对象\n该表对象被转换为COM对象的默认事件监听器并实现默认事件接口,\n如果需要显式指定接口类型请使用 com.AddConnection。\n\ncom.Connect 绑定的事件监听表会被强引用到 COM对象 \n如果COM对象与事件接收表存在循环引用自身会导致无法释放,\n可用 com.ReleaseConnection 手动释放事件绑定,\n或者改用 com.ConnectWeak,com.CreateEmbedEx 也可以避免该问题
+Connect(.(COM对象,事件监听表) = 参数 @2 指定一个 table 类型的表对象\n该表对象被转换为COM对象的默认事件监听器并实现默认事件接口,\n如果需要显式指定接口类型请使用 com.AddConnection。\n\ncom.Connect 绑定的事件监听表会被强引用到 COM对象 \n如果COM对象与事件接收表存在循环引用自身会导致无法释放,\n可用 com.ReleaseConnection 手动释放事件绑定,\n或者改用 com.ConnectWeak,com.CreateEmbedEx 也可以避免该问题。\n\n参数 @1 指定的对象如果被释放回收，事件监听也会自动解除。\n注意 excel.ActiveWorkbook 这种动态属性应当先保存到变量，再绑定事件
 AddConnection( = 绑定事件监听对象
-AddConnection(.(COM对象,事件监听对象) = 事件监听对象用 com.ImplInterface 创建\n返回一个表示事件连接点的 cookie,\n可用于释放绑定的 com.ReleaseConnection 函数
+AddConnection(.(COM对象,事件监听对象) = 事件监听对象用 com.ImplInterface 创建\n返回一个表示事件连接点的 cookie,\n可用于释放绑定的 com.ReleaseConnection 函数。\n\n参数 @1 指定的对象如果被释放回收，事件监听也会自动解除。 \n注意 excel.ActiveWorkbook 这种动态属性应当先保存到变量，再绑定事件
 GetEnumerator(__) = 获取枚举对象,\n参数 @1 指定 COM对象 
 GetEnumerator() = !comEnumerator.
 ShowHelp(__/*COM对象 */) = 显示帮助
@@ -217,9 +217,9 @@ double(__) = 定义数值类型为64位浮点数,兼容 .Net System.Double 类�
 end intellisense**/
 
 /**intellisense(!embedObject)
-_form = 容器窗口\n!static.
-_object = 控件对象
-_host = COM 控件宿主对象，\n提供部分 OLE 接口函数，一般没必要直接使用这个对象。
+_form = COM 对象的容器窗口。\n这是一个 win.form 对象或者 win.form 对象内部的控件对象。\n!static.
+_object = 原生 COM 控件对象。\n原生 COM 控件对象不等于事件监听表，一般不用于直接绑定 COM 事件。\n应当用 com.Connect 绑定事件监听表。\nCreateEmbedEx 或 CreateEmbed 返回的容器对象也可自动绑定 COM 事件。
+_host = COM 控件宿主对象。\n提供部分 OLE 接口函数，一般没必要直接使用这个对象。
 _host.close() = 关闭 
 _host._adjust() = 自动调整控件窗口大小
 _host.tranacc(.(MSG消息对象) = 解析快捷键,\n如果是快捷键返回真值

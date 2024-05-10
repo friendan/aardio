@@ -1,6 +1,4 @@
 //Excel 表格
-import crypt;
-import process;
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="web.view - 操作 Excel 表格";right=800;bottom=469;bgcolor=16777215)
@@ -13,10 +11,13 @@ var wb = web.view(winform);
 //导出 aardio 函数给 JavaScript
 wb.external = {
     saveXlsxFile = function(buffer,filename){ 
+        import crypt;
+		import process;
+
         var buffer = crypt.decodeBin(buffer);
         string.save(filename,buffer);
         
-        process.execute(filename);
+        process.exploreSelect(filename);
     }; 
 }
     
@@ -28,7 +29,7 @@ wb.html = /**
     <style type="text/css">
     html,body{ height:100%; margin:0; } 
     </style>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/handsontable/8.3.2/handsontable.full.min.js"></script>
     <link rel="stylesheet" href="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/handsontable/8.3.2/handsontable.full.min.css" />
 </head>

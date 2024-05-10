@@ -7,10 +7,14 @@ namespace protobuf;
 class parser{ 
 	
 	ctor(){
+		this.packageTree = {};
 		this.subMessage = {}
      	this.subEnum = {}
      	this.oneof = {};
      	this.name = "";	
+     	this.root = this; 
+     	this.isRootPackage = true;
+     	this.libPaths = {"."};
 	}
 
     parseFile = function (protofile,ns="",inProject ){
@@ -20,6 +24,7 @@ class parser{
         
         this.lex = ..protobuf.parser.lex(str); 
         this.lex.protoPath = ..io.fullpath(protofile);
+        this.rootProtoDir = ..io.splitpath(this.lex.protoPath).dir;
      	this.lex.next();
      	 
      	this.nameSpace = ns;
@@ -29,50 +34,85 @@ class parser{
             message.parseFullTypeName();
         }
         
-        this._createLib( inProject );
+        this._createLib( inProject,this );
+        if(_STUDIO_INVOKED) ..ide.refreshUserLib();
     }
     
     parse = function (str,ns="",inProject=true){  
      	this.lex = ..protobuf.parser.lex(str) 
      	this.lex.next();
      	 
+     	this.rootProtoDir = "/";
      	this.nameSpace = ns;
      	this.inProject = inProject;
         this._parseMessage( this ); 
         for(k,message in this.subMessage){
             message.parseFullTypeName();
         }
-        
-        this._createLib( inProject );
+         
+        this._createLib( inProject,this );
+        if(_STUDIO_INVOKED) ..ide.refreshUserLib();
     }
     
-    importFile = function(protofile,msgParent){
-    	var saveLex = this.lex;
-    	if(!saveLex.protoPath){
-    		error("只有自本地文件加载的 proto 文件才能使用 import 语句!",3)
-    	}
-    	
-    	protofile = ..fsys.path.full(protofile,..fsys.getParentDir(saveLex.protoPath));
-    	var str = ..string.load(protofile);
-        if(!str) error("导入 *.proto 文件失败:" + protofile,2)
+    importFile = function(protofile,msgParent){ 
+    	var saveLex = this.lex; 
+           
+        var str; 
+        if(protofile[1]=='.'#){
+            var dir = this.rootProtoDir;
+            if(saveLex.protoPath){
+                dir = ..fsys.getParentDir(saveLex.protoPath);
+            }
+            
+            var path = ..io.joinpath(dir,protofile); 
+    		str = ..string.load(path);
+        }
+        elseif(this.libPaths) {
+           	for i,p in ..table.eachIndex(this.libPaths){
+           	 	if(p==".") p = this.rootProtoDir;
+           	 	
+            	var path = ..io.joinpath(p,protofile)
+            	if(..io.exist(path)){
+            		str = ..string.load(path);
+            		break;
+            	}
+            }
+        }
+           
+        if(!str) {
+        	if(..string.cmp(protofile,"google/protobuf/timestamp.proto")==0){
+        	    str = "package google.protobuf;message Timestamp { int64 seconds = 1;  int32 nanos = 2;}" 
+        	}
+        	else {
+        	    error("导入 proto 文件失败:" + protofile ,2); 
+        	} 
+        } 
         
     	this.lex = ..protobuf.parser.lex(str); 
     	this.lex.protoPath = protofile;
     	this.lex.next();
-    	
-    	this._parseMessage( msgParent ); 
-    	
+    	 
+        var msg = ..protobuf.parser.message();
+        msg.isRootPackage = true;
+        msg.name = "";
+        
+        this.subMessage[protofile] = msg; 
+    	this._parseMessage( msg ); 
     	this.lex = saveLex;
     }
 
- 	_createLib = function(inProject){ 
+	_createLib = function(inProject,packageSpace){ 
  		var libDir = inProject ? ( _STUDIO_INVOKED ? ..ide.getProjectDir() ) : "\" 
  		libDir = ..fsys.joinpath( libDir,"lib\\");   
  		
- 		for(k,message in this.subMessage){  
+ 		for(k,message in packageSpace.subMessage){  
+ 			if(!message.isClass){
+ 				this._createLib(inProject,message);
+ 				continue;
+ 			}
  			
  			var code = message.serialize();
- 			for(k,message in this.subMessage){
+ 			for(k,message in packageSpace.subMessage){
  				var ns =  ..protobuf.parser.message.combineNamespace(message.nameSpace,message.name );
  				
  				if( ..string.find(code,"@"".." + ns + '"') ){
@@ -80,8 +120,8 @@ class parser{
  				}
  			} 
  			
- 			for(name,body in this.subEnum){ 
- 				var ns =  ..protobuf.parser.message.combineNamespace(this.nameSpace,name );
+ 			for(name,body in packageSpace.subEnum){ 
+ 				var ns =  ..protobuf.parser.message.combineNamespace(packageSpace.nameSpace,name );
  			 
  				if( ..string.find(code,"@"".." + ns + '"') ){
  					code = "import " + ns + ';\r\n' + code;
@@ -96,13 +136,13 @@ class parser{
  				+ 'import protobuf.message;\r\nimport util.metaProperty;\r\n\r\n' + code )
  		} 
  		
- 		var classDir = ..io.fullpath( libDir ++ ..string.replace(this.nameSpace,"\.","\") );
+ 		var classDir = ..io.fullpath( libDir ++ ..string.replace(packageSpace.nameSpace,"\.","\") );
  		..fsys.createDir(classDir);
  		
  		var template = ..protobuf.parser.template;
- 		for(name,body in this.subEnum){ 
+ 		for(name,body in packageSpace.subEnum){ 
  			
- 			var ns =  ..protobuf.parser.message.combineNamespace(this.nameSpace,name ); 
+ 			var ns =  ..protobuf.parser.message.combineNamespace(packageSpace.nameSpace,name ); 
  			
 			var code = template.enum.format(
 				name = name;
@@ -111,30 +151,51 @@ class parser{
 			
 			var path = ..fsys.joinpath(classDir,name + ".aardio")
 			
- 			..string.save(path,(#this.nameSpace?("namespace "+this.nameSpace + ';\r\n'):"") + 'import protobuf.message;\r\nimport util.metaProperty;\r\n\r\n' + code )
- 		} 
- 		
- 		if(_STUDIO_INVOKED) ..ide.refreshUserLib();
+ 			..string.save(path,(#packageSpace.nameSpace?("namespace "+packageSpace.nameSpace + ';\r\n'):"") + 'import protobuf.message;\r\nimport util.metaProperty;\r\n\r\n' + code )
+ 		}  
  	}
- 	 
+ 	
     _parseMessage = function(  msgParent ) {
     
-		var lex = this.lex;  
- 
+		var lex = this.lex;   
         while ( lex.token ){
             lex.checkKeyword()
+           
             if ( ..string.cmp( lex.data,'message') == 0 ) {
             	lex.next();
             	lex.checkKeyword()
             	var nameMsg = lex.data;
             	 
             	var msg = ..protobuf.parser.message();
-            	msg.name = lex.data;
-            	msg.nameSpace = ..protobuf.parser.message.combineNamespace( msgParent.nameSpace,msgParent.name );
-            	msg.parent = msgParent; 
-            	msg.root = msgParent.root;
+            	msg.isClass = true;
             	
-            	msgParent.subMessage[ msg.name ] = msg;
+            	msg.name = lex.data; 
+            	var nameSpace = ..protobuf.parser.message.combineNamespace( msgParent.nameSpace,msgParent.name );
+            	msg.nameSpace = nameSpace;
+            	 
+            	msg.parent = msgParent; 
+            	msg.root = msgParent.root;  
+            	msgParent.subMessage[ msg.name ] = msg; 
+            	
+            	msg.packageTree = this.packageTree;
+            	
+            	var packagePath = ..protobuf.parser.message.combineNamespace( nameSpace,msg.name); 
+            	var msgOrPackage =  ..table.getByNamespace(packagePath,this.packageTree);
+            	
+            	if(msgOrPackage){ 
+            		..table.assign(msgOrPackage,msg); 
+            	}
+            	else {
+            		..table.setByNamespace(packagePath,msg,this.packageTree);
+            	} 
+            	
+            	if(#nameSpace){
+            		var parentPackageNode =  ..table.getByNamespace(nameSpace,this.packageTree);
+            		msg.parentPackageNode = parentPackageNode;
+            	}
+            	else {
+            		msg.parentPackageNode  = this.packageTree;
+            	}
              
              	lex.next(); 
              	
@@ -174,21 +235,38 @@ class parser{
             	
             	if(  msgParent == this ){
             		if(#msgParent.nameSpace){
+            		    //已经指定了自定义的名字空间
             			this.package = lex.data;  
             		}
             		else {
-            			this.nameSpace = lex.data;  
-            		}
+            			this.nameSpace = lex.data;
+            		} 
             		
+            		var packageNode =  ..table.getByNamespace(this.nameSpace,this.packageTree);
+            	    if( packageNode !=  msgParent ){ 
+            	        ..table.assign(packageNode,msgParent);
+            	    }
+            	    else {
+            	    	..table.setByNamespace(this.nameSpace,msgParent,this.packageTree);
+            	    } 
             	}
             	else{
-            	    if( (#this.package) && ..string.startWith(lex.data,this.package ) ){
+            	    if( (#this.package) && ..string.startWith(msgParent.package,this.package ) ){
             	    	msgParent.nameSpace = ..string.right(lex.data,-(#this.package+2)); 
             	    }
             	    else {
             	    	msgParent.nameSpace = lex.data; 
             	    }
+            	    
+            	    var packageNode =  ..table.getByNamespace(msgParent.nameSpace,this.packageTree);
+            	    if( packageNode !=  msgParent ){ 
+            	        ..table.assign(packageNode,msgParent);
+            	    }
+            	    else {
+            	    	..table.setByNamespace(msgParent.nameSpace,msgParent,this.packageTree);
+            	    } 
             	}
+            	
             	lex.next();
             	lex.checkNext(';'#);
             	
@@ -205,10 +283,15 @@ class parser{
             }
             else if ( ..string.cmp( lex.data,'import') == 0 )  {
                 lex.next();
+                if(lex.testKeyword && lex.data=="public"){
+                	lex.next();
+                }
                 lex.checkString();
                 var path = lex.data;
                 this.importFile(path,msgParent);
                 lex.next();
+                
+                lex.testNext(';'#);
             }
             else if ( ..string.cmp( lex.data,'syntax') == 0 )  {
                 lex.next();
@@ -362,6 +445,7 @@ import protobuf.parser.message;
 
 /**intellisense()
 protobuf.parser() = Protobuf 结构定义文件 *.proto 解析器,\n支持 proto2,proto3\n!protobuf_parser.
+!protobuf_parser.libPaths = 指定导入 proto 文件时搜索的目录，\n此属性只能为字符串数组。\n默认为 {"."} ，"." 表示第一个解析的 proto 文件所在目录。\n如果自内存字符串解析 proto，但 "." 表示应用程序根目录
 !protobuf_parser.parseFile( = 编译 proto 文件
 !protobuf_parser.parseFile(.(protoFile,namespace,inProject) = 编译 proto 文件。\n\n@protoFile 参数指定 proto 文件路径。\n可选用 @namespace 参数指定默认根名字空间\n可选用 @inProject 参数指定是否优先在工程目录下创建用户库\n└──@inProject 默认为 true \n└──如果 @inProject 为 false 则始终在 "/" 目录下创建用户库\n└──工程内部运行的代码文件 "/" 等价于工程目录\n\n字段名中下划线后接小写字母会自动去掉下划线转换为驼峰式命名
 !protobuf_parser.parse( = 编译 proto 代码

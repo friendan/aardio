@@ -6,7 +6,7 @@ class IStream{
 	ctor(  ){
 		this = ..com.interface.IUnknown(); 
 	}; 
-	pointer Read = "int(string &pv,INT size,INT & pcbRead)";
+	pointer Read = "int(ptr pv,INT size,INT & pcbRead)";
 	pointer Write = "int(pointer pv,INT cb,INT &pcbWritten)";
 	pointer Seek = "int(LONG dlibMove,INT dwOrigin,LONG &plibNewPosition)"; 
 	pointer SetSize = "int(LONG libNewSize)"; 

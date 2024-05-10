@@ -547,7 +547,8 @@ http://bbs.aardio.com/forum.php?mod=viewthread&tid=3789
 end intellisense**/
 
 /*****intellisense()
-web.layout(.(窗口对象,捕获事件) = 从窗口对象创建HTMLayout窗口\n 参数二默认为 _HL_HANDLE_LITE - 仅允许捕获按钮命令等基本交互事件
+web.layout( = 创建 HTMLayout 窗口。\n此对象支持多线程界面回调，可传入工作线程使用
+web.layout(.(窗口对象,捕获事件) = 从窗口对象创建 HTMLayout 窗口。\n 参数二默认为 _HL_HANDLE_LITE - 仅允许捕获按钮命令等基本交互事件
 web.layout._dll = dll;
 ?web.layout = !weblayout.
 !weblayout.querySelectorAll(.("标签名[属性名='属性值']") = 使用CSS选择器语法,\n查找所有符合条件节点,\n如果有多个参数则首先调用string.format格式化为CSS文本,\n该函数名可使用'$'代替,等价于CSS!中的$函数
