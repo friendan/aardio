@@ -1,0 +1,65 @@
+﻿import crypt.rsa;
+import fsys;
+
+namespace fsys.crx;
+
+key = function(pem,base64){
+	var rsa = ..crypt.rsa();
+	if(pem){
+		if(..io.exist(pem)){
+			rsa.importPemKeyFile(pem)
+		}
+		else {
+			rsa.importPemKey(pem)
+		}		
+	}
+	else {
+		rsa.genKey();
+		pem = rsa.exportPrivateKeyPkcs8ToPem();
+	} 
+	
+	var pubKey = rsa.exportPublicKeyX509(); 
+	
+	var pubKeySha256 = rsa.createHashBySha256(pubKey).getValue(); 	
+	var crxId = ..string.left(pubKeySha256,16); 
+	
+	var bytes = {};
+	for(i=1;#crxId;1){
+   		var byte = crxId[i] 
+   		..table.push(bytes,(byte >> 4) + 97,(byte & 15) + 97)
+	}
+	
+	crxId = ..string.pack(bytes);
+	
+	if( base64 ){ 
+		pubKey = ..crypt.encodeBin(pubKey);//公钥
+	} 
+	
+	return pubKey,crxId,pem;
+} 
+ 
+pathId = function(extPath){
+	var rsa = ..crypt.rsa();
+	extPath = ..fsys.path.canonicalize(extPath);
+	
+	extPath = ..string.toUtf16(extPath);
+	var pubKeySha256 = rsa.createHashBySha256(extPath).getValue(); 	
+	var crxId =  ..string.left(pubKeySha256,16);
+	
+	var bytes = {};
+	for(i=1;#crxId;1){
+   		var byte = crxId[i] 
+   		..table.push(bytes,(byte >> 4) + 97,(byte & 15) + 97)
+	}
+	 
+	return ..string.pack(bytes);
+}
+
+/*****intellisense(fsys.crx) 
+key(.(pem,base64) = 返回公钥,扩展 ID,@pem 参数。\n参数 @pem 指定公钥或私钥 PEM 文件（或数据），\n不指定 @pem 时第 3 个返回值为私钥 PEM 格式数据。\n参数 @base64 为 true 则第 1 个返回值进行 Base64 编码。
+pathId(__) = 将参数指定的解压缩扩展目录路径转换为扩展 ID。
+end intellisense*****/
+
+/*****intellisense()
+fsys.crx = 浏览器扩展 crx 文件打包与解包。\n相关库： web.nativeMessaging, chrome.extensions
+end intellisense*****/

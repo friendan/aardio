@@ -1,0 +1,6 @@
+﻿import dotNet;
+dotNet.import("System.Diagnostics.Eventing","System.Core")
+
+/**intellisense()
+System.Diagnostics.Eventing = .NET 名字空间 System.Diagnostics.Eventing\n!dotNetNameSpace.
+end intellisense**/

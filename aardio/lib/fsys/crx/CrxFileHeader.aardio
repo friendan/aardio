@@ -1,0 +1,105 @@
+namespace fsys.crx;
+import protobuf.message;
+import util.metaProperty;
+
+import fsys.crx.AsymmetricKeyProof;
+class CrxFileHeader {
+	ctor(reader){
+		this = ..protobuf.message(reader);
+		
+    	this.fieldTypes[2] = "..fsys.crx.AsymmetricKeyProof";
+    	this.fieldValues[2] = { @{_type="array"}};
+    	this.fieldNames[2] = "sha256WithRsa";
+    	this.fieldIsArray[2] = true;
+    	this.fieldTypes[3] = "..fsys.crx.AsymmetricKeyProof";
+    	this.fieldValues[3] = { @{_type="array"}};
+    	this.fieldNames[3] = "sha256WithEcdsa";
+    	this.fieldIsArray[3] = true;
+    	this.fieldTypes[10000] = "..protobuf.type.bytes";
+    	this.fieldValues[10000] = null;
+    	this.fieldNames[10000] = "signedHeaderData";
+       
+	} 
+	@_metaProperty ;
+}
+
+namespace CrxFileHeader {
+  
+  
+	_metaProperty  = ..util.metaProperty(
+		_keys = { "sha256WithRsa";"sha256WithEcdsa";"signedHeaderData" }
+		_tostring = function(){
+			return owner.serializeToString();
+		};
+		parseValue = lambda() ..table.parseValue(owner);
+		eachName = function(){
+			return ..table.eachName(owner); 
+		};	
+    	sha256WithRsa = {
+        	_get = function(ownerCall,thisMeta){ 
+        	    if(ownerCall) return thisMeta._call;
+        		return owner.getFieldArray(2); 
+        	}; 
+        	_set = function(v){ 
+        		return owner.setFieldArray(2,v); 
+        	};
+        	_call = function(index,value){ 
+        		if(value!==null)return owner.setFieldArrayItem(2,index,value); 
+        		return owner.getFieldArrayItem(2,index); 
+        	}; 	
+        }; 
+    	sha256WithRsaLength = {
+    		_get = function(){ 
+    			return owner.getFieldArraySize(2);
+    		}; 	
+    	};
+     
+    	sha256WithEcdsa = {
+        	_get = function(ownerCall,thisMeta){ 
+        	    if(ownerCall) return thisMeta._call;
+        		return owner.getFieldArray(3); 
+        	}; 
+        	_set = function(v){ 
+        		return owner.setFieldArray(3,v); 
+        	};
+        	_call = function(index,value){ 
+        		if(value!==null)return owner.setFieldArrayItem(3,index,value); 
+        		return owner.getFieldArrayItem(3,index); 
+        	}; 	
+        }; 
+    	sha256WithEcdsaLength = {
+    		_get = function(){ 
+    			return owner.getFieldArraySize(3);
+    		}; 	
+    	};
+     
+    	signedHeaderData = {
+    		_get = function(){ 
+    			return owner.getFieldValue(10000);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(10000, value);
+    		}; 	
+    	}; 
+        
+	)
+}
+/**intellisense()
+fsys.crx.CrxFileHeader = Protobuf 消息对象
+fsys.crx.CrxFileHeader() = 创建 Protobuf 消息对象。\n!fsys_crx_CrxFileHeader.
+!fsys_crx_CrxFileHeader.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!fsys_crx_CrxFileHeader.parseValue() = 调用 table.parseValue 获取纯值表。\n纯值表只包含纯值类型数据，\n纯值类型指的是：字符串、数值、布尔值、buffer、指针、纯值表。\n纯值表要么是数组，要么是包含名值对的表。\n\n纯值表是可保持原值序列化的表，并且兼容 JSON
+!fsys_crx_CrxFileHeader.serializeToString() = 序列化消息对象,返回二进制字符串
+!fsys_crx_CrxFileHeader.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!fsys_crx_CrxFileHeader.sha256WithRsa() = !fsys_crx_AsymmetricKeyProof.
+!fsys_crx_CrxFileHeader.sha256WithRsa = 公钥与 sha256 签名。不作为函数调用时，用于返回或设置数组。 
+!fsys_crx_CrxFileHeader.sha256WithRsa(.(index,value) =  公钥与 sha256 签名。\n如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+!fsys_crx_CrxFileHeader.sha256WithEcdsa() = !fsys_crx_AsymmetricKeyProof.
+!fsys_crx_CrxFileHeader.sha256WithEcdsa =  ECDSA 公钥与签名。\n不作为函数调用时，用于返回或设置数组。 
+!fsys_crx_CrxFileHeader.sha256WithEcdsa(.(index,value) =  ECDSA 公钥与签名。n如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+!fsys_crx_CrxFileHeader.signedHeaderData = 签名数据.\nprotobuf.type.bytes
+!fsys_crx_CrxFileHeader.crxId = 扩展 ID，仅解包 crx 后可用。
+end intellisense**/

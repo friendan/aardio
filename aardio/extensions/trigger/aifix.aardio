@@ -1,0 +1,59 @@
+import ide.aifix;
+import win.ui.ctrl.edit;
+import win.clip;
+import win;
+
+onIdePaste = function(hwnd){
+	var edit = win.ui.ctrl.edit()
+	edit.hwnd = hwnd;
+	
+	var oldCode = edit.text;
+	var selText = edit.selText;
+	if(#selText){
+		oldCode = string.replace(oldCode,"@"+selText,"");
+	}
+ 
+	var text = win.clip.read(); 
+
+	var output = {}
+	var text,count = string.replace(text,"```<aardio>(.+?)```",function(c){ 
+		var indent = string.match(c,"^<\r?\n>?([ \t]+)")
+		if(#indent){ 
+			c = string.replace(c,"\n+"+indent,'\n');
+		}
+		
+		table.push(output,c);
+	})
+	
+	if(#output){
+		text = string.join(output,'\r\n');
+	}
+	else {
+		var indent = string.match(text,"^<\r?\n>?([ \t]+)")
+		if(#indent){ 
+			text = string.replace(text,"\n+"+indent,'\n');
+		}	
+	}
+	
+	var c = ide.aifix(string.trim(text));
+	
+	if(string.find(oldCode,"import\s+console")){ 
+		c = string.replace(c,"import\s+console\;\s+",""); 
+	}
+	
+	if(string.find(oldCode,"console.pause")){
+		c = string.replace(c,"console.pause\(.+?\);\s*",""); 
+		c = string.replace(c,"//\s*暂停并等待按键\s*","");  
+	}
+	
+	if(string.find(oldCode,"import\s+win.ui![^\w\.]")){ 
+		c = string.replace(c,"import\s+win\.ui\;\s+","");
+	}
+	
+	if(string.find(oldCode,"!\wwin\.loopMessage!\W")){
+		c = string.replace(c,"win.loopMessage\();\s*",""); 
+	}
+	
+	edit.selText = string.trim(c);
+}
+ 

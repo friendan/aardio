@@ -1,0 +1,54 @@
+﻿//Numerics 数值扩展  
+import dotNet; 
+dotNet.import("System.Numerics"); 
+
+var tryParse = System.Numerics.BigInteger.TryParse;
+System.Numerics.BigInteger.TryParse = function(str){	
+	var int = ..System.Numerics.BigInteger().byRef(true);
+	
+    if(str[1]='0'# && str[2]='x'#){
+    	if( tryParse(..string.right(str,-3),512,null,int) ) return int;
+    }
+    elseif( tryParse(str,int) ) return int;
+} 
+
+System.Numerics.BigInteger[["ctor(...)"]] = function(c,...){
+	if(type(...)==="string"){
+		return System.Numerics.BigInteger.TryParse(...);
+	}
+	
+	return c(...);
+}
+
+/**intellisense()
+System.Numerics = .NET 数值扩展类型名字空间 System.Numerics。\n.NET 4.0 开始支持。Win10 开始自带 .NET 4.6 。
+System.Numerics.BigInteger = 支持任意大整数的数值类型。\n没有下限或上限，可以包含任何整数的值。\n支持常用运算符，参与运算的数必须也是 System.Numerics.BigInteger 。\n支持用 tostring 函数转换为 aardio 字符串。\ntostring 第 2 个参数为 "x"或"X"时返回 16 进制字符串。\n\n大数运算也可以使用 math.bignum 扩展库。
+System.Numerics.BigInteger(__) = 创建大整数。\n参数 @1 指定字符串时调用 TryParse 函数创建对象，失败返回 null。\n否则调用 System.Numerics.BigInteger 构造函数，\n非字符串参数用法参考 .NET 文档。\n\n参数 @1 如果为 0x前缀的字符串，则以16进制解析为数值。\n16进制字符串首个数字为0则总是解析为正数，\n否则开始的数值大于0x80时生成负数。
+System.Numerics.BigInteger.Parse(__) = 参数 @1 指定字符串。\n解析字符串中的整数值。
+System.Numerics.BigInteger.Parse(__) = 参数 @1 指定字符串。\n解析字符串中的整数值。
+System.Numerics.BigInteger.TryParse(__) = 参数 @1 指定字符串。\n解析字符串中的整数值，失败返回 null
+System.Numerics.Complex = 复数。\n可参考：math.complex 扩展库。
+System.Numerics.Complex(.(实部,虚部) = 创建复数。\n支持常用运算符，参与运算的数必须也是 System.Numerics.Complex 。\n支持用 tostring 函数转换为 aardio 字符串。
+System.Numerics.Complex.? = 更多复数函数用法请参考 .NET 文档
+System.Numerics.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+System.Numerics.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
+System.Numerics.Complex() = !sysNumericsComplex.
+System.Numerics.BigInteger() = !sysNumericsBigIntger.
+end intellisense**/
+
+/*****intellisense(sysNumericsComplex)
+byRef(true) = 传参方式设为传址（用于引用或输出参数）
+ToString() = 转换为字符串。\n参数可用字符串指定 .NET 字符串标准或自定义格式化串。\n用法请参考 .NET 文档。
+Real = 获取实部。
+Imaginary = 获取虚部。 
+Magnitude = 获取复数的量值（或绝对值）。 
+Phase = 获取复数的相位。
+? = 此对象的其他可用函数请参考 .NET 文档
+end intellisense*****/
+
+/*****intellisense(!sysNumericsBigIntger)
+byRef(true) = 传参方式设为传址（用于引用或输出参数）
+ToString("X") = 转换为 16 进制字符串
+ToString() = 转换为字符串
+? = 此对象的其他可用函数请参考 .NET 文档
+end intellisense*****/

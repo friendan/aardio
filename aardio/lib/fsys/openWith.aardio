@@ -1,0 +1,25 @@
+﻿//openWith 打开方式
+namespace fsys;
+
+class openWith{
+	ctor(path,hwnd,flags){
+		path = ..io.localpath(path)||path||"";
+		
+		if(::Shell32.SHOpenWithDialog){
+			::Shell32.SHOpenWithDialog(hwnd,{
+				ustring file = path;
+				ustring cls;
+				int flags = flags===null? 4 : flags;
+			})	
+		} 
+		else {
+			//::Shell32.OpenAs_RunDLLW(hwnd,_HINSTANSE,string.toUtf16(path),5/*_SW_SHOW*/);
+			..raw.execute("rundll32.exe","shell32.dll,OpenAs_RunDLL " + path,"open",5/*_SW_SHOW*/,,hwnd)
+		}
+	};
+}
+
+/*****intellisense()
+fsys.openWith = 文件打开方式，需要导入才能使用。
+fsys.openWith(.(path,hwnd,flags) = 参数 @path 指定要打开的文件路径。\n其他为可选参数。\n可选用 @hwnd 指定所有窗口句柄。\n参数 @flags 一般不要指定。
+end intellisense*****/

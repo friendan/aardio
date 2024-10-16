@@ -1,0 +1,64 @@
+﻿//data 自定义数据
+namespace win.clip;
+
+class data{
+	ctor( typeName ){
+		this.format = ::User32.RegisterClipboardFormat(typeName); 
+	};
+	readText = function(){
+		var buf = this.read()
+		if(buf) return ..string.fromUtf16(buf);
+	};
+	writeText = function(text){
+		this.write( ..string.toUtf16(text) );
+	};
+	read = function(){
+		var buf;
+		if(!::User32.OpenClipboard(0))
+			return;	
+			
+		var hClip =  ::User32.GetClipboardDataP(this.format);
+		if(hClip){
+			var p = ::GlobalLock(hClip)
+			if(p){ 
+				buf = ..raw.buffer(::GlobalSize(hClip),p);
+				::GlobalUnlock(hClip)
+			}
+		} 
+		
+		::User32.CloseClipboard();
+		return buf;
+	};
+	write = function(buf,rep){ 
+		if(buf){
+			if(!::User32.OpenClipboard(0))
+				return;	
+					
+			if(rep) User32.EmptyClipboard();
+				
+			var clipbuffer = ::GlobalAlloc(0x2000/*_GMEM_DDESHARE*/, #buf);
+    		var p =  ::GlobalLock(clipbuffer); 
+    		
+    		::CopyMemory(p,buf,#buf); 
+			::GlobalUnlock(clipbuffer); 
+			
+			var hdl =  ::User32.SetClipboardDataP(this.format,clipbuffer);
+			::User32.CloseClipboard();
+			return hdl;
+		} 
+	}; 
+}
+
+/**intellisense()
+win.clip.data = 剪贴板读写自定义格式数据
+win.clip.data(__) = 创建剪贴板自定义格式。\n参数 @1 用一个字符串指定格式名称。\n例如 RTF 格式为 "Rich Text Format"
+win.clip.data()  = !winClipData.
+end intellisense**/
+
+/*****intellisense(!winClipData)
+write(.(剪贴板数据) = 写入自定义格式数据，不清空剪贴板原来的数据。\n参数@1为 buffer 或 string 对象。\n成功返回剪贴板数据句柄
+write(.(剪贴板数据,true) = 写入自定义格式数据，清空剪贴板原来的数据。\n参数@1为 buffer 或 string 对象。\n成功返回剪贴板数据句柄
+read() = 读取自定义格式数据。\n成功返回 buffer 对象。
+writeText(.(剪贴板数据) =  将 UTF-8 编码文本转换为 Unicode（UTF-16）编码写入剪贴板。\n不清空剪贴板原来的数据。\n\n成功返回剪贴板数据句柄
+readText() = 读取 Unicode（UTF-16）编码文本并返回 UTF-8 编码文本。
+end intellisense*****/

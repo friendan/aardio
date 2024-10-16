@@ -1,0 +1,253 @@
+//树形文件视图
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="范例";right=270;bottom=534;bgcolor=16777215;border="none";exmode="none";mode="child";parent=...)
+mainForm.add(
+treeview={cls="treeview";left=0;top=0;right=270;bottom=532;asel=false;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;z=1}
+)
+/*}}*/
+
+import win.ui.explorer;
+var explorer = win.ui.explorer( mainForm.treeview );//自动检测顶部的 combobox 并转换为驱动器下拉列表
+explorer.dirFirst = false;
+
+explorer.translatePath = function(dirPath,files,dirs){
+	var str = ..string.load(dirPath + "\.aar");
+	if(!str) return files,dirs;
+	
+	var files1 = {};
+	var dirs1 = {};
+	
+	var push = ..table.push;
+	for(k,v,f in string.each(str,"(.+)\=(.+?)(<.aardio>?)$") ){
+		if(#f){
+			push(files1,k);
+			files1[k] = v[1]!='~'#?..io.joinpath(dirPath,v+".aardio"):v+".aardio";
+		}
+		else {
+			push(dirs1,k);
+			dirs1[k] = v[1]!='~'#?..io.joinpath(dirPath,v):v;	
+		} 
+	}
+	 
+	
+	return files1,dirs1;
+	
+	if( files && dirs){
+		 
+		var newFiles = {}
+		for(i=1;#files;1){ 
+	 		var name = files[i];
+	 		var path = files[name];
+	 		
+			var newName = map[name]  : name;
+			newFiles[i] = newName;
+			newFiles[newName] = path;  
+		} 
+		
+	 	var newDirs = {}
+	 	for(i=1;#dirs;1){ 
+	 		var name = dirs[i];
+	 		var path = dirs[name];
+	 		
+			var newName = map[name]  : name;
+			newDirs[i] = newName;
+			newDirs[newName] = path;  
+		} 
+		
+		return newFiles,newDirs;
+	} 
+}
+
+
+//打开指定目录
+explorer.loadFile("~/example","*.aardio");
+ 
+explorer.onClick = function(filePath,hItem ){
+    if( fsys.isDir( filePath ) ) {
+    
+    	 
+    } 
+}
+
+import ide;
+import process;
+
+explorer.onDoubleClick = function(filePath,hItem){
+    if( !fsys.isDir( filePath ) ) { 
+
+	var code = string.load(filePath);
+	var url = string.match(code,"^<//>?\s*(doc\://\S+)\s*$");
+	if(url){
+		ide.openDocument(url)
+		return; 
+	}
+
+    	ide.openDocument(filePath)
+    	mainForm.setTimeout(
+    		function(){
+    			var hwnd = ide.getMainHwnd();
+    			win.setFocus(hwnd)
+    		},100
+    	)	
+    	return true;
+    } 	
+}
+
+import process;
+import win.ui.menu;
+import fsys.remove;
+import win.clip;
+import win.clip.file;
+explorer.onRightClick = function(filePath,hItem,x,y){
+    var hItem,tvht = mainForm.treeview.hitTest(x,y,true);
+    var menu = win.ui.popmenu(mainForm)
+    
+    
+    var isDir = fsys.isDir(filePath);
+    
+    if(fsys.path.ischild("~\example\Snippets",filePath)){
+    	if(isDir){
+    		menu.add("添加 ",
+        		function(){
+            		frmSnippet = mainForm.loadForm("/addfile.aardio")
+            		frmSnippet.aarSnippetsDir = filePath;
+            		frmSnippet.text = "添加到我的代码段";
+            		
+            		var newPath = frmSnippet.doModal();
+            		
+            		if(newPath){
+            			if(string.endWith(newPath,".aardio")){
+            				ide.openDocument(newPath);
+            			}
+            			
+            			explorer.reloadFile(filePath,hItem);
+            			mainForm.treeview.setSelected(hItem);
+            		}
+        		}
+    		)	
+    	}
+    	
+		menu.add("移出",
+        	function(){
+             	var friendlyname = mainForm.treeview.getItemText(hItem);
+             	var parentItem = mainForm.treeview.getParentItem(hItem);
+             	if(parentItem){
+             		var dir = explorer.getFilePath(parentItem);
+             		
+             		var aarFilePath = io.joinpath(dir,".aar");
+					var aarData = ..string.load(aarFilePath);
+					var aarNewData = "";
+					if(aarData){
+						for(k,v in string.each(aarData,"(.+)\=(.+)$") ){
+							if(k!=friendlyname){
+								aarNewData = aarNewData ++ k + "=" + v + '\r\n'
+							}
+						}
+						
+						aarNewData = string.trim(aarNewData);
+						string.save(aarFilePath,aarNewData);
+					}
+             	}
+             	 
+            	mainForm.treeview.delItem(hItem);
+        	}
+    	) 
+    	
+    	menu.add();
+    }
+    
+    
+    if(!isDir){
+     	menu.add("复制代码 ",
+        	function(){
+            	var code = string.load(filePath); 
+            	win.clip.write(code)
+        	}
+    	)
+    	
+    	menu.add("编辑代码 ",
+        	function(){
+            	ide.openDocument(filePath)
+        	}
+    	)
+    	
+    	menu.add();  
+    	
+    	menu.add("浏览文件...",
+        	function(){
+            	process.exploreSelect(filePath); 
+        	}
+    	)
+    	
+    	menu.add("用外部编辑器打开 ...",
+        	function(){ 
+        	    var path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(!path) io.rename("~\extensions\trigger\editDefault.aardio","~\extensions\trigger\edit.aardio");
+        	    path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(path){
+        	    	loadcodex(path,filePath);
+        	    }
+            	else {
+            		import fsys.openWith;
+            		fsys.openWith(filePath);
+            	} 
+        	}
+    	)
+    	
+    	
+    	menu.add("复制文件到 ...",
+        	function(){
+            	win.clip.file.write(filePath,"copy"); 
+        	}
+    	)
+    	
+    	menu.add(); 	
+    } 
+    else{	
+    	menu.add("浏览目录...",
+        	function(){
+            	process.exploreSelect(filePath); 
+        	}
+    	)
+    	
+    	menu.add("用外部编辑器打开 ...",
+        	function(){ 
+        	    var path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(!path) io.rename("~\extensions\trigger\editDefault.aardio","~\extensions\trigger\edit.aardio");
+        	    path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(path){
+        	    	loadcodex(path,filePath);
+        	    }
+            	else {
+            		import fsys.openWith;
+            		fsys.openWith(filePath);
+            	} 
+        	}
+    	)
+    	
+    	menu.add("复制目录到 ...",
+        	function(){
+            	win.clip.file.write(filePath,"copy"); 
+        	}
+    	)
+    	
+    	menu.add();  
+	} 
+    
+    if(isDir){
+    	menu.add();
+    	
+    	menu.add("同步本地目录",
+        	function(){
+            	explorer.reloadFile(filePath,hItem);
+            	mainForm.treeview.setSelected(hItem);
+        	}
+    	)    	
+    }
+
+    menu.popup(x,y,true);   
+}
+
+mainForm.show(); 
+win.loopMessage();

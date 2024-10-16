@@ -1,0 +1,42 @@
+﻿//urlData Data URL
+import crypt;
+import fsys.mime;
+
+namespace inet;
+
+class urlData{
+	ctor(data,path,mime){
+		if(!mime){
+			if(!path) mime = ..fsys.mime.fromData(data);
+			else mime = ..fsys.mime.fromFile(path);
+
+			if(!mime) error("无效的 MIME",2);
+		}
+		
+		if(!data){ 
+			data = path ? ..string.loadBuffer(path);
+			if(!data) error("参数 @1 未指定数据，且参数 @2 未指定有效的文件路径",2);
+		}
+		
+		return ..string.format('data:%s;base64,\r\n%s',mime,..crypt.encodeBin(data,,0x40000001/*_CRYPT_STRING_BASE64*/ ) )
+	}; 
+}
+
+urlData.parse = function(url){
+	if(!type.isString(url)) return;
+	
+	var mime,base64,data = ..string.match(url,"data\:(.*?)(<;base64>?),(.+)");
+	if(base64){
+		data = ..crypt.decodeBin(data,, 1/*_CRYPT_STRING_BASE64*/);
+	};
+	
+	return data,mime;
+} 
+
+/*****intellisense()
+inet.urlData = 生成 Data URL
+inet.urlData( = 返回 Data URL
+inet.urlData(.(data,path,mime) = 参数 @1 可指定字符串或 buffer，如果为 null 则自参数 @2 指定的路径加载数据。\n参数 @2 指定文件路径，如果用于获取 MIME 可指定并非实际存在的文件名。\n可选指定 MIME，如不指定则自参数 @2 指定的路径获取 MIME。
+inet.urlData.parse( = 解析 Data URL 并返回解析后数据
+inet.urlData.parse(.(url) = 如果参数不是字符串返回 null 。\n如果参数是 Data URL，返回解析后的数据与 MIME。\如果数据由 base64 编码则自动解码。
+end intellisense*****/

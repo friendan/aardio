@@ -1,0 +1,60 @@
+﻿import fsys.crx.CrxFileHeader; 
+import fsys.crx.SignedData;
+import zlib.unzip;
+
+namespace fsys.crx;
+
+class unpack{
+	ctor(ctxPath,extractDir){
+		var file = ..io.file(ctxPath,"rb");
+		if(!file) error("文件路径错误",2);
+		
+		if(file.read(4)!="Cr24"){
+			file.close();
+			return null,"格式错误";
+		}
+		
+		if(3!=file.read({INT version})[["version"]]){
+			return null,"版本错误";
+		}
+		
+		var size = file.read({INT size})[["size"]];
+		if(!size){
+			return null,"文件头格式错误";
+		}
+		
+		var header = file.read(size);
+		file.close();
+		
+		var fileHeader  = ..fsys.crx.CrxFileHeader();
+		fileHeader.parseFromString(header);
+		
+		var signMsg  = ..fsys.crx.SignedData();
+		signMsg.parseFromString(fileHeader.signedHeaderData)
+	
+		var crxId = signMsg.crxId; 
+		if(crxId){ 
+			var bytes = {};
+			for(i=1;#crxId;1){
+   				var byte = crxId[i] 
+   				..table.push(bytes,(byte >> 4) + 97,(byte & 15) + 97)
+			}
+			
+			crxId = ..string.pack(bytes);
+		} 
+		fileHeader.crxId = crxId;
+		
+		if(!extractDir){
+			return fileHeader;
+		}
+ 
+		if( ..zlib.unzip.extract( ctxPath,extractDir ) ){ 
+			return fileHeader;
+		}  
+	}; 
+}
+
+/*****intellisense(fsys.crx)
+unpack(.(ctxPath,extractDir) = 解压 CTX  V3 扩展。\n@ctxPath 指定扩展路径，可选用 @extractDir 指定解压目录。\n如果不指定 extractDir 则仅获取文件头不解压文件。\n成功返回 fsys.crx.CrxFileHeader 文件头对象。
+unpack() = !fsys_crx_CrxFileHeader.
+end intellisense*****/

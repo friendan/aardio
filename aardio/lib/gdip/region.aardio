@@ -1,0 +1,157 @@
+﻿import gdip.core;
+import util.metaProperty;
+namespace gdip;
+
+class region {
+
+    ctor(param){
+        
+        var pRegion = {ptr value}
+        
+        if(type(param) == "pointer"){ 
+            ..gdip.assert( ::Gdiplus.GdipCreateRegionHrgn(param,pRegion) );
+        }
+        elseif(type(param) == "buffer"){ 
+            ..gdip.assert( ::Gdiplus.GdipCreateRegionRgnData(param,#param,pRegion) );
+        }
+        elseif(type(param) == "table" ){
+           
+            if(param.pPath){
+            	..gdip.assert( ::Gdiplus.GdipCreateRegionPath(param,pRegion) );
+            }
+            elseif(param.pRegion){
+            	..gdip.assert(::Gdiplus.GdipCloneRegion(param,pRegion) );
+            } 
+            else {
+                var rc = param;
+            	if(param.width!==null && param.height!==null){
+            	    if(!rc._struct){
+            	    	rc = ::RECTF();
+            			..table.assign(rc,param);	
+            	    }
+            		
+            		..gdip.assert( ::Gdiplus.GdipCreateRegionRect(rc,pRegion) );  
+            	}
+            	else {
+            	    if(!rc._struct){
+            	    	rc = ::RECT();
+            			..table.assign(rc,param);	
+            	    }
+            	    
+            		..gdip.assert( ::Gdiplus.GdipCreateRegionRectI(rc,pRegion) );  
+            	}      
+            } 
+        }
+        elseif(!param){
+            ..gdip.assert( ::Gdiplus.GdipCreateRegion(pRegion) );
+        }
+        
+        this.pRegion = pRegion.value;
+        
+        ..table.gc( this,"delete" )
+    }
+    
+    @_metaProperty;
+}
+
+namespace region {
+
+    _metaProperty = ..util.metaProperty({
+    
+        delete = function(){ 
+            if(owner.pRegion) {
+            	::Gdiplus.GdipDeleteRegion(owner.pRegion);
+            	owner.pRegion = null;
+            }
+        };
+        makeInfinite = function(){
+            ::Gdiplus.GdipSetInfinite(owner.pRegion);
+        };
+        makeEmpty = function(){
+            ::Gdiplus.GdipSetEmpty(owner.pRegion);
+        };
+        intersect = function(param){
+            return owner.combine(param,1/*CombineModeIntersect*/); 
+        };
+        exclude = function(param){
+            return owner.combine(param,4/*_CombineModeExclude*/);  
+        };
+        combine = function(param,mode){
+           
+            if(..gdip.path.is(param)){
+                return ::Gdiplus.GdipCombineRegionPath(owner.pRegion, param,mode);
+            }
+            elseif( self.is(param) ){
+                return ::Gdiplus.GdipCombineRegionRegion(owner.pRegion, param.pRegion,mode);
+            }
+            elseif( type(param) === "table" ){
+                
+            	if(param.width!==null && param.height!==null){
+            	    var rc = table.assign(::RECTF(),param);	  
+            		::Gdiplus.GdipCombineRegionRect(owner.pRegion, rc, mode);  
+            	}
+            	else {
+            	    var rc = table.assign(::RECT(),param);	  
+            		::Gdiplus.GdipCombineRegionRectI(owner.pRegion, rc, mode);  
+            	}  
+            }
+            else {
+                error("无效的参数",2);
+            }
+        };
+        isEmpty = function(graphics){
+            var ret = {INT value}
+            ::Gdiplus.GdipIsEmptyRegion(owner.pRegion,graphics,ret); 
+            return !!ret.value; 
+        };
+        isInfinite = function(graphics){
+            var ret = {INT value}
+            ::Gdiplus.GdipIsInfiniteRegion(owner.pRegion,graphics,ret); 
+            return !!ret.value; 
+        }; 
+        getData = function(){
+            var size = {INT value}
+        	..gdip.assert2( ::Gdiplus.GdipGetRegionDataSize(owner.pRegion,size));
+        	
+        	var inSize = size.value;
+        	var buf = ..raw.buffer(inSize);
+        	
+        	..gdip.assert2( ::Gdiplus.GdipGetRegionData(owner.pRegion,buf,inSize,size)); 
+        	return buf;
+        };
+        translate = function(dx, dy){
+            return gdip.GdipTranslateRegion(owner.pRegion, ..raw.float(dx), ..raw.float(dy));
+        };
+        _eq = function(region2){
+        	var ret = {INT value}
+            ::Gdiplus.GdipIsEqualRegion(owner.pRegion,region2,ret);
+        };
+        _topointer = lambda() owner.pRegion; //用于在 API 函数中将对象自动转换为指针
+    });
+    
+    is = lambda(region) region@ === _metaProperty;
+}
+
+var $ = _dll; 
+
+
+/**intellisense()
+gdip.region = GDI+ Region 对象
+gdip.path.is(__) = 参数 @1 是否 gdip.region 对象
+gdip.region(.() = 创建一个无限区域
+gdip.region(.(region) = 从 gdip.region 区域对象复制一个对象
+gdip.region(.(HRGN) = 从 GDI 区域句柄创建
+gdip.region(.({left=,top=,right=,bottom=}) = 从 ::RECT 矩形创建区域。\n传入普通表会自动转换为 ::RECT 结构体，只要指定 ::RECT 的所有字段值就可以 
+gdip.region(.({x=,y=,width=,height=}) = 从 ::RECTF 矩形创建区域。\n传入普通表会自动转换为 ::RECT 结构体，只要指定::RECT 的所有字段值就可以
+gdip.region() = !stdGdipRegion.
+!stdGdipRegion.delete() = 删除对象，对象回收时也会自动调用此对象。\n可重复调用，但删除对象以后不能再调用对象的其他函数。
+!stdGdipRegion.isEmpty(__) = 是否为空区域，参数 @1 指定 gdip.graphics 对象。
+!stdGdipRegion.isInfinite(__) = 是否为无限区域，参数 @1 指定 gdip.graphics 对象。
+!stdGdipRegion.getData() = 返回区域数据，返回值为 buffer 类型字节数组。
+!stdGdipRegion.makeInfinite() = 将区域设为无限
+!stdGdipRegion.makeEmpty() = 将区域设为空
+!stdGdipRegion.combine(.(param,mode) = 与指定区域、路径或矩形相交。\n参数 @param 可以是 gdip.region 对象、gdip.path 对象 、::RECT 、::RECTF 结构体。\n指定对应结构体字段值的普通 table 会自动转换为 ::RECT 或 ::RECTF 结构体。\n参数 @mode 指定 _gdipCombine 前缀的常量。
+!stdGdipRegion.intersect(__) = 与指定区域、路径或矩形相交。\n参数 @1 可以是 gdip.region 对象、gdip.path 对象 、::RECT 、::RECTF 结构体。\n指定对应结构体字段值的普通 table 会自动转换为 ::RECT 或 ::RECTF 结构体
+!stdGdipRegion.exclude(__) = 排除指定区域、路径或矩形。\n参数 @1 可以是 gdip.region 对象、gdip.path 对象 、::RECT 、::RECTF 结构体。\n指定对应结构体字段值的普通 table 会自动转换为 ::RECT 或 ::RECTF 结构体
+!stdGdipRegion.translate(dx,dy) = 平移区域，参数 dx,dy 指定水平与垂直方向平移数值
+end intellisense**/

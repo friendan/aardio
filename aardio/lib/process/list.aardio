@@ -1,0 +1,105 @@
+﻿//list 进程与模块列表
+import process.popen;
+
+namespace process.list;
+
+byId = function(id){
+	if(id === null) error("请指定进程 ID",2);
+	var ps  = ..process.popen.ps(`-Command`,`&{  
+		
+	if ($PSVersionTable.PSVersion.Major -lt 3){
+		Add-Type -assembly system.web.extensions
+		function ConvertTo-Json([object] $item){ 
+    		$jss=New-Object system.web.script.serialization.javascriptSerializer
+    		return $jss.Serialize($item)
+		}
+	};
+	
+	$results = @()
+	 
+    try {
+        $process = Get-Process -Id `+id+`
+        $modules = $process.Modules
+
+        foreach ($module in $modules) {
+            $results += [pscustomobject]@{
+                ModuleName = $module.ModuleName
+                FileName   = $module.FileName
+                BaseAddress = $module.BaseAddress
+                ModuleMemorySize = $module.ModuleMemorySize
+            }
+        }
+        
+        $json = $results | ConvertTo-Json
+        Write-Output $json 
+    } catch { 
+        Write-Output "['error']"
+    }
+}`);
+	
+	return ps.jsonAll()	
+}
+
+
+byModule = function(moduleName){
+	if(moduleName === null) error("请指定要查找的 DLL 文件名",2);
+	
+	var ps  = ..process.popen.ps(`-Command`,`&{  
+	if ($PSVersionTable.PSVersion.Major -lt 3){
+		Add-Type -assembly system.web.extensions
+		function ConvertTo-Json([object] $item){ 
+    		$jss=New-Object system.web.script.serialization.javascriptSerializer
+    		return $jss.Serialize($item)
+		}
+	};
+		
+	$processes = Get-Process
+	$results = @() 
+	
+	foreach ($process in $processes) {
+    	$modules = $process.Modules
+    	foreach ($module in $modules) { 
+        	if ($module.ModuleName -ieq "` + moduleName + `") {
+            	$results += [pscustomobject]@{
+                	ProcessId = $process.Id
+                	ProcessName = $process.Name
+                	ModuleName = $module.ModuleName
+                	FileName = $module.FileName
+                	BaseAddress = $module.BaseAddress
+                	ModuleMemorySize = $module.ModuleMemorySize
+            	}
+        	}
+    	}
+	}
+	
+	$json = $results | ConvertTo-Json
+ 	
+	Write-Output $json
+	}`);
+	
+	return ps.jsonAll()	
+}
+
+
+byModule2 = function(moduleName){
+	
+	var prcs = ..process.popen.wow64("tasklist","/m",moduleName);
+ 	if(!prcs) return {};
+ 	
+	var ret  = {}
+	for n,k,m in prcs.lines("^\s*(\S*?)\s+(\d+)\s+(\S*)"){
+		..table.push(ret,{
+			n; k; m;
+		})
+	}
+	
+	prcs.close();
+	
+	return ret;
+}
+
+/*****intellisense(process.list)
+byId(__) = 返回参数 @1 指定进程 ID 的进程加载的所有 DLL 模块信息
+byModule(__) = 返回加载了参数 @1 指定的 DLL 模块的所有进程信息
+byModule2(__) = 返回加载了参数 @1 指定的 DLL 模块的所有进程信息。\n返回值为一个数组，数组成员是包含了以下成员的数组：\n{执行文件名,进程 ID,模块文件名}
+end intellisense*****/

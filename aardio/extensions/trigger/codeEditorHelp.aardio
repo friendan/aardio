@@ -1,0 +1,53 @@
+//F1 快捷键触发器
+import ide;
+import inet.url;
+import fsys;
+
+var hwnd = ...;
+
+import win.ui.ctrl.edit;
+var edit = win.ui.ctrl.edit();
+edit.hwnd = hwnd;
+
+var text = edit.selText
+if(#text){
+	text = string.trim(text);
+	var libPath = string.match(text,"^!\w(\w[\.\w]+)\.[^\.\s]+!\W$");
+	var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1;ide=1};
+	
+	if(( #libPath && (builtin[libPath] || io.libpath(libPath)) )
+		|| builtin[text] || io.libpath(text)){ 
+			
+		var url;
+		if(builtin[libPath]){
+			url = "doc://library-reference/"+libPath+"/_.html"
+		}
+		elseif(builtin[text]){
+			url = "doc://library-reference/"+text+"/_.html"
+		}
+		else {
+			var filePath = io.libpath(libPath) || io.libpath(text);
+			var filePath = fsys.path.relative(filePath,"~/lib/");
+        	filePath = fsys.path.replaceExt(filePath,".html");
+        	filePath = io.joinpath("library-reference",filePath);
+        	filePath = string.replace(filePath,"\\","/");
+        	url = "doc://"+filePath;
+		}
+		 
+		url = ..inet.url.appendExtraInfo(url,{q=text});	
+		ide.openDocument(url); 
+		return;
+	}
+	
+	var url = inet.url.appendExtraInfo("http://api.aardio.com/search",{
+		q = '```aardio \n' + text + '\n```';
+	})
+	
+	raw.execute( url,"","open",5/*_SW_SHOW*/,..io.fullpath("~/")
+		,ide.getMainHwnd() //如果不指定句柄，浏览器不会前置
+	)
+
+	return;
+}
+
+ide.openDocument("doc://index.md");

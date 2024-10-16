@@ -1,0 +1,19 @@
+import ide;
+import winex.tooltip; 
+import win.clip;
+
+var edit = ide.getActiveCodeEditor();  
+
+var str = edit.selText;
+if(!#str){
+	edit.msgbox("请选择要合并复制为智能提示单行代码段的代码");
+}
+else {
+	str = string.crlf(string.trim(str),"\\n"); 
+	win.clip.write("@"+str);
+ 	
+	edit.msgbox('已复制智能提示单行代码段：\n@'+ str); 
+} 
+
+win.delay(10000)
+

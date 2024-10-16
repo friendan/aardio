@@ -1,0 +1,102 @@
+﻿//monitor 显示器亮度
+import com.wmi;
+
+namespace com.monitor{
+	
+	getBrightness = function(deviceId){
+		var info = getBrightnessInfo(deviceId);
+		if(info){
+			if(!deviceId) info = info[1]
+			if(info) return info.Levels;
+		}
+	}
+	
+	getBrightnessInfo = function(deviceId){
+		var data = ..com.wmi.getTable("WmiMonitorBrightness","\root\wmi")
+		
+		for(k,info in data){
+			 var idStr = ..string.split(info.InstanceName,"\"); 
+			 info.VendorID = idStr[2];
+			 info.DeviceID = ..string.replace(idStr[3],"_0$","");
+			 
+			 if(deviceId && deviceId === info.DeviceID ){
+			 	return info;
+			 }
+		}
+		
+		return data;
+	}
+	
+	setBrightness = function(brightness,deviceId,timeout){
+		for index,item in ..com.wmi.each("WmiMonitorBrightnessMethods","\root\wmi") {
+			var idStr = ..string.split(item.InstanceName,"\"); 
+			var id = ..string.replace(idStr[3],"_0$","");
+			if(deviceId === id || !deviceId){
+				var r = item.WmiSetBrightness(timeout || 5,brightness);
+				..com.Release(item)
+				
+				return r;
+			}
+			
+			..com.Release(item)
+		}
+	}
+	
+	setALSBrightness = function(brightness,deviceId){
+		for index,item in ..com.wmi.each("WmiMonitorBrightnessMethods","\root\wmi") {
+			var idStr = ..string.split(item.InstanceName,"\"); 
+			var id = ..string.replace(idStr[3],"_0$","");
+			if(deviceId === id || !deviceId){
+				var r = item.WmiSetALSBrightness(brightness);
+				..com.Release(item)
+				
+				return r;
+			}
+			
+			..com.Release(item)
+		}
+	}
+	
+	setALSBrightnessState = function(state,deviceId){
+		for index,item in ..com.wmi.each("WmiMonitorBrightnessMethods","\root\wmi") {
+			var idStr = ..string.split(item.InstanceName,"\"); 
+			var id = ..string.replace(idStr[3],"_0$","");
+			if(deviceId === id || !deviceId){
+				var r = item.WmiSetALSBrightnessState(state);
+				..com.Release(item)
+				
+				return r;
+			}
+			
+			..com.Release(item)
+		}
+	}
+	
+	 
+	revertToPolicyBrightness = function(deviceId){
+		for index,item in ..com.wmi.each("WmiMonitorBrightnessMethods","\root\wmi") {
+			var idStr = ..string.split(item.InstanceName,"\"); 
+			var id = ..string.replace(idStr[3],"_0$","");
+			if(deviceId === id || !deviceId){
+				var r = item.WmiRevertToPolicyBrightness();
+				..com.Release(item)
+				
+				return r;
+			}
+			
+			..com.Release(item)
+		}
+	}
+	
+}
+
+/*****intellisense()
+com.monitor = 获取或设置显示器亮度。\n相关的库：sys.monitor, sys.display, sys.ddcci 
+com.monitor.getBrightness() = 返回显示器亮度数值。\n可选在参数 @1 中指定要查询的设备 ID。\n不指定则返回首个找到的显示器亮度值。\n找不到显示器返回 null
+com.monitor.getBrightnessInfo() = 返回显示器亮度信息的表对象数组。\n在参数 @1 中指定要查询的设备 ID 则返回单个显示器亮度信息对象。\n关于返回的对象请参考 WMI WmiMonitorBrightness 类文档
+com.monitor.setBrightness(.(brightness,deviceId,timeout) = 设置显示器亮度。\nbrightness 为指定亮度百分比的数值。\n可选指定 deviceId，不指定则设置找到的第一个显示器。\ntimeout 指定超时，以秒为单位，可省略。
+com.monitor.setALSBrightness( = 设置显示器环境光亮度
+com.monitor.setALSBrightness(.(brightness,deviceId) = 设置显示器环境光亮度\nbrightness 为指定亮度百分比的数值。\n可选指定 deviceId，不指定则设置找到的第一个显示器。
+com.monitor.setALSBrightnessState(.(state,deviceId) = state 指定是否启用显示器环境，deviceId 指定设备 ID。
+com.monitor.revertToPolicyBrightness(.(deviceId) = 恢复显示器亮度到默认设置，可选用 deviceId 指定设备 ID。
+end intellisense*****/

@@ -1,0 +1,40 @@
+﻿//v4.6 运行时
+import dotNet.version;
+
+class dotNet.v4{
+	ctor(){ 
+		if(!_WIN7_LATER) return false;
+		
+		if( ..dotNet.version.v480Later() ){
+			import ..dotNet;
+			return true;
+		}
+		
+		return false;
+	}; 
+}
+
+namespace dotNet.v4{ 
+    self[["6"]] = self;
+}
+
+if(!dotNet.v4()){
+	f(!_WIN7_LATER) return;
+	
+    import inet.installer;
+    
+    //https://docs.microsoft.com/zh-cn/dotnet/framework/get-started/system-requirements
+    
+    if(!inet.installer(" .NET Framework 4.8"
+        ,"https://go.microsoft.com/fwlink/?linkid=2088631"
+        ,"/passive /norestart"
+    )) {
+    	return;
+    }    
+    
+    dotNet.v4(); 
+}
+
+/*****intellisense()
+dotNet.v4->6 = 导入此库，如果 .Net v4.6 或更高版本未安装则自动安装 .Net 4.8。\n如果已安装，则自动导入 dotNet 库。\n导入其他 dotNet 库前导入此库才能修改默认运行时为最新版本。\n\n不能导入 dotNet.v4 多个不同版本的库。\n例如导入 dotNet.v4.6 就不应再导入 dotNet.v4
+end intellisense*****/

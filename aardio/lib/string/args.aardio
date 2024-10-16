@@ -1,0 +1,132 @@
+﻿//args 命令行参数表
+namespace string;
+
+class args{
+	ctor(args,dashCase,sep,boolean){
+		..table.assign(this,args); 
+		if(dashCase===null) dashCase = true;
+	};
+	@{ 
+    	_argsSeparator = sep;
+    	_argsBoolean = boolean;
+    	_argsDashCase = dashCase;
+    	_tostring = lambda() joinEx(dashCase,sep,boolean,owner);
+    	_type="object";
+    };
+}
+
+namespace args{
+	
+    var valueToString = function(v){
+    	v = tostring(v);
+		v = ..string.trim(v); 
+	 
+		if( ! ..string.find(v,`^[^"\\\s]*"[^"]+"$`) ){
+			v = escape(v)
+		}
+		return v;
+    }
+    
+    joinEx = function(dashCase,sep,boolean,parameters,...){
+		if( ... !== null ) parameters = { parameters; ... }
+		
+		var out = parameters;
+		if( type(parameters) == "table" ){
+			var m = parameters@;
+			if(m){
+				if(m._argsDashCase!==null) dashCase = m._argsDashCase;
+				if(m._argsBoolean!==null) boolean = m._argsBoolean;
+				if(m._argsSeparator!==null) sep = m._argsSeparator;	
+			} 
+			
+			sep = sep || " ";
+			out = {};
+			
+			for k,v in ..table.eachName(parameters){
+				if(k[1]=='-'# || k[1]=='/'#){} 
+				elseif(dashCase) {
+					k = "--" + ..string.replace(k,"[A-Z]",function(c){
+						return "-" + ..string.lower(c);
+					} ) 
+				}
+				else { continue; }
+				 
+				if((v === true) && boolean===false) ..table.push(out,k);
+				else ..table.push(out,..string.concat(k,sep,valueToString(v)) );
+			}
+			  
+			var v;
+			for(i=1;#parameters){ 
+				if(parameters[i]===null) continue; 
+				 
+				v = parameters[i];
+				if(type(v)=="table"){
+					v = joinEx(dashCase,sep,boolean,v);
+				}
+				else {
+					v = valueToString(v);
+				} 
+				
+				..table.push(out,v); 
+			} 
+			
+			var e = parameters[0];
+			out = ..string.join(out," "); 
+			if( e ) { 
+				e = tostring(e);
+				if(..string.find(e,"\s")) e = '"' + e + '"';
+				out = e + ' ' + out;
+			}
+   		}
+   		return out;
+   	}
+    
+    joinAll = function(parameters,...){
+        return joinEx(true," ",true,parameters,...);
+    }
+    
+    join = function(parameters,...){
+    	return joinEx(false," ",true,parameters,...);
+    }
+    
+	escape = function(s){  
+		var b = ""
+		var o = ""; 
+		var q,e;
+		for c in ..string.gmatch(s ,".") { 
+			if( c == "\"){
+				b = b + "\"
+			}
+			elseif( c == '"' ) {
+				o = o ++ b ++  b ++ '\\"'; b = ""; 
+				e = true;
+			} 
+			else {
+				if( c == ' '  || c = '\t' || c = "\r" || c == '\n' || c == '^' || c == '|' || c == '&') q = true;
+				o = o ++ b ++ c; b = ""; 
+			}
+		} 
+		
+		if( #b ) o = o ++ b;
+		if( !q ) return e ? o  : s;
+		if( #b ) o = o ++ b;
+		
+		return '"' + o + '"';	
+	} 
+}
+
+/*****intellisense()
+string.args = 用于安全地合成命令行参数。\n解析命令行参数请使用： string.cmdline
+string.args( = 创建进程启动参数表对象。\n返回参数表可自动合成 process 库所有启动进程函数的命令行参数。\n用 tostring 函数也可以将返回参数表转换为表示命令行参数的字符串。
+string.args(.(args,dashCase,Separator,boolean) = \n可选用 @args 指定初始表参数。\n返回表转换为命令行时将默认调用 string.args.joinEx 函数。\n参数转义规则请参考 string.args.joinEx 函数。\n\n如果 @dashCase 为 true（默认值），则无 /，- 前导符的参数名\n由小驼峰转为连字符风格并加 -- 前缀。\n\n名值对默认以空格分开。\n可用 @separator 参数自定义名值对分隔符，例如 = 号。\n\n如果 @boolean 参数恒等为 false，\n则布尔值为 true 的参数省略值，仅保留参数名。\n则对于返回参数表忽略 join,joinAll,joinEx 的相关设置。
+end intellisense*****/
+
+/*****intellisense(string.args)
+joinEx( = 用于安全地合成命令行参数，并自动处理转义字符。\n相比 join 与 joinAll：\njoinEx 可用参数@1 自定义是否转换驼峰参数名为连字符格式。\n可用参数 @2 自定义表类型参数的名值对分隔符 
+joinEx(.(dashCase,separator,boolean,args,->->->) = 参数 @args 开始可传入一个参数表（可包含数组成员）或多个非 null 参数。\n如果  @args 参数是一个表对象（可包含数组），\n参数表将自动合成为单个命令行参数并输出一个字符串值。\n表中以键名以 - 或 / 开头的名值对自动合成为命令行参数。\n如果参数 @dashCase 为 true，其他无前导符的参数名自驼峰转连字符风格后合成命令行。\n数组成员也会合并到命令行，但名值对参数总是置于数组参数之前。\n如果数组成员也是表对象，则仍调用此函数直接转换为字符串（不再转义）。\n其他数组或命名参数值用 tostring 转换为字符串，按需添加引号进行必要的转义。\n不在双引号内、且含空白字符或 ^ | && 等字符的参数转义后置入双引号。\n可选用参数 @Separator 自定义表类型参数的名值对分隔符，默认为空格。\n参数 @boolean 如果恒等为 false，则值恒等于 true 的参数仅保留参数名。\n如果传入的命令行参数为单个字符串参数，不作任何转换直接返回
+join( = 用于安全地合成命令行参数，并自动处理转义字符。\n\n注意 process.joinArguments 指向 string.args.join 函数。\n这两个函数实际为同一个函数。
+join(.(args,->->->) = 可传入一个参数表（可包含数组成员）或多个非 null 参数。\n\n如果传入参数是一个表对象（可包含数组），\n参数表将自动合并为单个命令行参数并返回一个字符串值。\n表中以键名以 - 或 / 开头的名值对自动合并为命令行参数。\n\n数组成员也会合并到命令行，但名值对参数总是置于数组参数之前。\n如果数组成员也是表对象，则仍调用此函数直接转换为字符串（不再转义）。\n其他数组或命名参数值用 tostring 转换为字符串，按需添加引号进行必要的转义。\n不在双引号内、且含空白字符或 ^ | && 等字符的参数转义后置入双引号。\n\n如果传入的命令行参数为单个字符串参数，不作任何转换直接返回
+joinAll( = 用于安全地合成命令行参数，并自动处理转义字符。
+joinAll(.(args,->->->) = 可传入一个参数表（可包含数组成员）或多个非 null 参数。\n\n如果传入参数是一个表对象（可包含数组），\n参数表将自动合并为单个命令行参数并返回一个字符串值。\n表中以键名以 - 或 / 开头的名值对自动合并为命令行参数。\n此函数与 string.args.join 函数的主要区别：\n无 /，- 前导符的参数名由小驼峰转为连字符风格并加 -- 前缀。\n\n数组成员也会合并到命令行，但名值对参数总是置于数组参数之前。 \n如果数组成员也是表对象，则仍调用此函数直接转换为字符串（不再转义）。\n其他数组或命名参数值用 tostring 转换为字符串，按需添加引号进行必要的转义。\n不在双引号内、且含空白字符或 ^ | && 等字符的参数转义后置入双引号。\n\n如果传入的命令行参数为单个字符串参数，不作任何转换直接返回
+escape(.("命令行参数") = 转义命令行参数。\n\n不在双引号内、且含空白字符或 ^ | && 等字符的参数转义后置入双引号。\n关于命令行参数转义规则，请参考 string.cmdline 的说明
+end intellisense*****/

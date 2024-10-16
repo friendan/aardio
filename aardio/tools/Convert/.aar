@@ -1,0 +1,6 @@
+﻿API 转换=api.aardio
+WINAPI 常量转换=winapi-const.aardio
+全局常量优化=const2comment.aardio
+生成转义字符串=dumpString.aardio
+进制转换=radixConvert.aardio
+.NET 引用表转换=dotNet.reference.aardio

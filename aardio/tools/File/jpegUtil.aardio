@@ -1,0 +1,2 @@
+﻿//JPEG 压缩
+loadcodex("~/example/Graphics/jpegUtil.aardio");

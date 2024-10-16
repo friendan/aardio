@@ -1,0 +1,21 @@
+﻿//chromiumUrl 网址
+import win.clip.data;
+namespace win.clip{
+	
+	var chromium = data("Chromium internal source URL");
+		
+	namespace chromiumUrl{
+		read = function(){
+			var url = chromium.read();
+			if(url) return tostring(url);
+		} 
+		
+		write = chromium.write;
+	} 
+}
+
+/*****intellisense()
+win.clip.chromiumUrl = 读写剪贴板格式 "Chromium internal source URL"
+win.clip.chromiumUrl.read() = 读 Chromium 内核浏览器内部 URL，返回字符串
+win.clip.chromiumUrl.write(__) = 写入 Chromium 内核浏览器内部 URL，\n参数 @1 传入指定 URL 的字符串参数，请使用默认 UTF-8 编码。
+end intellisense*****/

@@ -1,0 +1,23 @@
+﻿//period 定时精度
+::Winmm := ..raw.loadDll("Winmm.dll");
+
+namespace time;
+
+class period{
+	ctor( v,proc,... ){
+		var e = ::Winmm.timeBeginPeriod(v:1)
+		
+		proc(...);
+		
+		if(!e) ::Winmm.timeEndPeriod(v:1)
+	}; 
+}
+
+/*****intellisense()
+time.period = 修改 sleep 函数精度。\n Win10 2004 以前会影响系统全局设置。\nWin11 开始如果拥有窗口的进程最小化或不可见，则不保证设置的精度有效。\n关于此功能的注意事项，请查看系统 API timeBeginPeriod 的文档。\nhttps://learn.microsoft.com/zh-cn/windows/win32/api/timeapi/nf-timeapi-timebeginperiod
+time.period(.(精度,调用函数,其他调用参数) = 执行调用函数，并在执行期间修改系统定时器精度。\n精度参数以毫秒为单位。\n\n如果需要使用 time.period ，\n请调用 sleep 而非可能指向 win.delay 的 thread.delay 函数。\n此函数主要影响 sleep 函数，对 win.delay 函数作用不大。\n应避免在界面线程使用 time.period 或 sleep 函数，以防止卡界面无法处理消息。\n\n如果需要高精度计时，请使用 time.performance.tick 函数。
+end intellisense*****/
+
+/**details(相关库与函数)
+time.performance, time.timer, time.tick, sleep 
+end details**/

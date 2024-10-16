@@ -1,0 +1,134 @@
+﻿import fsys.dlg;
+import fsys.dlg.dir;
+import ${COLIBRARY_PATH}.${COCLASS_NAME}Form;
+import win.ui;
+
+namespace ${COLIBRARY_PATH};
+
+class ${COCLASS_NAME}{
+    
+   	ctor(activeX){
+   		this.activeX = activeX;
+   	}
+   	
+	aardio = function( code ){
+		var func = loadcode(code)
+		if( func ){
+			return tostring( ( func() ) )
+		}
+	}
+	
+	Add = function(a,b){
+		..win.msgbox("我是com函数,我收到了参数：" + a + "," + b)
+		return a + b
+	} 	 
+	
+	/*
+	需要在 "/typelib/typelib.odl" 中启用此函数接口
+	ODL 语法指南: doc://library-guide/builtin/com/activeX/odl.html 
+	*/
+	TestOutParams = function(str,out1,out2){
+		//输出参数必须也是输入参数。
+		
+		out1 = 1;
+		out2 = 2;
+		
+		//输出参数必须增加到返回值列表。
+		return out1,out2;
+	}
+
+	//AutoLISP 使用 vlax-invoke 调用，符号名默认转为大写 
+	GETDIR = function(title,okLabel,hwndOwner,path,clientGuid){
+		return ..fsys.dlg.dir(path,hwndOwner,title,okLabel,clientGuid);  
+	}
+	
+	//AutoLISP 使用 vlax-invoke 调用，符号名默认转为大写
+	GETDIRS = function(title,okLabel,hwndOwner,path,clientGuid){
+		return ..fsys.dlg.dirs(path,hwndOwner,title,okLabel,clientGuid); 
+	}
+	
+	//AutoLISP 使用 vlax-invoke 调用，符号名默认转为大写
+	GETFILES = function(filter,title,hwndOwner,initialDir,flag,bufSize,defFile){
+		return ..fsys.dlg.openEx(filter,title,initialDir,hwndOwner,flag,bufSize,defFile);
+	}
+	 
+ 	//窗口控件至少要实现以下接口(CreateWindow,DestroyWindow)
+	CreateWindow = function(hwndParent, x, y, cx, cy){
+		this.form = ..${COLIBRARY_PATH}.${COCLASS_NAME}Form(hwndParent);
+		this.form.setPos(x, y, cx, cy);
+		this.form.onDestroy = function(){
+		    this.activeX.stop();
+		}
+		
+		this.form.external = this;
+		this.form.externalEvent = this.externalEvent;
+		return this.form.hwnd;
+	}
+	
+	DestroyWindow = function(){
+		this.form.close();
+		..win.quitMessage();
+	} 
+	
+	SetExtent = function(cx,cy){
+		this.form.resize(cx,cy)	
+		return true;
+	} 
+	
+ 	//以下为 IDispatchExecutable 接口函数
+ 	
+	Quit = function(){ 
+		
+		// COM控件调用方必须调用这个函数退出进程
+		this.activeX.stop(); 
+	}
+	
+	Invoke = function(k,...){
+		var f = ..table.getCall(this,k);
+		return invoke(f,this,...);
+	}
+	
+	GetAttr = function(k){
+		return ..table.getAttr(this,k);
+	}
+	
+	SetAttr = function(k,v){
+		return ..table.setAttr(this,k,v);
+	}
+
+	GetItem = function(k){
+		return this.Item[k];
+	}
+	
+	SetItem = function(k,v){
+		this.Item[k] = v;
+	}
+	
+	/*
+	COM 默认调用的 DISPID 为: DISPID_VALUE 。
+	
+	例如：
+	VB 或 VBA 写默认属性：comObj("项目名") = 值
+	读默认属性（或调用默认方法）：v = comObj("项目名") 
+	
+	普通则可支持匿名的 COM 默认调用：
+	aardio 表对象、函数对象、cdata 对象在 COM 接口中自动转换为 IDispatch 对象。
+	表对象的 COM 默认调用默认为读写对象自身属性，COM 枚举器默认遍历表自身。
+	函数对象的 COM 默认调用指向自身，不可修改。
+	表对象与 cdata 对象可使用 _call 元方法响应 COM 默认调用，_call 元方法必须是一个函数对象。
+	也可使用 _item 元方法可返回一个指向默认属性的表对象。_item 元方法同时用于指定 COM 枚举表。
+	_item 元方法可指向返回表的函数，也可以直接返回一个表。 
+	
+	ActiveX 控件类则只能在 ODL 类型库定义默认调用的属性名。
+	默认的 IDispatchExecutable 接口已经定义默认调用指向 Item 属性。
+	同时应当将生成 COM 枚举器的 _item 元方法指向默认的 Item 属性。
+	ODL 语法指南: doc://library-guide/builtin/com/activeX/odl.html 
+	*/
+   	Item = { }
+   	
+   	@{
+   		//返回 COM 枚举表，必须返回表对象
+   		_item = lambda() owner.Item; 
+   		
+   	}
+} 

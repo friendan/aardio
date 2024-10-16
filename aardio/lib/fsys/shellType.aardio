@@ -1,0 +1,181 @@
+﻿//shellType 文件关联
+import win.reg;
+
+namespace fsys;
+
+class shellType{
+	ctor(){
+		this.root = "HKEY_CURRENT_USER";
+		this.commandArguments = `"%1" %*` 
+	};
+	check = function(){
+		if(_STUDIO_INVOKED){
+			if(this.extension != "aardio") && (this.extension != "aproj"){
+				return true; 
+			}
+		}
+		
+		if(this.command){ 
+			var cmd = this.command;
+			if(..string.find(cmd,"\s")) cmd = `"` + cmd + `"`; 
+			if(this.commandArguments) cmd = cmd + " " + this.commandArguments;
+			
+			if(this.extension){
+				var reg = ..win.reg(this.root + "\Software\Classes\." + this.extension + "\shell\open\command",true);
+				if(!reg) {
+					return  false;
+				}
+
+				var v = reg.queryValue("");
+				reg.close();
+				
+				if(v!=cmd){
+					return false;
+				} 
+			}
+			
+			if(this.documentClassName){
+				var reg = ..win.reg(this.root + "\Software\Classes\" + this.documentClassName + "\shell\open\command");
+				if(!reg) {
+					return  false;
+				}
+				
+				var v = reg.queryValue("");
+				reg.close();
+				
+				if(v!=cmd){
+					return false;
+				} 
+			}
+			
+			::Shell32.SHChangeNotify(0x8000000,0,0,0);
+			return true;
+		} 
+	};
+	unreg  = function(){
+		if(_STUDIO_INVOKED){
+			if(this.extension != "aardio") && (this.extension != "aproj"){
+				return true; 
+			}
+		}
+		
+		if(this.extension){
+			var reg = ..win.reg(this.root + "\Software\Classes\");
+			if(!reg) return  false;
+			
+			if(!reg.delKeyTree("." + this.extension)) return false; 
+		}
+		
+		if(this.documentClassName){
+			var reg = ..win.reg(this.root + "\Software\Classes\");
+			if(!reg) return  false;
+			
+			if(!reg.delKeyTree(this.documentClassName)) return false; 
+		}
+		
+		::Shell32.SHChangeNotify(0x8000000,0,0,0);
+		return true;
+	};
+	reg = function(){
+		if(_STUDIO_INVOKED){
+			if(this.extension != "aardio") && (this.extension != "aproj"){
+				return true; 
+			}
+		}
+		
+		var cmd = this.command;
+		if(cmd){ 
+			if(..string.find(cmd,"\s")) cmd = `"` + cmd + `"`; 
+			if(this.commandArguments) cmd = cmd + " " + this.commandArguments;	
+		}
+				
+		if(this.extension){
+
+			var reg = ..win.reg(this.root + "\Software\Classes\." + this.extension);
+			if(!reg) return  false;
+	
+			if(this.documentClassName){ 
+				reg.setValue("",this.documentClassName)
+			}	 
+		
+			if(this.contentType){
+				reg.setValue("Content Type",this.contentType)
+				
+			}
+		
+			if(this.perceivedType){
+				reg.setValue("PerceivedType",this.PerceivedType) 
+			}
+		
+			reg.close();
+		 
+			
+			if(cmd){  
+				var reg = ..win.reg(this.root + "\Software\Classes\." + this.extension + "\shell\open\command");
+				if(!reg) return  false;
+				reg.setValue("",cmd);
+				reg.close() 
+			} 
+			
+			if(cmd){
+				var reg = ..win.reg(this.root + "\Software\Classes\." + this.extension + "\ShellNew");
+				if(!reg) return  false;
+				reg.setValue("FileName",..io.fullpath(this.shellNewFileName) );
+				reg.close()	
+			}  
+		}
+		
+		if(this.documentClassName){
+			var reg = ..win.reg(this.root + "\Software\Classes\" + this.documentClassName);
+			if(!reg) return  false;
+			
+			reg.setValue("",this.description) 
+ 			reg.close();	
+ 			
+ 			if(this.icon){ 
+ 				
+ 				var reg = ..win.reg(this.root + "\Software\Classes\" + this.documentClassName + "\DefaultIcon");
+				if(!reg) return  false;
+				
+				var path = `"` + this.icon +  `"`;
+ 				if(this.iconIndex){
+ 					path = path + "," + this.iconIndex;
+ 				}
+ 				
+				reg.setValue("",path); 
+				reg.close();	
+ 			}
+			
+			
+			if(cmd){ 
+				var reg = ..win.reg(this.root + "\Software\Classes\" + this.documentClassName + "\shell\open\command");
+				if(!reg) return  false;	
+				
+				reg.setValue("",cmd)
+				reg.close();
+			}
+		} 
+		
+		::Shell32.SHChangeNotify(0x8000000,0,0,0);
+		return true; 
+	} 
+}
+ 
+/*****intellisense()
+fsys.shellType = 注册文件关联
+fsys.shellType() = 创建文件关联对象\nfsysShellType.
+end intellisense*****/
+
+/*****intellisense(fsysShellType)
+reg() = 注册文件关联。\n成功返回 true，失败返回 false。
+unreg() = 删除文件关联。\n成功返回 true，失败返回 false。
+extension = 指定文件后缀名，字符串，不包含点号。
+contentType = 文件类型。例如 "text/plain"
+perceivedType = 感知类型。例如 "image", "text", "audio", "compressed"
+command = 执行文件路径，建议指定为 io._exepath 
+documentClassName = 文件类名。例如 "aardio.code.file"
+description = 文件路径描述
+icon = 提供图标的文件路径。io._exepath
+iconIndex = 图标索引，例如 "1";
+shellNewFileName = 系统菜单新建文件的文件模板路径。\n省略则不注册此项。
+end intellisense*****/

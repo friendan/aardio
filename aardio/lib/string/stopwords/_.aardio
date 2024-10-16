@@ -1,0 +1,19 @@
+﻿namespace string{
+	stopwords = eval($"~\lib\string\stopwords\.data") 
+ 
+	stopwords.is = function(kw,zhChar){
+		return stopwords[kw] 
+			|| find(kw,"^[\d-_.]+$") 
+			|| find(kw,"\p&[^_.-]") 
+			|| find(kw,"^\p") 
+			|| find(kw,"\p$") 
+			|| find(kw,"^\s+$") 
+			|| #kw<=1 
+			|| (zhChar && len(kw)==1)
+	}		
+}
+
+/*****intellisense()
+string.stopwords = 停用词哈希表。\n包含中英文停用词、符号等。\n键为停用词，值为 1。\n停用词指语言功能词（语气词、介词、连接词等）、对信息检索无意义的词、分隔符等。
+string.stopwords.is(__/*分词*/) = 检测输入参数是否停用词、空白字符、纯数值、单字节字符或包含标点。\n如果 . - _ 不是出现在首尾则不判定为包含标点。\n如果参数 @2 为 true 则单个汉字视为停用词。
+end intellisense*****/

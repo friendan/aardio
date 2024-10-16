@@ -1,0 +1,7 @@
+﻿扫码传文件=asynHttpServer.aardio
+HTTP 代码生成=inetHelper.aardio
+HTTP 状态码检测=inetStatus.aardio
+RUNAS//网卡切换=NetworkConnections.aardio
+端口扫描=portScanner.aardio
+端口检测=portTest.aardio
+RUNAS//UWP本机隔离=uwpExemption.aardio

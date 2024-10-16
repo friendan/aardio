@@ -1,0 +1,65 @@
+namespace fsys.crx;
+import protobuf.message;
+import util.metaProperty;
+
+class AsymmetricKeyProof {
+	ctor(reader){
+		this = ..protobuf.message(reader);
+		
+    	this.fieldTypes[1] = "..protobuf.type.bytes";
+    	this.fieldValues[1] = null;
+    	this.fieldNames[1] = "publicKey";
+     
+    	this.fieldTypes[2] = "..protobuf.type.bytes";
+    	this.fieldValues[2] = null;
+    	this.fieldNames[2] = "signature";
+       
+	} 
+	@_metaProperty ;
+}
+
+namespace AsymmetricKeyProof {
+  
+  
+	_metaProperty  = ..util.metaProperty(
+		_keys = { "publicKey";"signature" }
+		_tostring = function(){
+			return owner.serializeToString();
+		};
+		parseValue = lambda() ..table.parseValue(owner);
+		eachName = function(){
+			return ..table.eachName(owner); 
+		};	
+    	publicKey = {
+    		_get = function(){ 
+    			return owner.getFieldValue(1);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(1, value);
+    		}; 	
+    	}; 
+     
+    	signature = {
+    		_get = function(){ 
+    			return owner.getFieldValue(2);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(2, value);
+    		}; 	
+    	}; 
+        
+	)
+}
+/**intellisense()
+fsys.crx.AsymmetricKeyProof = Protobuf 消息对象
+fsys.crx.AsymmetricKeyProof() = 创建 Protobuf 消息对象。\n!fsys_crx_AsymmetricKeyProof.
+!fsys_crx_AsymmetricKeyProof.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!fsys_crx_AsymmetricKeyProof.parseValue() = 调用 table.parseValue 获取纯值表。\n纯值表只包含纯值类型数据，\n纯值类型指的是：字符串、数值、布尔值、buffer、指针、纯值表。\n纯值表要么是数组，要么是包含名值对的表。\n\n纯值表是可保持原值序列化的表，并且兼容 JSON
+!fsys_crx_AsymmetricKeyProof.serializeToString() = 序列化消息对象,返回二进制字符串
+!fsys_crx_AsymmetricKeyProof.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!fsys_crx_AsymmetricKeyProof.publicKey = protobuf.type.bytes
+!fsys_crx_AsymmetricKeyProof.signature = protobuf.type.bytes
+end intellisense**/

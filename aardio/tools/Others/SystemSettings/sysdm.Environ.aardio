@@ -1,0 +1,14 @@
+//环境变量
+import process.rundll;
+if(!_WINXP){
+	process.rundll("sysdm.cpl").EditEnvironmentVariables() 	
+	//raw.loadDll("sysdm.cpl").EditEnvironmentVariables(0,_HINSTANSE,"",5/*_SW_SHOW*/);
+}
+else {
+	import process.rundll;
+	process.rundll().Control_RunDLL("sysdm.cpl",,3)
+ 	
+	import winex;
+	var hwnd = winex.waitActive(,,"#32770","Button",130);
+	winex.click(hwnd,130);
+}

@@ -1,0 +1,2 @@
+﻿//二维码识别
+loadcodex("~/example/Graphics/zbar.aardio");

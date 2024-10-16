@@ -1,0 +1,164 @@
+﻿import web.mshtml;
+import fsys.codepage;
+
+namespace web;
+
+var wb = ..web.mshtml();
+
+class turndown{
+	ctor(...){
+		if(type.isString(...)){
+			this = wb.jsNew("TurndownService",wb.eval(...) );
+		}
+		else {
+			this = wb.jsNew("TurndownService",... )
+		} 
+		
+		this[["turndownEx"]] = this.turndown;
+		this[["addRuleEx"]] = this.addRule;
+	}; 
+	addRule = function(name,rule){ 
+		this.addRuleEx(name,wb.eval(rule));
+	}; 
+	turndownGfm = function(html){
+		
+		//合并代码块，<code> 外层有 <pre> 才会转换为多行代码块
+		html = ..string.replace(html,`\<pre!\W([^\>]*)\>\<code!\W[^\>]*\>(.+?)\<\/code\>\<\/pre\>`,function(preProp,code){
+			var code = ..string.replace(code,"\<<@@br@>!\W[^\>]*\>[\t ]*\r?\n",'\n'); 
+			var code = ..string.replace(code,"\<<@@br@>!\W[^\>]*\>",'\n'); 
+			code = ..string.replace(code,"```","{{{--BACKTICK--}}}");
+			
+			//首尾添加换行，turndown.js 生成的代码块前后可能缺少换行导致格式错乱
+			code = "<br><pre"+(preProp:"")+"><code>" + ..string.replace(code,"\<\/code\>\<code\>",'\n') +  "</code></pre><br>";
+			return code; 
+		})
+		
+		//修复 turndown.js 生成的表格不符合 Markdown 语法
+		var html = ..string.replace(html
+		,"(\<<@@table@>\s+[^\>]+\>)(.+?)(\<\/<@@table@>\>)"
+		,function(tbBegin,tbContent,tbEnd){  
+		  
+		  	var b = ..string.replace(tbContent,"(\<<@@blockquote@>[^\>]*\>)(.+?)(\<\/<@@blockquote@>\>)"
+						,lambda(b,c,e) "<p>" + c + "</p>")
+			
+			var b = ..string.replace(b,"(\<<@@div@>[^\>]*\>)(.+?)(\<\/<@@div@>\>)"
+						,lambda(b,c,e) "<p>" + c + "</p>")
+									
+			b = ..string.replace(b,"(\<<@@tr@>[^\>]*\>)(.+?)(\<\/<@@tr@>\>)"
+				,function(trBegin,trContent,trEnd){ 
+					var trContent,count = ..string.replace(trContent,"(\<<@@td@>[^\>]*\>)(.+?)(\<\/<@@td@>\>)"
+						,function(tdBegin,tdContent,tdEnd){
+							return  "<th>" + tdContent + "</th>"
+						})
+						
+					if(count){
+						return trBegin ++ trContent ++ trEnd;
+					} 
+				},1
+			)
+			
+			//暂时替换 h1,h2,h3 ... 为特殊占位符号，以避免转为 markdown 后出现换行
+			b = ..string.replace(b,"\<[hH](\d)[^\>]*\>(.+?)\<\/[hH]\1\>"
+				,"{---{H\1{--\2--}H\1}---}"
+			)	
+				
+			
+			b = ..string.replace(b,'\n','');
+			b = ..string.replace(b,'\r',''); 
+
+			b = ..string.replace(b,"\<br\s*/\>",'{{{--BR--}}}'); 
+			b = ..string.replace(b,"\<<@@br@>\s*\>",'{{{--BR--}}}'); 
+			b = ..string.replace(b,"\<<@@p@>\s*[^\>]*\>",'{{{--PB--}}}');			 
+			b = ..string.replace(b,"\</<@@p@>\s*\>",'{{{--PE--}}}');
+			
+			return tbBegin++b++tbEnd;
+		}) 	
+		
+		
+		var md = this[["turndownEx"]](html);
+		
+		if(md){ 
+          	md = ..string.replace(md,"\{\{\{--BR--\}\}\}","<br>");
+          	md = ..string.replace(md,"\{\{\{--PB--\}\}\}","<p>");
+           	md = ..string.replace(md,"\{\{\{--PE--\}\}\}","</p>");
+           	md = ..string.replace(md,"\{\{\{--BACKTICK--\}\}\}","&#96;&#96;&#96;");
+           
+           	md = ..string.replace(md,"\*\*```","```");
+           	md = ..string.replace(md,"```\*\*","```");
+           	
+           	md = ..string.replace(md,"\{---\{H(\d)\{--(.+?)--\}H\1\}---\}","<h\1>\2</h\1>");
+           	
+           	return md; 
+		}
+	}
+	
+	turndownFile = function(path){
+		var str = ..fsys.codepage.load(path); 
+		if( str ) return this.turndown(str);
+	}; 
+	turndownUrl = function(url,conv){
+		if(!webView) webView = ..web[["view"]] ? ..web.view() : ..web.mshtml();
+		webView.go(url);
+		webView.waitDoc(); 
+		
+		webView.doScript( `
+var hiddenElements = document.querySelectorAll('[aria-hidden="true"]');
+for (var i = 0; i < hiddenElements.length; i++) {
+    hiddenElements[i].parentNode.removeChild(hiddenElements[i]);
+}
+
+var allElements = document.querySelectorAll('*');
+for (var j = 0; j < allElements.length; j++) {
+    if (window.getComputedStyle(allElements[j]).display === 'none') {
+        allElements[j].parentNode.removeChild(allElements[j]);
+    }
+}` );
+ 
+		var html = webView.html; 
+		
+		if(conv){ html = conv(html) };
+		return this.turndown(html);
+	};	
+	useGfm = function(...){ 
+		wb.doScript($"~\lib\web\turndown\gfm.js")
+		
+		var keys = {...}
+		if(!#keys){
+			this.use( wb.eval("turndownPluginGfm.gfm")  )
+		}
+		else {
+			for(i,k in keys){
+				this.use( wb.eval("turndownPluginGfm."+k)  )
+			} 
+		} 
+		
+		this[["turndown"]] = this.turndownGfm;
+	};
+} 
+ 
+wb.loadcode(`<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<style type="text/css">
+html,body{ height:100%; margin:0; } 
+</style>
+<script type="text/javascript">
+<?=owner.js?>
+</script>
+</head>
+<body></body>
+</html>`,{js=$"~\lib\web\turndown\turndown.js"})
+
+/*****intellisense()
+web.turndown() = 创建 TurndownService 对象，用于将 HTML 转换为 Markdown。\n参数 @1 可用 aardio 表对象指定选项，\n也可用字符串参数指定包含描述 JS 选项对象的 JS 代码。\n!stdWebTurndown.
+end intellisense*****/
+
+/*****intellisense(!stdWebTurndown)
+turndown(__) = 将参数 @1 指定的 HTML 代码转换为 Markdown 文本。
+turndownFile(__) = 将参数 @1 指定的 HTML 代码文件转换为 Markdown 文本。
+turndownUrl(__) = 将参数 @1 指定网址的 HTML 代码文件转换为 Markdown 文本。\n可选用参数 @2 指定预处理 HTML 代码的回调函数，该回调函数接受一个参数以获取 HTML 并返回新的 HTML。\n如果之前已导入 web.view 则使用 web.view 打开网址并获取 HTML。
+useGfm() = 启用 gfm（GitHub Flavored Markdown） 插件，\n可选用一个或多个字符串参数指定要启用的插件名称。
+addRule(.(key,jsRule) = 添加规则。\n参数 @key 为字符串，\n参数 @jsRule 用包含 JS 代码的字符串指定规则。\n注意 JS 必须兼容 IE 内核，不要使用箭头函数这些。 
+end intellisense*****/

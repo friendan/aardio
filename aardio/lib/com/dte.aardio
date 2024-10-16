@@ -1,0 +1,104 @@
+﻿//dte VS 接口
+import fsys.path;
+import com;
+namespace com;
+
+class dte{
+	ctor( slnPath ){
+		if(type.isString(slnPath)){
+			for comObj,interface,displayName in ..com.eachRunning() { 
+				if(0 =  ..fsys.path.cmpName(slnPath,slnPath) ){
+					this = comObj.DTE; 
+				}
+			} 
+		}
+		elseif(slnPath && type(slnPath) === "number"){
+			for comObj,interface,displayName in ..com.eachRunning() { 
+				if(interface == "_DTE" && ..string.find(displayName,"\!VisualStudio\.DTE\.\d+.\d+\:"+slnPath) ){
+					this = comObj; 
+				}
+			} 
+		}
+		else {
+			for comObj,interface,displayName in ..com.eachRunning() { 
+				if(interface == "_DTE" && ..string.find(displayName,"\!VisualStudio\.DTE\.\d+.\d+\:") ){
+					this = comObj; 
+				}
+			} 	
+		}  
+	}; 
+	AttachProcesses = function(pidOrName){
+		this.Debugger.DetachAll();
+		if(!pidOrName) pidOrName = ::Kernel32.GetCurrentProcessId();
+		
+		if(type.isString(pidOrName)){
+			for index,prcs in ..com.each(this.Debugger.LocalProcesses) {
+				if(..string.cmpMatch(prcs.Name,pidOrName)){
+					return prcs.Attach();
+				}
+			} 	
+		} 
+		else {
+			for index,prcs in ..com.each(this.Debugger.LocalProcesses) {
+				if( prcs.ProcessId == pidOrName ){
+					return prcs.Attach();
+				}
+			} 
+		} 
+	} 
+}
+
+/*****intellisense()
+com.dte =  Visual Studio 开发环境 DTE（Development Tools Environment）支持库
+com.dte(__) = 查找并返回 DTE 实例。\n这是 DTE（Development Tools Environment）对象，也是一个 COM 对象。\n详细用法请参考相关资料，也可用 com.tlbDoc.dump 输出对象的类型库文档。\n\n参数可指定 VS 进程 ID，或 *.sln 工程文件名或路径。\n如果不指定参数则返回找到的第一个 DTE 实例。 
+com.dte() = !stdComStd.
+end intellisense*****/
+
+/*****intellisense(!stdComStd)
+AttachProcesses(.(pidOrName) = 附加到进程。\n参数 @pidOrName 指定要附加的进程 ID 或执行文件名。\n不指定参数附加当前进程。
+Debugger = 调试器对象。\n可用 com.tlbDoc.dump 输出对象的类型库文档。\n用法可参考 AttachProcesses 函数源码。
+Name = 名称
+FileName = 文件名
+Version = 版本
+CommandBars = 命令栏
+Windows = 窗口
+Events = 事件
+AddIns = 插件
+MainWindow = 主窗口
+ActiveWindow = 活动窗口
+Quit = 退出
+DisplayMode = 显示模式
+Solution = 解决方案
+Commands = 命令
+GetObject = 获取对象
+Properties = 属性
+SelectedItems = 选中项
+CommandLineArguments = 命令行参数
+OpenFile = 打开文件
+IsOpenFile = 是否已打开
+LocaleID = 区域标识符
+WindowConfigurations = 窗口配置
+Documents = 文档
+ActiveDocument = 活动文档
+ExecuteCommand = 执行命令
+Globals = 全局变量
+StatusBar = 状态栏
+FullName = 完整名称
+UserControl = 用户控件
+ObjectExtenders = 对象扩展器
+Find = 查找
+Mode = 模式
+LaunchWizard = 启动向导
+ItemOperations = 项目操作
+UndoContext = 撤销上下文
+Macros = 宏
+ActiveSolutionProjects = 活动项目
+MacrosIDE = 宏IDE
+RegistryRoot = 注册表根
+Application = 应用程序
+ContextAttributes = 上下文属性
+SourceControl = 源代码控制
+SuppressUI = 抑制界面
+SatelliteDllPath = 卫星DLL路径
+Edition = 版本
+end intellisense*****/

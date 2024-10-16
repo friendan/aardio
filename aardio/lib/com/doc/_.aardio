@@ -1,0 +1,195 @@
+import com; 
+namespace com; 
+	
+class doc{
+	ctor( create = true ){
+		if( !create ){
+			this.oWord = ..com.TryGetObject("Word.Application","wps.Application") 
+			if( ! this.oWord ) return null,"请先打 Word";
+		}
+		else {
+			this.oWord = ..com.TryCreateObject("Word.Application","wps.Application")
+			if( ! this.oWord ) return null,"请先安装 Word";
+			
+			this.oWord.Visible = false; 
+			
+			this.QuitOnClose = function(){
+				if(!this.oWord.Visible){
+					this.Quit();
+				} 
+			}
+			
+			..table.gc(this,"QuitOnClose");
+		}
+
+		this.vba = vbaScript(this.oWord);
+		this.jsa = this.vba;
+		
+		this@ = _metaProperty;
+		
+		if( type.isString(create) && ..string.match(create,"[^.]+$") ){
+			this.createFile(create);
+		}
+	}; 
+}
+
+namespace doc{ 
+	import util.metaProperty; 
+
+	_metaProperty = util.metaProperty( 
+		
+		alerts = {
+			_get = function(){
+				return owner.oWord.Application.DisplayAlerts && owner.oWord.Application.ScreenUpdating 
+			}		
+			_set = function( value ){
+				value = value?1:0
+				owner.oWord.Application.DisplayAlerts = value
+				owner.oWord.Application.ScreenUpdating = value
+			}
+		};
+		get = function(k,ownerCall){
+			return owner.oWord[k]
+		};
+		set = function(k,v,ownerAttr){
+			owner.oWord[k] = v;
+		}; 
+		eachDocument = function(){
+			return ..com.each(owner.Documents) 
+		};
+		Open = function(path){
+			return owner.Documents.Open( ..io.fullpath(path) ) 
+		};
+		Save = function(){
+			return owner.ActiveDocument.Save();
+		};
+		SaveAs = function(path,format){
+			if(!#path) error("请指定保存路径",2);
+			
+			if(format===null){
+				var ext =  ..string.match(path,"[^.]+$"); 
+				if( ext ){
+					format = _fileFormat [..string.lower(ext)]; 
+				}; 
+			} 
+			
+			try{
+				owner.ActiveDocument.SaveAs2( ..io.fullpath(path),format );
+			}
+			catch(e){
+				owner.ActiveDocument.SaveAs( ..io.fullpath(path),format );	
+			}
+		};
+		getBuiltinDocumentProperties = function(name){
+			var p = owner.ActiveDocument.BuiltinDocumentProperties(name);
+			return p ? p.value;
+		};
+		setBuiltinDocumentProperties = function(name,value){
+			return owner.ActiveDocument.setBuiltinDocumentProperties(name,value); 
+		};
+		createFile = function(path){
+			if( ..io.exist(path) )
+				return owner.Open(path);
+				
+			var word = owner.oWord;
+			word.Documents.Add(); 
+			
+			owner.SaveAs( ..io.fullpath(path) );
+			return word.ActiveDocument;
+		}; 
+		Quit = function(){
+			if(owner.oWord){ 
+				owner.oWord.Quit();
+				..com.Release(owner.oWord);
+				owner.oWord = null;
+			}
+		}
+		_topointer = lambda() owner.oWord;
+	);
+	
+	
+	class vbaScript{
+		ctor( oWord ){
+			this.oWord = oWord;
+		};
+		@_meta;
+	}
+	
+	vbaScript._meta  = {
+		_get = function(k,ownerCall){
+			 
+			var app = owner.oWord;
+			return function(...){ 
+				return app.Run(k,...);
+			} 
+		} 
+	} 
+	
+	_fileFormat = {
+		doc = 0/*_wdFormatDocument*/;
+		dot = 1/*_wdFormatTemplate*/;
+		txt = 2/*_wdFormatText*/;
+		rtf = 6/*_wdFormatRTF*/;
+		html = 8/*_wdFormatHTML*/;
+		xml = 11/*_wdFormatXML*/;
+		wps = 12/*_wdFormatWPS*/;
+		docx = 12/*_wdFormatXMLDocument*/;
+		docm = 13/*_wdFormatXMLDocumentMacroEnabled*/;
+		dotx = 14/*_wdFormatXMLTemplate*/;
+		dotm = 15/*_wdFormatXMLTemplateMacroEnabled*/;
+		pdf = 17/*_wdFormatPDF*/;
+		xps = 18/*_wdFormatXPS*/; 
+	} 
+}
+
+/**intellisense()
+com.doc = Word 支持库（测试版），请不要使用精简版 Word。\n兼容 WPS 文档。\n\n参考: https://learn.microsoft.com/en-us/office/vba/api/overview/word/object-model \n\n注意 com.doc 支持 Word 接口提供的所有方法与属性。\n但并不是智能提示里都能看到这些方法与属性，这个数量太大了 aardio 没办法都做进来。\n智能提示看不到，只要文档里有都可以使用。\n通过 com.doc 对象的成员可访问 Word 接口的所有常量。
+com.doc( __/*是否创建新实例或文件路径*/ ) = 创建 Word 对象。\n如果参数为 false ,则获取已打开的 Word 对象。\n如果参数输入文件路径，则打开该文件。\n如果文件不存在，则创建文件然后再打开。
+com.doc() = !word.
+!word.? = 可在这里输入 Word 接口提供的所有方法、属性、或常量名。\n智能提示看不到，只要文档里有都可以使用。\n这个数量太大了 aardio 没办法都做进来。
+!word.Wps() = 是否 WPS 表格。
+!word.Caption = 获取或设置 Word 窗口标题栏显示的文本
+!word.Visible = 是否显示 Word 界面。\n注意这个属性的默认值是 false。\n如果此值设为 true，则程序退出时不会自动调用 Quit 函数退出 Word。\n可调用 Quit 函数退出或将此属性设为 false 以在对象正常回收时自动退出。
+!word.alerts = 是否允许操作提示与屏幕更新,\n这个属性会同时设置 Application 对象的 DisplayAlerts 与 ScreenUpdating 属性\n如果只想设置其中一个属性,请直接通过 Application 对象设置即可
+!word.Application = 请参考: https://learn.microsoft.com/en-us/office/vba/api/word.application
+!word.Application.DisplayAlerts = 是否允许操作提示
+!word.Application.ScreenUpdating = 是否允许屏幕更新
+!word.ActiveDocument = 活动文档\n请参考 https://learn.microsoft.com/en-us/office/vba/api/word.application.activedocument \n!word_doc.
+!word.ActiveWindow = 活动窗口，此对象可用属性与方法请参考 Word 文档
+!word.Quit() = 退出Word\n注意所有存储 Word 创建或返回对象的变量离开作用域并被回收后才会完全退出,\n可调用 collectgarbage("collect") 提前回收资源，\n也可以调用 com.Release 函数显式释放指定的 COM 对象
+!word.BuiltinDocumentProperties = 活动文档的所有内置文档属性集合。\n修改集合内指定值应当调用 setBuiltinDocumentProperties 函数。\n获取集合内指定值应调用 getBuiltinDocumentProperties 函数
+!word.getBuiltinDocumentProperties(.(name) = 获取活动文档的 @name 指定名称的内置文档属性
+!word.setBuiltinDocumentPropertiess(.(name,value) = 设置活动文档的 @name 指定名称的内置文档属性的值为 @value
+!word.Open("/my->docx") = 打开 Word 文件，返回 ActiveDocument 。
+!word.Open() = !word_doc.
+!word.SaveAs("/my->xlsx") = 另存 Word文件为指定路径。\n如果保存到当前路径，建议改用 Save 函数。\n\n存为 xls 文件后缀可能报 SaveAs 方法无效，\n请改用 xlsx 后缀或调用 Save 函数
+!word.Save() = 保存 Word文件
+!word.createFile("/my->xls") = 如果目标文件存在则打开，否则创建新文件。\n返回 ActiveDocument 。
+!word.vba = 调用此对象的成员函数也就是调用 VBA 函数（宏）。\n\n也可以用于调用 JSA 函数。 
+!word.vba.? = 请输入 VBA 函数（宏）的名称，可以作为普通函数一样调用。\n\n也可以用于调用 JSA 函数。
+!word.jsa = 调用此对象的成员函数也就是调用 JSA 函数（宏）。\n\n也可以用于调用 VBA 函数。
+!word.jsa.? = 请输入 JSA 函数（宏）的名称，可以作为普通函数一样调用。\n也可以输入 VBA 函数名。\n\n调用 JSA 函数时，\n如果 WPS 报参数个数错误可能是找不到宏名称，\n请尝试按 ALT+F8 打开运行宏界面，输入宏函数名然后点『创建』。
+!word.Run( = 运行宏或 VBA 函数
+!word.Run(.("函数名",其他参数->->->) = 运行宏或 VBA 函数，可指定任意个参数。\n也可以用于调用 JSA 函数。 \n\nWPS 报参数个数错误可能是找不到宏名称，\n请尝试按 ALT+F8 打开运行宏界面，输入宏函数名然后点『创建』
+!word.Documents.Add(__) = 添加并返回文档对象\n可选参数word文件名\n新文档对象将成为活动文档
+!word.Documents.Open("__->docx") = 打开 docx 文件
+!word.ThisWorkbook = !word_doc.
+!word.Documents.Open() = !word_doc.
+!word.createFile() = !word_doc.
+!word.Documents.Add() = !word_doc.
+!word.Documents.Open() = !word_doc.
+!word.eachDocument() = @for i,doc in ??.eachDocument(){\n	__/*遍历文档对象,doc 为文档对象*/\n}\n!word_doc.
+end intellisense**/
+
+/*****intellisense(!word_doc) 
+Name = 名称
+FullName = 文件路径
+Saved = 文件是否被保存
+close() = 关闭文档对象
+SaveAs = @.SaveAs( io.fullpath("\__.xls"),12/*_wdFormatXMLDocument*/)
+Save() = 保存文档
+Selection = 选区
+Selection.? = 可用函数请查看 Word 文档
+Selection.Tables = 选区表格集合
+? = 可在这里输入此对象提供的所有方法、属性。\n智能提示看不到，只要文档里有都可以使用。\n这个数量太大了 aardio 没办法都做进来。
+end intellisense*****/

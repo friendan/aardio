@@ -1,0 +1,2 @@
+﻿//RUNAS//UWP本机隔离
+loadcodex("~/example/Windows/ListView/uwpExemption.aardio");

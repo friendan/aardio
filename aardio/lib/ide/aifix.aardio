@@ -1,0 +1,1615 @@
+﻿//aifix 代码纠错
+import util.table;
+import win.ui;
+namespace ide;
+
+if(!owner){
+	var str = /**************
+**************/ 
+	global.import("ide.aifix");
+	global.import("console.int");
+	..console.log(..string.crlf(..ide.aifix(str) ) )
+}
+
+/*
+aardio 编辑器右键菜单『粘贴与更新』调用 ide.aifix 实现。
+ide.aifix 用于修复 AI 生成代码中的常见错误与语法错误，修复结果仅供参考。
+
+ide.aifix 主要使用模式匹配检测并替换错误代码为正确代码。
+模式匹配语法请参考: doc://library-guide/builtin/string/patterns.md
+
+如果 AI 将代码分成多个代码块，直接复制整个回复就可以了，
+『粘贴与更新』能提取 aardio 代码块并进行合并。
+*/
+class aifix{
+	ctor( code ){{
+		var string = ..string;
+		var replace = string.replace;
+		var count;  
+
+		code = replace(code,`，`,`,`); 
+		code = replace(code,'\u00A0',` `);  
+		code = replace(code,"!\wlet!\W","var"); 
+		code = replace(code,"!$$(\w)!\W","\1"); 
+		code = replace(code,`\s+\.+\s+\"`,` + "`); 
+		code = replace(code,`\"\s+\.+\s`,`" + `); 
+		 
+		for(i=1;5;1){
+			code = replace(code,`![G\{]%<\{\{><\}\}>[\}\*]?!`,function(str){
+				return ..string.slice(str,2,-2);
+			}); 
+		}
+		code = replace(code,`![$\{]\{([\w\.]+)\}`,`[1]`); 
+
+		var pyLike;
+		for(i=1;5;1){ 
+			code,count = string.replace(code,`!\N([ \t]*)def(\s+\N+)\:[ \t]*(\r?\n([ \t]+)\N+<\n\4\N+>*)`,'\\1function \\2{\\3\n\\1}')
+			if(!count)break;
+			pyLike = true;
+		}
+		
+		for(i=1;5;1){ 
+			code,count = string.replace(code,`!\N(([ \t]*)\N+)\:[ \t]*(\r?\n([ \t]+)\N+<\n\4\N+>*)`,'\\1{\\3\n\\2}')
+			if(!count)break;
+			pyLike = true;
+		} 
+		
+		if(pyLike){
+			code = replace(code,`(<%()>|<\w+>)\s*//\s*(<%()>|<\w+>)`,`math.floor(\1/\2)`); 
+			code = replace(code,`#\s+`,`// `); 
+			code = replace(code,`![\w.$_]elif![^\w.$_]`,`elseif`); 
+			
+			// f-string
+			code = replace(code,`![\w.$_]f((['"]+).+?\2)`,function(str,q){
+				 
+				var ret = string.replace(str,"%{}",function(exp){
+					exp = string.slice(exp,2,-2); 
+					exp = replace(exp,"\:\d+\a?$","");
+					return q+"+"+exp+"+"+q;
+				}) 
+				
+				ret = replace(ret,"^" + q++q+"\+","")
+				ret = replace(ret,"\+"+q++q+"$","")
+				return ret;
+			} ); 
+		 
+		 	// '%' operator 
+			code = replace(code,`(<%"">|<%''>)\s*\%\s*(%())`,function(p1,p2){
+				return "string.format("+p1+","+string.slice(p2,2,-2)+")"
+			} ); 
+		} 
+		
+		//JSON 用了双引号，所以 AI 一定会将其放入反引号
+		code = string.replaceUnmatched(code,".+",function(c){
+			c = replace(c,`=(\s*)\[([^\[\]]*)\]`,`=\1{\2}`); 
+			c = replace(c,`\[\]`,`{}`); 
+			return replace(c,"\[([^\[\],]+,[^\[\]]+)]","{\1}"); 
+		},"<`[^`]+`>");
+		
+		code = replace(code,`![\w.$]<new\s+>?array(%())`,function(arr){
+			return "{" +..string.slice(arr,2,-2) + "}"
+		} ); 
+		
+		code = replace(code,`=|\n\s+(['"]{3})(.+?)\1`,function(q,longStr){
+			var stars = "***"
+			while(string.find(longStr,"!\*<@"+stars+"@>/")){
+				stars = stars + "*";
+			}
+			
+			return '= /'+stars+'\r\n' + longStr + '\r\n'+stars+'/'
+		} );
+		
+		code = replace(code,`!['"](['"]{3})(.+?)\1`,function(q,longStr){
+			if(string.indexOf(longStr,`"`)){
+				return '`' + ..string.replace(longStr,'`','``') + '`';
+			}
+			else {
+				return '"' + longStr + '"';
+			} 
+		} );
+		
+		code = replace(code,`(end\s+)(intellisense\*+/)`,`$____$$E_N_D$$___$$$$_\2`);
+		
+		//end 被用为变量名时不会单独写在一行，而  end 作为关键字  AI 会单独写一行
+		if(string.find(code,"[,=]\s*end![^\w_]") || string.find(code,"![\w._]end\s*[,=]")){
+			code = replace(code,`!\N(\s*\S+\N*?)!\wend!\W`,`\1stop`); 
+		}
+		
+		//--------------------类 BASIC for 循环 关键字分隔 循环参数为纯数值 开始 --------------------------------------------
+		
+		//for i:=1 去掉冒号
+		code = replace(code,"![\w.$_](for\s*\(?<\s*var>?\s*\a\w*\s*)\:=","\1=");
+		
+		//for i = 10 downto 1 无 step 类型
+	 	code = replace(code,"![\w.$_]for(\s*\(?\s*\a\w*\s+)\:?\=(\s+[^,;\r\n\{=]+?)\s+downto\s+(\s*[^,;\r\n\{=]+?)!\W<\s*step>?!"
+	 		,function(i,start,stop){
+	 			if ..string.find(stop,"!\wstep!\W") return;
+	 			return "for"+i+"="+start+" downto "+stop+" step -1";
+	 		}
+	 	);
+
+		//if .... do{   }
+		for(i=1;3;1){
+			code = replace(code,"!\w(<while>|<for>|<if>!\W\i\N+?)!\wdo(\s*%\{\})","\1\2"); 
+		} 
+		 
+		//以 end\s*xxx 结束的语句块，优先处理，其他语句不会以 next,endf 结束
+		{
+			for(i=1;5;1){
+ 				//for j = 2 to 7 step 1 do ... endfor,next
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>|<downto>\s+([^,;\n]+?)\s+<step>|<Step>|<by>|<By>\s+([^,;\n\{]+?)!\s(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+ 				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+ 
+				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");
+ 			}
+ 			
+ 			for(i=1;5;1){
+ 				//for j = 2 to 7 do ... next|endfor
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>|<downto>\s+([^,;\n]+?)!\s(<\s*>)do!\W(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");	
+ 			}
+			
+			for(i=1;5;1){
+ 				//for j = 2 to 7 step 1换行 endfor,next
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>|<downto>\s+([^,;\n]+?)\s+<step>|<Step>|<by>|<By>\s+([^,;\n\{]+?)!\s(<\s*>)\{?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+ 				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3;\4){\5\6}");
+ 
+				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");
+ 			}
+ 			
+ 			for(i=1;5;1){
+ 				//for j = 2 to 7 next|endfor
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>|<downto>\s+([^,;\n]+?)!\s(<\s*>)\{?!<step>?!<Step>?!<By>?!<by>?!,?!;?!(.+?)!\w<next>|<Next>|<end for>|<endfor>!\W","for(\1=\2;\3){\4\5}");	
+ 			}
+ 			
+			//funcion() do .... end function
+			for(i=1;5;1){
+ 				code = string.replace(code,"(!\w(<while>|<for>|<if>|<function>)!\W\i\N+?)!\wdo!\W(.+?)!\wend\s*\2!\W"
+ 					, "\1{\3}" )
+ 			} 
+ 			
+ 			//then .... else
+ 			for(i=1;10;1){
+				code,ount = replace(code,"!\w<@@then@>!\W(\s*)\{?!<do>?!<begin>?!(.+?)!\welse!\W","{\1\2}else");
+			}
+ 			
+ 			//then .... endif
+ 			for(i=1;10;1){
+				code,ount = replace(code,"!\w<@@then@>!\W(.+?)!\w<@@end if@>|<@@endif@>!\W","{\1}");
+			}
+ 		} 
+ 		//else .... end if 需要先处理
+		for(i=1;5;1){
+ 			code = string.replace(code,"!\welse!\W(\s*)<if>?!\{?!(.*?)!\w<endif>|<end if>|<end>!\W", "else{\1\2}");
+  		}  
+  		
+		//funcion() .... end function 需要排除行注释
+		for(i=1;5;1){
+ 			code = string.replace(code,"(!\w(<while>|<for>|<if>|<function>)!\W\i.+?)!\wend\s*\2!\W",function(ifState){
+ 		   
+ 				var count;
+ 				ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(//.+)","\1{\2");	
+ 				if(count){ 
+ 					
+ 					return ifState + "}"
+ 				}
+ 				
+ 				ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\-\-.+)","\1{\2");	
+ 				if(count){
+ 					return ifState + "}"
+ 				}
+ 				
+ 				ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\#.+)","\1{\2");	
+ 				if(count){
+ 					return code + "}"
+ 				}
+ 				
+ 				ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\;.+)","\1{\2");	
+ 				if(count){
+ 					return ifState + "}"
+ 				}
+ 				 
+ 				
+ 				ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\'.+)","\1{\2");	
+ 				if(count){ 
+ 					return ifState + "}"
+ 				}
+ 				
+ 				ifState,count = replace(ifState,"(<while>|<for>|<if>|<function>\N+)(.+)","\1{\2");	
+ 				if(count){ 
+ 					return ifState + "}"
+ 				} 
+ 			})
+ 		}
+
+ 		for(i=1;10;1){ 
+				
+			code = replace(code,"!\w(<while>|<for>|<if>|<function>)!\W(\N*?)!\wdo!\W(.+?)!\wend\s+\1!\W",
+				function(kw,h,b){
+					return kw++h+"{"+b+"}"; 
+				} ); 
+		}  
+
+		if(!string.find(code,"!\wbegin!\W")){
+			
+			for(i=1;10;1){
+				code = replace(code,"!\wdo!\W(.+?)!\wend!\W","{\1}"); 
+			}
+		
+			
+			//在这之前先处理  then .... end if
+			for(i=1;10;1){
+				code = replace(code,"!\wthen!\W(.+?)!\wend!\W","{\1}"); 
+			}
+			
+			//在这之前先处理  function .... end function
+			//funcion() .... end function
+			for(i=1;5;1){
+ 				code = string.replace(code,"(!\w(<while>|<for>|<if>|<function>)!\W\i.+?)!\wend!\W",function(ifState){
+ 		     
+ 					var count;
+ 					ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(//.+)","\1{\2");	
+ 					if(count){
+ 						 
+ 						return ifState + "}"
+ 					}
+ 					
+ 					ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\-\-.+)","\1{\2");	
+ 					if(count){
+ 						return ifState + "}"
+ 					}
+ 					
+ 					ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\#.+)","\1{\2");	
+ 					if(count){
+ 						return code + "}"
+ 					}
+ 					
+ 					ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\;.+)","\1{\2");	
+ 					if(count){
+ 						return ifState + "}"
+ 					}
+ 				 	
+ 					
+ 					ifState,count = replace(ifState,"^(<while>|<for>|<if>|<function>\N+)(\'.+)","\1{\2");	
+ 					if(count){ 
+ 						return ifState + "}"
+ 					}
+ 					
+ 					ifState,count = replace(ifState,"(<while>|<for>|<if>|<function>[^\r\n+]+)(.+)","\1{\2");	
+ 					if(count){ 
+ 						return ifState + "}"
+ 					} 
+ 				})
+ 			}
+ 		} 
+ 		
+ 		// for ... end;
+ 		{
+ 			for(i=1;5;1){
+ 				//for j = 2 to 7 step 1换行 end
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>\s+([^,;\n]+?)\s+<step>|<Step>|<by>|<By>\s+([^,;\n\{]+?)!\s(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3;\4){\5\6}");
+ 				
+ 				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3;\4){\5\6}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3;\4){\5\6}");
+ 		
+				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3;\4){\5\6}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3;\4){\5\6}");
+			
+				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3){\4\5}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3){\4\5}");
+				code = replace(code,"for\s+(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3){\4\5}");
+				code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^,;\n]+?)\s*[,;]\s*([^,;\n]+?)\s*\)(<\s*>)\{?!(.+?)!\wend!\W","for(\1=\2;\3){\4\5}");	
+ 			}
+	
+ 			for(i=1;5;1){
+ 				//for j = 2 to 7 end
+ 				code = replace(code,"for\s+(\w+)\s*=|<in>\s*([^,;\n]+?)\s+<to>|<To>\s+([^,;\n]+?)!\s(<\s*>)\{?!<step>?!<Step>?!<By>?!<by>?!,?!;?!(.+?)!\wend!\W","for(\1=\2;\3){\4\5}");	
+ 			} 
+		}
+		
+		code = replace(code,"(for\s+\w+\s*)\:\=","\1 =");
+
+		code = replace(code,"for\s+(\w+)\s+in\s+range\((.+?)\)\s*",function(i,exp){
+			var items = string.splitEx(exp,"\s*,\s*");
+			var start,stop,step = items[1],items[2],items[3];
+			if(#items>=3){
+				step = tonumber(step)
+				if(step===null || step>0){
+					stop = stop + "-1";
+				}
+				else {
+					stop = stop + "+1";
+				}
+			}
+			if(#items>=2){
+				step = 1;
+				stop = stop + "-1";
+			}
+			else {
+				step = 1;
+				stop = start || 0;
+				start = 1; 
+			}
+			
+			
+			return "for("+i+"=" + start + ";" + stop + ";" + step + ")";
+		} );
+		
+		//-------------------- 类 BASIC for 循环 关键字分隔 循环参数为纯数值-结束 --------------------------------------------
+		
+		//-------------------- C 系语法 for 循环 风格相同用法较多 开始 --------------------------------------------
+		
+		code = replace(code,"(for\s*\(?\s*)int!\W","\1");
+		code = replace(code,"(for\s*\(?\s*)local!\W","\1");
+		code = replace(code,"(for\s*\(?\s*)var!\W","\1");
+		
+		//;i>=0;i++ 或 ++i 有可能出现 ++1
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*0\s*;\s*<\a\w*\-\->|<\-\-?\w+>\s*\)","for(\1=\2+1;1;-1)");
+ 		//i=0;i< ;i-- 或 -i 有可能出现 --1 或 -1
+ 		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*0\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>\s*\)","for(\1=1;\2;1)");
+ 			
+ 		//i <= stop; i++  
+ 		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<=\s*([^;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>\s*\)","for(\1=\2;\3;1)");
+		//i >= stop; i-- 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*([^;\{]+?)\s*;\s*<\a\w*\-\->|<\-\-?\w+>\s*\)","for(\1=\2;\3;-1)");
+		
+		//i < stop; i++ 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>\s*\)","for(\1=\2;\3-1;1)");
+ 		//i > stop; i++ 
+ 		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>\s*([^=;\{]+?)\s*;\s*<\a\w*\-\->|<\-\-?\w+>\s*\)","for(\1=\2;\3+1;-1)");
+
+		//for i=1;10;i++
+		code = replace(code,"for\s*\(\s*(\w+)\s*=\s*([^;\n\{\}]+)\s*;\s*(\w+)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>\s*\)","for(\1=\2;\3;1)");
+	
+		//i <= stop; i+= 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<=\s*([^;\{]+?)\s*;\s*<\a\w*\s*\+\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\+\s*>([^;\{\r\n/,]+?)\s*\)","for(\1=\2;\3;\4)");
+		//i >= stop; i-= 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*([^;\{]+?)\s*;\s*<\a\w*\s*\-\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\-\s*>([^;\{\r\n/,]+?)\s*\)","for(\1=\2;\3;-\4)");
+		
+		//i < stop; i+= 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\s*\+\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\+\s*>([^;\{\r\n/,]+?)\s*\)","for(\1=\2;\3-1;\4)");
+		//i > stop; i-= 
+		code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>\s*([^=;\{]+?)\s*;\s*<\a\w*\s*\-\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\-\s*>([^;\{\r\n/,]+?)\s*\)","for(\1=\2;\3+1;-\4)");
+
+		//---------下面是前后没有括号的版本
+		//;i>=0
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*0\s*;\s*<\a\w*\-\->|<\-\-?\w+>","for(\1=\2+1;1;-1)");
+		//i=0;i<
+		code = replace(code,"for\s+(\a\w*)\s*=\s*0\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>","for(\1=1;\2;1)");
+					
+		//i <= stop; i++ 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<=\s*([^;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>","for(\1=\2;\3;1)");
+	 	//i >= stop; i++
+ 		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*([^;\{]+?)\s*;\s*<\a\w*\-\->|<\-\-?\w+>","for(\1=\2;\3;-1)");
+	
+		//i < stop; i++ 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>","for(\1=\2;\3-1;1)");
+ 		//i > stop; i++
+ 		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>\s*([^=;\{]+?)\s*;\s*<\a\w*\-\->|<\-\-?\w+>","for(\1=\2;\3+1;-1)");
+
+
+		//i <= stop; i+= 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<=\s*([^;\{]+?)\s*;\s*<\a\w*\s*\+\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\+\s*>([^;\{\r\n/,]+?)","for(\1=\2;\3;\4)");
+		//i >= stop; i-= 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>=\s*([^;\{]+?)\s*;\s*<\a\w*\s*\-\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\-\s*>([^;\{\r\n/,]+?)","for(\1=\2;\3;-\4)");
+		
+		//i < stop; i+= 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\<\s*([^=;\{]+?)\s*;\s*<\a\w*\s*\+\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\+\s*>([^;\{\r\n/,]+?)","for(\1=\2;\3-1;\4)");
+		//i > stop; i-= 
+		code = replace(code,"for\s+(\a\w*)\s*=\s*([^;\n\{\}]+)\s*;\s*\a\w*\s*\>\s*([^=;\{]+?)\s*;\s*<\a\w*\s*\-\=\s*>|<\a\w*\s*\=\s*\a\w*\s*\-\s*>([^;\{\r\n/,]+?)","for(\1=\2;\3+1;-\4)");
+
+
+		//for i=1;10;i++
+		code = replace(code,"for\s+(\w+)\s*=\s*([^;\n\{\}]+)\s*;\s*(\w+)\s*;\s*<\a\w*\+\+>|<\+\+?\w+>","for(i=\1;\2;1)");
+		
+
+		//-------------------- C 系语法 for 循环 风格相同用法较多 结束 --------------------------------------------
+		
+		// C 系语法  除了 for 循环，其他基本不用转换。
+		
+		//-------------------- 其他语法转换 --------------------------------------------
+		 
+		//else .... } 不能这样替换，考虑单句分支，这种情况太少，忽略
+		//code = replace(code,"![\w._$]<else>![^\w._$]<\s+if>?!([^{]+?\})","else {\1");
+		 
+		//for(i=1;i<=10;1){}
+		code = replace(code,"![\w._$]for\s*\(?\s*\a\w*\s*=[^,;\n\{]+\s*[,;]\s*\a\w*\s*[<>]=[^,;\n\{]+[,;][^,;\n{+\-]+","\1\2");
+	
+		//for(i=1;10;++1)
+	 	code = replace(code,"![\w._$](for\s*\([^;\)\{]+;[^;\)\{]+;\s*)\+\+(\d+\s*\))","\1\2");
+	 	 
+		//for i from 1 to 10 
+	 	code = replace(code,"for(\s*\(?\s*\a\w*\s+)from(\s+[^,;\r\n\{=]+?)\s+to!\W","for\1=\2 to");
+	
+		//for (i in 1 .. 10
+	 	code = replace(code,"for(\s*\(?\s*\a\w*\s+)in(\s+[^,;\r\n\{=]+?)\s*\.\.\s*","for\1=\2 to ");
+
+		//for i in 1,10 至少有一个参数是纯数值
+	 	code = replace(code,"for(\s*\(?\s*\a\w*\s+)in(\s+<\d+>|<#[^,;\r\n\{=]+>)\s*([;,]<\s*\d+>)","for\1=\2\3");
+	 	code = replace(code,"for(\s*\(?\s*\a\w*\s+)in(\s+\d+)\s*([;,]\s*<\d+>|<#[^,;\r\n\{=]+>)","for\1=\2\3");
+
+		//for i = 10 to 1 , 1
+	 	code = replace(code,"for\s+(\a\w*)\s*=\s*([^,;\r\n\{=]+?)\s+\a\w*\s+([^,;\r\n\{=]+?)[ \t]*[\,\;\:][ \t]*([^,;\s]+)","for(\1=\2;\3;\4)");
+	
+	 	//for( i = 10 ; 1 , 1 )分隔符不一致
+	 	code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^,;\r\n\{=]?)\s*;\s*([^,;\r\n\{=]?)[ \t]*,[ \t]*([^,;\s]+)\)","for(\1=\2;\3;\4)");
+	 	
+	 	//for i = 10 ; 1 , 1 分隔符不一致
+	 	code = replace(code,"for\s+(\a\w*)\s*=\s*([^,;\r\n\{=]?)\s*;\s*([^,;\r\n\{=]?)[ \t]*,[ \t]*([^,;\s]+)","for(\1=\2;\3;\4)");
+ 
+		//for( i = 10 , 1 ; 1 )分隔符不一致
+	 	code = replace(code,"for\s*\(\s*(\a\w*)\s*=\s*([^,;\r\n\{=]?)\s*,\s*([^,;\r\n\{=]?)[ \t]*;[ \t]*([^,;\s]+)\)","for(\1=\2;\3;\4)");
+	 	
+	 	//for i = 10 , 1 ; 1 分隔符不一致
+	 	code = replace(code,"for\s+(\a\w*)\s*=\s*([^,;\r\n\{=]?)\s*,\s*([^,;\r\n\{=]?)[ \t]*;[ \t]*([^,;\s]+)","for(\1=\2;\3;\4)");
+
+		//foreach(index, value as sumList)
+		code = replace(code,"![\w_\.$]foreach\(([\s,\w]+\s+)as\s+","for(\1in ");
+		code = replace(code,"![\w_\.$]foreach\(\s*<int>*","for(");
+		
+		//for ... pairs
+		code = replace(code,"![\w_\.$](for![^\w_\.$]\s*\(?\s*[_\w]+<\s*,\s*[_\w]+>?\s+in\s+)<ipairs>|<pairs>|<each>\(([^\)]+)\)(\s*\)?)","\1\2\3");
+
+		//for(var score : this.scores)
+		code = replace(code,"![\w_\.$](for\s*\(?<var\s+>?\s*)(\a\w*)\s*\:\s*(\a[\._\w]*\s*\)?\s*\{)","\1\2 in \3");
+
+		//for word in wordCount 如果不是数组，这样替换就是错的
+		//code = replace(code,"![\w_\.$](for\s*\(?\s*)(\a\w*\s+in\s+\a[\._\w]*\s*\)?\s*\{)","\1i,\2");
+		//for line in lines 
+		code = replace(code,"![\w_\.$](for\s*\(?\s*)((\a\w*)\s+in\s+\3s\s*\)?\s*\{)","\1i,\2");
+					
+ 		//if then {  }
+ 		code = replace(code,"!\wthen!\W\s*\{","{"); 
+ 		
+ 		//-------------------- 默认参数检查与纠正，必须在语句块纠正以后 --------------------------------------------
+ 		
+ 		code = string.replace(code,`(![\w\._$]function<\s+[^(]+>?)(%())(\s*\{\N+)(<\n[ \t]*>)`
+			,function(func,params,blockBegin,indent){
+				var defArgs = "";
+				params = string.replace(params,"(![\w\._$]\a\w*)\s*=\s*([^,)]+)"
+					,function(k,v){
+						v = ..string.trim(v);
+						if(v[1]=='"'# || v[1]=='`'# || v[1]=='\''#){
+							return;
+						}
+						
+						if(v=="true" || v=="false"){
+							return;
+						}
+						if(string.match(v,"^\d+$")){
+							return;
+						}
+						
+						defArgs = defArgs ++  indent ++ "if("+k+" === null) "+k+ " = " +v + ';\r\n'  ;
+						return k;
+					})
+					
+				defArgs = string.crlf(defArgs,,0);
+	 			return 	func ++ params ++ blockBegin ++ defArgs ++ indent;
+			}
+		)
+ 		
+ 		//-------------------- 其他语法转换 --------------------------------------------
+ 		
+ 		code = replace(code,"(\w+)\:(\a\w*\()","\1\.\2");   
+ 		
+		code = replace(code,`\.\.(\s*['"])`,"++\1"); 
+ 		code = replace(code,"\s+\.\.\s+"," ++ ");  
+ 		code = replace(code,"(\a\w*)\.\.","\1++"); //i..num.. 
+ 		
+ 		code = replace(code,"!\N(\s*)\+\+(\a\w*)","\1\2++"); //++i;
+ 		code = replace(code,"!\N(\s*)\-\-(\a\w*)","\1\2--"); //--i;
+ 		code = replace(code,"(;\s*)\+\+(\a\w*)","\1\2++"); //++i;
+ 		code = replace(code,"(;\s*)\-\-(\a\w*)","\1\2--"); //--i;
+ 		
+ 		code = replace(code,"!\wfunction\(\s*self!\W<\s*,>","function("); 
+ 		
+		code = replace(code,"!\wlocal(\s+\w+\s*=)","var \1");  
+		code = replace(code,"!\w(\d+[\+\-]1)!\W",function(exp){
+			return tostring( eval(exp) )
+		} );  
+		
+		//while((line = file.read())!=null){} 更正为 while( var line = file.read() ) {}
+		code = replace(code,"!\wwhile\s*\(*\s*(\a\w*\s*=\s*\a[\w\.]*\a%())\s*[^{]*\{","while( var \1 ){");  	
+		
+		//-------------------- import 语句 --------------------------------------------
+		var libs= {
+			"inet.http","web.json","web.rest.client","web.rest.jsonClient","web.rest.jsonLiteClient",
+			"fsys.file",
+		}
+		if(string.find(code,"![\w\.$]inet.http![^\w\.$]")
+			&& !string.find(code,"![\w\.$]import\s+inet.http![^\w\.$]")){
+			code = 'import inet.http;\r\n'+code;
+		} 
+		
+		code = replace(code,`![\w\.$]import\s+/\N+`,"");  
+		code = replace(code,`![\w\.$]import\s+\"(.+?)\"`,"import \1");  
+		//只能替换分号前面的库，考虑类似 thread.table  
+		code = replace(code,"![\w\.$]import\s+std![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+raw![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+string![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+table![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+math![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+time![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+io![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+io\.file![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+thread![^\w.];?","");
+		code = replace(code,"![\w\.$]import\s+win\.ui\.window![^\w.];?","");
+		code = replace(code,"![\w._$]import\s+string.utf8;*",""); 
+		
+		code,count = replace(code,"![\w._$]import\s+array![^\w.];?",""); 
+		if(count){
+			code = replace(code,"![\w._$]array\.","table."); 
+		}
+		code = replace(code,"![\w._$]import\s+os;",""); 
+		
+		//-------------------- 文件操作 --------------------------------------------
+		
+		code = replace(code,`"[\\/]?test.txt"`,`"/example.txt"`); 
+		code = replace(code,`"C\:\\?\\path\\?\\to\\?\\your\\?\\file(\.\a+)"`,`"/example.txt"`); 
+		code = replace(code,"path/to/your/file<.\a+>?","/example.txt");
+	 	code = replace(code,`"你的文件路径.txt"`,`"/example.txt"`);
+	 	code = replace(code,`"[^"]*<example>|<yourfile>|<your_file_path>|<your_file>|<your-file>|<filename>\.txt"`,`"/example.txt"`);
+	 	if(..string.find(code,`"[\\/]example.txt"`) && !..io.exist("/example.txt") ){
+	 		..string.save("/example.txt","Hello, World!" )
+	 	}
+	 	
+	 	code,count = replace(code,"!\wimport\s+file\W;?","import fsys"); 
+	 	if(count) code = replace(code,"![\w._$]file\.","fsys.");
+	 	
+	 	code = replace(code,"!\wnew\s+File!\W","io.file"); 
+	 	
+	 	code,count = replace(code,"!\wimport\s+File\W;?",""); 
+		code,count = replace(code,"!\wimport\s+fs![^\w_\.$]","import fsys");
+		if(!count)code,count = replace(code,"![\w._$]fs\.open\(","fsys.file(");
+		if(count) code = replace(code,"![\w._$]fs\.","fsys.");
+		code,count = replace(code,"!\wimport\s+filesystem![^\w_\.$]","import fsys");
+		if(count) code = replace(code,"![\w._$]filesystem\.","fsys.");
+		
+		code = replace(code,"![\w._$]fsys\.exists\(","io.exist(");
+		code = replace(code,"![\w._$]file\.openText\(","io.file(");
+		
+		var fsPath;
+		code =  replace(code,"![\w._$](fsys\.\a\w*)\.\a*[Oo]pen\a*!\W",function(fs){
+			fsPath = fs;
+			return "fsys.file"
+		} ); 
+		if(fsPath){
+			fsPath = string.replace(fsPath,"\.","\\.");
+			code =  replace(code,"![\w._$]"+fsPath+"![^\w._$]","fsys.file");
+		}
+		
+		code = replace(code,"!\wfsys\.\a*[Oo]pen\a*!\W","fsys.file");
+		code = replace(code,`![\w_.$]io<.file>?\.open(\(\s*[^\s)]+.*?)`,"io.file\1"); 
+		code = replace(code,"!\w<fsys>|<io>\.file\.readAll\(","string.load(");  
+		
+		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.<readAll>|<readFile>|<readText>|<readbytes>|<read>\(","string.load("); 
+		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.writeFile\(","string.save("); 
+		
+		for fileObject in string.gmatch(code,"![\w_.$](\a\w*)\s*=\s*<assert(>?\s*<io\.file>|<fsys\.file>|<fsys\.stream>\(") { 
+		    code = replace(code,"![\w_.$]"+fileObject+"\.readall\(\)",fileObject+".readAll()"); 
+			code = replace(code,"![\w_.$]"+fileObject+"\.read[Ll]ine\(\)",fileObject+".read()"); 
+			code = replace(code,"![\w_.$]"+fileObject+"\.exists%()",fileObject); 
+			code = replace(code,"\!|<!\wnot\s+>![\w_.$]"+fileObject+"\.eof%()",fileObject+".read(0)"); 
+			code = replace(code,"![\w_.$]"+fileObject+"\.eof%()","!"+fileObject+".read(0)"); 
+			code = replace(code,"![\w_.$]"+fileObject+"\.readbytes\(",fileObject+".read("); 
+			
+			
+			//file.open("r")
+			var mode = string.match(code,"![\w_.$]"+fileObject+`\.open\(\s*(%"")`); 
+			if(mode){
+				code,count = replace(code,"![\w_.$](\a\w*\s*=\s*<io\.file>|<fsys\.file>|<fsys\.stream>\([^)]*)\)","\1,"+mode+")"); 
+				if(count){
+					code = replace(code,"![\w_.$]"+fileObject+`\.open%();?`,""); 
+				}
+			} 
+
+			code = replace(code,fileObject+`.read\(\s*"\*l<ine>?"\s*\)`,fileObject+`.read("%s")`);
+			code = replace(code,fileObject+`.read\(\s*"\*n<umber>?"\s*\)`,fileObject+`.read("%d")`); 
+			code = replace(code,fileObject+`.read\(\s*"\*a<ll>?"\s*\)`,fileObject+".read(-1)"); 
+		}
+		 
+		
+		if( string.find(code,"![\w._$]fsys\.file![^\w._$]")
+			&& !string.find(code,"![\w._$]import\s+fsys\.file![^\w._$]")){
+			code = 'import fsys.file;\r\n' + code; 
+		} 
+		
+		if( string.find(code,"![\w._$]fsys\.<file>?!\a\w*![^\w._$]") ){
+			if( !string.find(code,"![\w._$]import\s+fsys![^\w._$]") )
+				code = 'import fsys;\r\n' + code; 
+		} 
+		else {
+			code = replace(code,`![\w_$.]import\s+fsys;?`,``); 
+		}
+		
+		
+		//-------------------- 字符串 --------------------------------------------
+		
+		code = replace(code,`"(<\\n>+)"`,`'\1'`); 
+		code = replace(code,`"(<\\r\\n>+)"`,`'\1'`);  
+		code = replace(code,`"([^"+*\[\]\r\n\{\}']*:[^"+*\[\]]*\\[xuUrnt][^"+*\[\]\r\n\{\}']*)"\s*`,`'\1'`); 
+		
+		code = replace(code,`![\w._$](string\.split\([^,]+,)\s*"([^"]+)"(\s*\))`,
+			function(a,str,c,d){
+				if(string.find(str,"\\[xuUrnt0e]")){
+					return a +`'` + str +`'`
+				}
+			}
+		)
+		
+		code = replace(code,`(%"")\.(\a\w*\(\s*)\)`,`string.\2\1)`);
+		code = replace(code,"(%``)\.(\a\w*\(\s*)\)","string.\2\1)");
+		code = replace(code,"(%'')\.(\a\w*\(\s*)\)","string.\2\1)"); 
+		code = replace(code,`(%"")\.(\a\w*\(\s*)`,`string.\2\1,`);
+		code = replace(code,"(%``)\.(\a\w*\(\s*)","string.\2\1,");
+		code = replace(code,"(%'')\.(\a\w*\(\s*)","string.\2\1,"); 
+
+		code = replace(code,"![\w._$]string\.<toBinary>|<binary>\(","raw\.buffer\("); 
+		code = replace(code,"![\w._$]string\.sub\(","string\.slice\("); 
+		code = replace(code,"![\w._$]string\.gsub\(","string\.replace\("); 
+		code = replace(code,"![\w._$]string\.replace[Aa]ll\(","string\.replace\("); 
+		code = replace(code,"![\w._$]string\.toUnicode\(","string\.toUtf16\("); 
+		code = replace(code,"![\w._$]string\.fromUnicode\(","string\.fromUtf16\("); 
+
+		code = replace(code,`![\w._$]<string>?!(\a\w*).(<match>|<replace>|<find>|<gmatch>\(\s*)`,"string.\2\1,")
+		code = replace(code,`![\w._$]<string>?!(\a\w*).split(\(\s*)`,"string.splitEx\2\1,")
+		
+		code = replace(code,`(,\s*)/([^\n/]+)/\a*\s*`,`\1"\2"`);
+		code = replace(code,`![\w._$](string.<match>|<replace>|<find>|<gmatch>|<splitEx>\([^,]+,\s*)("[^,]+)`,
+			function(matching,pattern){
+				pattern = ..string.replace(pattern,"\\\\","\\");
+				pattern = ..string.replace(pattern,`\\"`,`""`); 
+				pattern = ..string.replace(pattern,`\b(.+?)\b`,`!\w\1!\W`); 
+				pattern = ..string.replace(pattern,`\b`,`!\w`); 
+				pattern = ..string.replace(pattern,`(%())([+*?{])`,
+					function(s,m){
+						s = ..string.slice(s,2,-2);
+						return "<" + s + ">" + m;
+					}); 
+				return matching ++ pattern;
+			}
+		)
+		
+		code = replace(code,`("\a\:.+?\\\\.+?")`,function(q){
+			return replace(q,"\\\\","\\")
+		} );
+		
+		code = replace( code,"![\w\._$](\a\w*)\.charAt\s*\(",function(obj){
+			if(obj!="string") return "string.charAt("+obj+","
+		} );
+		
+		code = replace( code,"![\w\._$](\a\w*)\.charCodeAt\s*\(",function(obj){
+			if(obj!="string") return "string.charCodeAt("+obj+","
+		} );
+
+		
+		code = replace(code,`\s*(%"")\s*\%\s*\((\N+?)\)`," string.format(\1,\2) ");
+		code = replace(code,`\s*(%"")\s*\%\s*\{(\N+?)\}`," string.format(\1,\2) ");
+		code = replace(code,`\s*(%"")\s*\%\s*\[(\N+?)\]`," string.format(\1,\2) ");
+		
+		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.[Jj]oin(%())`,function(c1,c2){
+			return "string.join("+c1+","+string.slice(c2,2,-2)+")"
+		});
+		
+		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.[tT]oLower<Case>?%()`,"string.lower(\1)");
+		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.[tT]oUpper<Case>?%()`,"string.upper(\1)");
+		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.is[Ee]mpty%()`,"!#\1");
+
+		//-------------------- 表、数组 -------------------------------------------- 
+		code = replace(code,"!\wnew\s+Map%()","{}"); 
+		code = replace(code,`(![\w\.]<table>?![\w\.]+)\.has[Oo]wnProperty\(([^)]+?)\)`,"\1[\2]");
+
+		//arr.length,str.length
+		for strOrArray in string.gmatch(code,`![\w\.](\a\w*)\s*=\s['"{]*` ) { 
+			  code = replace( code,"(![\w\._$]"+strOrArray +"\.[lL]ength![^\w\._$]","#"+strOrArray);	
+			  code = replace( code,"(![\w\._$]"+strOrArray +"\.len\s*\(\s*\)","#"+strOrArray);	 	 	
+		}
+		
+		code = replace( code,"(![\w\._$]\w*<@@array@>\w*).length![^\w\._$]<\(\)>?","#\1");
+		code = replace( code,"(![\w\._$]\w*<@@array@>\w*).len![^\w\._$]<\(\)>?","#\1");
+		code = replace( code,"![\w\._$]arr\.len![^\w\._$]<\(\)>?","#arr");
+		code = replace( code,"![\w\._$]arr\.length![^\w\._$]<\(\)>?","#arr"); 
+		
+		//替换所有 .length
+		code = replace( code,"![\w\._$](\a[\.\w_]*)\.length![^\w\._$]<\(\)>?","#\1");
+		
+		code = replace( code,"(![\w\._$]arr\.clone\(\)","table.clone(arr)");
+		code = replace( code,"(![\w\._$]arr\.slice\(\)","table.slice(arr)");
+		code = replace( code,"![\w\._$](\a\w*)\.push\s*\(",function(obj){
+			if(obj!="table") return "table.push("+obj+","
+		} );
+		
+		code = replace( code,"![\w\._$]table\.swap\(\s*(\a[\w_.]+)\s*,\s*([^,]+)\s*,\s*([^,]+)\s*\)"
+			,"\1[\2],\1[\3] = \1[\3],\1[\2]"); 
+
+		//-------------------- 控制台 -------------------------------------------- 
+		
+		code = replace(code,"!\w[Ii]o.[Pp]rint\s*\(","console.log(");  
+		code = replace(code,"!\w[Cc]onsole.[Pp]rint\s*\(\s*<..>?string\.format(%\(\))\s*\)","console.printf\1");  
+		  
+		code = replace(code,"(\n[\t ]+)![\w._$]<[Pp]rint[Ll]n>|<[Pp]rint>!\W\s*([^(]\N+)","\1console.log(\2)"); 
+		
+		code = replace(code,"![\w._$][Ll]og\s*\(","console.log(");
+		code = replace(code,"![\w._$][Cc]onsole\s*\(","console.log("); 
+		code = replace(code,"![\w._$][Pp]rint[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]on.[Pp]rint[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]onsole.[Pp]rint\s*\(","console.log("); 
+		code = replace(code,"![\.\w][Pp]rint\s*\(","console.log("); 
+ 
+		code = replace(code,"!\w[Cc]onsole\.[Oo]pen%();?",""); 
+		code = replace(code,"!\w[Cc]onsole\.[Tt]itle\s*\(","console.setTitle("); 
+		code = replace(code,"!\w[Cc]onsole\.[Ss]how\s*\(","console.open("); 
+		code = replace(code,"!\w[Cc]onsole\.[Ww]rite\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]onsole\.[Ww]rite[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]onsole\.[Ww]rite[Ll]ine\s*\(","console.log("); 
+		code = replace(code,"!\wfmt\.Println\s*\(","console.log("); 
+		code = replace(code,"!\wSystem\.out\.print[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]onsole\.print[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\w[Cc]rint[Ll]n\s*\(","console.log("); 
+		code = replace(code,"!\wConsoleWrite!\W","console.log"); 
+		code = replace(code,"\n(\s*)\?\s*(\w+)",'\n\\1console.log(\\2)'); 				
+		code = replace(code,"!\wwin\.loop!\W","win.loopMessage"); 
+		code = replace(code,"!\wwindow\.create!\W","win.form"); 
+		code = replace(code,"!\wweb\.view\.create!\W","web.view"); 
+		code = replace(code,"\.navigate\(",".go("); 
+		code = replace(code,"!\wwindow\.create!\W","win.form"); 
+		code = replace(code,"!\a[\w\.]*\.sleep\s*\(","thread.delay(");   
+		 
+		code = replace(code,"![\w\.][Ss]tring\s*\(","tostring("); 
+		code = replace(code,"(![\w\.][\w\.]+)\.[Tt]o[sS]tring\(\s*\)","tostring(\1)"); 
+		//要在上面两句的 下面，顺序不能改
+		code = replace(code,"!\w[Cc]onsole.log*\(\s*tostring(%\(\))\s*\)","console.log\1");  
+				
+		code = replace(code,"Aardio","aardio");  
+		
+		code = replace(code,"!\wtable\.range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)",function(b,e){
+			var arr = {}
+			for(i=b;e;1){
+				..table.push(arr,i);
+			} 
+			return ..util.table.stringify(arr); 
+		} ); 
+		
+		code = replace(code,"!\wrange\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)",function(b,e){
+			var arr = {}
+			for(i=b;e;1){
+				..table.push(arr,i);
+			} 
+			return ..util.table.stringify(arr); 
+		} ); 
+		
+		code = replace(code,"!\wos\.getenv\(","string.getenv("); 
+		code = replace(code,"!\wos\.setenv\(","string.setenv("); 
+		code = replace(code,"!\wos\.getUserName","sys.getUserName"); 
+		
+		code = replace(code,`!\waardio\.`,""); 
+		code = replace(code,"!\wio\.run\(","raw.execute("); 
+		
+		code = replace(code,`table.concat(\(([^\(\)]+),\s*".+?"\s*\))`,"string.join\1")
+	
+		if(!string.find(code,"![\w._$]import\s+win\.ui![^\w._$]")){
+			code = replace(code,"![\w._$]import\s+win\.form![^\w._$]","import win.ui");	
+		}
+		else {
+			code = replace(code,"![\w._$]import\s+win\.form![^\w._$];?","");
+		}
+		
+		code = replace(code,`![!\w_$.]len(%())`,lambda(v) "#"+(string.slice(v,2,-2)));   
+		code = replace(code,`!\wfunc\s+(\w+)`,`function \1`);  
+		
+		code = replace(code,`!\wfor\s+each!\W`,`for `);
+		
+		code = replace(code,`!\wfor\s+(\w+)\s+in\s+array`,`for _,\1 in array`);  
+		
+		code = replace(code,`!\wclass="`,`cls="`);
+		
+		code = replace(code,`\.text\s*\+\s*([a-zA-Z])`,`.text ++ \1`);  
+	
+		code = replace(code,"(\n\s*console\.log)\s+([^\r\n\;]+)","\1(\2)");
+		code = replace(code,"^(\s*console\.log)\s+([^\r\n\;]+)","\1(\2)");
+		
+		code = replace(code,"(\n\s*console.print)\s+([^\r\n\;]+)","\1(\2)");
+		code = replace(code,"^(\s*console.print)\s+([^\r\n\;]+)","\1(\2)"); 
+
+		code = replace(code,"![\w._]trace\(","console.log(");
+		code = replace(code,"![\w._]io\.write\(","console.writeText(");
+		code = replace(code,"![\w._]io\.print\(","console.print("); 
+		code = replace(code,"![\w._]io\.open\(\s*\);?",""); 
+		code = replace(code,"![\w._]io\.close\(\);?",""); 
+		code = replace(code,`![\w._]execute\(\"?pause\"?\)`,"console.pause()");  
+		
+		code = replace(code,`![\w._$]Math\.`,"math.");  
+		code = replace(code,`![\w._$]math\.pow\(([^,]+),([^,]+)\)`,function(a,b){
+			if(string.find(a,"\p")){
+				a = "(" + a + ")"
+			}
+			if(string.find(b,"\p")){
+				b = "(" + b + ")"
+			}
+			return a + " ** " + b;
+		}); 
+		
+		code = replace(code,"!\wrect\s*\{(.+?)\}","::RECT(\1)");
+		
+		//修正: class Person {  sayHello() { }  } 
+		code = replace(code,"![\w._$](class![^\w._$]\s*<\a\w+>?\s*)(%{})"
+			,function(clsName,clsBody){  
+				
+				clsBody = replace(clsBody,"<function\s*>?(\a\w*)(%()\s*%{})"
+					,function(methodName,methodBody){
+						
+						if(methodName=="ctor") return;
+						if(methodName=="function") return;
+						if(methodName=="class") return;
+						if(methodName=="constructor") return "ctor" + methodBody;
+
+						return methodName + " = function" + methodBody; 
+					}
+				)
+				  
+				return 	clsName ++ clsBody; 
+			} 
+		);
+
+		var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;};
+					
+		code = replace(code,"![\w._$](<class>|<namespace>![^\w._$]\s*<\a\w+>?\s*)(%{})"
+			,function(name,body){  
+				
+				body = replace(body,"![\w._$]((\a[\w\._$]+)(\.[\w_$]+![^\w._$]))"
+					,function(name,libName,member){
+						if(libName=="this" || libName=="owner" || libName=="self"|| libName=="global" ){
+							return;
+						}
+
+						if(..string.find(code,"![\w._$]var\s+"+libName+"\s*=")){
+							return;
+						}
+					 
+						
+						if(!(..io.libpath(libName) || ..io.libpath(name)
+							|| builtin[libName]) || builtin[name] ){
+							return;
+						}
+						
+						return ".."+name;
+					}
+				)
+				
+				return 	name ++ body; 
+			} 
+		);
+		
+		code,count = replace( code,`![\w\._$]import\s+<gui>|<GUI>![^\w\._$]:?`,`import win.ui`);
+		if(count){
+			code = replace( code,`![\w\._$]<gui>|<GUI>\.`,`win.ui.`);
+		}
+		
+		code,count = replace( code,`![\w\._$]import\s+[Ff]orms![^\w\._$]:?`,`import win.ui`);
+		if(count){
+			code = replace( code,`![\w\._$][Ff]orms\.create\(`,`win.form(`);
+			code = replace( code,`![\w\._$][Ff]orms\.`,`win.ui.`);
+		}
+		
+		code = replace( code,`!\wwin\.ui\.run\s*%()`,`win.loopMessage()`);
+		code = replace( code,`!\wwin\.ui\.form\s*\(`,`win.form(`);
+		code = replace(code,`=\s+new\s+<Window>|<window>|<WinForm>|<winform>\(`,`= win.form(`);
+		code = replace( code,`!\wwin\.ui\.form\s*\(`,`win.form(`);
+
+		if(..string.find(code,"![\w._$]win\.form\(")){
+			
+			code = replace(code,`![\w._$][Ss]leep\(`,`thread.delay(`);
+
+			if(!..string.find(code,"![\w._$]import\s+win.ui![^\w\.]")){
+				code = 'import win.ui;\r\n' + code;
+			}
+			
+			if(!..string.find(code,"![\w._$]win\.loopMessage!\W")){ 
+				code = code + '\r\nwin.loopMessage();' 
+			}
+		
+			code = replace(code,`=\s+new\s+win\.form\(`,`= win.form(`);
+			code = replace(code,`=\s+win\.form\(\s*(%"")\s*\)`,`= win.form(text=\1)`);
+			
+			code = replace(code,`![\w._$](\a\S+\s*=\s*win\.form\s*\(\s*)\"(\s*\a\w+\s*=.+?)\"(\s*\))`,"\1\2\3");
+			
+			code = replace(code
+			,`![\w._$](\a\S+\s*=\s*win\.form\s*\()([^\)]*<\s*\d+\s*,\s*\d+>+[^\)]*)\)`
+				,function(winform,params){
+					var args = ..string.splitEx(params,",\s*");
+					
+					var newArgs = {};
+					var rc = { }
+					for(k,v in args){ 
+						 
+						if(..string.match(v,"^\d+$") ){
+							 ..table.push(rc,(tonumber(v)));
+						}
+						elseif(..string.match(v,`^%""$`) ){
+							newArgs.text = ..string.slice(v,2,-2);
+						}
+					}
+					
+					
+					if(#rc==4){
+						newArgs.left = rc[1];
+						newArgs.top = rc[2];
+						newArgs.right = rc[1]+rc[3];
+						newArgs.bottom = rc[2]+rc[4];
+					} 
+					elseif(#rc==2){ 
+						newArgs.right = rc[1];
+						newArgs.bottom = rc[2];
+					} 
+					 
+					return winform ++ ..util.table.stringify(newArgs,,{"text","left","top","right","bottom"}) + ")"
+				} );
+			
+			code = replace(code,`![\w._$](\a\w*\s*=\s*win\.form\s*\([^\)]*)!\w<title>|<caption>(\s*[\:=]\s*["'])`,`\1text\2`)
+			
+			//formOrTabPage.add(win.ui.ctrl.button,{...});
+			code = replace( code,`![\w_.$](\a\w+.add\()\s*win\.ui.ctrl\.(\a\w+)\s*,\s*(%{}\s*\))`,function(method,cls,params){
+				cls = ..string.lower(cls);
+				if(cls=="textbox") cls="edit";
+				if(..string.endWith(cls,"control")){
+					cls = ..string.left(cls,-8);
+				} 
+				
+				params = ..string.slice(params,2,-1);
+				params = string.trimleft(params);
+					
+
+				if(!..string.find(params,"![\w.$_]cls\s*=")){ 
+					if(..string.indexOf(params,"; ")){
+						params = ` cls = "`+cls+`"; `+ params;
+					}
+					elseif(..string.indexOf(params,", ")){
+						params = ` cls = "`+cls+`", `+ params;
+					} 
+					elseif(..string.indexOf(params,";")){
+						params = `cls="`+cls+`"; `+ params;
+					}
+					elseif(..string.indexOf(params,",")){
+						params = `cls="`+cls+`", `+ params;
+					} 
+				}
+					 
+					
+				return method + `{` + params;
+			});
+			
+			
+			var formName = ..string.match(code,`![\w._$](\a\S+)\s*=\s*win\.form\s*\(`);
+			
+			if(formName){  
+				
+				if(formName == "win"){
+					if(!string.find(code,"![\w._$]var\s+win\s*=\s*win\.form\s*\(")){
+						code = replace(code,"![\w._$](win\s*=\s*win\.form\s*\()","var \1");
+					} 
+					
+					code = replace(code,"![\w._$](win\.loopMessage\s*\()","..\1");
+				}
+				
+				// 将 cls 写为 type
+				code = replace(code,"![\w._$]("+formName+`.add\()([^\)]*)![\w._$]type(\s*[\:=][^\)]*\))`
+					,function(ctrl,p1,p2){
+						if(!(string.find(p1,"![\w._$]cls(\s*[\:=]") || string.find(p2,"![\w._$]cls(\s*[\:=]") ) ){
+							return ctrl ++ p1 ++ "cls" ++ p2;
+						}
+					}
+				)
+			 
+				/*
+				form.ctrlName = form.add(cls,x,y,width,height,text) 
+				var ctrlName = form.add(cls,x,y,width,height,text)
+				form.cls(x,y,width,height,text)
+				*/
+				code = replace(code,`![\w_$]((<\a\w+\s*=\s*>?)`+formName+`)\.(\a\w+)\(\s*([^\)]*<\s*\d+\s*,\s*\d+>+[^\)]*)\)`
+				,function(varName,ctrlName,cls,params){
+					
+					var newArgs = {};
+					var args = ..string.splitEx(params,"\s*,\s*");
+					var ctrlNameOrClass = cls;
+					
+					if(cls==="add" || cls==="addControl"){
+						cls = null
+						for(i=1;#args;1){
+							if(..string.match(args[i],`^%""$`)){
+								var v = ..string.slice(args[i],2,-2);
+								ctrlNameOrClass = v;
+								
+								v = ..string.lower(v);
+								if(v=="textbox") v="edit"; 
+								if(..win.ui.ctrl[v]){
+									..table.remove(args,i);
+									cls = v;
+									break;
+								}
+							} 
+						}
+						 
+						if(!cls) return;
+					}
+
+					cls = ..string.lower(cls); 
+					var cls2 = ..string.match(cls,"add(.+)");
+					if(#cls2){
+						cls = cls2;
+					}
+					
+					if(cls=="textbox") cls="edit";
+					if(!..win.ui.ctrl[cls]){
+						return;
+					}
+					
+
+					var rc = { }
+					for(k,v in args){ 
+						 
+						if(..string.match(v,"^\d+\s*$") ){
+							 ..table.push(rc,(tonumber(v)));
+						}
+						elseif(..string.match(v,`^%""$`) ){
+							if(#newArgs.text){
+								newArgs.name = newArgs.text;
+							}
+							newArgs.text = ..string.slice(v,2,-2);
+						}
+					}
+					
+					if(#rc!=4){
+						return;
+					}
+					
+					newArgs.left = rc[1];
+					newArgs.top = rc[2];
+					newArgs.right = rc[1]+rc[3];
+					newArgs.bottom = rc[2]+rc[4];
+					newArgs.cls = cls;
+					
+					if((cls=="edit" || cls=="richedit") && rc[4] > 50){
+						newArgs.multiline = true;
+					} 
+					
+					if(#newArgs.name){
+						var ctrlName = newArgs.name;
+						newArgs.name = null;
+						return varName +".add("+ ctrlName + "=" + ..util.table.stringify(newArgs,,{"cls","text","left","top","right","bottom"}) + ")"
+					}
+					 
+					if(#ctrlName){
+						return varName +".add("+ ..util.table.stringify(newArgs,,{"cls","text","left","top","right","bottom"}) + ")"
+					}
+					else {
+						return varName +".add("+ ctrlNameOrClass + "=" + ..util.table.stringify(newArgs,,{"cls","text","left","top","right","bottom"}) + ")"
+					}
+					
+				} );
+
+		
+				code = replace( code,`(![\w._$]`+formName+`\.add\s*\(\s*)(%"")\s*,\s*\{`,`\1{cls=\2, `);
+				/*
+				winform.add(
+					button = win.button({ text="button"; left=50; top=50; width=100; height=30})
+				);
+				*/
+				code = replace(code,`![\w._$]`+formName+`.add\s*%\(\)`
+					,function(param){
+						return replace( param,`(\a\w+\s*\=\s*)!\wwin\.(\w+)\(\s*\{(\N+)\)`,function(ctrlName,cls,ctrlParam){ 
+							cls = ..string.lower(cls);
+							if(cls=="textbox") cls="edit";
+							
+							if(string.indexOf(ctrlParam,",")){
+								return ctrlName ++ `{ cls="`+cls+`",`+ctrlParam+`;`;
+							}
+							else {
+								return ctrlName ++ `{ cls="`+cls+`";`+ctrlParam+`;`;
+							} 
+						});
+					}
+				)
+				
+				/*
+				winform.add(
+					button = win.button( text="button"; left=50; top=50; width=100; height=30)
+				);
+				*/
+				code = replace(code,`![\w._$]`+formName+`.add\s*%\(\)`
+					,function(param){
+						return replace( param,`(\a\w+\s*\=\s*)!\wwin\.(\w+)\((\N+)\)`,function(ctrlName,cls,ctrlParam){ 
+							cls = ..string.lower(cls);
+							if(cls=="textbox") cls="edit";
+							
+							if(string.indexOf(ctrlParam,",")){
+								return ctrlName ++ `{ cls="`+cls+`",`+ctrlParam+`}`;
+							}
+							else {
+								return ctrlName ++ `{ cls="`+cls+`";`+ctrlParam+`}`;
+							} 
+						});
+					}
+				)
+				
+				//winform.add("button","caption=''")
+				code = replace( code,`(![\w._$]`+formName+`\.add\s*\(\s*)(%"")\s*,\s*\"(\s*\a\w*\s*=\s*[^,;]+([,;]).+?)\"\s*\)`,`\1{cls=\2\4\3})`);
+
+				//winform.add("button",{...}
+				code = replace( code,`(![\w._$]`+formName+`\.add\s*\(\s*)(%"")\s*,\s*\{`,`\1{cls=\2, `);
+				
+				//winform.add("button",left = 12; ... );
+				code = replace( code,`(![\w._$]`+formName+`\.add\s*\(\s*)(%"")\s*,(\s*\a\w*\s*=[^,;]+([,;]))`,`\1cls=\2\4\3`);
+				
+				//winform.addButton(
+				code = replace( code,`((<\a\w*\s*=\s*>?)![\w._$]`+formName+`\.add)(\w+)\s*(%())`,function(method,varName,cls,param){ 
+					cls = ..string.lower(cls);
+					if(!string.find(param,"!\wcls\s*=")){ 
+						if(cls=="textbox") cls="edit";
+						param =replace(param,"!\w(\a\w*(\s*=\s*)[^;,]+([;,]?)(\s*))",function(p1,p2,p3,p4){
+							return `cls`+p2+`"`+cls+`"`+(#p3?p3:",")+(p4:"") +p1;
+						} ,1);	 
+						return method ++ param;
+					}
+					elseif(!#varName){ 
+						varName = cls;
+						param = replace(param,`!\wname\s*=\s*(["'])([^;,]+)\1\s*[;,]`,function(q,name){
+							varName = name; 
+							return ""
+						});	 
+					
+						param = ..string.slice(param,2,-2);
+						if(!string.find(param,"%{}")){
+							param = "{" + param + "}"
+						}
+
+						return method + "("+ varName + "=" + param + ")";
+					} 
+				});
+				
+				//winform.button( text = ....
+				code = replace( code,`(![\w._$]`+formName+`\.)(\w+)(\(\s*\{?\s*)(\a+\s*([=\:]\s*))`,function(ctrl,cls,p1,p2,eq){ 
+					cls = ..string.lower(cls);
+					if(cls=="textbox") cls="edit";
+					if(!..win.ui.ctrl[cls]) return;
+					
+					return ctrl ++ `add`+p1+`cls`+eq+`"`+cls+`", `+p2;
+				});
+				
+				code = replace( code,`![\w._$]`+formName+`\.getControl\(\s*"(\a\w+)"\s*\)`,formName+".\1"); 
+				
+				if(formName !=="win" ){ 
+					
+					//win.button(winform
+					code = replace( code,`![\w._$]win<\.ui\.ctrl>?\.(\w+)\(\s*`+formName+`\s*\)`,function(cls){ 
+						if(cls==="form" || ..win[[cls]] ) return;
+						
+						cls = ..string.lower(cls);
+						if(cls=="textbox") cls="edit";
+						
+						return formName ++ `.add(cls="`+cls+`")`;
+					});
+					
+					//win.button(winform,"text");
+					code = replace( code,`![\w._$]win<\.ui\.ctrl>?\.(\w+)\(\s*`+formName+`\s*,\s*(%"")\s*\)`,function(cls,txt){ 
+						if(cls==="form" || ..win[[cls]]  ) return;
+						
+						cls = ..string.lower(cls);
+						if(cls=="textbox") cls="edit";
+						
+						return formName ++ `.add(cls="`+cls+`",text=`+txt+`)`;
+					});
+				 	
+					//win.button(winform,{ param });
+					code = replace( code,`![\w._$]win<\.ui\.ctrl>?\.(\w+)\(\s*`+formName+`\s*,\s*\{`,function(cls){ 
+						
+						if(cls==="form" || ..win[[cls]]  ) return;
+						
+						cls = ..string.lower(cls);
+						if(cls=="textbox") cls="edit";
+						
+						return formName ++ `.add({cls="`+cls+`",`;
+					});
+					
+					//win.button(winform; param );
+					code = replace( code,`!\wwin\.(\w+)\(\s*`+formName+`\s*([,;])\s*\a`,function(cls,sep){ 
+						if(cls==="form" || ..win[[cls]]  ) return;
+						cls = ..string.lower(cls);
+						if(cls=="textbox") cls="edit";
+						
+						return formName ++ `.add( cls="`+cls+`"` + sep;
+					});
+					
+					
+					//win.button(text=""...)
+					code = replace( code,`![\w._$]win.(\w+)\s*(\(?\s*[({][^)}]+[})]\s*\)?)`,function(cls,params){ 
+						if(cls==="form" || ..win[[cls]]  ) return;
+						
+						cls = ..string.lower(cls);
+						if(cls=="textbox") cls="edit";
+
+						var beginstr,endstr = "{", "}"; 
+						if( params[1]=='('# ){
+							params = ..string.slice(params,2,-2);
+						}
+						elseif( params[#params]==')'# ){
+							params = ..string.slice(params,1,-2);
+							endstr = "})";
+						}
+						
+						params = string.trim(params);
+						if(params[1]=='{'#){ 
+							params = ..string.slice(params,2,-2);
+						}
+						
+						if(string.indexAny(params,'\r\n')){
+							beginstr = beginstr + '\r\n    '
+							endstr =  '    \r\n' + endstr;
+						}
+						elseif(..string.find(params,"[,; ] ")){
+							beginstr = beginstr + ' '
+							endstr =  ' ' + endstr;
+						}
+						
+						var ret;
+						if(..string.indexOf(params,"; ")){
+							ret = beginstr + `cls = "`+cls+`"; `+ params ++  endstr;
+						}
+						elseif(..string.indexOf(params,", ")){
+							ret =  beginstr + `cls = "`+cls+`", `+ params ++  endstr;
+						}
+						elseif(..string.indexOf(params,";")){
+							ret =  beginstr + `cls="`+cls+`";`+ params ++ endstr;
+						}
+						elseif(..string.indexOf(params,",")){
+							ret =  beginstr + `cls="`+cls+`",`+ params ++ endstr;
+						} 
+						
+						var ret,count = replace(ret,"![\w._$]parent\s*=\s*"+formName+"\s*[;,]?","");
+						if(count){
+							ret = formName+".add(" + ret + ")"
+						}
+						
+						return ret;
+					});
+				}
+				
+				code = replace( code,`![\w._$]import\s+win\.ui\.<controls>!\W;?`,``);
+				//win.ui.controls.button(text="" 
+				code = replace( code,`![\w._$]win\.<ui\.ctrl>|<ui\.controls>|<ui>\.(\w+)\s*(%())`,function(cls,params){ 
+					 
+					cls = ..string.lower(cls);
+					if(cls=="textbox") cls="edit";
+					
+					params = string.trim(params);
+					params = ..string.slice(params,2,-2);
+					params = string.trim(params);
+					
+					params = replace(params,"![\w._$](\a\w*(\s*[=\:]\s*)[^;,)]+?(<\s*[;,]>?))"
+						,function(p1,p2,p3){
+							return `cls`+p2+`"`+cls+`"`+(#p3?p3:",")++p1;
+						},1);
+
+					if(params[1]!='{'#){
+						return `{` + params +  "}";
+					}
+					
+					return params;
+				});
+
+				/*
+				var cfg = {};
+				winform.add(cfg);
+				*/ 
+				var controlConfigList = {};
+				code = replace( code,`!\N[ \t]*`+formName+`\.add\s*\(\s*(\a\w*)\s*\);?`
+					,function(cfgName){
+						..table.push(controlConfigList,cfgName);
+						return ""
+					} );
+				for(i,cfgName in controlConfigList){
+					code = replace( code,`!\N(\s*<var\s+>?`+cfgName+`\s*\=\s*)(\{.*?![\w._$]cls\s*=\s*.*?\});`
+					,"\1"+formName+".add(\2)");
+				
+				};
+
+				//只写了 cfg = {}; winform.add(cfg); 都没有，只能在 winform.add 之外处理这个问题
+				code = string.replaceUnmatched( code,`!\N(\s*<var\s+>?(\a\w*)\s*\=\s*)(\{.*?![\w._$]cls\s*=\s*.*?\});?`
+					,"\1"+formName+".add(\2=\3)",`![\w._$]`+formName+`.add\s*%\(\)`);
+		
+				code = replace(code,"![\w._$]("+formName+`.add\()([^\)]*)![\w._$]<caption>|<title>(\s*[\:=][^\)]*\))`
+					,function(ctrl,p1,p2){
+						if(!(string.find(p1,"![\w._$]text(\s*[\:=]") || string.find(p2,"![\w._$]text(\s*[\:=]") ) ){
+							return ctrl ++ p1 ++ "text" ++ p2;
+						}
+					}
+				); 
+				
+				//---------------------------- 修正错误使用 winform.add 返回值 ---------------------------
+				
+				//获取所有 var ctrlName = winform.add( 创建的控件，检查错误用法
+				for vCtrlName,mCtrlName in string.gmatch(code,"![\w\._$]<var\s>?\s*(\a[\w\.]*)\s*=\s*"+formName+"\.add\s*\(\s*\{?\s*(\a\w*)\s*=\s*%{}\s*\}?\s*\)") { 
+					
+					code = replace( code,"(![\w\._]"+vCtrlName+")(\.\a\w*)![^\w\._]",formName+"."+mCtrlName+"\2");
+					code = replace( code,"![\w\._$]<var\s>?\s*\a[\w\.]*\s*=\s*("+formName+"\.add\s*\(\s*\{?\s*(\a\w*)\s*=\s*%{}\s*\}?\s*\))","\1");
+				}
+				
+				
+				//---------------------------- 检测添加的全部控件 ---------------------------
+				
+				//检查所有控件的参数是否缺少  cls
+				code = replace( code,`![\w._$]`+formName+`.add\s*%\(\)`,function(ctrlsPopsTable){
+					
+					return replace(ctrlsPopsTable,"![\w._$](\a\w+)(\s*=\s*)(%{})",
+						function(ctrlName,assign,ctrlProps){
+
+							//这是因为 AI 误以为控件名就是类名
+							if(!string.find(ctrlProps,"![\w._$]cls\s*=")){ 
+								var cls = ctrlName;
+								cls = string.lower(cls);
+								if(cls==="textbox"){
+									cls = "edit";
+								}
+								
+								return ctrlName ++ assign ++ replace(ctrlProps,"![\w._$](left\s*=(\s*)\d+(\s*[;,]\s*))",`cls\2=\2"`+cls+`"\3\1`);
+							}
+							
+							ctrlProps,count = replace(ctrlProps,"![\w._$](cls\s*=\s*)(\a\w+)",`\1"\2"`);
+							if(count || string.find(ctrlProps,"!\wonClick<ed>?\s*=")){
+								return ctrlName ++ assign ++ replace(ctrlProps,"!\wonClick<ed>?(\s*=)","oncommand\1");
+							} 
+						}
+					) 
+				});
+				
+				// 检查错误 cls 例如 cls="textbox"
+				code = replace( code,`![\w._$]`+formName+`.add\s*%\(\)`,function(ctrlsPopsTable){
+					
+						return replace(ctrlsPopsTable
+							,`![\w._$](cls\s*[\:=]\s*["'])(.+?)(["'])`
+							,function(p1,cls,p2){
+								cls = string.lower(cls)
+								if( cls=="textbox" || cls=="text") { 
+									return  p1 ++ "edit" ++ p2; 
+								}
+							} 
+						)	
+						
+				});
+				
+				//--------上下两段前后顺序不能变，先检测是否将 cls 误写为控件名 -------------
+				
+				// 是否将 left,top 写为 x,y 
+				code = replace(code
+				,"![\w._$]("+formName+`.add\()([^\)]*)![\w._$]x(\s*[\:=][^\)]*![\w._$])y(\s*[\:=][^\)]*\))`
+					,function(ctrl,p1,p2,p3){
+						 
+						if(!..string.find(p1,"!\wcls!\W")
+							|| ..string.find(p2,"!\wcls!\W")
+							|| ..string.find(p3,"!\wcls!\W")
+							) {
+							//缺少 cls
+							return ctrl ++ p1 ++ `cls = "edit", left` ++ p2 ++ "top" ++ p3; 
+						}
+						else {
+							return ctrl ++ p1 ++ `left` ++ p2 ++ "top" ++ p3;
+						}
+					} 
+				)
+				
+				//检查 winform.add 添加的所有控件
+				for ctrls in string.gmatch(code,`![\w._$]`+formName+`.add\s*%\(\)`) {
+
+					for ctrlName,param in string.gmatch(ctrls,"![\w._$](\a\w+)\s*=\s*(%{})") {   
+ 
+				   		code = string.repline(code,"\N+",function(line){
+				   			return replace( line,"(![\w\._]"+ctrlName+")(\.\a\w*)![^\w\._]",formName+".\1\2");
+				   		})
+
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+"\.text\s*)\+\=","\1++=");
+						
+						if(..string.find(param,`!\wcls\s*=\s*"<richedit>|<edit>"`)){ 
+							code = replace( code,"![\w\.]"+formName+"."+ctrlName+"\.text\s*\+\+\=\s*(\a\w*)\s*\+?\+\s*'<\\r>*\\n'",formName+"."+ctrlName+".print(\1)");
+						} 
+
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+"\.text\s*)\+\=","\1++=");
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+")\.append\s*\(","\1.appendText(");
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+")\.appendtext\s*\(","\1.appendText(");
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+")\.[Oo]n[Cc]lick!\W","\1.oncommand");
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+")\.[Oo]n[Cc]licked!\W","\1.oncommand");
+						code = replace( code,"(![\w\.]"+formName+"."+ctrlName+")\.onCommand!\W","\1.oncommand"); 
+					} 
+				}
+				
+				//form.pos = 200,300
+				code = replace( code,"(![\w\._$]"+formName+")\.<location>|<pos>\s*\=\s*\{?\s*(\d+)\s*[,;]\s*(\d+)\s*\}?","\1.setPos(\2,\3)");
+				code = replace( code,"(![\w\._$]"+formName+")\.size\s*\=\s*\{?\s*(\d+)\s*[,;]\s*(\d+)\s*\}?","\1.setPos(,,\2,\3)");
+				
+				//获取所有 var ctrlName = winform.add( 创建的控件，检查错误用法
+				for ctrlName in string.gmatch(code,"![\w\._$]<var\s>?\s*(\a[\w\.]*)\s*=\s*"+formName+"\.add\s*\(") { 
+					
+					//win.xxx.func(ctrlName,
+					code = replace( code,"![\w\._$]win\.\a+\.(\a\w*)\("+ctrlName+"\s*,",ctrlName+".\1("); 
+				
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.<location>|<pos>\s*\=\s*\{?\s*(\d+)\s*[,;]\s*(\d+)\s*\}?","\1.setPos(\2,\3)");
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.size\s*\=\s*\{?\s*(\d+)\s*[,;]\s*(\d+)\s*\}?","\1.setPos(,,\2,\3)");
+							
+					
+					code = replace( code,"(![\w\._$]"+ctrlName+"\.text\s*)\+\=","\1++=");
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.append\s*\(","\1.appendText(");
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.appendtext\s*\(","\1.appendText(");
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.[Oo]n[Cc]lick!\W","\1.oncommand");
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.[Oo]n[Cc]licked!\W","\1.oncommand");  
+				
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.onCommand\s*\=","\1.oncommand =");	
+					code = replace( code,"(![\w\._$]"+ctrlName+")\.on[cC]lick<ed>?\s*\=","\1.oncommand =");
+				}
+				
+				//任何对象的 text 属性都不可能是数值相加
+				code = replace( code,"(\a\w*\.text\s*)\+\=","\1++=");
+				 
+				//----------------------------合并多个 winform.add 开始----------------------------
+				var controlsPropsTable = {}; 
+				replace( code,`!\N\s*![\w._$]`+formName+`.add\s*(%\(\))`,function(props){
+					props = ..string.slice(props,2,-2);
+					var props2 = ..string.match(props,"^\s*\{(.+)\}\s*$");
+					if(#props2){
+						props = props2;
+					}
+					..table.push(controlsPropsTable,props);
+				});
+				
+				
+				controlsPropsTable = ..string.join(controlsPropsTable,'\r\n');
+				
+				//清除空行
+				controlsPropsTable = string.crlf(controlsPropsTable,,0);
+				
+				/*
+				合并，AI 如果取返回值参数表里就一定没有控件名，就不能合并
+				*/
+				code = replace( code,`!\N(\s*)(![\w._$]`+formName+`.add\s*%\(\));?`,function(space,props){
+					if(controlsPropsTable){
+						var cfg = controlsPropsTable;
+						controlsPropsTable = null;
+						 
+						return space + formName+'.add(\r\n' + cfg + '\r\n);';
+					}
+					
+					return "";
+				});
+				
+				code = replace( code,`(![\w._$]`+formName+`.add\s*%\(\))`,function(cfg){
+					cfg =  replace( cfg,`![\w._$][Oo]n[Cc]lick<ed>?(\s*[\:=]\s*)`,`oncommand\1`);
+					cfg =  replace( cfg,`![\w._$]<caption>|<title>(\s*[\:=]\s*)`,`text\1`);
+					 
+					cfg =  replace( cfg,`![\w._$]right(\s*=\s*)`+formName+`.clientWidth\s*-\s*(\d+)!\D`,`marginRight\1\2`);
+					cfg =  replace( cfg,`![\w._$]bottom(\s*=\s*)`+formName+`.clientHeight\s*-\s*(\d+)!\D`,`marginBottom\1\2`);
+				 
+					return cfg;
+				});
+				
+				code = replace(code,"<\r?\n>\s*<\r?\n>//(\N+)<\r?\n>\s*(<\r?\n>)","\2\2"); 
+				//----------------------------合并多个 winform.add 结束----------------------------
+			 
+				if(..string.find(code,`!\N\s*![\w._$]`+formName+`.add\s*(%\(\)).*<@/*DSG{{*/@>`)
+					|| ..string.find(code,`!\N\s*![\w._$]`+formName+`.add\s*(%\(\)).*;?\s*\S+<@/*}}*/@>`) ){
+					//清除不正确的窗体设计器标签
+					code = replace(code,"<@/*DSG{{*/@>|<@/*}}*/@>",""); 
+				}
+			
+				//添加窗体设计器识别标签
+				if(!..string.indexOf(code,`/*DSG{{*/`)){
+					code = replace( code,`<\r?\n><\r?\n>*(<//\N+\r?\n>*\N+=\s*win.form\s*%()\s*;?\s*<//\N+\r?\n>*\s*\a\w+\.add\s*%()\s*;?)`,function(dsg){
+						if(..string.find(dsg,"=\s*function\s*\(")){
+							//函数写在里面了，不折叠
+							return;
+						}
+						return '\r\n/*DSG{{*/\r\n' + dsg + '\r\n/*}}*/'; 
+					});	
+					 
+					code = replace(code,"<//\N+\r?\n>import\s+win\.ui\;","import win.ui;");  
+				} 
+				
+				//窗口必须显示
+				if(!..string.find(code,`![\w._$]`+formName+`.show\(`)){
+					var count;
+					code,count = replace( code,"//\s*显示窗体",formName+`.show();`);
+					
+					if(!count){
+						code = replace( code,"(<//\N+\n>?([ \t]*)![\w._$]win.loopMessage\()","\2"+formName+'.show();\r\n\\1');
+					}
+				}
+				
+				
+				code =..string.replace(code,`!\w(cls\s*=\s*"[^"]+)control"`,`\1"`)
+				code =..string.replace(code,"!\wmultiLine\s*=\s*true!\W","multiline=true")
+				code =..string.replace(code,"!\wreadOnly\s*=\s*true!\W","readonly=true")
+					
+				code = replace( code,"![\w_$][Oo]n[cC]lick\s*=\s*function\(\s*id\s*,\s*event!\W","oncommand = function(id,event");
+				
+			} 
+		}
+		
+		//排除 i-- 修正 -- comment
+		code,count = replace(code,"![\-\w]\-\-\s+",'// ')  
+		
+		code = replace( code,`(%"")(\.\a\w+\()`,"string\2\1,");
+		code = replace(code,"![_.\w$]console\.log\(string\.format(%())\)","console.printf\1");
+		
+		//i % 10
+		code = replace(code,"\s+mod\s+(\d+)"," % \1");
+		 
+		if(..string.find(code,"!\wconsole.")){
+			if(!..string.find(code,"import\s+console")){
+				code = 'import console;\r\n' + code;
+			} 
+			
+			if(!..string.find(code,"!\wconsole.pause")){
+				//忽略 ..console
+				if(..string.find(code,"![.\w_$]console.")){
+					if(!..string.find(code,"!\wwin\.loopMessage!\W")
+						&& !..string.find(code,"/\*+intellisense\(")){
+							
+						code = code + '\r\nconsole.pause();'
+					} 
+				}
+			}
+		}  
+		
+		code = ..string.repline(code,".+",function(line){ 
+			if( string.find(line,"arr") 
+				|| string.find(line,"@@array") 
+				|| string.find(line,"tab") 
+				|| string.find(line,"数组") 
+				|| string.find(line,"字典") 
+				|| string.find(line,"表") ){ 
+				line = replace(line,"!\wconsole\.log","console.dump"); 
+				return line;
+			}
+		})
+		
+		if(!string.find(code,"![\w._$]py3![^\w._$]")
+			&& string.find(code,"![\w._$]py![^\w._$]")){
+			code = replace(code,"![\w._$]py![^\w_$]","py3");
+		}
+		code = replace(code,`![\w._$]py3\.call\(\"([\w_\.]+)\"\,`,"py3.main.\1("); 
+		
+		
+		code,count = replace(code,`![\w._$]import\s+json;?`,"import web.json;"); 
+		if(count){
+			code,count = replace(code,`![\w._$]json.\a\w+\(`,"web.\1"); 
+		}
+		
+		if(..string.find(code,"![\w._$]json\.parse\(")
+			&&!..string.find(code,`![\w._$]import\s+json;?`)){
+			code = 'import web.json;json=web.json;\r\n'+code;
+		}
+		
+		if(..string.find(code,"![\w._$]web\.json\.parse\(")
+			&&!..string.find(code,`![\w._$]import\s+web\.json;?`)){
+			code = 'import web.json;\r\n'+code;
+		}
+		
+		code = replace(code,"!\N\s*:+\s*\n","");
+	 
+		code = string.crlf(code,,1);
+		code = string.replace(code,"(!\Nimport\s+\N+;?<\r?\n>)\s*<\r?\n>*(import\s+)","\1\2");
+
+		//在最后替换，考虑  new File new array 这些要专门处理
+		code = replace(code,"![\w_.$]throw\s+new\s+Error\(","error(");
+		
+		//在最后替换，考虑  new File new array 这些要专门处理
+		code = replace(code,"(=\s*)new\s+(\a[\.\w]*\()","\1\2");
+		
+		code = replace(code,`@$____$$E_N_D$$___$$$$_`,`end `);
+		return string.trim(code);
+	}}
+}
+
+/*****intellisense()
+ide.aifix(__) = 用于修复 AI 生成代码的语法错误。\n在代码编辑器右键菜单点击『粘贴并更正』时自动调用 ide.aifix 。\n修复结果仅供参考。
+end intellisense*****/

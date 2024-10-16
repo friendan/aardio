@@ -1,0 +1,65 @@
+﻿import crypt.rsa;
+import zlib.zip;
+import fsys.crx.CrxFileHeader; 
+import fsys.crx.SignedData;
+import fsys;
+
+namespace fsys.crx;
+
+class pack{
+	ctor(folder,pemPath){
+		var zipPath = ..io.tmpname(,".zip");
+		var zip = ..zlib.zip(zipPath); 
+		zip.compress( folder )
+		zip.close(); 
+	
+		var rsa = ..crypt.rsa();
+		if(pemPath){
+			if(! rsa.importPemKeyFile(pemPath) ){
+				error("错误的私钥文件",2);
+			}
+		}
+		else {
+			rsa.genKey();
+			var pem = rsa.exportPrivateKeyPkcs8ToPem(); 
+			..string.save(folder + ".pem",pem )
+		}
+	 	
+		var pubKey = rsa.exportPublicKeyX509();
+		var pubKeySha256 = rsa.createHashBySha256(pubKey).getValue(); 
+		
+		var signMsg  = ..fsys.crx.SignedData();
+		signMsg.crxId = ..string.left(pubKeySha256,16);  
+		var signedHeaderData = signMsg.serializeToString()
+	 	
+		var sha256 = rsa.createHashBySha256();
+		sha256.hashData('CRX3 SignedData\x00')
+		sha256.hashBuffer({INT size = #signedHeaderData})
+		sha256.hashData(signedHeaderData);
+		sha256.hashFile(zipPath);
+		
+		var keyProof = ..fsys.crx.AsymmetricKeyProof();
+		keyProof.publicKey = pubKey;
+		keyProof.signature = ..string.reverse( rsa.sign()) ;
+		
+		var fileHeader = ..fsys.crx.CrxFileHeader();
+		fileHeader.signedHeaderData = signedHeaderData;
+		fileHeader.sha256WithRsa = { keyProof }; 
+		fileHeader.version = 3; 
+		var header = fileHeader.serializeToString()
+		
+		var file = ..io.file(folder + ".crx","w+b");
+		file.write("Cr24");
+		file.write({INT version=3});
+		file.write({INT size=#header});//header 总长度
+		file.write( header );
+		file.write( ..string.load(zipPath)  );	
+		file.close();
+		
+		..io.remove(zipPath);
+	}; 
+}
+
+/*****intellisense(fsys.crx) 
+pack(.(folder,pemPath) = 打包扩展并生成 CRX3 文件。\n@folder 指定包含 manifest.json 文件的扩展目录。\n可选用 @pemPath 指定私钥 pem 文件路径，\n不指定 @pemPath  则在扩展父目录自动生成私钥 pem 文件。
+end intellisense*****/

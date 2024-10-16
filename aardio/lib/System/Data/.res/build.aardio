@@ -1,0 +1,81 @@
+import dotNet.v2; 
+import console.int; 
+console.open();
+
+var compiler = dotNet.createCompiler("C#");
+
+compiler.Reference("System.dll");
+compiler.Reference("System.Data.dll");
+compiler.Reference("System.Xml.dll");
+compiler.Parameters.CompilerOptions = "/optimize" ;
+
+compiler.Source = /******  
+using System;
+using System.Collections;
+using System.Data; 
+using System.Runtime.InteropServices;
+ 
+namespace aardio.Interop  
+{  
+	[ClassInterface(ClassInterfaceType.AutoDispatch), ComVisible(true)]
+    public class DataTableUtil
+    {    
+        //在 aardio 中用 dotNet.object( 返回值 ).Value 解包获取安全数组
+        public static Array ExtractToArray(DataTable dataTable)
+    	{
+        	if (dataTable == null || dataTable.Rows.Count == 0 || dataTable.Columns.Count == 0)
+            	return null;
+	
+        	int rows = dataTable.Rows.Count;
+        	int cols = dataTable.Columns.Count;
+        	Array result = Array.CreateInstance(typeof(object), rows);
+	
+        	for (int i = 0; i < rows; i++)
+        	{
+            	Array rowArray = Array.CreateInstance(typeof(object), cols);
+            	object[] rowData = dataTable.Rows[i].ItemArray;
+            	for (int j = 0; j < cols; j++)
+            	{
+                	// Convert each value to COM-compatible variant
+                	rowArray.SetValue(rowData[j], j);
+            	}
+            	result.SetValue(rowArray, i);
+        	}
+    	
+        	return result;
+    	} 
+        
+		public static void FillFromArray(DataTable dataTable, object[,] list,bool clear)
+        {
+            if (dataTable == null || list == null || list.Length == 0)
+                return;
+                
+            if(clear) dataTable.Clear();
+
+            dataTable.BeginLoadData();
+
+            int rows = list.GetLength(0);
+            int cols = list.GetLength(1);
+
+			try{
+            	for (int i = 0; i < rows; i++)
+            	{
+                	DataRow dataRow = dataTable.NewRow();
+                	for (int j = 0; j < cols; j++)
+                	{
+                    	dataRow[j] = list[i, j];
+                	}
+                	dataTable.Rows.Add(dataRow);
+            	}
+            }
+            finally
+        	{
+            	dataTable.EndLoadData();
+        	}
+        }
+    }   
+} 
+******/ 
+
+var assembly = compiler.CompileOrFail( "/DataTableUtil.dll" );
+ 

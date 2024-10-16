@@ -1,0 +1,48 @@
+﻿//rtf 文档
+namespace win.clip;
+
+namespace rtf{
+
+	format = ::User32.RegisterClipboardFormat("RTF"); 
+ 
+	read = function(){
+		var buf;
+		if(!::User32.OpenClipboard(0))
+			return;	
+			
+		var hClip =  ::User32.GetClipboardDataP(format);
+		if(hClip){
+			var p = ::GlobalLock(hClip)
+			if(p){ 
+				buf = ..raw.buffer(::GlobalSize(hClip),p);
+				::GlobalUnlock(hClip)
+			}
+		} 
+		::User32.CloseClipboard();
+		return buf;
+	};
+	write = function(buf,rep){ 
+		if(buf){
+			if(!::User32.OpenClipboard(0))
+				return;	
+					
+			if(rep===null || rep) ::User32.EmptyClipboard();
+				
+			var clipbuffer = ::GlobalAlloc(0x2000/*_GMEM_DDESHARE*/, #buf);
+    		var p =  ::GlobalLock(clipbuffer); 
+    		::CopyMemory(p,buf,#buf); 
+			::GlobalUnlock(clipbuffer); 
+			
+			var hdl =  ::User32.SetClipboardDataP(format,clipbuffer);
+			::User32.CloseClipboard();
+			return hdl;
+		} 
+	};  
+}
+
+/**intellisense()
+win.clip.rtf = 剪贴板读写 RTF 
+win.clip.rtf.write(.(剪贴板数据,是否清空剪贴板) = 写入 RTF 数据，参数@1为 buffer 或 string  对象，\n可选使用参数@2指定在复制前是否清空剪贴板,默认清空,\n成功返回剪贴板数据句柄
+win.clip.rtf.read() = 读取并解析剪贴板 RTF 数据\n成功返回 buffer 对象
+win.clip.rtf.format = 注册的 CF_PNG 图像格式，数值。
+end intellisense**/

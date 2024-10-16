@@ -1,0 +1,28 @@
+﻿if(!_WIN10_LATER){
+	error("PHP 7.4 不支持版本低于 Win10 的操作系统！")
+}
+
+import sys.vc14;
+import process.php; 
+sys.vc14.isInstalled("2019");
+
+//请在导入库前修改 _PHP_INSTALLER_URL 自定义 PHP 下载网址
+var url = _PHP_INSTALLER_URL ||  "https://download.aardio.com/cdn/php/?v=8.3" ;
+
+//请在导入库前修改 _PHP_INSTALLER_FILE 自定义下载文件名，不带 .7z 后缀
+var filename = _PHP_INSTALLER_FILE || "php-8.3-Win32-x86";//NTS 版速度更快，TS 版在这里没有用
+
+process.php.cgiPath = ..io.appData("aardio\std\php\"+filename+"\php-cgi.exe");
+process.php["8"] = {["3"]={}}
+
+if(!..io.exist(process.php.cgiPath)){
+	 
+	import sevenZip.decoder2.httpFile;
+	sevenZip.decoder2.httpFile.download( url ,
+		"正在下载本程序必须组件：PHP 8.3",..io.appData("/aardio/std/php") )
+}
+
+/*****intellisense()
+process.php.8->3 = PHP 8.3 版本，支持 Win10 以及之后系统。\n仅用于导入语句，使用时请去掉版本号 8.3。\n如果未安装 PHP，则自动下载 PHP 8.3 。 
+end intellisense*****/
+

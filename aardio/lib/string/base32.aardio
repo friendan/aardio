@@ -1,0 +1,89 @@
+﻿//base32 编解码
+namespace string.base32;
+		 
+var c32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+var m32 = {['A'#]=0,['B'#]=1,['C'#]=2,['D'#]=3,['E'#]=4,['F'#]=5,['G'#]=6,['H'#]=7,['I'#]=8,['J'#]=9,['K'#]=10,['L'#]=11,['M'#]=12,['N'#]=13,['O'#]=14,['P'#]=15,['Q'#]=16,['R'#]=17,['S'#]=18,['T'#]=19,['U'#]=20,['V'#]=21,['W'#]=22,['X'#]=23,['Y'#]=24,['Z'#]=25,['2'#]=26,['3'#]=27,['4'#]=28,['5'#]=29,['6'#]=30,['7'#]=31}
+
+function encode(data, pad) {
+    if #data == 0  return "";
+ 
+    var result = {} 
+    var byte = data[1]
+    var leftBits = 8
+    var next = 1
+
+    for i = 2; #data {
+        while leftBits > 0 or i <= #data {
+            if leftBits < 5 {
+                if i <= #data {
+                    byte = (byte << 8) | data[i]
+                    i = i + 1
+                    leftBits = leftBits + 8
+                }
+                else{
+                    var pad = 5 - leftBits
+                    byte = byte << pad
+                    leftBits = leftBits + pad
+                }
+            }
+
+            var index = 31 & (byte >> (leftBits - 5))
+            leftBits = leftBits - 5
+            result[next] = c32[[index + 1]]
+            next = next + 1
+        }
+    }
+
+    if pad {
+        var padding = 8 - (#result % 8)
+        if padding > 0 and padding < 8 {
+            for _ = 1; padding {
+                ..table.push(result, "=")
+            }
+        }
+    }
+
+    return ..string.join(result)
+}
+
+var pack = ..string.pack;
+function decode(encoded){
+    if ! encoded error("解码数据不能为 null",2);
+
+	encoded = ..string.upper(..string.replace(encoded,"[\s\=]","")) 
+    if #encoded == 0  return "";
+ 
+    var result = {}
+    var byte = 0
+    var leftBits = 0
+    var next = 1
+
+    for i = 1; #encoded { 
+        var char = m32[encoded[i]]
+        
+        if char === null {
+            return null,"Illegal character: " + encoded[[i]];
+        }
+
+        byte = (byte << 5) | char;
+        leftBits = leftBits + 5;
+
+        if leftBits >= 8 {
+            result[next] = pack((byte >> (leftBits - 8)) & 0xFF)
+            next = next + 1
+            leftBits = leftBits - 8
+        }
+    }
+
+    return ..string.join(result)
+}
+
+/*****intellisense(string.base32)
+encode( = Base32 编码。
+encode(.(data,pad) = Base32 编码 @data 指定的字符串或 buffer。\n可选用 @pad 指定是否允许尾部填充等号。
+decode(.(data) = Base32 编码 @data 指定的数据。\n成功返回字符串，失败返回 null,错误信息。
+end intellisense*****/
+
+/*****intellisense()
+string.base32 = Base32 编解码。\n相关库与函数： crypt.encodeBin,crypt.decodeBin,crypt.bin
+end intellisense*****/

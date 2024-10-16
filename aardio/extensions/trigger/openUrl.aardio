@@ -1,0 +1,20 @@
+import ide;
+
+var url = _ARGV[1];
+if(string.startWith(url,"doc://")){ 
+	ide.openDocument(url);
+	return;
+}
+
+if(string.startWith(url,"file://~/",true) 
+	&& (string.endWith(url,".aardio",true) || string.endWith(url,".aproj",true) ) 
+	){
+	url = string.right(url,-8);
+	ide.openDocument(url);
+	return;
+}
+
+raw.execute( url
+	,"","open",5/*_SW_SHOW*/,..io.fullpath("~/")
+	,ide.getMainHwnd()
+)

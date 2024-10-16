@@ -1,0 +1,353 @@
+//编辑器外观配置工具
+import win.ui;
+import win.ui.ctrl.pick;
+/*DSG{{*/
+var winform = win.form(text="aardio 编辑器调色工具";right=687;bottom=484;bgcolor=16777215;border="none";exmode="none";max=false;min=false;mode="popup")
+winform.add(
+bk={cls="bk";left=-231;top=-1;right=690;bottom=27;align="left";bgcolor=14079702;color=16777215;dl=1;dr=1;dt=1;forecolor=8026746;linearGradient=0;z=7};
+btnExport={cls="button";text="保存方案";left=529;top=65;right=617;bottom=91;db=1;dr=1;z=22};
+btnFontLink={cls="button";text="链接字体";left=427;top=32;right=515;bottom=58;db=1;dr=1;z=21};
+btnReset={cls="button";text="重置方案";left=427;top=65;right=515;bottom=91;db=1;dr=1;z=20};
+cmbFontName={cls="combobox";left=188;top=34;right=408;bottom=58;db=1;dl=1;dr=1;edge=1;items={};mode="dropdown";vscroll=1;z=16};
+cmbThemes={cls="combobox";left=188;top=65;right=408;bottom=89;db=1;dl=1;dr=1;edge=1;items={};mode="dropdownlist";vscroll=1;z=19};
+colorPick={cls="pick";text="custom";left=9;top=99;right=515;bottom=484;db=1;dl=1;dr=1;dt=1;z=1};
+lbControlInfo={cls="plus";text="aardio 编辑器调色工具（ #RRGGBB 颜色）";left=0;top=1;right=333;bottom=26;bgcolor=16777215;border={color=-5987164};color=9727;dl=1;dt=1;z=8};
+radioBgColor={cls="radiobutton";text="背景";left=546;top=127;right=602;bottom=153;bgcolor=16777215;checked=1;dr=1;dt=1;z=2};
+radioComment={cls="radiobutton";text="注释";left=546;top=203;right=602;bottom=229;bgcolor=16777215;dr=1;dt=1;z=4};
+radioError={cls="radiobutton";text="全角字符错误提示";left=546;top=417;right=675;bottom=443;bgcolor=16777215;db=1;dr=1;z=14};
+radioKeyWord={cls="radiobutton";text="关键字";left=546;top=152;right=606;bottom=178;bgcolor=16777215;dr=1;dt=1;z=3};
+radioLineNumber={cls="radiobutton";text="行号";left=546;top=304;right=606;bottom=330;bgcolor=16777215;dr=1;dt=1;z=10};
+radioLineNumberBgGround={cls="radiobutton";text="行号背景";left=546;top=330;right=627;bottom=356;bgcolor=16777215;db=1;dr=1;z=11};
+radioMatchingBracket={cls="radiobutton";text="括号配对";left=546;top=359;right=624;bottom=385;bgcolor=16777215;db=1;dr=1;z=13};
+radioMatchingBracketBackground={cls="radiobutton";text="括号配对背景";left=546;top=387;right=654;bottom=413;bgcolor=16777215;db=1;dr=1;z=12};
+radioOutline={cls="radiobutton";text="折叠线";left=546;top=253;right=618;bottom=279;bgcolor=16777215;dr=1;dt=1;z=5};
+radioOutlineBackground={cls="radiobutton";text="折叠线背景";left=546;top=279;right=644;bottom=305;bgcolor=16777215;dr=1;dt=1;z=15};
+radioSidebar={cls="radiobutton";text="边栏";left=546;top=228;right=602;bottom=254;bgcolor=16777215;dr=1;dt=1;z=9};
+radioString={cls="radiobutton";text="字符串";left=546;top=177;right=618;bottom=203;bgcolor=16777215;dr=1;dt=1;z=6};
+static={cls="static";text="代码编辑器配色方案：";left=12;top=64;right=180;bottom=98;align="right";bgcolor=32768;db=1;dl=1;transparent=1;z=17};
+static2={cls="static";text="清空列出全部字体：";left=39;top=34;right=180;bottom=52;align="right";db=1;dl=1;transparent=1;z=18}
+)
+/*}}*/
+
+//用后台线程与 IDE 交互，实现颜色滑块流畅拖动
+thread.invoke( 
+	function(){
+		import ide;
+		import thread.command;
+		import gdi;
+		import win;
+		
+		var ctrlName,ctrlParam;
+		var lastUpdateTick = 0;
+		var cmd = thread.command();
+		cmd.onColorChange = function( ){ 
+			 ide.redrawCodeEditor(); 		
+		}
+		cmd.onQuit = function(){
+			win.quitMessage()
+		}  
+			
+		win.loopMessage()
+	}
+)
+
+
+if(!io.exist("~\config\USR.THEME")){
+	fsys.copy("~\config\SYS.THEME","~\config\USR.THEME");
+}
+var loadXml = function(){
+	var xml = string.load("~\config\USR.THEME")
+	
+	//注意主题配置不再支持下面的写法
+ 	xml = string.replace(xml,`\>"(\a+)"\</`,{
+    	black: ">000000</",
+    	darkred: ">800000</",
+    	darkgreen: ">008000</",
+    	brown: ">808000</",
+    	darkblue: ">000080</",
+    	darkmagenta: ">800080</",
+    	darkcyan: ">008080</",
+    	gray: ">C0C0C0</",
+    	darkgray: ">808080</",
+    	red: ">FF0000</",
+    	green: ">00FF00</",
+    	yellow: ">FFFF00</",
+    	blue: ">0000FF</",
+    	magenta: ">FF00FF</",
+    	cyan: ">00FFFF</",
+    	white: ">FFFFFF"
+	});	
+	return xml;
+}
+
+import thread.command;
+import win.debounce;
+winform.colorPick.onColorChange = function(argb){   
+	var clrNew = string.right(color.stringify( color.argbReverse(argb),false),-2)
+
+	var xml = loadXml();
+	var clr;
+	if(winform.radioComment.checked){
+		clr = string.match(xml,"\<Start\>//\</Start\>\s*\<Color\>(\x+)\<\/Color\>")
+		xml = string.replace(xml,"\>"+clr+"\<\/",">"+clrNew+"</");
+	}
+	elseif(winform.radioOutline.checked){
+		clr = string.match(xml,"\<OutlineColor\>(\x+)\<\/OutlineColor\>")
+		xml = string.replace(xml,"OutlineColor\>"+clr+"\<\/OutlineColor","OutlineColor>"+clrNew+"</OutlineColor");
+	
+	}
+	elseif(winform.radioKeyWord.checked){
+		xml = string.replace(xml,"(\<Keywords\>\s*\<Color\>)(\x+)\<\/Color\>","\1"+clrNew+"</Color>");
+	}
+	elseif(winform.radioBgColor.checked){
+	 	clr = string.match(xml,"\<Background\>(\x+)\<\/Background\>")
+	 	xml = string.replace(xml,"Background\>"+clr+"\<\/Background","Background>"+clrNew+"</Background");
+	
+	}
+	elseif(winform.radioString.checked){
+	 	clr = string.match(xml,`\<End\>"\</End\>\s*\<Color\>(\x+)\<\/Color\>`)
+	 	xml = string.replace(xml,"\>"+clr+"\<\/",">"+clrNew+"</");
+	
+	}
+	elseif(winform.radioSidebar.checked){
+		clr = string.match(xml,"\<SidebarBackground\>(\x+)\<\/SidebarBackground\>")
+		xml = string.replace(xml,"SidebarBackground\>"+clr+"\<\/SidebarBackground","SidebarBackground>"+clrNew+"</SidebarBackground");
+	
+	}
+	elseif(winform.radioLineNumberBgGround.checked){
+		clr = string.match(xml,"\<LineNumberBackground\>(\x+)\<\/LineNumberBackground\>")
+		xml = string.replace(xml,"LineNumberBackground\>"+clr+"\<\/LineNumberBackground","LineNumberBackground>"+clrNew+"</LineNumberBackground");
+	}
+	elseif(winform.radioLineNumber.checked){
+		clr = string.match(xml,"\<LineNumberColor\>(\x+)\<\/LineNumberColor\>")
+		xml = string.replace(xml,"LineNumberColor\>"+clr+"\<\/LineNumberColor","LineNumberColor>"+clrNew+"</LineNumberColor");
+	}
+	elseif(winform.radioMatchingBracket.checked){
+		clr = string.match(xml,"\<MatchingBracket\>(\x+)\<\/MatchingBracket\>")
+		xml = string.replace(xml,"MatchingBracket\>"+clr+"\<\/MatchingBracket","MatchingBracket>"+clrNew+"</MatchingBracket");
+	}
+	elseif(winform.radioMatchingBracketBackground.checked){
+		clr = string.match(xml,"\<MatchingBracketBackground\>(\x+)\<\/MatchingBracketBackground\>")
+		xml = string.replace(xml,"MatchingBracketBackground\>"+clr+"\<\/MatchingBracketBackground","MatchingBracketBackground>"+clrNew+"</MatchingBracketBackground");
+	}
+	elseif(winform.radioOutlineBackground.checked ){
+		clr = string.match(xml,"\<OutlineBackground\>(\x+)\<\/OutlineBackground\>")
+		xml = string.replace(xml,"OutlineBackground\>"+clr+"\<\/OutlineBackground","OutlineBackground>"+clrNew+"</OutlineBackground");
+	}
+	elseif(winform.radioError.checked){ 
+		clr = string.match(xml,"\<Error\>(\x+)\<\/Error\>")
+		xml = string.replace(xml,"Error\>"+clr+"\<\/Error","Error>"+clrNew+"</Error");
+	} 
+	string.save("~\config\USR.THEME",xml) 
+	thread.command.post("onColorChange",winform.ideCtrlName,argb,paramName,time.tick());
+} 
+
+winform.onDestroy = function(){
+	thread.command.post("onQuit");
+}
+
+winform.onActivateApp = function(activated,threadId){
+	if(activated){
+		
+	}
+}
+
+import ide;
+var x,y,cx,cy = winform.colorPick.btnColorPick.getPos(true);
+::User32.SetCursorPos(x+cx/2,y+cy/2);
+
+import color;
+var setColor = function(clr){
+	var onColorChange = winform.colorPick.onColorChange; 
+	winform.colorPick.onColorChange = null;
+	winform.colorPick.setColor(color.parse(clr),true); 
+	winform.colorPick.onColorChange = onColorChange;
+}
+
+winform.radioComment.oncommand = function(id,event){
+	 
+	var xml = loadXml()
+	var clr = string.match(xml,"\<Start\>//\</Start\>\s*\<Color\>(\x+)\<\/Color\>")
+	setColor(clr);
+}
+
+winform.radioOutline.oncommand = function(id,event){
+	 
+	var xml = loadXml()
+	var clr = string.match(xml,"\<OutlineColor\>(\x+)\<\/OutlineColor\>")
+	setColor(clr); 	
+}
+
+winform.radioKeyWord.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<Keywords\>\s*\<Color\>(\x+)\<\/Color\>")
+	setColor(clr);  	
+}
+
+winform.radioBgColor.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<Background\>(\x+)\<\/Background\>")
+	setColor(clr); 	
+}
+
+winform.radioBgColor.oncommand();
+
+winform.radioString.oncommand = function(id,event){
+	 
+	var xml = loadXml()
+	var clr = string.match(xml,`\<End\>"\</End\>\s*\<Color\>(\x+)\<\/Color\>`)
+	setColor(clr);  	
+}
+
+winform.radioSidebar.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<SidebarBackground\>(\x+)\<\/SidebarBackground\>")
+	setColor(clr); 	
+}
+
+winform.radioLineNumber.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<LineNumberColor\>(\x+)\<\/LineNumberColor\>")
+	setColor(clr); 
+}
+
+winform.radioLineNumberBgGround.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<LineNumberBackground\>(\x+)\<\/LineNumberBackground\>")
+	setColor(clr); 	
+}
+
+winform.radioOutlineBackground.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<OutlineBackground\>(\x+)\<\/OutlineBackground\>")	
+	setColor(clr); 	
+}
+
+winform.radioMatchingBracket.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<MatchingBracket\>(\x+)\<\/MatchingBracket\>")
+	setColor(clr); 
+}
+
+winform.radioMatchingBracketBackground.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<MatchingBracketBackground\>(\x+)\<\/MatchingBracketBackground\>")	
+	setColor(clr); 
+}
+
+winform.radioError.oncommand = function(id,event){
+	var xml = loadXml()
+	var clr = string.match(xml,"\<Error\>(\x+)\<\/Error\>")	
+	setColor(clr); 
+}
+
+import win.font;
+var fontNames = {}
+var fullFontNames = {}
+win.font.enum( 
+	function(logfont,fullname,ftype,style,script,lpntme){
+		if( ftype == 0x4/*_TRUETYPE_FONTTYPE*/ && fullname[1] != '@'#/*翻转90度字体*/ ){
+			if( logfont.family & 1/*_FIXED_PITCH*/ || logfont.family & ( 3<<4 )/*_FF_MODERN*/){
+				..table.push(fontNames,logfont.name); 
+				if(logfont.name!=fullname){
+					fullFontNames[logfont.name] = fullname;
+				}
+			}
+		}
+	},{ name = "" }
+)
+fontNames = ..table.unique(fontNames)
+
+import string.xml;
+import fsys;
+var themeFiles = {}
+fsys.enum( "~\config\themes", "*.xml",
+	function(dir,filename,fullpath,findData){ 
+		if(filename){ 
+           	var xmlstr = string.load(fullpath);
+           	var xmldoc = string.xml(xmlstr) 
+           	var title = xmldoc.Theme[1].Title[1].innerText();
+           	table.push(themeFiles,{
+           		title = title;
+           		fullpath = fullpath;
+           	}) 
+		} 
+	}  
+);
+
+table.sort(themeFiles,λ(b)owner.title<b.title);
+for(k,v in themeFiles){
+	winform.cmbThemes.add(v.title);
+}
+
+var xmlstr = loadXml() || string.load("~\config\SYS.THEME");
+var xmldoc = string.xml(xmlstr)
+winform.cmbThemes.selText =  xmldoc.Theme[1].Title[1].innerText();         	
+
+winform.cmbFontName.onEditChange= function(){  
+    var text = winform.cmbFontName.text;
+    var items = ..table.filter(fontNames,lambda(v)string.find(v,"@@"+text));
+    winform.cmbFontName.autoComplete(items)   
+}
+
+winform.cmbFontName.onListChange = function(){ 	
+	ide.setConfig("editor_font_name",winform.cmbFontName.selText);
+ 	ide.redrawCodeEditor(); 
+}
+winform.cmbFontName.text = ide.getConfig("editor_font_name");
+
+winform.cmbThemes.onListChange = function(){ 	
+    var xmlstr = string.load( themeFiles[winform.cmbThemes.selIndex].fullpath )
+    if(#xmlstr)string.save("~\config\USR.THEME",xmlstr) 
+ 	ide.redrawCodeEditor(); 	
+ 	
+ 	winform.radioBgColor.checked = true;
+ 	winform.radioBgColor.oncommand()
+}
+
+import ide;
+winform.cmbFontName.text = ide.getConfig("editor_font_name")
+win.setOwner(winform.hwnd,ide.getMainHwnd());  
+winform.show() 
+winform.cmbFontName.editBox.setFocus(0,-1);
+
+winform.btnReset.oncommand = function(id,event){
+    var xmlstr = string.load( themeFiles[winform.cmbThemes.selIndex].fullpath )
+    if(#xmlstr)string.save("~\config\USR.THEME",xmlstr)
+ 	ide.redrawCodeEditor(); 
+}
+
+winform.btnFontLink.oncommand = function(id,event){
+    var font = winform.cmbFontName.text;
+    if(!#font) return winform.msgboxErr("请先指定字体名");
+    
+	import ide; 
+	ide.createProcess("/.config/fontLink.aardio",{
+		_IDE_FONTLINK_NAME = winform.cmbFontName.text;
+		_IDE_FONTLINK_FULLNAME = fullFontNames[winform.cmbFontName.text];
+		_IDE_FONTLINK_PARENT_HWND = winform.hwnd;
+	},"runas");
+	 
+}
+
+winform.onClose = function(hwnd,message,wParam,lParam){
+   win.setOwner(winform.hwnd,0);   
+}
+
+winform.btnExport.oncommand = function(id,event){
+	import fsys.dlg;
+	var path = fsys.dlg.save("（主题配置*.THEME）|*.THEME","保存编辑器外观","~/config/themes",winform);
+	if(path){
+		fsys.copy("~\config\USR.THEME",path);
+		raw.execute("notepad.exe",path);
+	}
+} 
+
+win.lowerRight(winform.hwnd,1,1);
+winform.setIcon(win.ui.ctrl.pick.hIconColorPick);
+
+import win.ui.simpleWindow2;
+win.ui.simpleWindow2(winform);
+
+winform.show(); 
+win.loopMessage();

@@ -1,0 +1,2 @@
+﻿//扫码传文件
+loadcodex("~/example/Web/HTTPServer/asynHttpServer.file.aardio")

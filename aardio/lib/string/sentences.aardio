@@ -1,0 +1,123 @@
+﻿//sentences 分句
+
+namespace string;
+
+var split = function(text){
+	
+	text = replace(text,"\[(\a+)[^\]]*\](.+?)\[/\1\]","\2");
+	text = replace(text,"\<(\a+)[^\>]*\>(.+?)\</\1\>","\2");
+	
+	var push = ..table.push;
+	var input = {}
+	
+	//分离引号包含的引用段，需考虑中英文不同规则，常见的双引号笔误，重复包含引号，ASCII 多重引号
+	for s,sep in lines(text ,`^\s*(<""+\s*>|<''+\s*>|<````+\s*>|<//\N+>|<\n *\t*[#\*\-\+]\N+>|<\n *\t*\d+\.\N+>|<“[^”]+”>|<“[^"”]+">|<"[^"”]+”>|<＂[^＂]+＂>|<"+[^"]+"+>|<‘[^’]+’>|<\s'[^']+'>|<＇[^＇]+＇>|<『[^』]+』>|<「[^」]+」>)\s*$`) { 
+	
+    	if(!sep){  
+    		for m,sep in lines(s ,`\s*(\n|<”>|<’>|<……>|<\.\.\.\.\.\.>|<:\.>|<\a[^.]*\.\s>|[。！？!?；;][。！？；!?;]*)\s*$`){
+    			push( input,m ) 
+    		}
+    	}
+    	else { 
+    		push( input,s )  
+    	}
+	}
+
+	//进一步细分，以了推测需要向前向后合并的引用段使使分句更为自然。
+	var out = {}
+	for(i=1;#input){
+		var v = out[#out]
+		var v2 = input[i]; 
+		 
+		if(!#v2) continue;
+		
+		if(v){ 
+			if(trim(v2)==""){
+				continue;
+			}
+			
+			if(v[#v]=='\n'#){
+				if(#v<=2) {
+					push(out,v2);
+					continue;
+				}
+				
+				if(find(v,"，,")){
+					out[#out] = v++v2;
+					continue;
+				}
+			}
+		 	
+			//多重 ASCII 引号
+			if(match(v2,`^(['"``])<\1+>\s*$`)){ 
+				out[#out] = v++v2;
+				continue;	
+			}
+			
+			var q2 = find(v2,`^\s*[“‘"'『「]`);
+			var q1 = find(v,`[”’"'』q」]$`) ; 
+			
+			//半开引号
+			if(!q2 && match(v2,"[”’]$")){
+				out[#out] = v++v2;
+				continue;
+			}
+			
+			if(!(q2 && q1)){ 
+	 			if( q2 &&  (
+	 				find(v,"[：\:，,]$") 
+	 				|| !match(v,`[。？?”’"』」]|<……>|<:\.>|<\.\.\.\.\.\.>$`)
+	 			 	) ){
+	 			 		
+	 				if( match(v,"^\i")) {
+						out[#out] = v+" "+v2; 
+					}
+					else {
+						out[#out] = v++v2; 
+					}
+					continue;
+				}
+				elseif(q1 && !match(v2,`[：\:“‘"'『「]`)){ 
+					var p1 = match(input[i-1],`[。！？!?；;]|<:\.>|<……>|<\.\.\.\.\.\.>`) ;
+					var p2 = match(v2,`[。，,！？!?；\:“‘"'『「]|<……>|<\.\.\.\.\.\.>`) ;
+					var l2 = len(v2);
+					var l1 = len(input[i-1]);
+					
+					if( (
+						(p2=="，" || p2==",") )
+						|| (l2>0 && l2 < 15) ||(!p1 && l1 <13) ){
+							
+						if( match(v2,"^\w")) {
+							out[#out] = v+" "+v2; 
+						}
+						else {
+							out[#out] = v++v2; 
+						}
+						
+						continue;
+					} 
+				} 
+			}
+		}
+		
+		push(out,v2) 
+	}
+	 
+	out@ = {
+		_call = function(i){
+			return ..table.next(owner,i);
+		} 
+	}
+	return out; 
+}
+
+class sentences{
+	ctor( text ){
+		return split(text);
+	}; 
+}
+
+/*****intellisense()
+string.sentences(__/*输入文本*/) = 将输入文本参拆分为句子。\n相关库: string.tfidf, mmseg 。
+string.sentences = 将文本拆分为一个个语意相对独立的语句。\n支持中文分句，英文分句。
+end intellisense*****/

@@ -1,0 +1,443 @@
+﻿//library 库文档
+import fsys;
+namespace ide.doc;
+
+class library{
+    ctor( path ){
+    	this.const = {}
+        this.define = {};
+        this.sections = {};
+        
+    	if(  (path == "builtin") || (path == "global") || (path == "kernel")  ){
+    		path = "global"
+    		
+    		this.sections[path] = createList( this
+    			,..string.load("~\config\intellisense\kernel.txt"),""); 
+    		
+    		var preloadDoc = ..ide.doc.library( ..io.libpath("builtin") );
+    		var preloadMathDoc = ..ide.doc.library( ..io.libpath("builtin.math") );
+    		var preloadRawDoc = ..ide.doc.library( ..io.libpath("builtin.raw") );
+    		var preloadStringDoc = ..ide.doc.library( ..io.libpath("builtin.string") );
+    		var preloadTableDoc = ..ide.doc.library( ..io.libpath("builtin.table") );
+    		var preloadThreadDoc = ..ide.doc.library( ..io.libpath("builtin.thread") ); 
+    		var preloadComDoc = ..ide.doc.library( ..io.libpath("builtin.com") ); 
+    		var preloadIoDoc = ..ide.doc.library( ..io.libpath("builtin.io") ); 
+    		var preloadStructDoc = ..ide.doc.library( ..io.libpath("builtin.struct") ); 
+    		
+    		..table.mix( this.const,preloadDoc.const:{}
+    			,preloadMathDoc.const:{}
+    			,preloadRawDoc.const:{}
+    			,preloadStringDoc.const:{}
+    			,preloadTableDoc.const:{}
+    			,preloadThreadDoc.const:{}
+    			,preloadComDoc.const:{}
+    			,preloadIoDoc.const:{}
+    			,preloadStructDoc.const);
+    		
+    		..table.mix( this.define ,preloadDoc.define:{}
+    			,preloadMathDoc.define:{}
+    			,preloadRawDoc.define:{}
+    			,preloadStringDoc.define:{}
+    			,preloadTableDoc.define:{}
+    			,preloadThreadDoc.define:{}
+    			,preloadComDoc.define:{}
+    			,preloadIoDoc.define:{}
+    			,preloadStructDoc.define);
+    			
+    		..table.assignDeep( this.sections ,preloadDoc.sections:{}
+    			,preloadMathDoc.sections:{}
+    			,preloadRawDoc.sections:{}
+    			,preloadStringDoc.sections:{}
+    			,preloadTableDoc.sections:{}
+    			,preloadThreadDoc.sections:{}
+    			,preloadComDoc.sections:{}
+    			,preloadIoDoc.sections:{}
+    			,preloadStructDoc.sections); 
+    		
+    		this.libPath = "global";
+    		this.filePath = "global";
+    		this.fileName = "global";
+    		return this;
+    	}
+    	
+        var str;
+        if(path == "ide"){
+            str = ..string.load("~\extensions\ide.aardio"); 
+    	}
+    	else {
+    		str = ..string.load(path);
+    	}
+    	
+        if(!str) return;
+        
+        path = ..io.fullpath(path);
+        var libPath = ..fsys.path.relative(path,..io.fullpath("~\lib"),false);
+        if(!libPath) {
+            libPath = ..fsys.path.relative(path,..io.fullpath("\lib"),false);
+            if(!libPath) libPath = "global";
+            this.filePath = libPath;
+        }
+        else {
+            this.filePath = "~\" + libPath;
+        }
+        
+        
+        if(libPath) {
+            if( ..string.endWith(libPath,"_.aardio") ) { 
+                libPath = ..string.left(libPath,-10);
+                this.fileName = libPath + "/_";
+            }
+            elseif( ..string.endWith(libPath,".aardio") ) {
+                libPath = ..string.left(libPath,-8);
+                this.fileName = libPath;
+            }
+            else {
+                this.fileName = "global";
+            }
+            
+            libPath = ..string.trim(libPath,"\/");
+            this.libPath = ..string.replace(libPath,"[/\\]",".") ;
+            if(this.libPath == "win.ui"){
+            	this.sections[""] = createList( this
+    				,..string.load("~\config\intellisense\winform.txt"),""); 
+            }
+            elseif(this.libPath == "sqlite"){
+                str = ..string.concat(str,'\r\n',..string.load("~\lib\sqlite\base.aardio")); 
+       			if(!str) return;  
+            }
+            elseif( (this.libPath == "web.kit.form") || (this.libPath="web.kit.layeredWindow") ){
+                 str = ..string.concat(str,'\r\n',..string.load("~\lib\web\kit\view.aardio")); 
+            }
+            
+            for star,path,content in ..string.gmatch( str,"/(**)intellisense\((.*?)\)(.+?)end intellisense\1/") { 
+                path = camelObjectName(path);
+                this.sections[path] = ..table.mix(createList( this,content,path),this.sections[path]); 
+            } 
+        }
+        else {
+            this.filePath = path;
+            this.libPath = "";
+            this.sections[""] = createList( this,str,"");
+        }
+        
+        _,this.detailsSummary,this.details  = ..string.match( str,"/(**)details\((.*?)\)(.+?)end details\1/")
+        
+        this.guide  = ..string.match(str,"\n\s*//@\s*guide\s+(\N+)");
+        if(this.guide){
+        	this.guide = ..string.replace(this.guide,"doc\://",__IDE_DOC_URL_ROOT__ || "/");
+        }
+        
+        this.sections["::"] = null;
+        for(path,section in this.sections){
+        	for(k,v in section){
+        		if( this.sections[k] ){
+        			section[k] = null;
+        			this.sections[k][k] = v;
+        		}
+        	} 
+        }
+        
+        
+        if( this.sections[""] ? ( !..table.next(this.sections[""]) ) ) this.sections[""] = null;
+        if( !..table.next(this.const) ) this.const = null;
+        if( !..table.next(this.define) ) this.define = null;
+    }; 
+}
+
+namespace library{
+
+    camelObjectName = function(name){
+    	name = ..string.trim(name);
+    	if( name[1] != '!'#  ) return name;
+    	name = ..string.right(name,-2);
+    	
+        name = ..string.replace(name,"_(\w)",function(c){  return ..string.upper(c); } );
+        
+        if( !( ..string.find(name,"@@obj") ) ){
+        	if( ( name!="winform" )
+        		&& ( name!="wb" )
+        		&& ( name!="wbLayout" )
+        		&& ( name!="wbKit" )
+        	){
+        		name = ..string.replace(name,"^[^\.]+","\0Object");
+            }
+        }  
+                
+        if( ..string.startWith(name,"std") ) name = ..string.right(name,-4);
+        return name;
+    }
+    
+    createList = function(this,s,path) {
+        var list ={};
+        var trim = ..string.trim;
+        var trimleft = ..string.trimleft;
+        var find = ..string.find;
+        var left = ..string.left;
+        var sub = ..string.slice;
+        var intellisense = s;
+        
+        path = trim(path);
+        if(path[1] == '!'# ) path = ..string.right(path,-2);
+        
+        while( 
+            var i,j,vi,vj,si,sj,q,k,v ;
+            {
+                i,j = ..string.find(s, "^\s*\N+\s+=\s+" );
+                if(i){ i,j = ..string.find(s, "\s+=\s+" ); }
+                if(!i) i,j = ..string.find(s, "\s*=\s*" );
+            }; ( i ) 
+        ) {
+            k = trim( sub(s,1,i-1) );
+            s = trimleft( sub(s,j+1) ); 
+            si,sj = find(s,'\r\n'); 
+            
+            if( si ){ 
+                v = trim( sub(s,1,si-1) ); 
+                if( v[#v] =='{'# ){ 
+                    vi,vj = find(s,"%{}")
+                    if(vi){
+                        v = sub(s,1,vj-1);  
+                        si,sj = find(s,'\r\n',vj+1);
+                        if(!si) {
+                            v = s;
+                            s = "";
+                        }
+                        else{
+                            v = trim( sub(s,1,si-1) ); 
+                            s = sub(s,sj+1);  
+                        }
+                    }
+                    else { 
+                        break;
+                    } 
+                }
+                else {
+                    s = trimleft( sub(s,sj+1) ); 	
+                }
+            } 
+            else { 
+                v =  s; 
+            } 
+
+            while( 
+                var kl,kj;
+                kl,kj = find(k,'\r\n');
+                kl
+            ) {
+                k = ..string.slice(k,kj+1);//作为注释忽略
+            } 
+            
+            k = ..string.replace(k,"\(\.\(","(");
+            k = ..string.replace(k,"->",".");
+            k = ..string.replace(k,`"__[^"]*"`,`"字符串参数"`);
+            
+            k = ..string.replace(k,`"__\/\*([^\*]*?)\*\/"`,function(arg){
+                arg = ..string.replace(arg,"\n|\r","");
+            	return ..string.concat(`"`,arg,`"`)
+            } );
+           
+            k = ..string.replace(k,`__\/\*([^\*]*?)\*\/`,function(arg){ 
+                if(!..string.find(arg,"[\s\p]")) return arg;
+                arg = ..string.replace(arg,"\n|\r",""); 
+                arg = ..string.concat(`/*`,arg,`*/`);
+            	return arg
+            } );
+          
+            k = ..string.replace(k,`__`,"");
+            k = ..string.replace(k,`""`,`"字符串参数"`)
+            
+            if( #path && (path != "::") ){
+                k = ..string.concat(path,".",k);
+            }
+            v= ..string.replace(v,"\\n",'  \r\n');
+            v= ..string.replace(v,"\&\&",'&'); 
+            
+            if(k[1] == '_'# && (#k > 2) ){
+            	var v2 = ..string.match(v,"\@(.+)\/\*.+\*\/");
+                if( v2 ){
+                    if(this.define[k]===null){
+                        this.define[k]=trim(v2);
+                    }
+                    continue  
+                } 
+            }
+            
+            if(k[1] == '?'# ){
+                continue;
+            }
+            
+            if(k[1] == '^'# ){
+                continue;
+            }
+            
+            if( k[#k] == '('# ) {
+            	k = ..string.left(k,-2);
+            }
+            
+            v  = trim(v);
+            if( v[#v] == '.'# ) {
+                var h,obj = ..string.match(v,"(.*)(\!\N+)\.$");
+                if(obj){
+                	obj = camelObjectName( obj );
+                	v = h;
+                	if(#v) v = v ++ '  \r\n';
+                	v = ..string.concat(v,`[返回对象:` + obj + "]("+(redirectObjectPath[obj]||"")+"#" + obj + ")" );
+                }
+            }
+            
+            v = trim(v);
+            if( v[1]== '@'# ) {
+                v = ..string.right(v,-2);
+                
+                var h = ..string.match(k,"(.+)\.[^.]+");
+                if(h){
+                    if( v[1] == '.'# ){ 
+                        if( h ) v = camelObjectName(h) + v;
+                    } 
+                    v = ..string.replace(v,"\?\?",camelObjectName(h));
+                }
+                
+                v =  ..string.replace(v,"__","");
+                v =  '\r\n\r\n```aardio\r\n' +v + '\r\n```\r\n\r\n';
+            }
+            elseif( ..string.startWith(v,"class ") ){
+            	v =  '\r\n\r\n```aardio\r\n' +v + '\r\n```\r\n\r\n';
+            }
+            elseif( !..string.find(v,":") ){
+            	v =  '\r\n\r\n```aardio\r\n' +v + '\r\n```\r\n\r\n';
+            }
+            else { 
+                k = ..string.replace(k,"@'\x80'","`'\x80'`");
+                k = ..string.replace(k,"@'<分隔符>'","`'<分隔符>'`");
+                
+                v = ..string.replace(v,"@'\x80'","`'\x80'`");
+                
+                v = ..string.replace(v,"@'\0'","`'\0'`");
+                v = ..string.replace(v,"@'\u0000'","`'\u0000'`");
+                v = ..string.replace(v,"@'\x1A'","`'\x1A'`");
+                v = ..string.replace(v,"@'\x1E'","`'\x1E'`");
+                v = ..string.replace(v,"@'\r'","`'\r'`");
+                v = ..string.replace(v,"@'\r\n'","`'\r\n'`");
+                v = ..string.replace(v,"@'\n'","`'\n'`");
+                v = ..string.replace(v,"@'\u0000'","`'\u0000'`"); 
+                v = ..string.replace(v,"@'`#","'#`");
+            }
+            
+            if(k[1] == '!'#){
+                var path;
+                k = ..string.replace(k,"^[^.]+",function(k){
+                    path = camelObjectName(k);
+                    return path;
+                });
+        
+                if( path ){
+                    if(!this.sections[path] ) this.sections[path] = {};
+                  
+                    var v1 = this.sections[path][k];
+                    if(!v1)this.sections[path][k] = v;
+                    elseif(type(v1)=="string") this.sections[path][k]= ..string.concat(v1,'\r\n\r\n',v);
+                    continue;
+                }
+            }
+            
+            kpath = k;
+            var bracket = ..string.indexOf(kpath,'(');
+            if(bracket){
+            	kpath = ..string.left(kpath,bracket-1);
+            }
+            
+            var kpath = ..string.match(kpath,"^(.+[^\.])\.[^\.]*$");
+            if(kpath && (kpath!="global")){
+            	if( kpath ){
+                    if(!this.sections[kpath] ) this.sections[kpath] = {};
+                    
+                    var v1 = this.sections[kpath][k];
+                    if(!v1)this.sections[kpath][k] = v;
+                    elseif(type(v1)=="string") this.sections[kpath][k]= ..string.concat(v1,'\r\n\r\n',v);
+                    continue;
+                }
+            }
+            
+            var kpath = ..string.match(k,"^([a-zA-Z]\w+)$") || ..string.match(k,"^([a-zA-Z]\w+)\(");
+            if(kpath && (kpath!="global") ){
+            	if( ..string.indexOf(intellisense,kpath + ".") ){ 
+            		if( kpath ){
+                    	if(!this.sections[kpath] ) this.sections[kpath] = {};
+                    	
+                    	var v1 = this.sections[kpath][k];
+                    	if(!v1)this.sections[kpath][k] = v;
+                    	elseif(type(v1)=="string") this.sections[kpath][k]= ..string.concat(v1,'\r\n\r\n',v);
+                    	continue;
+                	}
+            	}
+            }
+            
+            if(k[1] == ':'#){
+                this.const[k] = trim(v);
+                continue;
+            }
+            elseif( ..string.match(k,"^_[A-Z][A-Z_\d]+$")){
+                this.const[k]=trim( v ); 
+            }
+            
+            var v1 = list[[k]];
+            if(!v1)list[[k]] = v;
+            elseif(type(v1)=="string" && k[1]!='_'#) {
+            	list[[k]] = ..string.concat(v1,'\r\n\r\n',v);
+            } 
+        }
+        
+        return list;
+    }	 
+    
+    redirectObjectPath = {
+		WebSocketJsonClientObject="/library-reference/web/socket/jsonClient.md";
+		asynHttpServerObject="/library-reference/wsock/tcp/asynHttpServer.md";
+		dllModuleObject="/library-reference/raw/_.md";
+		dotNetNameSpaceObject="/library-reference/dotNet/appDomain.md";
+		editObject="/library-reference/win/ui/ctrl/edit.md";
+		embedObject="/library-reference/com/_.md";
+		fileObject="/library-reference/io/_.md";
+		fsysStreamObject="/library-reference/fsys/stream.md";
+		fsysTableObject="/library-reference/fsys/table.md";
+		gdipbitmapObject="/library-reference/gdip/bitmap.md";
+		gdipfontObject="/library-reference/gdip/font.md";
+		gdipimageObject="/library-reference/gdip/image.md";
+		inetDownBoxObject="/library-reference/inet/downBox.md";
+		ioFileObject="/library-reference/io/_.md";
+		listviewObject="/library-reference/win/ui/ctrl/listview.md";
+		mathSize64Object="/library-reference/math/_.md";
+		processObject="/library-reference/process/_.md";
+		processPopenObject="/library-reference/process/popen.md";
+		rectObject="/library-reference/global/_.md";
+		rectfObject="/library-reference/gdip/core.md";
+		staticObject="/library-reference/win/ui/ctrl/static.md";
+		tcpaclientObject="/library-reference/wsock/tcp/asynClient.md";
+		tcpclientObject="/library-reference/wsock/tcp/client.md";
+		timeObject="/library-reference/time/_.md";
+		uiCtrlPlusObject="/library-reference/win/ui/ctrl/plus.md";
+		webRestApiObject="/library-reference/web/rest/client.md";
+		webRestClientObject="/library-reference/web/rest/client.md";
+		webRpcJsonClientObject="/library-reference/web/rpc/jsonClient.md";
+		winform="/library-reference/win/ui/_.md";
+		py3Object="/library-reference/py3/object.md"; 
+		py2Object="/library-reference/py2/object.md"; 
+	}
+}
+
+/*intellisense(ide)
+doc.library(.("库路径") = 用于自动提提取库参考文档
+doc.library() = !libDocument.
+end intellisense*/
+
+/**intellisense()
+!libDocument.guide = 库使用指南链接
+!libDocument.details = 补充文档
+!libDocument.detailsSummary = 补充文档标题
+!libDocument.sections = 智能提示数据\n键为名字空间,值是一个名值对组成的表
+!libDocument.define = 智能提示中配置自动完成为字面值的全局常量列表\n一律为下划线开始,并大写的常量名
+!libDocument.const = ::开头的全局函数列表
+!libDocument.fileName = 移除后缀名的库文件相对路径
+!libDocument.filePath = 库文件路径
+!libDocument.libPath = 名字空间路径
+end intellisense**/

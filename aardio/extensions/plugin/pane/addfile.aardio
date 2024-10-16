@@ -1,0 +1,115 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="添加到 ……";right=642;bottom=198;border="dialog frame";exmode="none";max=false;min=false;mode="popup")
+winform.add(
+button={cls="button";text="添加";left=203;top=118;right=580;bottom=183;color=14120960;font=LOGFONT(h=-14);note="默认在当前目录创建新目录或文件，可添加外部目录路径（首字符为 ~ 表示开发环境根目录）。";tabstop=1;z=5};
+chkRunAs={cls="checkbox";text="请求管理权限";left=70;top=136;right=184;bottom=166;hide=1;z=6};
+editName={cls="edit";left=142;top=21;right=464;bottom=54;edge=1;tabstop=1;z=3};
+editPath={cls="edit";left=142;top=69;right=575;bottom=102;edge=1;tabstop=1;z=4};
+static={cls="static";text="显示名称：";left=30;top=26;right=130;bottom=58;align="right";transparent=1;z=1};
+static2={cls="static";text="文件或目录路径：";left=2;top=70;right=130;bottom=102;align="right";transparent=1;z=2}
+)
+/*}}*/
+
+winform.editName.setCueBannerText("输入显示名称");
+winform.editPath.setCueBannerText("输入要创建的 *.aardio 格式文件名或目录名");
+
+import fsys;
+winform.aarSnippetsDir = "~\example\Snippets";
+winform.button.oncommand = function(id,event){
+	var filePath = string.trim( winform.editPath.text );
+	if(!#filePath){
+		winform.editPath.showErrorTip("错误","请指定文件名！");
+		return;
+	}
+	 
+	var friendlyname = string.trim( winform.editName.text );
+	if(!#friendlyname){
+		winform.editName.showErrorTip("错误","请指定显示名称！");
+		return;
+	}
+	
+	var aarFilePath = io.joinpath(winform.aarSnippetsDir,".aar");
+	var aarData = ..string.load(aarFilePath);
+	
+	if(aarData){
+		for(k,v,f in string.each(aarData,"(.+)\=(.+?)(<.aardio>?)$") ){
+			if(k==friendlyname){
+				winform.editName.showErrorTip("错误","已存在相同名称项目");
+				return; 
+			}
+		}
+	}
+	
+	var fullPath = filePath;
+	if(string.indexOf(filePath,"\/")){
+		if(!fsys.isDir(filePath)){
+			winform.editPath.showErrorTip("错误","如果路径包含 \，/ 等符号则必须指向已存在的目录！");
+			return;	
+		}
+	}
+	else {
+		fullPath = io.joinpath(winform.aarSnippetsDir,fullPath);
+		if(io.exist(fullPath)){
+			winform.editPath.showErrorTip("错误","当前目录下已存在同名文件！");	
+			return;
+		}
+		
+		if(string.endWith(fullPath,".aardio",true)){
+			//工具与范里里的 aardio 文件后缀名必须小写
+			fullPath = string.replace(fullPath,"\.<@@aardio@>$",".aardio");
+			
+			string.save(fullPath,winform.chkRunAs.checked?"//RUNAS//":"" )
+		}
+		else {
+			io.createDir(fullPath)
+		}  
+	}
+	
+	if(aarData && !string.endWith(aarData,'\r\n')){
+		string.save(aarFilePath, '\r\n'+friendlyname+"="+filePath,true) 
+	}
+	else {
+		string.save(aarFilePath, friendlyname+"="+filePath,true) 
+	} 
+
+	winform.endModal(fullPath)	
+}
+
+winform.editPath.onChange = function(){ 
+	winform.chkRunAs.hide  = string.indexAny(owner.text,"\/") || !string.endWith(owner.text,".aardio",true) ;
+}
+
+winform.onDropFiles = function(files){
+	winform.editPath.text = files[1];
+}
+
+winform.onOk = function(){
+	if(!#winform.editName.text){
+		winform.editName.setFocus();
+		return;
+	}
+	
+	if(!#winform.editPath.text){
+		winform.editPath.setFocus();
+		return;
+	}
+	
+    winform.button.oncommand();
+}
+
+winform.editPath.onOk = function(){ 
+	 winform.button.oncommand();
+	return true; 	
+}
+
+winform.editName.onOk = function(){ 
+	winform.editPath.setFocus();
+	return true; 	
+}
+
+winform.show();
+win.loopMessage();
+return winform;
+
+ 

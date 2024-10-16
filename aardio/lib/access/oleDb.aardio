@@ -1,0 +1,39 @@
+﻿//oleDb 驱动程序
+import com.oleDb;
+import inet.installer;
+import process;
+import access;
+
+namespace access.oleDb;
+
+exist = function(legacy12){ 
+	if( ..com.oleDb.hasProvider("Microsoft.ACE.OLEDB.16.0") ){
+		return "Microsoft.ACE.OLEDB.16.0";
+	}
+	
+	if(legacy12 ? ..com.oleDb.hasProvider("Microsoft.ACE.OLEDB.12.0")  ){
+		return "Microsoft.ACE.OLEDB.12.0";
+	}
+}
+
+install = function(winform,legacy12){
+	var provider = exist(legacy12);
+	if( provider ) return provider;
+    
+	if( ..inet.installer("Microsoft.ACE.OLEDB.16.0"
+		,"https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/accessdatabaseengine.exe"
+		,"/passive /quiet /norestart",,winform) ){  
+		//只有指定 /quiet 参数才能兼容 64 位 Office 组件 。
+		return "Microsoft.ACE.OLEDB.16.0";
+	} 	
+}
+
+/**intellisense(access.oleDb)
+exist() = 检测 Microsoft.ACE.OLEDB.16.0 驱动程序是否已安装，\n成功返回驱动名 "Microsoft.ACE.OLEDB.16.0 "。
+exist(true) = 检测 Microsoft.ACE.OLEDB.16.0 驱动程序是否已安装，\n成功返回驱动名 "Microsoft.ACE.OLEDB.16.0 "。\n失败则检测 Microsoft.ACE.OLEDB.12.0 驱动程序是否已安装，\n成功返回驱动名 "Microsoft.ACE.OLEDB.12.0 "。
+install(.(父窗体,允许兼容旧组件) = 所有参数可选。\n如果已安装  "Microsoft.ACE.OLEDB.16.0" 则返回该驱动名。\n如果许兼容旧组件为 true 且系统已安装 "Microsoft.ACE.OLEDB.12.0" 则返回该驱动名。\n否则自动下载并安装 Microsoft.ACE.OLEDB.16.0。\n安装成功返回驱动名  "Microsoft.ACE.OLEDB.16.0 " 。\n失败返回 null 。\n\n安装驱动程序时需要管理权限，\n在已经有管理权限的安装向导中可自动执行，\n普通权限进程需要用户确认
+end intellisense**/
+
+/*****intellisense()
+access.oleDb = 导入 access.oleDb 后，\naccess 库可自动检测或安装支持 *.xlsx,*.accdb 等文件的 OLEDB 驱动程序。\n\n如果数据库连接参数未显式指定使用驱动 "Microsoft.ACE.OLEDB.16.0" ，\n则默认兼容系统已安装的 "Microsoft.ACE.OLEDB.12.0" 驱动。\n如果未安装合适的驱动，则自动安装 "Microsoft.ACE.OLEDB.16.0" 。 
+end intellisense*****/

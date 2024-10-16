@@ -1,0 +1,56 @@
+﻿//permutations 全排列
+namespace table;
+	
+class permutations{
+	ctor(arr, r){
+		if(type.isString(arr)){
+			arr = ..string.split(arr);
+		}
+			
+    	var n = #arr;
+    	r = r || n;
+    	if (r > n) return function() {}; 
+    	
+    	var indices = {};
+    	for(i=1;n) indices[i] = i;
+    	
+    	var cycles = {};
+		for(i=n;n-r+1;-1) cycles[#cycles+1] = i;  
+    	
+    	var first = 1;
+    	return function() {
+        	if (first) {
+            	first = 0;
+            	var o = {};
+            	for(i=1;r) o[i] = arr[indices[i]];
+            	return o;
+        	}
+        	
+        	for(i=r;1;-1) {
+            	cycles[i] = cycles[i] - 1;
+            	
+            	if (cycles[i] == 0) {
+                	var temp = indices[i];
+                	for(j=i;n) indices[j] = indices[j+1];
+                	
+                	indices[n] = temp;
+                	cycles[i] = n - i + 1;
+            	} else {
+                	var j = n - cycles[i] + 1; 
+                	indices[i], indices[j] = indices[j], indices[i];
+                	
+                	var o = {};
+                	for(k=1;r) o[k] = arr[indices[k]];
+                	return o;
+            	}
+        	}
+    	}	
+	}; 
+} 
+
+/*****intellisense()
+table.permutations = 用于生成全排列迭代器，需要导入才能使用。\n 返回生成全排列数组的迭代器，用于 for in 循环语句。
+table.permutations(arr,r) = @for arr in table.permutations(__/*参数 @1 指定输入数组或字符串。可选用参数 @2 指定输出数组长度。\n输入数组为空或输出数组长度大入输入数组长度时返回空迭代器。*/){
+	
+}
+end intellisense*****/

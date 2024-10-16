@@ -1,0 +1,191 @@
+//JSON / URL 编码 /table 互转
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="JSON / URL 编码 /table 互转";right=969;bottom=691)
+winform.add(
+btnDataType={cls="plus";text="特殊类型说明";left=231;top=655;right=341;bottom=679;color=8388608;db=1;dl=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=3};
+btnHelp={cls="plus";text="web.json 库函数文档";left=342;top=655;right=482;bottom=679;color=8388608;db=1;dl=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=4};
+btnStart={cls="plus";text="入门示例";left=140;top=655;right=230;bottom=679;color=8388608;db=1;dl=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=2};
+edit={cls="edit";left=9;top=6;right=961;bottom=641;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=1};
+radioJson={cls="radiobutton";text="转为 JSON";left=535;top=656;right=648;bottom=689;db=1;dr=1;z=5};
+radioTable={cls="radiobutton";text="转为  table";left=674;top=656;right=787;bottom=689;db=1;dr=1;z=6};
+radioUrlEncode={cls="radiobutton";text="Url Encode";left=813;top=656;right=926;bottom=689;db=1;dr=1;z=7}
+)
+/*}}*/
+
+import web.json;
+import util.table;
+import inet.url;
+
+var lastDataType;
+winform.edit.onChange = function(){ 
+	winform.radioUrlEncode.checked = false;
+	winform.radioJson.checked = false;
+	winform.radioTable.checked = false;
+	
+	try{
+		var text = winform.edit.text;
+		
+		if(!string.find(text,"\n") && string.indexOf(text,"&")&& string.indexOf(text,"=")){
+			var info = inet.url.splitParameters(text);
+			if(info){
+				winform.radioUrlEncode.checked = true;
+				lastDataType = "URL";
+				return;
+			}
+		}
+		
+		var json = web.json.tryParse(winform.text);
+		if(json){ 
+			lastDataType = "JSON";
+			winform.radioJson.checked = true; 
+			return;
+		}
+		
+		lastDataType = "TABLE";
+		winform.radioTable.checked = true;
+	}
+	
+}
+
+winform.radioUrlEncode.oncommand = function(id,event){
+ 
+	var text = string.trim(winform.edit.text);
+	if(!#text){
+		winform.edit.showWarningTip("文本为空",err);
+		lastDataType = "URL";
+		return;
+	}
+	
+	if(lastDataType = "JSON"){
+		var info = web.json.tryParse(text);
+		if(info){
+			winform.edit.text = inet.url.stringifyParameters(info);
+			lastDataType = "URL";
+			return;
+		}
+	}
+	
+	if(lastDataType = "TABLE"){
+		var info = eval(text);
+		if(info){
+			winform.edit.text = inet.url.stringifyParameters(info);
+			lastDataType = "URL";
+			return;
+		}
+	}
+	 
+	
+	lastDataType = "URL";
+	winform.edit.showErrorTip("转换失败");
+}
+
+winform.radioJson.oncommand = function(id,event){
+	 
+	var text = string.trim(winform.edit.text);
+	if(!#text){
+		winform.edit.showWarningTip("文本为空",err);
+		lastDataType = "JSON";
+		return;
+	}
+	
+	if(lastDataType = "URL"){
+		var info = inet.url.splitParameters(text);
+		if(info){
+			winform.edit.text = web.json.stringify(info,true,true);
+			lastDataType = "JSON";
+			return;
+		}
+	}
+	
+	if(lastDataType = "TABLE" ){
+		var info = eval(text);
+		if(info){
+			winform.edit.text = web.json.stringify(info,true,true);
+			lastDataType = "JSON";
+			return;
+		}
+	}
+	 
+	
+	lastDataType = "JSON";
+	winform.edit.showErrorTip("转换失败");
+}
+
+winform.radioTable.oncommand = function(id,event){
+	
+	
+	var text = string.trim(winform.edit.text);
+	if(!#text){
+		winform.edit.showWarningTip("文本为空",err);
+		return;
+	}
+	
+	if(lastDataType = "JSON" ){
+		var info = web.json.tryParse(text);
+		if(info){
+			winform.edit.text = util.table.stringify(info,'\t');
+			lastDataType = "TABLE";
+			return;
+		}
+	}
+	
+	if(lastDataType = "URL"){
+		var info = inet.url.splitParameters(text);
+		if(info){
+			winform.edit.text = util.table.stringify(info,'\t');
+			lastDataType = "TABLE";
+			return;
+		}
+	}
+	 
+	
+	lastDataType = "TABLE";
+	winform.edit.showErrorTip("转换失败");
+}
+
+import ide;
+winform.btnStart.oncommand = function(id,event){
+	ide.openDocument("~/example/Web/JSON/JSON.aardio");
+	winform.show(6/*_SW_MINIMIZE*/);
+}
+
+winform.btnDataType.oncommand = function(id,event){
+	ide.openDocument("~/example/Web/JSON/DataType.aardio");	
+	winform.show(6/*_SW_MINIMIZE*/);
+}
+
+winform.btnHelp.oncommand = function(id,event){
+	ide.libMan("web.json");
+	winform.show(6/*_SW_MINIMIZE*/);
+}
+
+winform.btnDataType.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000
+	}
+})
+
+winform.btnStart.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000
+	}
+})
+
+winform.btnHelp.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000
+	}
+})
+
+winform.show();
+win.loopMessage();

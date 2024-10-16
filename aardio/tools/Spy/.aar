@@ -1,0 +1,6 @@
+RUNAS//窗口探测=WinSpy.aardio
+FlaUI 探测器=flaUISpy.aardio
+UIA/ACC 探测器=inspect.aardio
+DLL 查看工具=dllView.aardio
+COM 控件查看工具=axView.aardio
+web.form 探针=webspy.aardio

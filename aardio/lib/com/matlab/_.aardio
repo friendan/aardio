@@ -1,0 +1,219 @@
+﻿import com; 
+import util.metaProperty;
+import web.json;
+
+namespace com;
+
+class matlab{
+	ctor( hidden,progId ){
+		if(!progId) progId = "Matlab.Application";
+		this._object = ..com.TryGetObject(progId);
+		if( !this._object ){
+			this._object = ..com.TryCreateObject(progId);
+			if(!this._object) return;
+			
+			if(!hidden){
+				this._object.Visible = true;
+			}
+			else {
+				this._object.Visible = false; 
+			} 
+		} 
+		
+		this.exec = this._object.Execute;
+		this.minimize = this._object.MinimizeCommandWindow;
+		this.maximize = this._object.MaximizeCommandWindow;
+		this.quit = this._object.Quit;
+		this.getMatrix = this._object.GetFullMatrix;
+		this.putMatrix = this._object.PutFullMatrix; 
+		this.getString = this._object.GetCharArray;
+		this.putString = this._object.PutCharArray;
+		this.getData = this._object.GetWorkspaceData;
+		this.putData = this._object.PutWorkspaceData; 
+		this.getVariable = this._object.GetVariable; 
+		this.xlEval =  this._object.XLEval; 
+		this.feval = this._object.Feval; 
+		
+		this.base = {
+			eval = function(exp){
+				return this.evalin("base",exp);
+			};
+			assign = function(tab){
+				for k,v in ..table.eachName(tab){
+					if(type(v)=="number") v = ..com.double(v);
+					this.putData(k,"base",v);
+				}
+			};
+			@{
+				_get = function(k,ownerCall){ 
+					if(ownerCall) { 
+						return function(v,...){
+							return this[k](v,"base",...)
+						}
+					} 
+					
+					return this.getData(k,"base");
+				};
+				_set = function(k,v,ownerAttr){
+					if(type(v)=="number") v = ..com.double(v);
+					this.putData(k,"base",v);
+				} 
+			}
+		}
+		
+		this.global = {
+			eval = function(exp){
+				return this.evalin("global",exp);
+			};
+			assign = function(tab){
+				for k,v in ..table.eachName(tab){
+					if(type(v)=="number") v = ..com.double(v);
+					this.putData(k,"base",v);
+				}
+			};
+			@{
+				_get = function(k,ownerCall){
+					if(ownerCall) {  
+						return function(v,...){ 
+							return this[k](v,"global",...)
+						}
+					} 
+					
+					return this.getData(k,"global");
+				};
+				_set = function(k,v,ownerAttr){
+					if(type(v)=="number") v = ..com.double(v);
+					this.putData(k,"global",v);
+				} 
+			}
+		}
+		
+		this.cd = function(path){
+			return this.feval("cd",1,..io.fullpath(path||"/"))[1];
+		};
+		
+		this.cd("/");
+	}; 
+	@_metaProperty;
+} 
+
+matlab._metaProperty = ..util.metaProperty(
+
+	_toComObject = lambda() owner._object;
+
+	get = function(k,ownerCall){
+		if(ownerCall){
+			owner[[k]] = function(nargout,...){
+				if(type(nargout)=="number"){
+					return ..table.unpackArgs( owner.feval(k,nargout,...) );
+				}
+				
+				return ..table.unpackArgs( owner.feval(k,1,nargout,...) );
+			} 
+			
+			return owner[[k]];
+		}
+		elseif(ownerCall===null && type.isString(k)){
+			return owner.eval(  k ); 
+		} 
+	};
+	code = { 
+		_set = function( code ){
+			
+			if(  !..string.find(code,"^[^\?]*\?\>") ){
+				code = "?>"+code;
+			}
+
+			var code,err =  matlab.loadcode(code,owner);  
+			if(!code) error(err,2);
+			
+			owner.codeResult = owner.exec(code);
+		} 
+	};
+	visible = {
+		_get = function(){  
+			return owner._object.Visible;
+		}
+		_set = function( value ){
+			owner._object.Visible = value;
+		} 	
+	};
+)
+
+matlab.loadcode = function(c,...){
+ 
+	var f,e = loadcode(c,"=(com.matlab.loadcode)");
+	if(!f) return null,e;
+	
+	var p = ..print;
+	var t = {};
+	..print = function(args,...){
+		if(...){
+			args = {args,...}
+		}
+
+		if( type(args) == "table" ){  
+			var json = ..string.replace( ..web.json.stringify(args,false,true),"'","''") ;
+			args = "jsondecode('" + json + "')"; 
+		}
+		elseif(args!==null) {
+			args = tostring(args)
+		} 
+		
+		if(args!==null) ..table.push(t,args);
+	}
+	
+	var r,e = callex(,f,...,...);
+	..print = p;
+	
+	if(!r) return null,e;
+	return ..string.join(t);
+};
+  
+/*****intellisense()
+com.matlab = MATLAB 应用程序对象。
+com.matlab(.(hidden,progId) = 创建或获取已打开的 MATLAB 应用程序对象。\n@hidden 指定是否隐藏创建的窗口，如果连接到已打开的 MATLAB 应用则此选项无效。\n可选用 @progId 参数中指定 ProgID。\n!comMatLab.
+end intellisense*****/
+
+/*****intellisense(!comMatLab)
+visible = 是否显示 MATLAB 命令行窗口。 
+minimize() = 最小化 MATLAB 命令行窗口。
+maximize() = 最大化 MATLAB 命令行窗口。
+exec(__) = 执行字符串命名，并返回字符串值。
+quit() = 关闭 MATLAB 应用程序。
+? = 指定 MATLAB 函数名，调用 MATLAB 函数对象。\n第 1 个参数指定返回值数量（无参数，或首个参数不是数值可省略，默认为 1）。
+putMatrix( = 将矩阵存储到工作区 
+putMatrix(.(varname,workSpace,xreal,ximag) = 将矩阵存储到工作区，并将其指定给变量 varname。\n分别将 xreal 和 ximag 用于矩阵的实部和虚部。\n矩阵不能是标量或空数组，也不能大于两维。
+getMatrix(__) = 自参数 @2 指定名字的工作区获取参数 @1 指定变量名的矩阵。\n返回 2 个值，分别为 矩阵的实部和虚部。
+putData( = 将变量值存储到工作区。\n也可以直接读写 base,global 属性的成员值。
+putData(.(varname,workSpace,data) = 将 @data 指定的变量值存储到工作区，并将其指定给变量 varname 。\n要注意直接读写 base,global 工作区变量时默认为 double 类型。\n而用 putData 函数写入整数时，要用 com.double 转换为 double 型。\n但遵守 COM 接口默认规则 ，小数与数组默认为 double 类型。
+getData(__) = 自参数 @2 指定名字的工作区获取参数 @1 指定变量名的值。\n返回 2 个值，分别为 矩阵的实部和虚部。
+putString( = 将字符串存储到工作区。\n也可以直接读写 base,global 属性的成员值。
+putString(.(varname,workSpace,xreal,ximag) = 将字符串存储到工作区，并将其指定给变量 varname。\n分别将 xreal 和 ximag 用于矩阵的实部和虚部。\n矩阵不能是标量或空数组，也不能大于两维。
+getString(__) = 自参数 @2 指定名字的工作区获取参数 @1 指定变量名的字符串。\n返回 2 个值，分别为 矩阵的实部和虚部。
+global = MATLAB 全局工作区。\n!comMatLabWs.
+base = MATLAB 基础工作区。\n!comMatLabWs.
+cd(__) = 修改当前目录为参数 @1 指定的目录。\n不指定参数默认切换到应用程序目录 "/" 。\n返回旧的工作目录。
+pwd() = 返回当前工作目录
+figure('Visible', 'on') = 显示绘图窗口，参数 @2 设为 "off" 隐藏绘图窗口。
+figure('Name','新标题','NumberTitle','off') = 修改窗口标题
+addpath(__) = 添加搜索目录。\nhttps://ww2.mathworks.cn/support/search.html?q=addpath
+eval(__) = 解析字符串参数 @1 指定的 MATLAB 表达式，返回解析结果。\n也可以在下标操作符中用字符串输入表达式，可自动调用 eval 函数返回结果。
+evalin(__) = 在参数 @1 指定的工作区计算表达式。
+code = @.code = /******\n__/*执行 MATLAB 命令，可用模板语法在 <? ?> 标记内嵌入 aardio 代码或对象。*/\n******/
+end intellisense*****/
+
+/*****intellisense(!comMatLabWs)
+? = 指定 MATLAB 基础工作区变量名，读写变量值。
+putMatrix( = 将矩阵存储到工作区 
+putMatrix(.(varname,xreal,ximag) = 将矩阵存储到工作区，并将其指定给变量 varname。\n分别将 xreal 和 ximag 用于矩阵的实部和虚部。\n矩阵不能是标量或空数组，也不能大于两维。
+putData( = 将变量值存储到工作区。\n也可以直接读写 base,global 属性的成员值。
+putData(.(varname,data) = 将 @data 指定的变量值存储到工作区，并将其指定给变量 varname 。\n要注意直接读写 base,global 工作区变量时默认为 double 类型。\n而用 putData 函数写入整数时，要用 com.double 转换为 double 型。\n但遵守 COM 接口默认规则 ，小数与数组默认为 double 类型。
+getData(__) = 自参数 @2 指定名字的工作区获取参数 @1 指定变量名的值。\n返回 2 个值，分别为 矩阵的实部和虚部。
+
+getMatrix(__) = 自工作区获取参数 @1 指定变量名的矩阵。\n返回 2 个值，分别为 矩阵的实部和虚部。
+eval(__) = 在工作区解析字符串参数 @1 指定的 MATLAB 表达式，返回解析结果。
+assign(tab) = @.assign({
+	__/*在参数表中定义多个名值对。\n这些名字和值将作为变量名与变量值写入工作区。*/
+})
+end intellisense*****/

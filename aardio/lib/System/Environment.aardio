@@ -1,0 +1,30 @@
+﻿//Environment 环境  
+import dotNet; 
+import System;
+
+dotNet.import("System.Environment","mscorlib");
+
+namespace System{
+ 	Environment[["Framework4Later"]] = lambda() Environment.Version.Major >= 4;
+	Environment[["Framework450Later"]] = lambda() Environment.Version >= Version("4.0.30319.32911");
+	Environment[["Framework451Later"]] = lambda() Environment.Version >= Version("4.0.30319.33440");
+	Environment[["Framework452Later"]] = lambda() Environment.Version >= Version("4.0.30319.34209");
+	Environment[["Framework460Later"]] = lambda() Environment.Version >= Version("4.0.30319.42000");   
+}
+ 
+/**intellisense()
+System.Environment = .NET 名字空间 System.Environment
+System.Environment.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+System.Environment.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
+end intellisense**/
+
+/*****intellisense(System.Environment)
+Version =  CLR 运行时完整版本，System.Version 对象。\n注意 CLR 版本 不是指 .NET Framework 版本。\n如果要在导入 dotNet 库前检测版本，可改用 dotNet.version 库
+Version.Major = 主版本号，只会是 2 或 4 。
+Version.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+Framework4Later() = 当前加载的 .NET Framework 版本是否大于 v4.0
+Framework450Later() = 当前加载的 .NET Framework 版本是否大于 v4.5。\nWin8 开始自带此版本
+Framework451Later() = 当前加载的 .NET Framework 版本是否大于 v4.5.1
+Framework452Later() = 当前加载的 .NET Framework 版本是否大于 v4.5.2
+Framework460Later() = 当前加载的 .NET Framework 版本是否大于 v4.6。\nWin10 开始自带此版本，所以也可以检测全局常量 _WIN10_LATER
+end intellisense*****/
