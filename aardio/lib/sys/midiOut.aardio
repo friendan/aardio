@@ -30,7 +30,7 @@ class midiOut{
 				if(err){
 					var buf = ..raw.buffer(1024);
 					if(0==::Winmm.midiOutGetErrorTextW(err,buf,512))
-						return null,..string.fromUnicode(buf);
+						return null,..string.fromUtf16(buf);
 				}
 				return null; 
 			}

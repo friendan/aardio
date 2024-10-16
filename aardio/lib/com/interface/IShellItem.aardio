@@ -13,7 +13,7 @@ class IShellItem {
 	getDisplayFilePath = function(){ 
 			var hr,wpath = owner.GetDisplayName(0x80058000/*_SIGDN_FILESYSPATH*/); 
 			if( hr>=0/*_SUCCEEDED*/){
-				return  ..string.fromUnicode(wpath,,-1);
+				return  ..string.fromUtf16(wpath,,-1);
 			}  
 	} 
 }

@@ -15,18 +15,18 @@ namespace style {
   	var GetStyleAttribute = dll.api("HTMLayoutGetStyleAttribute", "int(pointer he, pointer name, pointer& p_value)");
 	var SetStyleAttribute = dll.api("HTMLayoutSetStyleAttribute", "int(pointer he, pointer name, pointer value)");
 	
-	var fromUnicode = ..string.fromUnicode;
-  	var toUnicode = ..string.toUnicode;
+	var fromUtf16 = ..string.fromUtf16;
+  	var toUtf16 = ..string.toUtf16;
   	
 	_meta = {
 		_get = function(k){
 			var r,p = GetStyleAttribute(owner.element.handle,k);
 			if( r == 0/*_HLDOM_OK*/ ){
-				return fromUnicode(p, ,true)
+				return fromUtf16(p, ,true)
 			}
 		}
 		_set = function(k,v){
-			SetStyleAttribute(owner.element.handle,k,v!==null ? toUnicode(tostring(v)):null  );
+			SetStyleAttribute(owner.element.handle,k,v!==null ? toUtf16(tostring(v)):null  );
 		};
 	}
 }

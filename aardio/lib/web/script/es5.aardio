@@ -2,15 +2,18 @@
 import web.script;
 
 namespace web.script.es5{};
+
 namespace web.script.preload.es5 begin
 
 language = {
 	javascript = true;
 	jscript = true;
+	jscript9 = true; 
 }
 
-code = /**********
+//@ENDDOCUMENT@//
 // es5-shim & es5-sham:https://github.com/es-shims/es5-shim/blob/master/LICENSE
+code = /**********
 ;(function (root, factory) {
 'use strict';
 if (typeof define === 'function' && define.amd) {

@@ -12,7 +12,7 @@ class hString{
 				}
 			}
 			else {
-				str = ..string.toUnicode(tostring(str))
+				str = ..string.toUtf16(tostring(str))
 				newString = {ptr handle}
 				if(0===::ComBase.WindowsCreateString(str,#str/2,newString)){
 					this.handle = newString.handle;
@@ -46,7 +46,7 @@ namespace hString{
 			
 			var size ={INT value}
 			var s = ::ComBase.WindowsGetStringRawBufferP(owner.handle,size)	
-			if(s) return ..string.fromUnicode(s,,size.value);
+			if(s) return ..string.fromUtf16(s,,size.value);
 		}; 
 		_concat = function(v){
 			var out = {ptr v}

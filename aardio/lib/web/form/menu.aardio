@@ -60,4 +60,4 @@ class menu{
 web.form.menu(wb,menu) = @.menu( __/*web.form 对象*/, {\n    [2/*_CONTEXT_MENU_CONTROL*/] = {  \n        { "撤消";"Undo" }; \n        { /*-----*/};  \n        { "剪切";"Cut"}; \n        { "复制";"Copy"}; \n        { "粘贴";"Paste"};\n        { "删除";"Delete"}; \n        { /*-----*/};\n        { "全选";"SelectAll"};  \n    };\n    [4/*_CONTEXT_MENU_TEXTSELECT */] = {  \n        { "剪切";"Cut" }; \n        { "复制";"Copy" }; \n        { "粘贴";"Paste" };\n        { "删除";"Delete" };\n    };  \n} );
 end intellisense**/ 
 
-//http://bbs.aardio.com/doc/html/dhtml/commandids.html
+//https://developer.mozilla.org/docs/Web/API/Document/execCommand

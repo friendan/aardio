@@ -1,4 +1,4 @@
-import win.ui;
+﻿import win.ui;
 import win.ui.atom;
 /*DSG{{*/
 var mainForm = win.form(text="高级选项卡演示";right=917;bottom=681;bgcolor=16777215;border="none";exmode="none";max=false;min=false;mode="popup")
@@ -133,7 +133,7 @@ mainForm.btnCreateProject.oncommand = function(id,event){
 	);
 	 
 	
-	var projectFile = fsys.joinpath(dstDir,"default.aproj");
+	var projectFile = io.joinpath(dstDir,"default.aproj");
 	if(!io.exist( projectFile ) ){
 		mainForm.msgboxErr("复制工程文件到目标目录失败!","aardio工程向导")
 	}
@@ -170,7 +170,7 @@ mainForm.btnCreateProject.oncommand = function(id,event){
 	}
 	
 	import string.template;
-	var pathMain = fsys.joinpath(dstDir,"main.aardio");
+	var pathMain = io.joinpath(dstDir,"main.aardio");
 	var strMain = string.load( pathMain );
 	if(strMain){
 		strMain = string.removeBom(strMain);
@@ -208,6 +208,10 @@ if(_ARGV.opt == "test"){\r\n
 			string.save(pathMain,strMain)	
 		}
 	} 
+	
+	if(tbs.selForm.onProjectCreated){ 
+		tbs.selForm.onProjectCreated(dstDir,pathMain);
+	}
 	 
 	/*-------------------------------
 	 * 修改自定义工程属性结束
@@ -289,7 +293,7 @@ mainForm.chkArgv.onMouseLeave = function(wParam,lParam){
 }
 
 mainForm.lnkCmdline.oncommand = function(id,event){
-	ide.libDocument("string.cmdline");
+	ide.libMan("string.cmdline");
 }
 
 mainForm.chkArgv.oncommand = function(id,event){

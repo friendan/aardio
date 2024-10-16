@@ -24,8 +24,8 @@ class cgi{
 			response.error(err);
 			return; 
 		}
-		
-		prcs.assignToJobObject(..process.job.limitKill);
+		 
+		prcs.killOnExit();
 		prcs.codepage = 65001;
 		if(request.contentLength){
 			prcs.write( request.postData() )
@@ -35,7 +35,7 @@ class cgi{
 		
 		var strHeaders = "";
 		var httpHeaders;
-		while( var char = prcs.stdOut.read(1) ) {
+		while( var char = prcs.stdOut.read(1) ) { 
 			strHeaders = strHeaders ++ char;
 			if(..string.endWith(strHeaders,'\r\n\r\n')){
 				strHeaders = ..string.left(strHeaders,-5);
@@ -77,6 +77,10 @@ class cgi{
 			   		response.write(out); 
 			   }
 			   else {
+			   		if(!..string.isUtf8(err)){
+						err = ..string.fromto(err,0,65001);
+					}
+				
 			   		..io.stderr.write(err);
 			  		response.error(err); 	
 			   } 
@@ -86,6 +90,9 @@ class cgi{
 		else{ 
 			var err = prcs.readErr(-1);
 			if(#err){
+				if(!..string.isUtf8(err)){
+					err = ..string.fromto(err,0,65001);
+				}
 				..io.stderr.write(err);
 				response.error(err); 
 			}

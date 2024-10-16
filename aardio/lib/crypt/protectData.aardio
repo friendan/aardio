@@ -17,7 +17,7 @@ decrypt = function(dataIn,unhex,flags){
  
 		var ret,desc = ..raw.buffer(dataOut.cbData,dataOut.data);
 		if(description.v){
-			desc = ..string.fromUnicode(description.v,,-1)
+			desc = ..string.fromUtf16(description.v,,-1)
 			::Kernel32.LocalFree(description.v);
 		}
 		::Kernel32.LocalFree(dataOut.data);

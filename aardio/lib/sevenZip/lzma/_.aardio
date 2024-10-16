@@ -93,7 +93,7 @@ unCompress = function( src,header ){
 save = function(str,path,...){
 	var h,s = compress(str,...)
 	if( h ){
-		var file,err = ..io.open(path,"w+b")
+		var file,err = ..io.file(path,"w+b")
 		if(!file) return null,err;
 		file.write(h);
 		file.write(s);
@@ -103,7 +103,7 @@ save = function(str,path,...){
 }
 
 load = function(path){
-	var file,err = ..io.open(path,"rb")
+	var file,err = ..io.file(path,"rb")
 	if(!file) return null,err;
 	
 	var header = LZMA_HEADER(); 

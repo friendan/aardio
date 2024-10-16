@@ -18,7 +18,7 @@ getString = function(lcid,lcType,low,len){
 	var len = f(lcid,lcType,buf,len);
 
 	if(len){
-		buf = ..string.fromUnicode(buf,,len-1);
+		buf = ..string.fromUtf16(buf,,len-1);
 		return low?..string.lower(buf):buf;
 	}	
 }

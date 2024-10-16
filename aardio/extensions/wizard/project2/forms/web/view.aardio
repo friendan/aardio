@@ -8,7 +8,7 @@ winform.add()
 import web.form; 
 var wb = web.form( winform);
 
-wb.html = /**
+var html = /**
 <!doctype html>
 <html>
 <head>
@@ -19,17 +19,33 @@ wb.html = /**
 	onClickVersion = function(radio){  
 		window.webProject = radio.value;
 	}
+	
+	window.libPath = "<? = (_WIN10_LATER ? "import web.view;" : "import web.view.7;") ?>"
+	onClickLibVersion = function(radio){  
+		window.libPath = radio.value;
+	}
 	</script>
 </head>
-<body style="margin:15px 5px">
+<body style="margin:10px 5px;line-height:128%">
 请选择前端项目：<label><input type="radio" name="webProject" value="view" checked onclick="onClickVersion(this)">React</label> 
 <label><input type="radio" name="webProject" value="view-vue" onclick="onClickVersion(this)">Vue</label> 
 <label><input type="radio" name="webProject" value="view-htmx" onclick="onClickVersion(this)">htmx</label> 
+<br><? 
+if(_WIN10_LATER){
+	?>请选择兼容设置：<label><input type="radio" checked name="lib" value="import web.view;" onclick="onClickLibVersion(this)">web.view</label> 
+	<label><input type="radio" name="lib" value="import web.view.7;" onclick="onClickLibVersion(this)">web.view.7（兼容 Win7+）</label>
+	<?	
+}
+else {
+	?>请选择兼容设置：<label><input type="radio"  name="lib" value="import web.view;" onclick="onClickLibVersion(this)">web.view</label> 
+	<label><input type="radio" name="lib" checked value="import web.view.7;" onclick="onClickLibVersion(this)">web.view.7（兼容 Win7+）</label>
+	<?
+}?>
 <br><br>
 web.view 基于微软 WebView2（Edge/Chromium内核），<br>
 WebView2 稳定可靠、性能强悍、接口简洁，可生成体积很小的独立 EXE 程序。<br>
 <br>
-WebView2 支持 Win10 以及之后的系统。<br>
+WebView2 支持 Win7 以及之后的系统。<br>
 Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 WebView2。<br>
 版本小于 1803 的 Win10 很罕见可以忽略不计。<br><br>
 WebView2 属于公共运行库，如果系统已安装就不需要再安装了。<br>
@@ -45,6 +61,8 @@ WebView2 属于公共运行库，如果系统已安装就不需要再安装了�
 </body>
 </html>
 **/
+wb.loadcode(html);
+
 
 wb.BeforeNavigate2 = function( pDisp, url, flags, targetFrame, postData, headers, cancel ) { 
 	import process;
@@ -59,6 +77,11 @@ winform.setTimeout(
 
 winform.getTemplatePath = function(){
 	return io.fullpath("/template/web/" + wb.eval("window.webProject")) 
+}
+
+import fsys;
+winform.onProjectCreated = function(projectDir,pathMain){
+	..fsys.replace(pathMain,"import\s+web.view\;",wb.eval("window.libPath"));
 }
 
 winform.show(); 

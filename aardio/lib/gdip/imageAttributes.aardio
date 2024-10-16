@@ -105,6 +105,12 @@ namespace imageAttributes {
 		reset = function(adjustType){
 			gdip.assert2( ::Gdiplus.GdipResetImageAttributes(owner[["pImgAttr"]],adjustType));
 		} 
+		setGamma = function(gamma,adjustType){
+			gdip.assert2( ::Gdiplus.GdipSetImageAttributesGamma(owner[["pImgAttr"]],adjustType,gamma!==null,..raw.float(gamma)) )
+		};
+		setThreshold = function(threshold,adjustType){
+			gdip.assert2( ::Gdiplus.GdipSetImageAttributesThreshold(owner[["pImgAttr"]],adjustType,threshold!==null,..raw.float(threshold)) )
+		};
 		dispose = function(){
 			if( owner[["pImgAttr"]] ){
 				::Gdiplus.GdipDisposeImageAttributes(owner[["pImgAttr"]])
@@ -123,6 +129,10 @@ gdip.imageAttributes() = 创建图像显示属性控制对象\n!gdip_imgattr.
 end intellisense**/
 
 /**intellisense(!gdip_imgattr)
+setThreshold( = 设置阈值
+setThreshold(.(threshold,adjustType) = 参数 @threshold 指定阈值。\n如果不指定阈值（null 值）则清除阈值。\n\n阈值是一个介于 0 到 1 之间的值，该值指定每个颜色分量的截止点。\nadjustType 使用 _GdipColorAdjustType 前缀的常量指定，省略则默认为 0。
+setGamma( = 设置伽马值
+setGamma(.(gamma,adjustType) = 参数 @gamma 指定伽马值。\n如果不指定伽马值（null 值）则清除伽马值。\n\nadjustType 使用 _GdipColorAdjustType 前缀的常量指定，省略则默认为 0。
 setAlphaMatrix(__) = 设置透明度调色矩阵,\n参数使用表示百分比的小数，例如0.5为Alpha分量调整至50%
 setNegativeMatrix(__) = 设置反相调色矩阵
 setRgba(.(r,g,b,a) = 设置r,g,b,a分量的变化比例,\n参数使用表示百分比的小数，例如0.5表示对应分量调整至50%,\n所有参数可选，默认值都是1
@@ -132,7 +142,7 @@ setColorMatrix(colorMatrix,grayMatrix,adjustType) = @.setColorMatrix({
 	0;1;0;0;0;
 	0;0;1;0;0;
 	0;0;0;1;0;
-	0;0;0;0;1__/*colorMatrix为null取消调色矩阵\ngrayMatrix可省略,设为false时忽略灰度,也可以指定一个灰度矩阵\nadjustType使用_GdipColorAdjustType前缀的常量指定,省略则默认为0*/
+	0;0;0;0;1__/*colorMatrix为null取消调色矩阵\ngrayMatrix可省略,设为false时忽略灰度,也可以指定一个灰度矩阵\nadjustType使用_GdipColorAdjustType 前缀的常量指定,省略则默认为0*/
 })
 setRemapTable(colorMap,adjustType) = @.setRemapTable({
 	0xFF00FFFF;0xFFFF0000__/*ccolorMap为null取消颜色映射表\n颜色映射表包含成对的颜色值数组,每一对颜色值使用后面的颜色替换前面的颜色,\nadjustType使用_GdipColorAdjustType前缀的常量指定,省略则默认为0*/

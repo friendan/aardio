@@ -1,4 +1,4 @@
-//config 配置文件
+﻿//config 配置文件
 import fsys;
 import fsys.table;
 namespace fsys;
@@ -44,7 +44,7 @@ namespace config{
 				return self._meta.saveAll;
 			}
 			 
-			var cfg = ..fsys.table( ..fsys.joinpath( owner[["_cfgDir"]] , k + ".table" ) );
+			var cfg = ..fsys.table( ..io.joinpath( owner[["_cfgDir"]] , k + ".table" ) );
 			
 			owner[[k]] = cfg; 
 			return cfg; 

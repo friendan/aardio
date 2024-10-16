@@ -47,8 +47,8 @@ namespace element{
 	} );
 	
 	
-  	var fromUnicode = ..string.fromUnicode;
-  	var toUnicode = ..string.toUnicode
+  	var fromUtf16 = ..string.fromUtf16;
+  	var toUtf16 = ..string.toUtf16
  
 	_metaProperty = ..util.metaProperty(
 		_topointer = function(){
@@ -83,7 +83,7 @@ namespace element{
 			
 			var t = type(v); 
 			if( ( t == "string" ) ||  ( v === null ) ){
-				SetAttributeByName(owner[["handle"]], n,toUnicode(v) );
+				SetAttributeByName(owner[["handle"]], n,toUtf16(v) );
 			}
 			else{
 				owner[[n]] = v;
@@ -92,7 +92,7 @@ namespace element{
 		get = function (n) {
 			if( !owner[["handle"]]  ) return null;
 			var re,v = GetAttributeByName(owner[["handle"]], n );
-			if ( re==0 && v) return fromUnicode(v,,true) : "";  
+			if ( re==0 && v) return fromUtf16(v,,true) : "";  
 		}
 		getCustomAttribute = function(n){
 			var v = owner.getAttribute(n)
@@ -106,7 +106,7 @@ namespace element{
 				if( i < count ){
 					var re,n,v = GetNthAttribute(owner,i)
 					if( re == 0/*_HLDOM_OK*/)  
-						return i+1, ..raw.str( n ),fromUnicode(v,,true);
+						return i+1, ..raw.str( n ),fromUtf16(v,,true);
 				}
 			},owner[["handle"]],0
 		};
@@ -569,10 +569,10 @@ namespace element{
 				return element_t(he);
 		} 
 		combineUrl = function(url){
-			var buffer = ..raw.buffer(0x800, ( toUnicode(url) ) );
+			var buffer = ..raw.buffer(0x800, ( toUtf16(url) ) );
 			var re = ::HTMLayout.HTMLayoutCombineURL(owner[["handle"]],buffer,0x800);
 			if( re == 0/*_HLDOM_OK*/)
-				..string.fromUnicode(buffer,,true); 
+				..string.fromUtf16(buffer,,true); 
 		}
 		capture = { 
 			_set = function( v ){ 
@@ -670,12 +670,12 @@ namespace element{
 				var postData = {};
 				if( type(param) == type.table ){
 					for(k,v in param){
-						push( postData,{ pointer name = toUnicode(k); pointer value = toUnicode(v); } )
+						push( postData,{ pointer name = toUtf16(k); pointer value = toUtf16(v); } )
 					} 
 				}
 				else {
 					for k,v in ..string.gmatch( param,"([^&]+)=([^&=]*)") { 
-						push( postData,{ pointer name = toUnicode(k); pointer value = toUnicode(v); } )
+						push( postData,{ pointer name = toUtf16(k); pointer value = toUtf16(v); } )
 					}
 				}
 				param_c = {struct array[] = postData }
@@ -687,7 +687,7 @@ namespace element{
 				if(rt===null) rt = "GET";
 				len = 0;
 			};
-			return 0 == HttpRequest( owner[["handle"]],toUnicode(uri),dt,rt!="GET"?1:0,param_c,len);
+			return 0 == HttpRequest( owner[["handle"]],toUtf16(uri),dt,rt!="GET"?1:0,param_c,len);
 		};
 		attachEventHandler = function( handler,subscription ){
 			var hOwner;
@@ -824,7 +824,7 @@ namespace element{
 			} , "int(pointer he, pointer)"
 		);
 		visitElement = function (tagName, attrName, attrValue, depth ) {
-			if( 0/*_HLDOM_OK*/ = VisitElements(owner[["handle"]], tagName, attrName,toUnicode(attrValue), _visitElement_callback_c,  , depth : 0 ) ){
+			if( 0/*_HLDOM_OK*/ = VisitElements(owner[["handle"]], tagName, attrName,toUtf16(attrValue), _visitElement_callback_c,  , depth : 0 ) ){
 				var ret = element_t( _visitElement_callback_result );
 				_visitElement_callback_result = null;
 				return ret;
@@ -839,7 +839,7 @@ namespace element{
 		);
 		visitElements = function (tagName, attrName, attrValue, depth ) { 
 			_visitElements_callback_result = {};  
-			if( 0/*_HLDOM_OK*/ = VisitElements(owner[["handle"]], tagName, attrName,toUnicode(attrValue), _visitElements_callback_c,  , depth : 0) ){ 
+			if( 0/*_HLDOM_OK*/ = VisitElements(owner[["handle"]], tagName, attrName,toUtf16(attrValue), _visitElements_callback_c,  , depth : 0) ){ 
 				var ret = _visitElements_callback_result;
 				_visitElements_callback_result = null;
 				return ret;
@@ -920,7 +920,7 @@ namespace element{
 		var _enumStyle_callback_c  = ..raw.tostdcall( 
 				function(pdef,tagParam){
 					var s = ..raw.convert(pdef,HTMLayoutCSSRuleDef() );
-					_callBackRegistry[tagParam]( fromUnicode(s.selector,,true),_enumStyle_ruleType[s.rule_type],s.file_url,s.file_line_no )
+					_callBackRegistry[tagParam]( fromUtf16(s.selector,,true),_enumStyle_ruleType[s.rule_type],s.file_url,s.file_line_no )
 				},"void( pointer pdef,INT tagParam)"
 		);
 		enumStyle = function(proc){ 
@@ -955,7 +955,7 @@ namespace element{
 				},"bool( pointer prms, INT data)"
 		); 
 		replaceSel = function(s){
-			s =  toUnicode(s,,false);  
+			s =  toUtf16(s,,false);  
 			if(s) return owner._callMethod( { INT methodID = 5/*_HL_TEXT_EDIT_REPLACE_SELECTION*/; 
 				pointer text = s; INT text_length = #s / 2; } );
 		};  
@@ -964,7 +964,7 @@ namespace element{
 				selBuffer = {};
 				owner._callMethod( { INT methodID = 9/*_HL_TEXT_EDIT_GET_SELECTION_TEXT*/; 
 					pointer outProc = _selText_callback_c } );
-				return  fromUnicode(  ..string.pack(selBuffer) ) ; 
+				return  fromUtf16(  ..string.pack(selBuffer) ) ; 
 			};
 			_set  = replaceSel;
 		} 

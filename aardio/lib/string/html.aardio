@@ -9,10 +9,11 @@ class html{
 }
 
 namespace html;
-    
+
+//可选标签，用于处理可以省略闭合标签的元素    
 optionalTags = {
-    body={head=1};
-	li={li=1};
+    body={head=1};// body 元素开始标签可自动关闭上一个省略结束标签的 head 节点
+	li={li=1};//li 元素开始标签可自动关闭上一个省略结束标签的 li 节点
 	dt={dt=1;dd=1};
 	dd={dt=1;dd=1};
 	rt={rt=1;rp=1};
@@ -133,11 +134,15 @@ fromText = function(v){
 }
 
 ncr =  ..string.xml.ncr;
+ncrEncode =  ..string.xml.ncrEncode;
+escape =  ..string.xml.escape;
 /**intellisense()
-string.html = HTML简单解析器\n\n严格的校验HTML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写\n支持识别HTML空标签、省略闭合标签规则
+string.html = HTML 简单解析器。\n\n严格的校验 HTML 语法正确性不是本模块的设计目标，\n所以此解析器尽可能兼容错误,兼容了 HTML,SGML 的部分规则:\n1. 不要求存在根标签 \n2. 尝试自动修正不配对的标记 \n3. 在有必要的时候尝试忽略大小写\n4. 支持识别 HTML 空标签、省略闭合标签规则
 string.html(__) = 创建HTML解析器,参数请指定包含HTML代码的字符串,\n调用string.xml解析HTML代码,用法与string.xml相同\n但支持识别HTML空标签、省略闭合标签规则\n\n此对象不支持 table.tostring , console.dump 函数，不能跨线程传递
 string.html() = !string_xml.
-string.html.ncr(__) = NCR字符编码、HTML实体字符还原为UTF8文本
+string.html.escape(__) = 将字符串中的 < > " ' & 等 HTML 标记字符编码为实体字符（entity）。\n如果参数为非 null 值则返回转换后的字符串。\n参数只能是 null 或字符串、buffer
+string.html.ncrEncode(.(str,pattern) = 将字符串参数 @str 中以 @pattern 指定模式串所匹配的字符进行 NCR 编码。\n参数 @pattern 可用模式匹配语法指定要编码的字符，省略则默认为 ":|."。\n返回编码后的字符串。
+string.html.ncr(__) = NCR 字符编码、HTML 实体字符还原为 UTF8 文本
 string.html.toText(__/*HTML代码*/) = 将HTML代码转换为文本
 string.html.fromText(__/*普通文本*/) = 将普通文本转换为HTML
 string.html.removeTag(html,"script__") = 移除指定的html标记,支持不定个数的标记参数

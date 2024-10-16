@@ -28,11 +28,17 @@ find = function(v){
         		error("请指定原子窗体名称参数",2)	
         			
 			v = tostring(v);
-			var atomId,hwndConflict =  find(v);  
+			var atomId,hwndConflict =  find(v); 
 			
+			var isHung = function(hwnd,timeout=500){
+				return ( ::User32.IsHungAppWindow(hwnd) ) or  
+					( ! ::SendMessageTimeout(hwnd,0x0/*_WM_NULL*/, , ,0x2/*_SMTO_ABORTIFHUNG*/,timeout,0 ) ); 
+			}  
+						
 			if (atomId) { 
 			 	if(hwndConflict){
-			 		if(..win.isVisible(hwndConflict)){
+			 		if(..win.isVisible(hwndConflict)
+			 			&& !isHung(hwndConflict) ){
 			 			..win.show(hwndConflict,0x9/*_SW_RESTORE*/);
 			 		}
 			 		
@@ -52,6 +58,3 @@ find = function(v){
 /**intellisense(win.ui.atom)
 find("__/*原子窗体唯一名称*/") = 在桌面顶层窗口查找原子窗体,\n返回原子值,以及原子窗体句柄.
 end intellisense**/
-
-
-

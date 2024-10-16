@@ -50,7 +50,7 @@ class element{
 				var len = ::OleAcc.GetRoleTextW(role,null,0);
 				var buf = ..raw.buffer(len*2);
 				len = ::OleAcc.GetRoleTextW(role,buf,len+1/*the terminating null character*/);
-				roleText = ..string.fromUnicode(buf)
+				roleText = ..string.fromUtf16(buf)
 			}
 		}
 		return roleText;
@@ -68,7 +68,7 @@ class element{
 				var len = ::OleAcc.GetStateTextW(state,null,0);
 				var buf = ..raw.buffer(len*2);
 				len = ::OleAcc.GetStateTextW(state,buf,len+1/*the terminating null character*/);
-				stateText = ..string.fromUnicode(buf)
+				stateText = ..string.fromUtf16(buf)
 			}
 		}
 		return stateText;

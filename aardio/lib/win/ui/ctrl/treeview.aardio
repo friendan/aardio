@@ -597,7 +597,7 @@ namespace treeview{
 						
 						var hItem,flags = owner.hitTest();  
 						if( hItem && ( flags & 6/*_TVHT_ONITEMLABEL | _TVHT_ONITEMICON*/) ){
-			 				owner.onClick( hItem,owner.getItemData(hItem) );
+			 				return owner.onClick( hItem,owner.getItemData(hItem) );
 						} 
 					}
 				}
@@ -616,7 +616,7 @@ namespace treeview{
 						
 						var hItem,flags = owner.hitTest();
 						if( hItem ){
-			 				owner.onRightClick( hItem,owner.getItemData(hItem) );
+			 				return owner.onRightClick( hItem,owner.getItemData(hItem) );
 						} 
 					}
 				}
@@ -635,12 +635,58 @@ namespace treeview{
 						
 						var hItem,flags = owner.hitTest();
 						if( hItem && ( flags & 6/*_TVHT_ONITEMLABEL | _TVHT_ONITEMICON*/) ){ 
-			 				owner.onDoubleClick( hItem,owner.getItemData(hItem) );
+			 				return owner.onDoubleClick( hItem,owner.getItemData(hItem) );
 						} 
 					}
 				}
 			}	
-		};  
+		}; 
+		onStateImageChanging = {
+			_get = function(){   
+				return owner[["onStateImageChanging"]];
+			}
+			_set = function(v){    
+				owner[["onStateImageChanging"]] = v;
+				
+				owner.prenotify = {
+					[0xFFFFFFE8/*_NM_TVSTATEIMAGECHANGING*/] = function(id,code,ptr){
+						if( ! owner.onStateImageChanging && ptr  ) return;
+						 
+						var nm =  ..raw.convert(ptr,{
+    						struct hdr = ::NMHDR();
+    						pointer hti;
+  							int oldIndex;
+  							int newIndex;
+						} ); 
+						  
+			 			return owner.onStateImageChanging( nm.hti,nm.newIndex!=1, nm.newIndex,nm.oldIndex,nm);
+					}
+				}
+			}	
+		}; 
+		onDeleteItem= {
+			_get = function(){   
+				return owner[["onDeleteItem"]];
+			}
+			_set = function(v){    
+				owner[["onDeleteItem"]] = v;
+				
+				owner.prenotify = {
+					[0xFFFFFE36/*_TVN_DELETEITEMW*/] = function(id,code,ptr){
+						if( ! owner.onDeleteItem && ptr  ) return;
+						 
+						 var nm =  ..raw.convert(ptr,NMTREEVIEW());  
+						 var hItem = nm.itemOld.hItem;
+						 
+			 			 var ret = owner.onDeleteItem(hItem,nm);
+						 var rc = owner.getItemRect(hItem)	
+  						 owner.invalidate(rc)
+  						 
+  						 return ret;
+					}
+				}
+			}	
+		}; 
 	);
 
 	// @Deprecated
@@ -669,7 +715,7 @@ namespace treeview{
 	
 	tvItemCheckMask = function(item){
 		if( (item.mask & 1/*_TVIF_TEXT*/) && (item.textPtr) ) {
-			if( item.textPtr != _LPSTR_TEXTCALLBACK)  item.text = ..string.str( ..string.fromUnicode(item.textPtr,,item.cchTextMax*2) );
+			if( item.textPtr != _LPSTR_TEXTCALLBACK)  item.text = ..string.str( ..string.fromUtf16(item.textPtr,,item.cchTextMax*2) );
 			else item.textPtr = _LPSTR_TEXTCALLBACK;
 		}
 		else 
@@ -684,7 +730,7 @@ namespace treeview{
 				item.cchTextMax = #item.textPtr /2;
 			}
 			elseif( type(item.textPtr) != type.pointer ) {
-				item.textPtr = ..string.toUnicode( (tostring(item.textPtr) ) );
+				item.textPtr = ..string.toUtf16( (tostring(item.textPtr) ) );
 				item.cchTextMax = #item.textPtr /2;
 			}; 
 			item.mask |= 1/*_TVIF_TEXT*/;
@@ -861,13 +907,19 @@ onSelChanged = @.onSelChanged = function(hItem,data,nmTreeView){
 	__/*改娈当前节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据。\nnmTreeView 为 NMTREEVIEW 结构体参数*/
 }
 onClick = @.onClick = function(hItem,data){
-	__/*单击节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据*/	
+	__/*单击节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据。\n可返回 true 阻止默认处理。\n注意在双击后控件自动获取焦点。*/	
 }
 onDoubleClick = @.onDoubleClick = function(hItem,data){
-	__/*双击节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据*/
+	__/*双击节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据。\n可返回 true 阻止默认处理*/
 }
 onRightClick = @.onRightClick = function(hItem,data){
 	__/*右键点击节点触发此事件，\nhItem 为当前节点句柄，data 为该节点绑定的自定义数据*/	
+}
+onStateImageChanging = @.onStateImageChanging = function(hItem,checked,newImgIndex,oldImgIndex){
+      
+     __/*状态图像（通常指复选框）变更触发此事件。\nhItem 为树视图的变更节点句柄。\nchecked 为是否切换到勾选图像索引，也就是 2。\nnewImgIndex,oldImgIndex 分别为新旧状态图像索引。\n注意勾选操作并不改变当前节点，默认勾选完成会弹回原来的选中节点。\n可调用 setSelected 函数选中当前操作的节点 */
+     //选定节点
+     winform.treeview.setSelected(hItem);
 }
 end intellisense**/
 

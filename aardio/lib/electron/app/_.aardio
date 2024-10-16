@@ -432,7 +432,7 @@ class app{
 		);
 		
 		if( (!_STUDIO_INVOKED) && ( (!this.appPath) || (this.appPath == "/electron.app") ) ){
-			var file = ..io.open(..io._exepath,"rb");
+			var file = ..io.file(..io._exepath,"rb");
 			
 			if( file ){
 				file.seek("end",-4);

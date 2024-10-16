@@ -19,12 +19,13 @@ class latest{
 			} 
 			, subfiles
 		);
-		
-		..table.sort(paths,lambda(b)owner[2]<b[2]);
+		 
+		..table.sort(paths,lambda(b)owner[1]>b[1]);
 		return paths[1][2];
 	}; 
 }
 
 /*****intellisense()
+fsys.latest( = 获取最新文件路径。\n这是一个独立的标准库，需要用 import 语句导入才能使用。
 fsys.latest(.(目录,文件名,搜索所有下级目录) = 搜索目录下符合条件的文件中最后一个被修改过的文件路径。\n参数 @2 支持通配符，默认为 "*.*"。\n参数 @3 指定是否搜索所有下级子目录，默认为 false
 end intellisense*****/

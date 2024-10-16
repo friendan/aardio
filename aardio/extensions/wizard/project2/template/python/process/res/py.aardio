@@ -4,7 +4,7 @@ import json
 str = json.dumps(['foo', "<?= 
 
 time() //可使用模板语法嵌入 aardio  代码
-//模板语法手册: chm://the%20language/template_syntax.html
+//模板语法手册: doc://language-reference/templating/syntax.md
 
 ?>",{'bar': ('baz', None, 1.0, 2)},sys.argv])
 

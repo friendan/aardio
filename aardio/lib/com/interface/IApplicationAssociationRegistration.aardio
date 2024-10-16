@@ -287,11 +287,11 @@ namespace com.interface {
 				if( queryType === null ) queryType = query[1] != '.'# ? 1/*_AT_URLPROTOCOL*/ : 0/*_AT_FILEEXTENSION*/ ;
 				if( queryLevel === null ) queryLevel = 1/*_AL_EFFECTIVE*/;
 				
-				var hr,ptr = QueryCurrentDefault(..string.toUnicode(query),queryType,queryLevel);
+				var hr,ptr = QueryCurrentDefault(..string.toUtf16(query),queryType,queryLevel);
 				if(  (hr)<0/*_FAILED*/ ) return;
 				
 				if( ptr ){
-					var prog =  ..string.fromUnicode(ptr,,true);
+					var prog =  ..string.fromUtf16(ptr,,true);
 					::CoTaskMemFree(ptr);
 					return prog;
 				}
@@ -301,14 +301,14 @@ namespace com.interface {
 				if( queryType === null ) queryType = query[1] != '.'# ? 1/*_AT_URLPROTOCOL*/ : 0/*_AT_FILEEXTENSION*/ ;
 				if( queryLevel === null ) queryLevel = 1/*_AL_EFFECTIVE*/;
 				
-				var hr,default = QueryAppIsDefault(..string.toUnicode(query),queryType,queryLevel,..string.toUnicode(appName) );
+				var hr,default = QueryAppIsDefault(..string.toUtf16(query),queryType,queryLevel,..string.toUtf16(appName) );
 				if(  (hr)<0/*_FAILED*/ ) return;
 				return default;
 			};
 			queryAppIsDefaultAll = function(queryLevel,appName){
 				if( queryLevel === null ) queryLevel = 1/*_AL_EFFECTIVE*/;
 				
-				var hr,default = QueryAppIsDefaultAll( queryLevel,..string.toUnicode(appName) );
+				var hr,default = QueryAppIsDefaultAll( queryLevel,..string.toUtf16(appName) );
 				if(  (hr)<0/*_FAILED*/ ) return;
 				return default;
 				
@@ -317,11 +317,11 @@ namespace com.interface {
 				if( pszSet === null ) pszSet = "http";
 				if( setType === null ) setType = pszSet[1] != '.'# ? 1/*_AT_URLPROTOCOL*/ : 0/*_AT_FILEEXTENSION*/ ;
 				
-				var hr,default = SetAppAsDefault( ..string.toUnicode(appName),..string.toUnicode(pszSet),setType );
+				var hr,default = SetAppAsDefault( ..string.toUtf16(appName),..string.toUtf16(pszSet),setType );
 				if ( (hr)>=0/*_SUCCEEDED*/) return true; 
 			}
 			setAppAsDefaultAll = function(appName){  
-				var hr,default = SetAppAsDefaultAll( ..string.toUnicode(appName) );
+				var hr,default = SetAppAsDefaultAll( ..string.toUtf16(appName) );
 				if ( (hr)>=0/*_SUCCEEDED*/) return true;
 			}
 			clearUserAssociations = function(){

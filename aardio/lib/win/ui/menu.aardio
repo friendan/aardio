@@ -213,6 +213,10 @@ class menubase {
 			}  
 			
          	InsertMenu(this.handle,position,0x10/*_MF_POPUP*/| flag,tonumber(subMenu.handle),label );
+         	
+         	if( bitmap || bitmapCheckd){
+				this.setBitmap(tonumber(subMenu.handle),bitmap,bitmapCheckd,0x0/*_MF_BYCOMMAND*/)
+			}
          	this.saveSubMenu(subMenu); 
     	}
     	else{

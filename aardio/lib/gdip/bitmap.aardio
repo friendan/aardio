@@ -20,7 +20,7 @@ class bitmap {
 					
 					this.path = ..io.exist( arg) 
 					if( this.path ){ 
-						var e,pbmp = gdip.CreateBitmapFromFile (..string.toUnicode( this.path ) );
+						var e,pbmp = gdip.CreateBitmapFromFile (..string.toUtf16( this.path ) );
 						if(e) return null,..gdip.errMsg[e]
 				 		this.pBitmap = pbmp;  
 					} 
@@ -63,14 +63,21 @@ class bitmap {
 			if(e) return null,..gdip.errMsg[e]
 			this.pBitmap = pbmp;   
 		}
-		elseif( tArg == type.cdata && type.rget(arg) == "com.IPicture"){
-			var t;
-			if( arg.Type ==  0x3/*_PICTYPE_ICON*/ ) t =  0x1/*_IMAGE_ICON*/; 
-			elseif( arg.Type ==  0x1/*_PICTYPE_BITMAP*/ ) t =  0x0/*_IMAGE_BITMAP*/; 
-			if(t!==null){
-				var e,pbmp = gdip.createBitmapFromHandle ( arg.Handle,t );
-				if(e) return null,..gdip.errMsg[e]
-				this.pBitmap = pbmp;  
+		elseif( tArg == type.cdata){
+			var metaType = type.rget(arg);
+			
+			if(metaType == "com.IPicture"){
+				var t;
+				if( arg.Type ==  0x3/*_PICTYPE_ICON*/ ) t =  0x1/*_IMAGE_ICON*/; 
+				elseif( arg.Type ==  0x1/*_PICTYPE_BITMAP*/ ) t =  0x0/*_IMAGE_BITMAP*/; 
+				if(t!==null){
+					var e,pbmp = gdip.createBitmapFromHandle ( arg.Handle,t );
+					if(e) return null,..gdip.errMsg[e]
+					this.pBitmap = pbmp;  
+				} 	
+			}
+			elseif( type(...)=="number") {
+				return ..gdip.bitmap( ..raw.toPointer(arg),...)
 			} 
 		}
 		
@@ -414,7 +421,7 @@ end intellisense**/
  
 /**intellisense()
 gdip.bitmap = 位图对象
-gdip.bitmap.is(__) = 参数是否gdip.bitmap对象
+gdip.bitmap.is(__) = 参数 @1 是否 gdip.bitmap 对象
 gdip.bitmap( = 创建位图对象\n失败返回null,以及错误信息
 gdip.bitmap(.(图片文件路径或数据) = 创建GDI+位图对象\n如果事先导入标准库 inet.http,这里也可以直接传入图像网址
 gdip.bitmap(.(graphics对象,100,100) = 从指定的graphics对象创建GDI+位图副本\n对位图的修改不会影响原来的graphics对象\n参数(graphics对象,宽度,高度)
@@ -465,7 +472,7 @@ gdip.bitmap(.(宽,高,像素格式,内存指针,行扫描宽度) = 自内存指�
 !gdipbitmap.saveToStream(.(流对象,后缀名,输出质量) = 流对象请使用 fsys.stream 创建\n后缀名默认为"*.jpg",质量默认为100,\n可选在参数@4使用gdip.encoder.parameter数组指定保存参数	
 !gdipbitmap.saveToBuffer(.(后缀名,输出质量) = 保存图像到 buffer，返回 buffer,\n后缀名默认为"*.jpg",质量默认为100,\n可选在参数@3使用gdip.encoder.parameter数组指定保存参数	
 !gdipbitmap.save("__/*请输入文件路径*/") = 保存图像\n使用参数指定的文件路径或加载图片时的路径\n根据后缀名自动设定格式,\n可选在参数@3使用gdip.encoder.parameter数组指定保存参数	
-!gdipbitmap.save("__/*请输入文件路径*/",80) = 保存图像\n使用参数指定的文件路径或加载图片时的路径\n根据后缀名自动设定格式\njpg文件可使用第二个参数指定图像质量,\n可选在参数@3使用gdip.encoder.parameter数组指定保存参数	
+!gdipbitmap.save("__/*请输入文件路径*/",80) = 保存图像\n使用参数指定的文件路径或加载图片时的路径\n根据后缀名自动设定格式\njpg文件可使用第二个参数指定图像质量,\n可选在参数@3使用 gdip.encoder.parameter 数组指定保存参数	
 !gdipbitmap.saveAdd(.(图像路径) = 创建多帧图像,参数指定保存路径,\n使用saveAdd添加帧，添加帧参数@1不能指定路径,\n添加所有帧以后调用saveFlush函数即可
 !gdipbitmap.saveAdd(.() = 添加当前图像到多帧图像
 !gdipbitmap.saveAdd(.(图像) = 添加其他gdip.image或gdip.bitmap对象到多帧图像,\n可选使用参数2指定saveFlag，可选在参数@3使用gdip.encoder.parameter数组指定保存参数

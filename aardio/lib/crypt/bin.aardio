@@ -5,7 +5,7 @@ namespace crypt.bin;
 encode = ..crypt.encodeBin;
 decode = ..crypt.decodeBin;
 
-encodeBase64 = function(str,len,flags = 0x40000001/*_CRYPT_STRING_BASE64*/){
+encodeBase64 = function(str,len,flags = 0x40000001/*_CRYPT_STRING_BASE64|_CRYPT_STRING_NOCRLF*/){
 	return encode(str,len,flags);
 }
 
@@ -40,7 +40,7 @@ base64DataUrl = function(str,mime){
 	return ..string.format('data:%s;base64,%s',mime: "text/plain; charset=UTF-8",..string.replace(encodeBase64(str),"\r\n","") ) 
 }
  /**intellisense()
-crypt.bin = BASE64加密解密\n简单封装 crypt.encodeBin 以及 crypt.decodeBin 函数
+crypt.bin = BASE64加密解密。\n简单封装 crypt.encodeBin 以及 crypt.decodeBin 函数。\n相关库与函数： string.base32
 crypt.bin.encodeBase64(.(字符串,长度,选项) = Base64编码,\n字符串可以是指针,如果不是托管指针则应指定长度参数,\n否则长度参数可省略\n调用此函数不建议指定选项参数
 crypt.bin.decodeBase64(.(字符串,长度,选项) = Base64解码,\n字符串可以是指针,如果不是托管指针则应指定长度参数,\n否则长度参数可省略\n调用此函数不建议指定选项参数
 crypt.bin.encodeUrlBase64(.(字符串,长度,允许补等号) = UrlBase64编码,\n字符串可以是指针,如果不是托管指针则应指定长度参数,\n否则长度参数可省略\n\n返回字符串不包含用于尾部对齐的等号\n并且+替换为-,/替换为_，以保证作为URL参数可以安全传输

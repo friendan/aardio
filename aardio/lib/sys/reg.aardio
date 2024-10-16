@@ -20,7 +20,7 @@ setValue = function(name,value,path,root) {
 	var t = type(value);
 	if( t==="number" ) return setValueEx(name,{INT dw = value },4,4/*_REG_DWORD*/,path,root); 
 	elseif( t==="string"  ) {
-		value = ..string.toUnicode(value);
+		value = ..string.toUtf16(value);
 		return setValueEx(name,value,#value+2,1/*_REG_SZ*/,path,root); 
 	}
 	elseif( t==="buffer"  ) return setValueEx(name,value,#value,3/*_REG_BINARY*/,path,root); 

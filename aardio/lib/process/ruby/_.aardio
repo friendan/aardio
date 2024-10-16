@@ -6,7 +6,7 @@ import web.json;
 
 namespace process.ruby;
 
-install = function(url){
+getScriptPath = function(url){
     if(..io.exist(path)){
     	return path;
     }
@@ -15,7 +15,7 @@ install = function(url){
 		path = ..win.path.search("ruby.exe")
 		if(path) return path;
 		
-		url = "https://mirror.sjtu.edu.cn/github-release/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.0.0-1/rubyinstaller-3.0.0-1-x86.7z"
+		url = "https://mirror.sjtu.edu.cn/github-release/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.3.1-1/rubyinstaller-3.3.1-1-x86.7z"
 	}
 	
 	path = ..io.appData("aardio/std/ruby/" + ..io.splitpath(url).name + "/bin/ruby.exe")
@@ -25,14 +25,14 @@ install = function(url){
 	
 	var dir = ..sevenZip.decoder2.httpFile.download(url,"正在下载 Ruby",..io.appData("aardio/std/ruby/down"),..io.appData("aardio/std/ruby"))
 	if(dir){
-		 return ..io.exist(path)
+		return ..io.exist(path); 
 	}
-}
+} 
 
 workDir = ..io.fullpath("/")
 
 cmd = function(filename,param,...){
-	var rubyPath = install();
+	var rubyPath = getScriptPath(); 
 	if(!rubyPath) return;
 	rubyPath = ..io.splitpath(rubyPath).dir;
     
@@ -55,7 +55,10 @@ cmd = function(filename,param,...){
 		error("参数错误",2)
 	}
 	
-	var cmd =  ..io.exist( ..io.joinpath(rubyPath,filename + ".cmd" )) : ..fsys.shortpath( filename + ".cmd" ) :  filename;
+	var cmd =  ..io.exist( ..io.joinpath(rubyPath,filename + ".bat" ))
+		: ..io.exist( ..io.joinpath(rubyPath,filename + ".cmd" ))
+		: ..fsys.shortpath( filename + ".cmd" ) :  filename; 
+	
 	var prcs,err = ..process( cmd ,param,{workDir=..io.fullpath(self.workDir)});
 	if(prcs){
 		prcs.wait();
@@ -76,7 +79,7 @@ rake = function(...){
 }
 
 pcmd = function(filename,param,...){
-	var rubyPath = install();
+	var rubyPath = getScriptPath(); 
 	if(!rubyPath) return;
 	rubyPath = ..io.splitpath(rubyPath).dir;
 		
@@ -99,7 +102,10 @@ pcmd = function(filename,param,...){
 		error("参数错误",2)
 	}
 		
-	var cmd =  ..io.exist( ..io.joinpath(rubyPath,filename + ".cmd" )) : ..fsys.shortpath( filename + ".cmd" ) :  filename;
+	var cmd =  ..io.exist( ..io.joinpath(rubyPath,filename + ".bat" ))
+		: ..io.exist( ..io.joinpath(rubyPath,filename + ".cmd" ))
+		: ..fsys.shortpath( filename + ".cmd" ) :  filename;
+		
 	var prcs,err = ..process.popen( cmd ,param,{workDir=..io.fullpath(self.workDir)});
  
 	if(prcs){
@@ -110,8 +116,8 @@ pcmd = function(filename,param,...){
 	return null,err;	
 }
 
-popen = function(str,param,...){
-    var rubyPath = install();
+startX = function(str,param,...){
+    var rubyPath = getScriptPath();
     if(!rubyPath) return;
     
     var args = { "--encoding=utf-8"}
@@ -136,7 +142,7 @@ popen = function(str,param,...){
 
     ..table.concat(args,..string.cmdline.arguments(param,...) );
     
-	var prcs,err = ..process.popen(rubyPath, argsh, {workDir=..io.fullpath(self.workDir)});
+	var prcs,err = ..process.popen(rubyPath, args, {workDir=..io.fullpath(self.workDir)});
 	if(!prcs){ return null,err; } 
 	prcs.codepage = 65001;
 	
@@ -151,9 +157,9 @@ popen = function(str,param,...){
 
 exec = function(str,...){
     
-	var prcs,err = popen(str,...);
+	var prcs,err = startX(str,...);
 	if(!prcs){ return null,err; } 
-	
+	 
 	prcs.writeClose();
 	var ok,out,err,exitCode = prcs.waitOne()
 	if(ok && !#err){
@@ -163,8 +169,98 @@ exec = function(str,...){
 	return null,err;
 }
 
+options = {};
+var startArgs = function(code,...){
+    var rubyPath = getScriptPath();
+    if(!rubyPath) return;
+    
+    args = ..table.assign({},options);
+    ..table.push(args, "--encoding=utf-8");
+    
+     var files = {};
+    if(type.isString(code)){ 
+        if(#code < 0x410/*_MAX_PATH_U8*/){
+    		if(..io.exist(code)){
+    			..table.push(files,code);
+    			code = null;
+    		}
+    		elseif(..io.localpath(code)){ 
+    			..table.push(args,"-e",..string.load(code));
+    		}    
+    		else {
+    			..table.push(args,"-e",code);
+    		}
+    		    	
+        }
+        else {
+        	..table.push(args,"-e",code);
+        }
+        
+    }
+    elseif(type(code)==="table"){
+        
+    	var files = code;
+    	for(i=1;#files;1){
+    		var code = files[i]
+    		
+    	 	if(#code < 0x410/*_MAX_PATH_U8*/){
+    			if(..io.exist(code)){
+    				..table.push(files,code);
+    				code = null;
+    			}
+    			elseif(..io.localpath(code)){ 
+    				..table.push(args,"-e",..string.load(code));
+    			} 
+    			else {
+    				..table.push(args,"-e",code);
+    			}       	
+        	}
+        	else {
+        		..table.push(args,"-e",code);
+        	}
+    	} 
+    }
+    
+    if(self.loadPath){
+    	for i,v in ..table.eachIndex(self.loadPath){
+    		..table.push(args,`-I"`+..io.fullpath(v)+`"`)
+    	}    	
+    }
+ 
+    ..table.concat(args,files,..string.cmdline.arguments(...) );
+	return rubyPath, args, {workDir=..io.fullpath(self.workDir)};
+}
+ 
+import process.rpc.jsonClient;
+startRpc = function(code,...){ 
+	return ..process.rpc.jsonClient( startArgs({code,$"~\lib\process\ruby\.res\process.rpc.rb"},...) ); 
+}
+
+start = function(code,...){
+ 
+	var prcs,err = process.popen(startArgs(code,...)); 
+	if(prcs) {
+		prcs.codepage = 65001;
+		prcs.killOnExit();
+	}
+	return prcs,err;
+}
+
+self.loadcode = function(code,...){ 
+	if(!..io.exist(code)){
+		if(!..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>')){
+			code = ("?>" + code);
+		}
+	}
+	
+	var code,err  = ..string.loadcode(code,...);
+	if(code===null) error(2,err);
+	
+	return start(code); 
+}
+
 self.eval = function(rubyCode){
-	var prcs,err = popen();
+	var prcs,err = startX();
 	if(!prcs){ return null,err; } 
 	
 	prcs.write('# encoding: UTF-8\n');
@@ -181,16 +277,40 @@ self.eval = function(rubyCode){
 	return null,err;
 }
 
+
+gem = function(...){
+	return cmd("gem",...); 
+}
+
+gemSource = function(url,save){
+	if(save) gem("sources --remove https://rubygems.org/ --add " + url);
+ 	else ..string.setenv("GEM_SOURCE",url);
+}
+ 
+if(!..io.exist(..io.appData("aardio/std/ruby/.gemrc"))){
+	..string.save(..io.appData("aardio/std/ruby/.gemrc"),"https://mirrors.tuna.tsinghua.edu.cn/rubygems/" )
+	gemSource("https://mirrors.tuna.tsinghua.edu.cn/rubygems/",true);
+}
+
 /**intellisense(process.ruby)
-install() = 安装 Ruby 环境并返回 Ruby.exe 路径,\n可选在参数中指定 7z 格式下载网址,\n如果不指定参数，则首先查找系统已安装的 Ruby,\n如果未找到则下载 Ruby 3.0\n如果不调用此函数,在执行其他函数时会自动调用
+options = Ruby 启动默认选项。\n可指定 string.args.join 支持的任何命令行参数（表、数组或字符串）
+getScriptPath() = 安装 Ruby 环境并返回 Ruby.exe 路径,\n可选在参数中指定 7z 格式下载网址,\n如果不指定参数，则首先查找系统已安装的 Ruby,\n如果未找到则下载 Ruby 3.0\n如果不调用此函数,在执行其他函数时会自动调用
 path = 可选使用此属性自定义 Ruby.exe 路径
-cmd(.("命令文件名",其他命令行参数->->->) = 运行 Ruby 命令,\n此函数会打开控制台,\n\n第一个参数指定cmd命令,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
-pcmd(.("命令文件名",其他命令行参数->->->) = 创建进程管道运行Ruby命令,返回 process.popen 对象,\n默认工作目录为 process.ruby.workDir\n\n第一个参数指定cmd命令,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
-popen(.(rubyCode,->->->) = 以管道方式打开 Ruby 进程,\n支持不定个数启动参数,也可以在一个字符串参数中写多个参数\n参数@rubyCode可以是 *.rb 代码文件路径、Ruby代码
+cmd(.("命令文件名",其他命令行参数->->->) = 运行 Ruby 命令,\n此函数会打开控制台,\n\n第一个参数指定cmd命令,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合成,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+pcmd(.("命令文件名",其他命令行参数->->->) = 创建进程管道运行Ruby命令,返回 process.popen 对象,\n默认工作目录为 process.ruby.workDir\n\n第一个参数指定cmd命令,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合成,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+startX(.(rubyCode,->->->) = 以管道方式打开 Ruby 进程。\n参数 @1 可指定 Ruby 代码或代码文件。\n参数 @2 开始可以指定不定个数启动参数,也可以在一个字符串参数中写多个参数。\n参数@rubyCode可以是 *.rb 代码文件路径、Ruby代码。\n函数执行成功返回 process.popen 对象，但已经关闭进程输入管道。\n改用 process.ruby.start 保留输入管道。\n失败返回 null,错误信息。
+start(.(rubyCode,->->->) = 以管道方式打开 Ruby 进程。\n参数 @1 可指定 Ruby 代码或代码文件，也可以传入包含代码或代码文件的数组。\n参数 @2 开始可以指定不定个数启动参数,也可以在一个字符串参数中写多个参数。\n参数@rubyCode可以是 *.rb 代码文件路径、Ruby代码。\n函数执行成功返回 process.popen 对象。\n失败返回 null,错误信息。
 exec(.(rubyCode,->->->) = 以管道方式打开 Ruby 进程执行 Ruby 代码,\n支持不定个数启动参数,也可以在一个字符串参数中写多个参数\n参数@rubyCode可以是 *.rb 代码文件路径、Ruby代码
 eval("__") = 解析 Ruby 表达式的值并转换为 aardio 对象
 pcmd() = !process_popen.
-popen() = !process_popen.
-rake(.(命令行参数->->->) = 工作目录下应当先创建 rakefile 文件,\n创建进程管道运行 rake 命令,返回标准输出,错误输出,\n默认工作目录为 process.ruby.workDir,\n\n第一个参数指定cmd命令,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+startX() = !process_popen.
+start() = !process_popen.
+startRpc( =  执行 Ruby 代码，并启动 启动 JSON-RPC 服务端，\n返回 process.rpc.jsonClient 对象
+startRpc(.(code,->->->) = =参数 @1 指定 Ruby 代码，并启动 启动 JSON-RPC 服务端。
+startRpc() = !process_rpcJsonClient.
+rake(.(命令行参数->->->) = 工作目录下应当先创建 rakefile 文件,\n创建进程管道运行 rake 命令,返回标准输出,错误输出,\n默认工作目录为 process.ruby.workDir,\n\n自参数 @1 开始指定命令行参数，\n多个命令行参数则调用 process.joinArguments 合成,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
+gem(.(命令行参数->->->) = 创建进程运行 gem 命令。\n用这个命令安装模块，查找模块可能要好久才有反应。\n默认工作目录为 process.ruby.workDir,\n\n第一个参数开始指定命令行参数，\n多个命令行参数则调用 process.joinArguments 合成，\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
 workDir = Ruby 工作目录\n默认值为..io.fullpath("/")
+gemSource(url) = @.gemSource("https://mirrors.tuna.tsinghua.edu.cn/rubygems/",true)//设置 GEM 源，参数 @2 为 true 则保存设置，否则仅对当前进程生效
+loadcode(.(code,->->->) =  使用 aardio 模板语法加载 R 代码。\n此函数返回 process.popen 对象。\n参数 code 可以是 aardio 代码或 aardio 代码文件路径。\n\n自参数 @2 开始可选指定命令行参数。\n命令行参数可以是 string.args.join 支持的任何对象（字符串、表、数组）。\n多个命令行参数则调用 process.joinArguments 合成,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
 end intellisense**/

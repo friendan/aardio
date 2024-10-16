@@ -54,7 +54,7 @@ sidToString = function(sid){
 	var wstr = {ptr ptr}
 	
 	::Advapi32.ConvertSidToStringSid(sid,wstr);
-	var ret = ..string.fromUnicode(wstr.ptr,65001,-1)
+	var ret = ..string.fromUtf16(wstr.ptr,65001,-1)
 	::Kernel32.LocalFree(wstr.ptr);
 	
 	return ret;
@@ -81,7 +81,7 @@ sidFromUserName = function(userName,systemName){
 	var domainName = ..raw.buffer(domainSize.value*2)
 	
 	if( ::Advapi32.LookupAccountNameB(systemName,userName,sid,sidSize,domainName,domainSize,sidNameUse) ){ 
-		return sid,..string.fromUnicode(domainName),sidNameUse.type;
+		return sid,..string.fromUtf16(domainName),sidNameUse.type;
 	}	
 }
 
@@ -95,13 +95,15 @@ sidToUserName = function(sid,systemName){
 	var domainName = ..raw.buffer(domainSize.value*2)
 	
 	if( ::Advapi32.LookupAccountSidB(systemName,sid,name,nameSize,domainName,domainSize,sidNameUse) ){ 
-		return ..string.fromUnicode(name),..string.fromUnicode(domainName),sidNameUse.type;
+		return ..string.fromUtf16(name),..string.fromUtf16(domainName),sidNameUse.type;
 	}	
 }
 
-sidStringToUserName = function(sidStr){
+sidStringToUserName = function(sidStr,systemName){
 	var sid = sidFromString(sidStr); 
-	if(sid) return sidToUserName(fileName,sid); 
+	if(sid) {
+		return sidToUserName(sid,systemName); 
+	}
 }
 
 sidStringFromUserName = function(userName,systemName){
@@ -203,7 +205,7 @@ daclGrantEveryone = function(objName,objType,premissions){
 
 getUserName = function(){ 
 	var name = ..raw.buffer(0x202);
-	if( ::Advapi32.GetUserNameW(name,{INT size=0x101}) ) return ..string.fromUnicode(name,,-1);
+	if( ::Advapi32.GetUserNameW(name,{INT size=0x101}) ) return ..string.fromUtf16(name,,-1);
 }
 	
 /**intellisense(sys.acl)
@@ -214,8 +216,8 @@ sidFromString(.(sidStr) = 参数传入文本格式SID,\n返回SID内存句柄
 sidToString(.(sid) = 参数传入SID句柄,\n返回SID文本格式字符串
 sidWellKnown(.(sidType,domainSid) = 获取通用SID,\n参数@1参考::Advapi32.CreateWellKnownSid函数说明\n参数@2可省略,\n返回buffer对象不需要释放 
 sidFromUserName(.(userName,systemName) = 参数@userName传入系统用户名,,省略取当前登录用户名,\n@systemName参数可省略,\n返回SID内存句柄
-sidToUserName(.(sid,systemName) = 参数传入SID,@systemName参数可省略,\n返回用户名
-sidStringToUserName(.(sidStr,systemName) = 参数传入文本格式SID,systemName参数可省略,\n返回用户名
+sidToUserName(.(sid,systemName) = 参数传入SID，@systemName参数可省略。\n返回账户名，账户所在域名，账户类型（SID_NAME_USE 枚举）
+sidStringToUserName(.(sidStr,systemName) = 参数传入文本格式 SID，@systemName 参数可省略。\n返回账户名，账户所在域名，账户类型（SID_NAME_USE 枚举）
 sidStringFromUserName(.(userName,systemName)  = 参数@userName传入系统用户名,省略取当前登录用户名\n@systemName参数可省略,\n返回文本格式SID
 takeOwnBySid(.(sid,objName,objType) = 对@objName指定名称的对象获取sid指定用户的所有者权限,\nsid应当是sid句柄或内存指针,\n@objType可省略，默认值为_SE_FILE_OBJECT
 takeOwnBySidString(.(sid,objName,objType) = 对@objName指定名称的对象获取@sid指定用户的所有者权限,\n@si参数指定文本格式SID,注意不是内存指针或句柄,\n@objType可省略，默认值为_SE_FILE_OBJECT

@@ -13,6 +13,92 @@ class crypt{
 		
 		this.blockSize = 8;
 		var m_hKey; 
+		
+		this.encrypt = function(str,final=true,hHash,flags=0){
+			if(!m_hKey) error("未指定正确的密钥",2)
+			
+			var retlen = false;
+			var length = #str;
+			if(type(final)==="number"){
+				length = final;
+				final = length<#str;
+				retlen = true;
+				
+				if(length<0) length = #str + length + 1; 
+			}
+			
+			if( (!this.buffer) || ( length > #this.buffer) ){
+				this.allocBuffer(length+1000,this.blockSize,str);
+			}
+			elseif(str!=this.buffer) { 
+				::CopyMemory(this.buffer,str,length);
+			}  
+			
+			var ret,len = Encrypt(m_hKey,hHash,final,flags,this.buffer,length,#this.buffer) 
+			if(ret){ 
+				if(retlen) return this.buffer,len;
+				return ..raw.tostring(this.buffer,1,len);
+			}
+			else{
+				var e = ::GetLastError();
+				if( e == 0xEA/*_ERROR_MORE_DATA*/ ){
+					this.allocBuffer(len);
+					return this.encrypt(str,final,hHash,flags);
+				}
+				
+				if(e == -2146893819/*_NTE_BAD_DATA*/){
+					if(!final){
+						error("@final 为 false 时，参数 @str 的长度必须是块大小 "+this.blockSize+" 的倍数",2)
+					}
+				}
+				
+				return null,..lasterr(e);
+			}
+		};
+		this.decrypt = function(str,final=true,hHash,flags=0){
+			if(!m_hKey) error("未指定正确的密钥",2)
+			
+			var retlen = false;
+			var length = #str;
+			if(type(final)==="number"){
+				length = final;
+				final = length<#str;
+				retlen = true;
+				
+				if(length<0) length = #str + length + 1; 
+			}
+			
+			if( (!this.buffer) || ( length > #this.buffer) ){
+				this.allocBuffer(length,this.blockSize,str);
+			}
+			elseif(str!=this.buffer) { 
+				::CopyMemory(this.buffer,str,length);
+			} 
+			
+			var ret,len = Decrypt(m_hKey,hHash,final,flags,this.buffer,length ) 
+			if(ret){ 
+				if(retlen) return this.buffer,len;
+				return ..raw.tostring(this.buffer,1,len);
+			}
+			else{
+				var e = ::GetLastError();
+				if( e == 0xEA/*_ERROR_MORE_DATA*/ ){
+					this.allocBuffer(len);
+					return this.decrypt(str,final,hHash,flags);
+				}
+				
+				if(e == -2146893819/*_NTE_BAD_DATA*/){
+					if(!final){
+						error("@final 为 false 时，参数 @str 的长度必须是块大小 "+this.blockSize+" 的倍数",2)
+					}
+				}
+				
+				return null,..lasterr(e);
+			}
+		};
+		
+		this.__encrypt = this.decrypt;
+		this.__decrypt = this.decrypt;
 	}; 
 	release = function () {
 		this.setKey(null);
@@ -285,7 +371,7 @@ class crypt{
 		var h = this.createHash(algId);
 		if(!h) return null,..lasterr();
 		
-		var f,err =  ..io.open(path, "rb");
+		var f,err =  ..io.file(path, "rb");
 		if(!f) return null,err; 
    	
    		while( var data = f.read(bufSize)  ) {
@@ -322,41 +408,7 @@ class crypt{
 	allocBuffer = function(size,blockSize,str){
 		if( blockSize === null ) blockSize = this.blockSize;
 		size = ( size - ( size % blockSize) ) + blockSize; 
-		this.buffer = ..raw.buffer(size,str ) 
-	};
-	encrypt = function(str,final=true,hHash,flags=0){
-		if(!m_hKey) error("未指定正确的密钥",2)
-		
-		if( (!this.buffer) || ( #str > #this.buffer) ){
-			this.allocBuffer(#str+1000,this.blockSize,str);
-		}
-		else { 
-			::CopyMemory(this.buffer,str,#str);
-		} 
-		var ret,len = Encrypt(m_hKey,hHash,final,flags,this.buffer,#str,#this.buffer) 
-		if(ret){
-			return ..raw.tostring(this.buffer,1,len);
-		}
-		else{
-			if( ::GetLastError() == 0xEA/*_ERROR_MORE_DATA*/ ){
-				this.allocBuffer(len);
-				return this.encrypt(str,final,hHash,flags);
-			}
-		}
-	};
-	decrypt = function(str,final=true,hHash,flags=0){
-		if(!m_hKey) error("未指定正确的密钥",2)
-		
-		if( (!this.buffer) || ( #str > #this.buffer) ){
-			this.allocBuffer(#str,this.blockSize,str);
-		}
-		else { 
-			::CopyMemory(this.buffer,str,#str);
-		} 
-		var ret,len = Decrypt(m_hKey,hHash,final,flags,this.buffer,#str ) 
-		if(ret){
-			return ..raw.tostring(this.buffer,1,len);
-		}
+		this.buffer = ..raw.buffer(size,str ); 
 	};
 	eachEncrypt = function(str,stepSize,final=true,hHash,flags ){
 		if( !str ) error("参数@1错误",2)
@@ -372,6 +424,20 @@ class crypt{
 	};
 	__eachCrpyt = function( cpt,str,stepSize,finalAll,hHash,flags=0 ){
 		var len = #str;
+	
+		var len = #str;
+		if(type(finalAll)==="number"){
+			len = finalAll;
+			finalAll = len<#str;
+			 
+			if(len<0) len = #str + len + 1; 
+		}
+		
+		if(this.buffer==str){
+			//str 需要分块复制到 this.buffer
+			str = ..raw.buffer(str);
+		}
+		
 		var safePtr = ..raw.convert( { pointer p = str } ,{ pointer p }).p; 
 		
 		if( (!this.buffer) || ( stepSize > #this.buffer) ){
@@ -394,6 +460,90 @@ class crypt{
 				return raw_tostring(buffer,1,len);
 			}
 		}  
+	};
+	decryptFile = function(inPath,outPath,bufferSize,onProgress,hHash,flags){ 
+		if(!m_hKey) error("未指定正确的密钥",2)
+		return this.__crpytFile(this.decrypt,inPath,outPath,bufferSize,onProgress,hHash,flags); 
+	};
+	encryptFile = function(inPath,outPath,bufferSize,onProgress,hHash,flags){
+		if(!m_hKey) error("未指定正确的密钥",2)
+		
+		return this.__crpytFile(this.encrypt,inPath,outPath,bufferSize,onProgress,hHash,flags); 
+	};
+	__crpytFile = function(cpt,inPath,outPath,bufferSize,onProgress,hHash,flags){
+		var inf,outf,err,errCode ;
+		if(!type.isString(inPath)) { 
+			if(type.isFile(inPath)) inf = inPath;
+			else error("请指定输入文件路径",3);
+		} 
+		else {
+			inf,err,errCode =  ..io.file(inPath, "rb");
+			if(!inf) return null,err,errCode; 
+		}
+		
+		if(!type.isString(outPath)){ 
+			if(type.isFile(outPath)) outf = outPath;
+			else error("请指定输出文件路径",3);
+		} 
+		else {
+			outf,err,errCode =  ..io.file(outPath, "w+b");
+			if(!outf) {
+				if(inf != inPath) inf.close();
+				return null,err,errCode; 
+			} 
+		} 
+		
+		var inBuffer;
+		if( this.__encrypt === this.decrypt 
+			&& this.__decrypt = this.decrypt ){
+		 	this.allocBuffer(bufferSize || 0x100000 ); 
+		 	
+		 	//默认算法重用缓冲区，减少一次内存复制操作。
+		 	inBuffer = this.buffer;
+		}
+		else { 
+			//块对齐
+			if(!bufferSize) bufferSize = 0x100000;
+			bufferSize = ( bufferSize - ( bufferSize % this.blockSize) ) + this.blockSize; 
+			inBuffer = ..raw.buffer(bufferSize);
+		}
+   		
+   		var totalReadSize = 0;
+   		var curPos = inf.seek();
+   		var totalSize = inf.size() - curPos;
+   		var readSize,writeSize,err;
+   		
+   		var outBuffer;
+   		while(var readSize = inf.readBuffer(inBuffer)  ){
+   			if(inf.read(0)) outBuffer,writeSize = cpt(inBuffer,readSize,hHash,flags); 
+   			else {
+   				outBuffer,writeSize = cpt(inBuffer,readSize - #inBuffer - 1,hHash,flags); 
+   			}
+   			 
+   			if(!outBuffer){
+   				err = writeSize;
+   				break;
+   			}
+   			
+   			if(writeSize != outf.writeBuffer(outBuffer,writeSize) ){
+   				if(outf != outPath) outf.close()
+   				if(inf != inPath) inf.close();
+   				
+   				return null,"写入文件失败";
+   			}
+   			
+   			if(onProgress) {
+   				totalReadSize = totalReadSize + readSize;
+   				onProgress(totalSize,totalReadSize);
+   			}
+   		};
+   		
+   		if(outf != outPath) outf.close();
+   		if(inf != inPath) inf.close();
+   		
+   		if(onProgress && tonumber(totalReadSize)) onProgress(totalSize,totalSize); 
+   		if(err) return null,err;
+   		return true;
 	};
 };
 
@@ -550,10 +700,20 @@ exportPlainTextKeyBlob() = !plaintextkeyblob.
 hash(.(字符串,是否大写,返回字符个数,算法) = 计算哈希值,\n除参数 @1 以外,其他参数可选。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符。\n参数 @4 为可选参数，默认使用MD5算法
 hashFile(.(文件路径,是否大写,算法) = 计算哈希值,\n除参数 @1 以外,其他参数可选。\n参数 @3 省略时默认使用MD5算法。\n\n此函数执行失败会返回2个值，分别为：null,错误信息,\n创建 crypt 对象时参数@2 请指定为 _PROV_RSA_AES 才能支持 SHA-256（SHA-2）算法,\n也可以改用 crypt.aes 或 crypt.rsa 创建 crypt 对象
 lastHash = 最后一次调用createHashXXX() 系列函数创建的哈希对象
-decrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-encrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer\n如果不手动分配,程序将会自动按需分配 buffer,\n参数2可选,可使用对象的blockSize属性指定默认块大小
-blockSize = 加密填充的块大小，默认为8
+decrypt( = 解密数据
+decrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块解密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，解密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放解密结果的缓冲区，返回值 2 为解密长度。\n需要分块解密的算法，例如 RSA 算法返回的解密结果为字符串。\n失败返回 null, 错误信息,错误代码。\n\n用法可参考 decryptFile 函数源码。
+encrypt( = 加密数据
+encrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块加密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+encrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，加密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放加密结果的缓冲区，返回值 2 为解密长度。\n需要分块解密的算法，例如 RSA 算法返回的解密结果为字符串。\n失败返回 null, 错误信息,错误代码。\n\n用法可参考 encryptFile 函数源码。
+encryptFile( = 加密文件
+encryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要加密的文件。参数 @2 指定要保存加密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+decryptFile( = 解密文件
+decryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要解密的文件。参数 @2 指定要保存解密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+buffer = 加解密时暂存输入输出数据的缓冲区。\n只能通过调用 allocBuffer 函数分配此缓冲区。\n或者由加解密函数自动分配此缓冲区。\n\n如果未分配缓冲区，或缓冲区大小不够。\n加解密时会重新调用 allocBuffer 函数分配到合适大小。 \n\n一般不应直接访问此属性。
+allocBuffer( = 分配加解密需要用到的 buffer。
+allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer。\n如果不手动分配，程序将会自动按需分配 buffer。\n参数 @2 可选，可用对象的blockSize属性指定默认块大小。
+blockSize = 加密填充的块大小，默认为 8
 sign(.(keySpec,flags) = 返回签名\n可选用 @keySpec 参数中指定密钥类型,\n@flags 不必指定
 verifySignature(.(sign,flags) = 验证签名,\n参数@1为签名字符串,其他参数可选\n验证签名以前必须首先导入公钥,并创建哈希对象
 signToBase64(.(keySpec,flags) = 签名并反转字节序,进行 Base64 编码后返回,\n可选用 @keySpec 参数中指定密钥类型,\n@flags 参数不必指定
@@ -575,8 +735,8 @@ sha1(.(字符串,是否大写,返回位数) = 计算sha1哈希值,\n参数2可�
 sha512(.(字符串,是否大写,返回位数) = 计算sha512哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
 sha384(.(字符串,是否大写,返回位数) = 计算sha384哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
 sha256(.(字符串,是否大写,返回位数) = 计算sha256哈希值,\n参数2可选,默认大写。\n可选用参数 @3 指定返回字符个数。\n正值自左侧截取，负值自右侧截取，设为 true 自中间截取16个字符
-encodeBin(.(字符串,长度,选项) = Base64或hex编码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_BASE64
-decodeBin(.(字符串,长度,选项) = Base64或hex解码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_ANY
+encodeBin(.(字符串,长度,选项) = Base64 或 hex 编码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_BASE64\n\n相关库与函数： string.base32, crypt.bin
+decodeBin(.(字符串,长度,选项) = Base64或hex解码,\n可选参数3使用 _CRYPT_STRING_ 前缀常量指定选项\n参数@3默认为_CRYPT_STRING_ANY\n\n相关库与函数： string.base32, crypt.bin
 pem(.(字符串,标题) = PEM编码字符串,\n如果参数@1是空值时不操作直接返回null
 end intellisense**/
 
@@ -786,6 +946,7 @@ _KP_CMS_KEY_INFO=@0x25/*_KP_CMS_KEY_INFO*/
 _KP_CMS_DH_KEY_INFO=@0x26/*_KP_CMS_DH_KEY_INFO*/
 _KP_PIN_ID=@0x2B/*_KP_PIN_ID*/
 _KP_PIN_INFO=@0x2C/*_KP_PIN_INFO*/
+_KP_KEYLEN=@9/*_KP_KEYLEN*/
 _RANDOM_PADDING=@2/*_RANDOM_PADDING*/
 _ZERO_PADDING=@3/*_ZERO_PADDING*/
 _CRYPT_ENCRYPT=@1/*_CRYPT_ENCRYPT*/

@@ -1,4 +1,4 @@
-import fsys;
+﻿import fsys;
 import raw.interface;
 import process.popen;
 import string.cmdline;
@@ -194,7 +194,6 @@ class java{
 				t = type(arr[i]);
 				if(t == "string" || t == "buffer"){ 
 					var jstr = this.string(arr[i]);
-					if(!jarr)..io.print(type(jarr),"jarr");
 					jniEnv.SetObjectArrayElement(jarr,i-1,jstr);
 				}
 				elseif(t == "table"){
@@ -510,7 +509,7 @@ namespace java {
 		var binPath = ..java.path.jreBin();
 		if(!binPath) return null,"没有找到Java运行库"; 
 		
-		binPath = ..fsys.joinpath(binPath,exeFile);
+		binPath = ..io.joinpath(binPath,exeFile);
 		if( ! ..io.exist(binPath) ) return null,"没有找到" + exeFile;
 
 		var args,startInfo = ..string.cmdline.arguments(args,...);
@@ -528,9 +527,18 @@ namespace java {
 	popenProcess = function(...){
 		return __openProcess(..process.popen,"java.exe",...);	
 	};
-	runtimeVersion = function(){
+	runtimeVersion = function(major){
 		var prcs = popenProcess("-version");
-		if(prcs) return prcs.readAll();	
+		if(prcs) {
+			var v = prcs.readAll(`.+version\s+\"([\d\.]+)`);
+			if(major){
+				var nums = ..string.map(v);
+				if(nums[1]===1) return nums[2]
+				return nums[1];
+			}
+			
+			return v;
+		}
 	};
 	compilerVersion = function(){
 		var prcs = compile("-version");
@@ -965,6 +973,7 @@ java.compile() = !process_popen.
 java.addClassPath(__) = 添加一个或多个查找类的根目录\n添加该目录时将自动添加该目录下已存在的 *.jar 文件\n子目录下的jar文件将被忽略\n注意:必须在进程首次创建 Java 虚拟机之前调用该函数
 java.addLibPath(__) = 添加一个或多个目录\nJava中调用System.loadLibrary()时将在指定的目录查找DLL组件
 java.version = JVM 虚拟机接口版本,\n在进程首次创建虚拟机以前用于指定最低兼容版本\n默认会设为 0x10006/*_JNI_VERSION_1_6*/
+java.runtimeVersion(true) = 返回 Java 运行时版号，数值。\n版本号为 1.x 时返回第 2 位版本号，否则返回第 1 位版本号（Java 9 以上）。\n如果不指定参数，则返回字符串格式的完整版本号。
 !java.version =  JVM 虚拟机接口版本,\nJava 8 的接口版本为 0x10008/*_JNI_VERSION_1_8*/,\n目前 Java 10+ 的接口版本号都是 0xa0000/*JNI_VERSION_10*/
 !java.__isMainThread = 仅第一次创建java虚拟机时该值为true,\n随后创建的虚拟机都会返回false
 !java.addClassLoaderUrl( = 添加类搜索目录到 CLASSPATH,\n此函数仅支持 Java6~Java8 \nJava9 开始不再支持,可以改用 java.addClassPath,\n但 java.addClassPath 仅支持 ANSI编码路径,\naddClassLoaderUrl 函数支持 UTF-8 编码路径
@@ -1017,6 +1026,11 @@ _JNI_VERSION_1_7=@0x10007/*_JNI_VERSION_1_7*/
 _JNI_VERSION_1_8=@0x10008/*_JNI_VERSION_1_8*/
 _JNI_VERSION_9=@0x90000/*_JNI_VERSION_9*/
 _JNI_VERSION_10=@0xA0000/*_JNI_VERSION_10*/
+_JNI_VERSION_11=@0xB0000/*_JNI_VERSION_11*/
+_JNI_VERSION_12=@0xC0000/*_JNI_VERSION_12*/
+_JNI_VERSION_13=@0xD0000/*_JNI_VERSION_13*/
+_JNI_VERSION_14=@0xE0000/*_JNI_VERSION_14*/
+_JNI_VERSION_15=@0xF0000/*_JNI_VERSION_15*/
 _JNI_FALSE = @0/*_JNI_FALSE*/
 _JNI_TRUE = @1/*_JNI_TRUE*/
 end intellisense**/

@@ -97,8 +97,8 @@ reloadSystemProxy = function(){
 reloadSystemProxy()
 
 setAuth = function(user,pwd,hRequest){
-	user = ..string.toUnicode(user);
-	pwd = ..string.toUnicode(pwd);
+	user = ..string.toUtf16(user);
+	pwd = ..string.toUtf16(pwd);
 	return ::InternetSetOptionPtr(hRequest, 0x1C/*_INTERNET_OPTION_USERNAME*/,user, #user+1)
 		&& ::InternetSetOptionPtr(hRequest, 0x1D/*_INTERNET_OPTION_PASSWORD*/,pwd, #pwd+1); 	
 }
@@ -109,8 +109,7 @@ setProxyAuth(.("用户名","密码") = 设置inet.http默认代理登录信息\n
 setProxy( = 修改同一进程内的默认代理设置\n对同一进程内的web.form,inet.http有效\n设置系统代理请使用 inet.conn.setProxy 函数
 setProxy(.(false) = 修改进程内默认代理设置为不使用代理
 setProxy(.("IE") = 修改进程内默认代理设置为使用IE代理设置\n此参数为默认值,可省略
-setProxy(.("SOCKS=代理服务器地址:端口","绕过代理地址") = 设置SOCKS4代理服务器,不支持登录\n绕过代理地址可在域名或IP中使用通配符,多个以分号分隔
-setProxy(.("被代理协议=代理协议://主机地址:端口号","绕过代理地址") = 设置HTTP,FTP等协议代理服务器\n参数@2可以直接写代理服务器域名或IP,\n省略协议则默认为HTTP,省略端口则默认为80,\n绕过代理地址可在域名或IP中使用通配符,多个以分号分隔
+setProxy(.("代理服务器地址:端口","绕过代理地址") = 设置所有协议走 HTTP 代理服务器，\n\n└── 指定 SOCKS 代理格式："socks=代理服务器地址:端口" \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n绕过代理地址已自动设置，建议省略保持默认即可。
 setAuth(.("用户名","密码",http->request) = 设置登录信息,最后一个参数不能省略\n成功返回true
 refreshOption() = 刷新配置
 getSystemProxy() = 返回一个表包含当前用户系统代理配置，也即IE代理配置
@@ -204,11 +203,24 @@ clearSesseion = function(){
 
 var GetCookieA = Wininet.api("InternetGetCookieA","bool(str url,str name,str &data,INT & size)")
 var SetCookieA = Wininet.api("InternetSetCookieA","bool(str url,str name,str data)") 
-getCookie = function(url){
+getCookie = function(url,p){
 	url = ..string.replace(url,"^Cookie\:.+?\@","http://"); 
 	var ok,v,size = GetCookieA(url,"",0,0); 
-	ok,v = GetCookieA(url,k,size,size);
-	if(ok)return v,url;
+	ok,v = GetCookieA(url,"",size,size);
+	if(ok && v){
+		if(p) {
+			v = ..string.unhex(v,"%");
+			p = type.isString(p) ? p;
+			
+			var r = {} 
+			for line in ..string.lines(v,";\s*","=\s*",2){
+				r[ p ? ..string.match(line[1],p) : line[1] ] = line[2];
+			} 
+			
+			return r;
+		}
+		return v,url;
+	}
 }
 
 setCookie = function(url,v,k,expires){ 
@@ -246,20 +258,17 @@ setCookie = function(url,v,k,expires){
     	v = "deleted";
     	expires = ..time.gmt(1); 
     }
-    
-    SetCookieA(url, k,v );//不指定 expires 设置会话 Cooki
-    
+
     if(k) v = k + "=" + v;
 	elseif(v == "deleted")  error("Cookie 的名字或值不能都为 null");
 	
-    v = ..string.hex(v,"%",'\x80');
- 
+	v = ..string.hex(v,"%",'\x80');  
 	SetCookieA(url, ,v );//不指定 expires 设置会话 Cookie
 	return  !expires || SetCookieA(url, ,v + "; expires=" + tostring( ..time.gmt(expires) ) );
 }
 
 /**intellisense(inet)
-getCookie("https__") = 返回指定网址的 Cookie \n一般指定根域名就可以了，最好不要指定子域名\n注意不能获取 HttpOnly Cookie、不能获取其他进程的会话 Cookie
+getCookie("https__") = 返回指定网址的 Cookie 。\n一般指定根域名就可以了，最好不要指定子域名。\n如果参数 @2 为 true 则返回包含 Cookie 名值对的表对象。\n参数 @2 指定一个字符串可用于匹配 Cookie 名字，不匹配则使用原 Cookie 名。\n注意不能获取 HttpOnly Cookie、不能获取其他进程的会话 Cookie。
 setCookie( = 设定 Cookie。\nweb.form,web.rest,inet.http 共享此 Cookies 设置。\n此函数兼容 fsys.cookies 格式，\n兼容 CDP 方法 Network.getCookies 返回的数据格式
 setCookie(.("网址","值","键",过期时间或天数) = 设定指定网址的 Cookie。\n第一个参数指定 Cookie 生效的网址。\n如果不指定值则删除删除指定名字的会话 cookie 与持久 Cookie，\n如果指定名字与值则设置 Cookie，如果不指定过期时间则仅设置会话 Cookie，\n否则设置为持久 Cookie。\n可选参数 @4 使用 time 对象指定过期时间，或用数值指定过期天数
 setCookie(.("网址","键=值",过期时间或天数) = 设定指定网址的 Cookie。\n可选参数@3使用 time 对象指定过期时间，或用数值指定过期天数。\n如果不指定过期时间则设置会话cookie,\n否则修改持久化 Cookie,\n第一个参数指定 Cookie 生效的网址

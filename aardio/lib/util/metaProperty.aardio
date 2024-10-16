@@ -4,9 +4,11 @@ namespace util;
 
 class metaProperty{
 	ctor( properties,... ){
-		this._get = function(k,ownerCall){
+		
+		//a[b] 格式 ownerCall 为 null，a.b() 格式 ownerCall 为 true，其他为 false
+		this._get = function(k,ownerCall){ 
+			
 			var t = this[ k];
-	
 			if( type(t) == "table"  ){ 
 				
 				if( t._get ){
@@ -29,11 +31,14 @@ class metaProperty{
 				return  ret;
 			}		
 		};
-		this._set = function(k,v){
+		
+		//a[b] 格式 ownerAttr 为 false，其他为 true
+		this._set = function(k,v,ownerAttr){
 			var t = this[ k];
 			if( type(t) == "table"  ){
 				if( t._set ) { 
-					var ok,v = call( t._set,owner ,v )  
+					//考虑 get 直接指向另一个函数多余参数会报错，当名称确定基本不可能用到 ownerAttr
+					var ok,v = call( t._set,owner,v/*,ownerAttr*/ )  
 					if(!ok)error(v,2) 
 					return;
 				} 
@@ -43,7 +48,7 @@ class metaProperty{
 			
 			var set = this.__set : this.set;
 			if(set){ 
-				var ok,v = call( set,owner,k,v);
+				var ok,v = call( set,owner,k,v,ownerAttr);
 				if(!ok)error(v,2) 
 				return;
 			}
@@ -84,9 +89,7 @@ namespace metaProperty{
 	}	
 }
 
-/**details(关于元表)
-chm://libraries/kernel/table/meta.html
-end details**/
+//@guide [关于元表](doc://language-reference/datatype/table/meta.md)
 
 /**intellisense()
 util.metaProperty = 用于创建属性元表,\n可在构造函数中指定一个或多个初始化参数表,\n按参数顺序混入到新创建的属性表并返回,\n\n用返回的属性表作为对象元表,\n读写对象中不存在的属性会触发属性元表。\n如果在属性元表中对应属性是一个表,\n则读属性会触发属性的get成员函数,写属性会触发该属性的set成员函数。\n否则直接返回属性元表中对应属性的值

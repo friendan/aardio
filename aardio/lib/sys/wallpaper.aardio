@@ -30,7 +30,7 @@ getCurrent = function(){
 	
 	//与 HKEY_CURRENT_USER\Control Panel\Desktop  WallPaper 的值相同
 	if ::User32.SystemParametersInfo(0x73/*_SPI_GETDESKWALLPAPER*/,len/2,buf,0) {
-		return ..string.fromUnicode(buf,,-1); 
+		return ..string.fromUtf16(buf,,-1); 
 	} 	
 }
 

@@ -138,7 +138,13 @@ namespace background {
 			if(color!==null) return 0xFF000000 | ..gdi.rgbReverse(color);
 		};
 		loadImage = function(path){
-			if(type(path) == type.string ){  
+			if(type(path) == type.string ){ 
+				if( ..string.startWith(path,"http",true) 
+					&& ..string.match(path,"^\w+\:") && ..inet[["http"]] ){
+					path = ..inet.http.get(path);
+					if(!path) return;
+				}
+				 
 			    var bmp,e = ..com.picture.loadBitmap(path);
 			    if(!bmp) {
 			    	try{

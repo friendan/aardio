@@ -116,7 +116,7 @@ class writer{
 				var fi = {};
 				fi.offset = tostring(offset);
 				
-				var file = ..io.open(fullpath,"rb");
+				var file = ..io.file(fullpath,"rb");
 				if(!file) {
 					return null, "打开文件失败" + fullpath;
 				}
@@ -162,7 +162,7 @@ class writer{
 			return null;
 		}
 		 
-		var asarfile = ..io.open(asarpath,"w+b");
+		var asarfile = ..io.file(asarpath,"w+b");
 		if(!asarfile){
 			this.lasterr = "创建asar文件失败";
 			return null;
@@ -195,7 +195,7 @@ class writer{
 			if( path == "." ) continue;
 			
 			if(! ..fsys.isDir(fullpath) ){   
-				var file = ..io.open(fullpath,"rb");
+				var file = ..io.file(fullpath,"rb");
 				if(!file) {
 					asarfile.close();
 					this.lasterr = "打开文件失败" + fullpath;

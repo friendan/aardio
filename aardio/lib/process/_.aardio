@@ -1,3 +1,4 @@
+import string.args;
 var __process__ = ..process;
 
 class process { 
@@ -114,7 +115,7 @@ class process {
 			else {
 				if( sa.logonFlags == null ) sa.logonFlags = 1/*_LOGON_WITH_PROFILE*/; 
 				
-				ret = CreateProcessWithLogonW(  ..string.toUnicode(sa.username) 
+				ret = CreateProcessWithLogonW(  ..string.toUtf16(sa.username) 
 					, sa.domain
 					, sa.password
 					, sa.logonFlags
@@ -163,13 +164,13 @@ class process {
 				this.ReadProcessMemoryByString = ReadProcessMemoryByString64;
 				this.ReadProcessMemory = ReadProcessMemory64;
 				this.WriteProcessMemoryByString = WriteProcessMemoryByString64;
-				this.WriteProcessMemory = WriteProcessMemory64; 
+				this.WriteProcessMemory = WriteProcessMemory64;  
 			}
 			else{
 				this.ReadProcessMemoryByString = ReadProcessMemoryByString;
 				this.ReadProcessMemory = ReadProcessMemory;
 				this.WriteProcessMemoryByString = WriteProcessMemoryByString;
-				this.WriteProcessMemory = WriteProcessMemory;
+				this.WriteProcessMemory = WriteProcessMemory; 
 			}
 		}
    	end;
@@ -232,6 +233,10 @@ class process {
 	};
 	getParentId = function(){
 		return self.getInfo(this.handle)[["prarentId"]];
+	};
+	getParent = function(...){
+		var pid = self.getInfo(this.handle)[["prarentId"]];
+		if(pid) return ..process(pid,...);
 	};
 	free = function(){ 
 		if(this.handle){
@@ -307,16 +312,41 @@ class process {
 		var result,buf,readNum = this.ReadProcessMemoryByString(this.handle,baseAddr,len,len,0) 
 		return buf,readNum; 
 	};
-	
-	
 	readStringUtf16= function(baseAddr,len = 1){   
 		var buf,readNum = this.readString(baseAddr,len * 2 );
-		return ..string.fromUnicode(buf),readNum; 
+		return ..string.fromUtf16(buf),readNum; 
 	};
 	readStruct = function(baseAddr,struct){ 
 		assert(this.handle,"进程控制对象已关闭!")
 		var result,lpStruct,readNum = this.ReadProcessMemory(this.handle,baseAddr,struct,..raw.sizeof(struct),0)
 		return lpStruct,readNum
+	};
+	readPtr = function(baseAddr){  
+		var r; 
+		if(this.__isX64){
+			r = this.readStruct(baseAddr,{LONG v = ..math.size64()})
+		}
+		else {
+			r = this.readStruct(baseAddr,{INT v})	
+		} 
+		
+		return r[["v"]];
+	}; 
+	readStringPtr = function(baseAddr,len){
+		var ptr = this.readPtr(baseAddr);
+		if(ptr) return this.readString(ptr,len);
+	};
+	readStringUtf16Ptr = function(baseAddr,len){
+		var ptr = this.readPtr(baseAddr);
+		if(ptr) return this.readStringUtf16(ptr,len);
+	};
+	readStructPtr = function(baseAddr,struct){
+		var ptr = this.readPtr(baseAddr);
+		if(ptr) return this.readStruct(ptr,struct);
+	};
+	readNumberPtr = function(baseAddr,datatype){
+		var ptr = this.readPtr(baseAddr);
+		if(ptr) return this.readNumber(ptr,datatype);
 	};
 	writeNumber = function(baseAddr,v,datatype = "int"){ 
 		var struct = { _struct = datatype + " num"; num = v} 
@@ -329,7 +359,7 @@ class process {
 		return baseAddr,writeNum ;
 	};
 	writeStringUtf16 = function(baseAddr,str){ 
-		str = ..string.toUnicode(str); 
+		str = ..string.toUtf16(str); 
 		return this.writeString(baseAddr,str,#str+2);
 	};
 	writeStruct = function(baseAddr,struct){  
@@ -363,17 +393,20 @@ class process {
  		var ok,oldProtect = VirtualProtectEx( this.handle, baseAddr,size,newProtect,0);  
  		return ok ? oldProtect;
  	};
- 	eachQuery = function(addrBegin,addrEnd,pattern,sProtect=4/*_PAGE_READWRITE*/,sType=0){
+ 	eachQuery = function(addrBegin,size,pattern){
  		if(!this.handle) error("进程控制对象已关闭",2);
 		  
-		if( !(addrBegin && addrEnd) ){
+		if( !(addrBegin && size) ){
 	 		if(!_systemInfo){
 				_systemInfo = ..sys.info()
 			}
-	    	addrBegin := _systemInfo.lpMinimumApplicationAddress;
-	    	addrEnd := _systemInfo.lpMaximumApplicationAddress;
+			if(!addrBegin) addrBegin = tonumber(this.getModuleBaseAddress());
+			if(!size){
+				size = size + (_systemInfo.lpMaximumApplicationAddress-_systemInfo.lpMinimumApplicationAddress)
+			} 
 	    }
 	    
+	    var addrEnd = addrBegin + size; 
 		var mi = MEMORY_BASIC_INFORMATION();  
 		var ret = 0;
 		var cbSize = ..raw.sizeof(mi);
@@ -388,9 +421,11 @@ class process {
 		}
 		
 		var address,miSize,miProtect,miType;
+		var hr;
+		
 		return function(){
 			 while ( addrBegin < addrEnd ){
-				if( cbSize != VirtualQueryEx(handle, addrBegin, mi, cbSize) )
+			 	if( cbSize != VirtualQueryEx(handle, addrBegin, mi, cbSize) )
 					break;
 				
 				address = mi.BaseAddress;	
@@ -399,32 +434,28 @@ class process {
 				
 				if (mi.State == 0x1000/*_MEM_COMMIT*/) {
 				 	miProtect = mi.Protect;
-					miType = mi.Type;
+					 
+					if!( miProtect &  0xE6/*_PAGE_READONLY  | _PAGE_READWRITE |  _PAGE_EXECUTE_READ |  _PAGE_EXECUTE_READWRITE | _PAGE_EXECUTE_WRITECOPY*/ ){
 					
-					if( sProtect && (sProtect != (sProtect & miProtect))){
-					
-					}
-					elseif( sType && (sType != (sType & miType) )){
-					
-					}
+					} 
 					elseif( pattern ){ 
 						str = readString(address,miSize );  
 						if( str  ){ 
 							i,j = find(str,pattern);
 							if(i)
-								return address,miSize,str,i,j,pattern,miProtect&~(0x100/*_PAGE_GUARD*/|0x200/*_PAGE_NOCACHE*/),miType;
+								return address,miSize,str,i,j,addrEnd - (address+j)
 						}
 					}
 					else{ 
-         				return address,miSize, , , , ,miProtect&~(0x100/*_PAGE_GUARD*/|0x200/*_PAGE_NOCACHE*/),miType 
+         				return address,miSize, ,,,addrEnd - (address+j)
 					}
 				} 
 			}
 		}
- 	}
-	query = function( addrBegin,addrEnd,pattern,sProtect,sType ){
+ 	};
+	query = function( addrBegin,size,pattern ){
 		if(!this.handle) error("进程控制对象已关闭",2);
-		return this.eachQuery(addrBegin,addrEnd,pattern,sProtect,sType)();
+		return this.eachQuery(addrBegin,size,pattern)();
 	};
     setAffinity = function( cpu =1 ){
     	SetProcessAffinityMask( this.handle,cpu );
@@ -454,13 +485,13 @@ class process {
 		var m = ..raw.buffer(0x208/*_MAX_PATH_U16*/)
 		if( ::Kernel32.QueryFullProcessImageName ){
 			if( ::Kernel32.QueryFullProcessImageName( this.handle,0,m, { INT len = 0x104/*_MAX_PATH*/}) ){
-				return ..string.fromUnicode(m,,-1); 
+				return ..string.fromUtf16(m,,-1); 
 			}
 		}
 		
 		if( ::Psapi.GetProcessImageFileName(this.handle,m,0x104/*_MAX_PATH*/) ){
 			import ..sys.volume;
-			return ..sys.volume.getPathName(..string.fromUnicode(m,,-1));
+			return ..sys.volume.getPathName(..string.fromUtf16(m,,-1));
 		}
 	};
 	sendMessage = function(hwnd,message,wParam,lParam){
@@ -477,10 +508,17 @@ class process {
 			return ::User32.SendMessageW(hwnd,message,wParam,lParam);
 		}
 	};
-	getMainWindow = function(cls){
+	getMainWindow = function(cls,tilte){
 		var hMain,idProcess;
 		var pid = {INT value};
-		var getClassName = ::User32.api( "GetClassName", "int( addr hwnd,ustring  &lpClassName,int nMaxCount )" )  
+		
+		var buf = ..raw.buffer(400);
+		var getText = function(hwnd){ 
+			var o,l = ::User32.SendMessageTimeout(hwnd,0xD/*_WM_GETTEXT*/,200,buf,2/*_SMTO_ABORTIFHUNG*/,500,0);
+			if(o) return ..string.fromUtf16(buf,,len);  
+		}
+		var getClassName = ::User32.api( "GetClassName", "void(addr hwnd,ustring &cls,int max )" )  
+
 		var callback = ..raw.tostdcall(function(hwnd,subProcesss){
 			if(::User32.GetWindowThreadProcessId(hwnd,pid)){
 				if(pid.value!==this.id){
@@ -495,11 +533,13 @@ class process {
 				}
 				 
 				if(cls || !::User32.GetWindow(hwnd,4/*_GW_OWNER*/)  ){
-					if(cls){
-						var re,clsName = getClassName(hwnd,0x64,0x64/*_MAX_CLASS*/);
-						if(!..string.cmpMatch(clsName,cls)) return true;
+					if(#tilte && !..string.cmpMatch(getText(hwnd),tilte) ){
+						return true;
 					}
-					elseif(!::User32.IsWindowVisible(hwnd)) return true;
+					elseif(#cls && (!..string.cmpMatch(getClassName(hwnd,0x64,0x64/*_MAX_CLASS*/),cls)) ){
+						return true;
+					} 
+					elseif(!::User32.IsWindowVisible(hwnd) && !(cls && tilte) ) return true;
 					
 					hMain = hwnd;
 					idProcess = pid.value;
@@ -509,13 +549,13 @@ class process {
 			
 			return true; 
 		},"bool(int hwnd,int lParam)"); 
+		
 		::User32.EnumWindows(callback,0); 
 		if(!hMain){
 			::User32.EnumWindows(callback,1); 
 		} 
 		
 		..raw._release(getClassName);
-		
 		return hMain,idProcess;
 	};
 	waitMainWindow = function(waitCls,waitHwnd){
@@ -533,6 +573,14 @@ class process {
 		}
 	};
 	getModuleBaseAddress = function(name){
+		if(this.__isX64){
+			if(name) return;
+			
+			var out = {LONG v=..math.size64()};
+			this.readStruct( this.getInfo().pebBaseAddress+16,out)
+			return out.v;
+		}
+		
 		if(!name){
 			name = ..io.splitpath(this.getPath()).file 
 		}
@@ -697,11 +745,11 @@ namespace process{
 	
 		WriteProcessMemory64 = ::Ntdll.api("NtWow64WriteVirtualMemory64","int(POINTER hProcess,LONG base,struct buf,long size,long & retSize)" )
 		WriteProcessMemoryByString64 = ::Ntdll.api("NtWow64WriteVirtualMemory64","int(POINTER hProcess,LONG base,string buf,long size,long & retSize)" )
-	}
-	
+	} 
+  
 	MEMORY_BASIC_INFORMATION = class {
  		addr BaseAddress;
- 		int AllocationBase;
+ 		addr AllocationBase;
  		INT AllocationProtect;
  		INT RegionSize;
  		INT State;
@@ -716,7 +764,7 @@ namespace process{
 		if(!..io.exist(path)) return;
 		
 		var format,subsystem;
-		var f = ..io.open(path,"r");
+		var f = ..io.file(path,"r");
 		if( !f ) return;
 		if( (f.read(2) == '\x4d\x5a' ) && (f.seek("set",60)==60 ) ){ 
 			var s = { INT n }
@@ -969,14 +1017,16 @@ namespace process{
 	execute_waitInput = executeWaitInput;
 	
 	exploreSelect = function(file){
-		return ..process.execute( "Explorer.exe"," /select," + ..io.fullpath(file) )
+		return explore(file,"/select");
 	} 
 	explore_select = exploreSelect;
 		
-	explore = function(file){
-		return ..process.execute( "Explorer.exe", ..io.localpath(file):file )
+	explore = function(path,...){
+		var args = {...};
+		if(path) ..table.push(args,..io.localpath(path)||path); 
+		return ..process.execute( "Explorer.exe" , ..string.join(args,",") );
 	}
-	
+		
 	executeInvoke = function(...){
 		..thread.invoke( 
 			function(...){
@@ -1137,6 +1187,32 @@ namespace process{
 	
 	}  
 	
+	eachWindow = function(exename,cls,title){
+		var next,freeItor = each(exename);
+		var entry;
+		
+		return function(){
+			entry = next(entry);
+			while(entry){
+				var prcs = ..process(entry.th32ProcessID);
+				if(prcs){ 
+					var hwnd,pid = prcs.getMainWindow(cls,title);
+					prcs.free();
+					if(hwnd) return hwnd,pid;	
+				}  
+				
+				entry = next(entry);
+			}
+		},freeItor 
+	}
+	
+	findWindow = function(exename,cls,title){
+		var next,freeItor = eachWindow(exename,cls,title);
+		var hwnd,pid = next();
+		freeItor();
+		return hwnd,pid;
+	}
+	
 	findId = function(exename){
 		var pid;
 		for entry in each(exename)  {
@@ -1162,96 +1238,6 @@ namespace process{
 		}
 	}
 	
-	escapeArgument = function(s){  
-		var b = ""
-		var o = ""; 
-		var q,e;
-		for c in ..string.gmatch(s ,".") { 
-			if( c == "\"){
-				b = b + "\"
-			}
-			elseif( c == '"' ) {
-				o = o ++ b ++  b ++ '\\"'; b = ""; 
-				e = true;
-			} 
-			else {
-				if( c == ' '  || c = '\t' || c = "\r" || c == '\n' || c == '^' || c == '|' || c == '&') q = true;
-				o = o ++ b ++ c; b = ""; 
-			}
-		} 
-		
-		if( #b ) o = o ++ b;
-		if( !q ) return e ? o  : s;
-		if( #b ) o = o ++ b;
-		
-		return '"' + o + '"';	
-	} 
-	
-	var argumentsMeta = { _tostring = lambda() joinArguments(owner);_type="object" }
-	arguments = function(args){
-		args = args || {};
-		if(!args@)args@ = argumentsMeta;
-		return args;
-	}
-	
-	joinArguments = function(parameters,...){
-		if( ... !== null ) parameters = { parameters; ... }
-		if( type(parameters) == type.table ){
-			var isPArgs = parameters@===argumentsMeta;
-			
-			var out = {}
-			for k,v in ..table.eachName(parameters){
-				if(k[1]=='-'# || k[1]=='/'#){
-					..table.push(out,k,tostring(v));
-				} 
-				elseif(isPArgs) {
-					..table.push(out,"--" + ..string.replace(k,"[A-Z]",function(c){
-						return "-" + ..string.lower(c);
-					} ),tostring(v));
-				}
-			}
-			
-			..table.append(out,parameters); 
-			parameters = out;
-			
-			var v,vt;
-			for(i=1;#parameters){ 
-				if(parameters[i]===null) {
-					parameters[i] = "";
-					continue;
-				}
-				 
-				v = parameters[i]
-				vt = type(v);
-				if(vt=="table"){
-					v = joinArguments(v);
-				}
-				else {
-					v = tostring(v);
-					
-					v = ..string.trim(v);
-				
-					if( v[1] != '"'# || v[#v] != '"'#  ){
-						if( ! ..string.find(v,`^[^"\\]+"[^"]+"\s*$`) ){
-							v = escapeArgument(v)
-						}
-					}
-				} 
-				
-				parameters[i] = v;
-			} 
-			
-			var e = parameters[0];
-			parameters = ..string.join(parameters," "); 
-			if( e ) { 
-				e = tostring(e);
-				if(..string.find(e,"\s")) e = '"' + e + '"';
-				parameters = e + ' ' + parameters;
-			}
-   		}
-   		return parameters;
-   	}
-   	
    	environment = function(){ 
 		var getEnvironmentStrings = ::Kernel32.api("GetEnvironmentStringsW","ptr()" )
 		var e = getEnvironmentStrings()
@@ -1259,11 +1245,17 @@ namespace process{
 			var l = ..raw.indexOf(e,0xFFFFFFFF,'\0\0\0\0'); 
 			var s = ..raw.tostring(e,1,l); 
 			::Kernel32.FreeEnvironmentStrings(e); 
-			return..string.fromUnicode(s);
+			return..string.fromUtf16(s);
 		}
 	}
 	
 	workDir = ..io.fullpath("/")
+	
+	joinArguments = ..string.args.join;
+	
+	//@Deprecated
+	escapeArgument = ..string.args.escape; 
+	arguments =  ..string.args; 
 }
 
 import process.job.limitKill;
@@ -1273,22 +1265,20 @@ import process.job.limitKill;
 end details**/
 
 /**intellisense()
-process.joinArguments( = 用于安全地合并与转换进程启动命令行参数，并自动处理转义字符。
-process.joinArguments(.(参数表,->->->) = 可传入一个参数表（可包含数组成员）或多个非 null 参数。\n自动合并为单个进程启动命令行参数并返回一个字符串值。\n如果传入参数是一个表对象（可包含数组），\n则表中以键名以 - 或 / 开头的键值对自动合并为命令行参数，\n如果是 process.arguments 表，则自动转换驼峰式参数名为 -- 开头的连字符格式。\n同一个参数表的键值对参数总是置于数组参数之前（改用多个表参数可保留传入顺序）。\n\n如果传入参为是多个参数则先转换为数组再调用 joinArguments 处理。\n如果数组成员仍是表对象，则仍用 joinArguments 转换并将结果直接置入返回字符串。\n否则调用 tostring 转换参数项为字符串，并按需添加引号进行必要的转义处理。\n不在双引号内、且包含空白字符或 ^ | && 等字符 的参数转义处理后首尾添加双引号
-process.escapeArgument(.("命令行参数") = 转义命令行参数\n关于命令行参数转义规则,请参考 string.cmdline 的说明
 process.STARTUPINFO() = 创建进程启动参数\n!startinfo. 
-process( = 运行执行文件或关联文档。\n如果省略所有参数则打开当前进程\n失败则返回 null,错误信息,错误代码\n成功返回进程对象
+process.joinArguments( = 用于安全地合并命令行参数，并自动处理转义字符。\n此函数实际指向 string.args.join 函数。
+process.joinArguments(.(参数表,->->->) = 可传入一个参数表（可包含数组成员）或多个非 null 参数。\n\n如果传入参数是一个表对象（可包含数组），\n参数表将自动合并为单个命令行参数并返回一个字符串值。\n表中以键名以 - 或 / 开头的名值对自动合并为命令行参数。\n\n数组成员也会合并到命令行，但名值对参数总是置于数组参数之前。\n如果数组成员也是表对象，则仍调用此函数直接转换为字符串（不再转义）。\n其他数组或命名参数值用 tostring 转换为字符串，按需添加引号进行必要的转义。\n不在双引号内、且含空白字符或 ^ | && 等字符的参数转义后置入双引号。
+process( = 运行执行文件或关联文档。\n如果省略所有参数则打开当前进程\n失败则返回 null,错误信息,错误代码\n成功返回进程对象。\n\n个别系统 64 位程序，需要改用 process.wow64 启动以避免目录重定向。\n极个别系统程序，需要用 process.shell 函数创建 process 对象。
 process(.(进程ID,权限) =  打开指定ID的进程,\n参数@2可选用一个数值指定请求的权限，\n不指定权限时默认尝试 _PROCESS_ALL_ACCESS 权限,\n如果失败则尝试以 _SYNCHRONIZE 权限打开进程,\n_SYNCHRONIZE权限打开时只能使用 wait,waitOne函数,\n非管理权限进程创建管理权限进程时只能以_SYNCHRONIZE权限打开进程
 process(.(进程句柄,负责释放进程句柄) =  使用指定的进程句柄创建进程对象,\n参数@2为可选参数,默认为true
 process(.( ,系统命令行) = 如果省略第一个参数,并仅指定命令行,则作为系统命令行启动运行
-process(.(执行文件,命令行参数,更多命令行参数,->->->) = 命令行参数可以是一个数组、一个或多个字符串参数,\n\n数组或多个命令行参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符
-process(.(执行文件,命令行参数,STARTUPINFO) = 命令行参数可以是字符串或由多个字符串组成的数组,\n数组参数调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符。\nSTARTUPINFO参数为process.STARTUPINFO 结构体,可选参数\n如果该参数是普通table对象.将自动创建为STARTUPINFO结构体
+process(.(执行文件,命令行参数,更多命令行参数,->->->) = 命令行参数可以是一个数组、一个或多个字符串参数,\n\n数组或多个命令行参数调用 string.args.join 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符
+process(.(执行文件,命令行参数,STARTUPINFO) = 命令行参数可以是字符串或由多个字符串组成的数组,\n数组参数调用 string.args.join 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号,\n命令参数最大长度为 32765 个字符。\nSTARTUPINFO参数为process.STARTUPINFO 结构体,可选参数\n如果该参数是普通table对象.将自动创建为STARTUPINFO结构体
 process() = !process.
 process.find() = !process.
 process.shell() = !process.
 process.shellAs() = !process.
 process.is(__) = 传入参数是否 process 对象
-process.arguments() = 返回一个命令行参数表对象。\n或将参数指定的表（只能是未指定元表的纯表）转换为命令行参数表对象。\n此参数表可用于指定 process 库所有启动进程函数的命令行参数。\n表中无 / 或 - 前导字符的参数名将由小驼峰转换为连字符风格并加上 -- 前缀。\n名值对参数将用空格分开参数名与参数值。\n注意 -- 前缀的参数用等号和空格分隔参数值通常是等价的。\n参数表的其他数组成员也会直接转换为命令行参数
 !process.stillActive() = 进程是否仍在运行
 !process.getInfo( = 获取进程信息
 !process.getInfo(.() = 获取进程信息
@@ -1299,8 +1289,8 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.free() = 释放进程对象。\n不是关闭进程,仅仅是释放对进程的控制句柄。
 !process.waitOne() = 等待进程关闭,不阻塞UI消息循环,\n可选使用一个毫秒值参数设定超时\n超时或失败返回 false,\n进程已退出则返回值1为true,返回值2为退出代码
 !process.wait() = 等待进程关闭,\n可选使用一个毫秒值参数设定超时\n超时或失败返回 false,\n进程已退出则返回值1为true,返回值2为退出代码
-!process.query(.(开始地址,结束地址,搜索数据,保护类型,访问类型) = 查找下一个有效内存地址,所有参数可选,\n搜索数据可以是字符串或结构体\n返回值: addr,len,str,i,j,pattern,protect,mtype 
-!process.eachQuery(开始地址,结束地址,搜索数据,保护类型,访问类型) = @for( addr,len,str,i,j,pattern,protect,mtype\n	in ??.eachQuery(  , ,"__/*搜索模式*/" ) ){\n	\n} 
+!process.query(.(开始地址,搜索内存长度,搜索数据) = 查找下一个有效内存地址,所有参数可选,\n搜索数据可以是字符串或结构体\n返回值: curMemAddr,curMemSize,strResult,i,j,remainSize
+!process.eachQuery(开始地址,搜索内存长度,搜索数据) = @for( curMemAddr,curMemSize,strResult,i,j,remainSize in ??.eachQuery(  , ,"__/*搜索模式*/" ) ){\n	\n} 
 !process.malloc(.(长度) = 在目标进程分配内存空间
 !process.malloc(.(长度,访问类型) = 在目标进程分配内存空间
 !process.malloc(.(长度,访问类型,分配类型) = 在目标进程分配内存空间
@@ -1308,6 +1298,11 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.mfree(.(指针,释放长度,0x4000) = 释放malloc成员函数分配的内存指针\n不建议手工指定长度
 !process.sendMessage(.(hwnd,message,wParam,lParam) = 向外部进程窗口发送消息\nlParam如果是结构体则复制到目标进程内存,\n结构体如果包含指针应当自行调用 process.malloc 分配内存并复制\n发送消息涉及的用法太多,尤其是涉及到访问外部进程内存,\n所涉及的知识量不能通过看几句函数说明获得,\n普通用户请不要学习或使用此函数
 !process.setAffinity(1) = 指定进程运行的CPU内核
+!process.readPtr() = 读取指针地址。\n64 位进程读取 8 字节并返回 math.size64 对象。\n32 位进程读取 4 字节并返回数值。
+!process.readNumberPtr(__/*内存地址*/) = 读取 int 整数的指针，\n然后用在指针指向的内存读取读取数值。\n可用参数 @2 指定原生类型，用法同 readNumber 函数。
+!process.readStringPtr(.(内存地址,长度) = 在参数指定的地址读取字符串指针，\n然后用在指针指向的内存读取字符串。
+!process.readStringUtf16Ptr(.(内存地址,长度) = 在参数指定的地址读取字符串指针，\n然后用在指针指向的内存读取定长 UTF-16 字符串（ustring）。\n返回字符串转换为UTF8编码。\n注意长度以字符为单位
+!process.readStructPtr(.(内存地址,结构体) = 在参数指定的地址读取结构体指针，\n然后用在指针指向的内存读取结构体
 !process.readNumber(__/*内存地址*/) = 读取一个int整数,32位\n打开进程需要指定 _PROCESS_VM_READ 权限
 !process.readNumber(__/*内存地址*/,"long") = 读取一个long类型整数,64位\n打开进程需要指定 _PROCESS_VM_READ 权限
 !process.readNumber(__/*内存地址*/,"word") = 读取一个word类型整数,16位\n打开进程需要指定 _PROCESS_VM_READ 权限
@@ -1318,11 +1313,11 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.readNumber(__/*内存地址*/,"BYTE") = 读取一个字节,8位无符号\n打开进程需要指定 _PROCESS_VM_READ 权限
 !process.write(.(内存地址,任意个字符串或结构体参数) = 写入数据,成功返回写入尾部内存地址,\n失败返回空
 !process.readString(.(内存地址,长度) = 读取定长字符串\n打开进程需要指定 _PROCESS_VM_READ 权限
-!process.readStringUtf16(.(内存地址,长度) = 读取定长Unicode字符串\n转换为UTF8编码\n注意长度以字符为单位\n打开进程需要指定 _PROCESS_VM_READ 权限
+!process.readStringUtf16(.(内存地址,长度) = 读取定长 UTF-16 字符串（ustring），\n返回字符串转换为 UTF-8 编码。\n注意长度以字符为单位\n打开进程需要指定 _PROCESS_VM_READ 权限
 !process.readStruct(.(内存地址,结构体) = 读取定义的结构体\n打开进程需要指定 _PROCESS_VM_READ 权限
 !process.writeStruct(.(内存地址,结构体) = 写入定义的结构体,\n省略内存地址参数则自动分配内存,\n该函数返回写入内存地址,写入长度
 !process.writeString(.(内存地址,字符串,长度) = 写入字符串,长度为可选参数,\n省略内存地址参数则自动分配内存,\n该函数返回写入内存地址,写入长度
-!process.writeStringUtf16(.(内存地址,字符串) = 写入Unicode字符串\n参数可以为默认的UTF8编码文本
+!process.writeStringUtf16(.(内存地址,字符串) = 写入 UTF-16 字符串（ustring）。\n参数可以为默认的UTF8编码文本
 !process.writeNumber(__/*内存地址*/,0) = 写入一个int整数,32位
 !process.writeNumber(__/*内存地址*/,0,"long") = 写入一个long类型整数,64位
 !process.writeNumber(__/*内存地址*/,0,"word") = 写入一个word类型整数,16位
@@ -1336,6 +1331,7 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.setPriorityClass(0x80/*_HIGH_PRIORITY_CLASS*/) = 设置进程优先级 
 !process.handle = 进程句柄
 !process.getParentId() = 获取父进程 ID
+!process.getParent() = 获取父进程对象。\n参数@1可选用一个数值指定请求的权限，\n不指定权限时默认尝试 _PROCESS_ALL_ACCESS 权限,\n如果失败则尝试以 _SYNCHRONIZE 权限打开进程。\n!process.
 !process.id = 进程 ID
 !process.tid = 返回进程的主线程 ID
 !process.remoteApi( = 在外部进程内创建远程调用函数
@@ -1354,20 +1350,20 @@ process.arguments() = 返回一个命令行参数表对象。\n或将参数指�
 !process.asmCdecl(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
 !process.asmStdcall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
 !process.asmThiscall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
-!process.getModuleBaseAddress(.(模块名) = 返回模块基址。\n模块名忽略大小写,\n不指定模块名则返回应用程序基址。\n\n此函数仅支持 32 位程序。\n取 64 位进程基址方法:\nprcs.readStruct( prcs.getInfo().pebBaseAddress+16,{LONG v=math.size64()})
+!process.getModuleBaseAddress(.(模块名) = 返回模块基址。\n模块名忽略大小写,\n不指定模块名则返回应用程序基址。\n\n此函数仅支持 32 位程序。\n64位进程返回 math.size64 对象（暂不支持指定模块名）
 !process.isWow64() = 进程是否在64位系统上运行的32进程
 !process.isX64() = 是否64位进程
 !process.getUiInfo() = 获取UI线程窗口焦点,光标等信息\n!guithreadinfo.
-!process.getMainWindow(.() = 返回进程的主窗口以及窗口进程ID，找不到则搜寻子进程主窗口。\n查找时忽略隐藏窗口。\n\n也可以调用 winex.mainWindows 获取主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
-!process.getMainWindow(.(类名) = 返回进程的指定类名的主窗口以及窗口进程ID，找不到则搜寻子进程主窗口。\n类名参数支持模式匹配语法
+!process.getMainWindow(.() = 返回进程的主窗口以及窗口进程 ID，找不到则搜寻子进程主窗口。\n查找时忽略隐藏窗口。\n\n也可以调用 winex.mainWindows 获取主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
+!process.getMainWindow(.(类名,标题) = 返回进程的指定类名的主窗口以及窗口进程 ID，找不到则搜寻子进程主窗口。\n类名与标题支持完全匹配与模式匹配，忽略大小写。\n所有参数可选，不指定类名或标题时忽略隐藏窗口。
 !process.waitMainWindow( = 等待并返回进程主窗口以及窗口进程ID。\n也可调用 winex.mainWindows 且指定参数 @2 为 true 以等待主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
-!process.waitMainWindow(.(类名,等待窗口句柄) = 等待并返回进程主窗口以及窗口进程ID。\n所有参数可选。\n可选指定要等待的类名,类名参数支持模式匹配语法,\n不指定类名时忽略隐藏窗口,\n可选指定等待窗口句柄,该窗口关闭时些函数不再等待并直接返回结果
+!process.waitMainWindow(.(类名,等待窗口句柄) = 等待并返回进程主窗口以及窗口进程ID。\n所有参数可选。\n可选指定要等待的类名，类名支持完全匹配与模式匹配，忽略大小写。\n不指定类名时忽略隐藏窗口,\n可选指定等待窗口句柄,该窗口关闭时些函数不再等待并直接返回结果
 !process.closeMainWindow() = 关闭进程的主窗口，忽略隐藏窗口
 !process.assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回 true\n作业对象示例请参考标准库 process.job.limitKill 的源码。\n也可直接调用 killOnExit 函数绑定 process.job.limitKill
 !process.killOnExit() = 主进程退出时自动退出此进程
 !process.ctrlEvent(0)=发送Ctrl+C(SIGINT信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
 !process.ctrlEvent(1)=发送Ctrl+Break(SIGBREAK信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
-!process.emptyWorkingSet() = 将工作集中的内存尽可能移动到页面文件中,\n应发在最小化或程序空闲内存确实暂不需要使用时调用,\n不应频繁调用此函数
+!process.emptyWorkingSet() = 将工作集中的内存尽可能移动到页面文件中,\n可在最小化或程序空闲时调用以释放活动内存，\n不建议频繁调用此函数
 ?process = !process.
 ?process.each = !processEntry.
 end intellisense**/
@@ -1380,33 +1376,36 @@ getInfo(.(handle,infoClass,infoStruct) = 参数 @1 指定进程句柄。\n如果
 getInfo() = !stdProcessInfo.
 shellAs( = 以管理权限运行 EXE 应用程序,返回进程对象
 shellAs(.("__", parameters="",showCmd,workDir,hwnd,fmask) = 参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数。\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
-shell( = 运行exe应用程序,返回进程对象
+shell( = 并运行应用程序，返回 process 进程对象。\n个别系统 64 位程序，需要改用 process.wow64.shell 以禁用目录重定向。
 shell(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数,\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
 executeEx(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 运行 EXE 应用程序,返回 SHELLEXECUTEINFO 结构体,\n参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数。\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
-execute( = 运行exe应用程序,成功返回进程ID,\n参数详细用法请参考本函数源码以及 WINAPI 中 ShellExecuteEx 函数用法\n运行 UWP 应用请使用 com.shell.activateApp 函数\n\nraw.execute 提供了与本函数类似的功能
-execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数 @1 为程序路径或系统命令。\n\n可选参数 @parameters 可以是字符串或字符串数组，用于指定启动参数。\n如果指定数组则由 process.joinArguments 自动处理转义并支持命名参数。\n如果启动参数只指定一个文件路径，为避免可能包含空格或以反斜杆结尾等需要转义的情况，\n建议写为 process.execute(exePath,{path}) 这种格式，让 aardio 自动处理转义。\n\n可选参数 @operation 为启动模式\n可选参数 @showCmd 使用 _SW_ 前缀常量，与win.show参数用法相同。\n可选参数 @workdir 为工作目录\n可选参数 @hwnd 可指定父窗口句柄
+execute( = 运行exe应用程序,成功返回进程ID,\n参数详细用法请参考本函数源码以及 WINAPI 中 ShellExecuteEx 函数用法\n运行 UWP 应用请使用 com.shell.activateApp 函数\n\nraw.execute 提供了与本函数类似的功能。\n\n个别系统 64 位程序，需要改用 process.wow64.execute 以避免目录重定向。
+execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数 @1 为程序路径或系统命令。\n\n可选参数 @parameters 可以是字符串或字符串数组，用于指定启动参数。\n如果指定数组则由 string.args.join 自动处理转义并支持命名参数。\n如果启动参数只指定一个文件路径，为避免可能包含空格或以反斜杆结尾等需要转义的情况，\n建议写为 process.execute(exePath,{path}) 这种格式，让 aardio 自动处理转义。\n\n可选参数 @operation 为启动模式\n可选参数 @showCmd 使用 _SW_ 前缀常量，与win.show参数用法相同。\n可选参数 @workdir 为工作目录\n可选参数 @hwnd 可指定父窗口句柄
 executeWait(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待应用程序关闭\n除参数@1以外所有参数可选，所有参数用法与 process.execute 相同
 executeWaitInput(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待进程初始化完成并接受输入\n除参数@1以外所有参数可，所有参数用法与 process.execute 相同
 executeInvoke(.(path, parameters,operation,showCmd,workDir,hwnd) = 创建临时的后台线程运行应用程序\n在打开程序前退出主线程可能无法执行操作,\n参数与 process.execute 函数用法一样,除指定参数@1或参数@2,其他所有参数可选
 openUrl(__) = 调用默认浏览器打开网址,用于窗口程序,\n如果不用这个方法创建线程去打开网址,可能会出现界面卡顿不流畅的现象,\n在打开网址前退出主线程可能无法执行操作\n控制台程序应调用 process.execute 以避免后台线程不能阻止控制台关闭
-exploreSelect("__/*文件路径*/") = 打开资源管理器,选定该文件
-explore("__/*目录路径*/") = 使用资源管理器打开目录\n打开WIN10应用这样写:process.explore("shell:appsFolder\appPath")\n使用 com.shell.eachApp 可列出WIN10所有appPath
+exploreSelect("__/*文件路径*/") = 打开资源管理器，选定参数 @1 指定的文件路径
+explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杆`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。\n\n内置函数 raw.explore 与 process.explore 用法相同
 regAs(`__/*命令参数*/`) = 以管理权限执行 reg 命令
 findExe("__/*文件路径*/") = 查找文件关联的可执行程序
-isExe("__/*文件路径*/") = 检测目标文件是否可执行文件\n如果是可执行文件返回"PE32"或"PE64"\n第二个返回值为子系统,GUI为2,CUI为3\n失败或参数为 null 返回 null
-find("__/*exe 文件名*/") = 查找进程并返回进程对象,\n参数@1指定要查找的进程启动文件名,注意应指定文件名而非文件路径,\n文件名参数支持模式匹配语法,忽略大小写,
-findId("__/*exe 文件名*/") = 查找进程并返回进程 ID,\n参数@1指定要查找的进程启动文件名,注意应指定文件名而非文件路径,\n文件名参数支持模式匹配语法,忽略大小写
+isExe("__/*文件路径*/") = 检测目标文件是否可执行文件。\n如果是可执行文件返回"PE32"或"PE64"\n第二个返回值为子系统,GUI为2,CUI为3\n失败或参数为 null 返回 null
+find("__/*执行文件名*/") = 查找进程并返回进程对象。\n参数 @1 指定要查找的进程启动文件名,注意应指定文件名而非文件路径,\n文件名参数支持完全匹配与模式匹配，忽略大小写
+findId("__/*执行文件名*/") = 查找进程并返回进程 ID。\n参数 @1 指定要查找的进程启动文件名,注意应指定文件名而非文件路径,\n文件名参数支持完全匹配与模式匹配，忽略大小写
+findWindow( = 查找进程并返回进程主窗口句柄。
+findWindow(.(执行文件名,类名,标题) = 所有参数可选。\n参数 @1 指定应指定进程执行文件名而非文件路径，\n所有参数支持完全匹配与模式匹配，忽略大小写。\n不指定类名或标题时忽略隐藏窗口。
 kill( = 查找并关闭进程,\n注意有些进程需要管理权限才能找到,\n例如资源管理器进程 "explorer.exe" 无管理权限有时会失败,\n在代码第一行添加//RUNAS//可申请管理权限
-kill(.(exePath,restart) = 查找所有同名 exe 文件的进程，并关闭进程。\n参数 @exePath 支持模式匹配语法,忽略大小写。\n返回进程的完整路径。\n\n如果 @restart 参数为 true，\n则杀进程成功后立即重新启动该进程
+kill(.(exePath,restart) = 查找所有同名 exe 文件的进程，并关闭进程。\n参数 @exePath 支持完全匹配与模式匹配,忽略大小写。\n返回进程的完整路径。\n\n如果 @restart 参数为 true，\n则杀进程成功后立即重新启动该进程
 kill(.(pid)  = 使用参数@pid指定进程ID,关闭该进程
-each =  @for processEntry in process.each( ".*.exe" ) { \n//遍历所有进程\n	__//io.print( processEntry.szExeFile  )\n \n}
+each =  @for processEntry in process.each( ".*.exe" ) { \n//搜索进程，参数指定执行文件名（支持完全匹配与模式匹配，忽略大小写）\n	__//io.print( processEntry.szExeFile  )\n \n}
+eachWindow(执行文件名,类名,标题) =  @for hwnd in process.eachWindow( ".*.exe" ) {\n	__/*搜索进程主窗口，所有参数可选。\n参数 @1 指定应指定进程执行文件名而非文件路径，\n所有参数支持完全匹配与模式匹配，忽略大小写。\n不指定类名或标题时忽略隐藏窗口。*/\n}
 eachModule =  @for moduleEntry in process.eachModule(__/*进程ID*/) { \n//io.print( moduleEntry.szExePath  )\n \n}
 eachThread =  @for threadEntry in process.eachThread(__/*进程ID*/) { \n//io.print( threadEntry.th32ThreadID  )\n \n}
 firstThreadId(__/*进程ID*/) = 返回进程的首个线程 ID
 getPath(__/*进程ID*/) = 返回执行程序文件完整路径
 getId() = 获取当前进程 ID
 getParentId() = 获取父进程 ID
-getParent() = 获取父进程对象\n!process.
+getParent() = 获取父进程对象。\n参数@1可选用一个数值指定请求的权限，\n不指定权限时默认尝试 _PROCESS_ALL_ACCESS 权限,\n如果失败则尝试以 _SYNCHRONIZE 权限打开进程。\n!process.
 getHandle() = 获取当前进程伪句柄
 dup(.(句柄,源进程句柄,目标进程句柄) = 进程句柄参数省略则为当前进程句柄\n函数支持更多可选参数如下:\n(句柄,源进程,目标进程,是否可继承,选项,安全访问级别)\n默认可继承,选项默认为_DUPLICATE_CLOSE_SOURCE | _DUPLICATE_SAME_ACCESS\n如果不指定最后一个参数 
 dup(.(句柄,源进程句柄) = 从指定进程复制句柄到当前进程

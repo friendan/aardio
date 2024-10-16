@@ -1,4 +1,4 @@
-//sockpuppet 多账号登录
+﻿//sockpuppet 多账号登录
 import web.form.util;
 import win.guid;
 import fsys;
@@ -19,7 +19,7 @@ class sockpuppet{
 		..fsys.enum( cookieRootPath, "*.*",
 			function(dir,filename,fullpath,findData){ 
 				if(!filename) {
-					if( ! ..io.exist( ..fsys.joinpath(fullpath,"__sockpuppet.lock") ) ){
+					if( ! ..io.exist( ..io.joinpath(fullpath,"__sockpuppet.lock") ) ){
 						cookiePath = fullpath; 
 						return false;
 					}
@@ -27,11 +27,11 @@ class sockpuppet{
 			},false
 		); 
 		if( !cookiePath ){
-			cookiePath = ..fsys.joinpath( cookieRootPath , tostring(  ..win.guid.create() ) );
+			cookiePath = ..io.joinpath( cookieRootPath , tostring(  ..win.guid.create() ) );
 		};
 		cookiePath = ..io.fullpath(cookiePath);
 		..fsys.createDir( cookiePath )
-		..string.save( ..fsys.joinpath(cookiePath,"__sockpuppet.lock") ,"locked") 
+		..string.save( ..io.joinpath(cookiePath,"__sockpuppet.lock") ,"locked") 
 
 		web_reg.setSzValue("Cookies",cookiePath )
 		web_reg.setSzValue("Cache",cookiePath )  
@@ -51,7 +51,7 @@ class sockpuppet{
 		..thread.unlock("创建马甲登录器")
 	}; 
 	unlockCookiePath = function(){
-		..fsys.delete( ..fsys.joinpath(cookiePath,"__sockpuppet.lock")  )
+		..fsys.delete( ..io.joinpath(cookiePath,"__sockpuppet.lock")  )
 	} 
 }
 

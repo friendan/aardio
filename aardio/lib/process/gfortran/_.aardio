@@ -55,7 +55,7 @@ class gfortran {
 }
 
 /**details(参考文档)
-[aardio 静态类型](chm://libraries/kernel/raw/datatype.html)
+[aardio 原生类型](doc://library-guide/builtin/raw/datatype.md)
 [Fortran C兼容类型](https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fC_005fBINDING.html)
 end details**/
 

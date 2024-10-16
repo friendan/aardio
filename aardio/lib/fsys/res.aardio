@@ -1,4 +1,4 @@
-//res 资源文件
+﻿//res 资源文件
 import fsys;
 namespace fsys.res;
  
@@ -90,16 +90,16 @@ saveRes = function(srcDir="/",target="/"){
 		srcDir =  '/' + srcDir;
 	
 	if( _STUDIO_INVOKED ){ 
-		target = ..fsys.joinpath(target , srcDir); 
+		target = ..io.joinpath(target , srcDir); 
 		if( ..io.exist(target) ) return;
-		return ..fsys.copy( ..fsys.joinpath(srcDir,"/*"),..fsys.createDir( target )  );  
+		return ..fsys.copy( ..io.joinpath(srcDir,"/*"),..fsys.createDir( target )  );  
 	}
 		
 	return enum(
 		function(module,resType,resName){
 			if( ..string.startWith(resName,srcDir) ){
 				var str = ..string.load( resName )
-				var path = ..fsys.joinpath(target,resName)
+				var path = ..io.joinpath(target,resName)
 				..fsys.createDir( ..fsys.getParentDir(path)  )
 				..string.save( path,str ) 
 			}

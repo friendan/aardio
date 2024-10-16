@@ -9,8 +9,15 @@ class ffmpeg {
 		var ffmpegPath = getPath();
 		if( !ffmpegPath ) return;
 		
+		var args = ..string.cmdline.arguments(...);
+		for(i,v in args){
+			if(args[i]=="-i" && args[i+1]){
+				args[i+1] = ..io.localpath(args[i+1]) || args[i+1];
+			}
+		}
+		
 		this = ..process.popen( ffmpegPath
-			, ..string.cmdline.arguments(...)
+			, args
 			, { workDir=workDir:..io.fullpath("/") }
 			);
 			
@@ -19,7 +26,6 @@ class ffmpeg {
 		}
 	};
 }
-
 
 namespace ffmpeg {
 
@@ -70,12 +76,12 @@ namespace ffmpeg {
 end details**/
 
 /**intellisense()
-process.ffmpeg = 调用 ffmpeg.exe，返回 process.popen 进程管道对象\n[FFmpeg调用参数说明](https://quickref.me/zh-CN/docs/ffmpeg.html)
-process.ffmpeg(.(workDir,->->->) = 调用 ffmpeg.exe，返回 process.popen 管道对象\n@workDir 参数指定工作目录，传入空值则默认设为"/"。\n可传入一个或多个启动命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号
+process.ffmpeg = 调用 ffmpeg.exe，返回 process.popen 进程管道对象。\n可用于处理或转换视频、音频、图像文件。\n[FFmpeg调用参数说明](https://quickref.me/zh-CN/docs/ffmpeg.html)
+process.ffmpeg("/","-y","-i",__) = 调用 ffmpeg.exe，返回 process.popen 管道对象。\n参数 @1 指定工作目录，传入空值则默认设为"/"。\n可传入一个或多个启动命令行参数。\n如果有多个命令行参数，则不在双引号内、且包含空白或需要转义的参数时，\n转义处理该参数后并在首尾添加双引号。\n\n参数 "-y" 表示允许覆盖同名文件。\n参数 "-i" 的下一个参数指定输入文件路径（~或单正反斜杆开头的路径自动转为完整路径）。
 process.ffmpeg() = !process_popen.
 setPath(__) = 自定义 ffmpeg.exe 路径。\n参数 @1 指定文件路径
-process.ffmpeg.getPath() = 返回 ffmpeg.exe 路径。\n如果找不到路径则会自动安装
+process.ffmpeg.getPath() = 返回 ffmpeg.exe 路径。\n如果找不到路径则会自动安装。
 process.ffmpeg.cdnFilename = 默认下载的 ffmpeg 文件名。\n64位系统默认为 "ffmpeg-win32-x64"，32位默认为 "ffmpeg-win32-ia3"
-process.ffmpeg.cdnVersion = 默认下载的 ffmpeg 版本。\n当前为 "6.0"
-process.ffmpeg.cdnUrl = ffmpeg.exe 默认下载地址
+process.ffmpeg.cdnVersion = 默认下载的 ffmpeg 版本。\n当前为 "6.0"。
+process.ffmpeg.cdnUrl = ffmpeg.exe 默认下载地址。
 end intellisense**/

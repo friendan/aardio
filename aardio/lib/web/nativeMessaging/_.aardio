@@ -12,7 +12,7 @@ class nativeMessaging{
     
 	run = function(){
 		
-    	if( !this.onMessage ) error("必须先定义onMessage事件才能调用run函数",2); 
+    	if( !this.onMessage ) error("必须先定义 onMessage 事件才能调用 run 函数",2); 
     	
     	if( this.onOpen ) {
     		var extension;
@@ -78,24 +78,24 @@ namespace nativeMessaging{
 
 
 /**intellisense()
-web.nativeMessaging = 用于创建本地应用消息主机,\n用于实现Chrome本地应用的扩展插件，\n\n创建基于窗口的Chrome扩展非常方便,\n可以类似WebSocket那样实现单线程异步读写的消息主机
-web.nativeMessaging() = 创建本地应用消息主机\n用于编写Chrome本地应用的扩展插件，\n如果当前进程不是在Native Messaging管道中启动,返回null值\n否则返回服务端对象,\n!web_nativeMessaging.
-run() = 启动本地应用消息主机
+web.nativeMessaging = 用于创建本地消息服务端，\n用于实现可调用本地应用的浏览器扩展。\n\n创建基于窗口的浏览器扩展非常方便,\n可以类似 WebSocket 那样实现单线程异步读写的消息主机
+web.nativeMessaging() = 用于创建本地消息服务端，，\n用于实现可调用本地应用的浏览器扩展。\n如果当前进程不是在浏览器中启动,返回 null 值\n否则返回服务端对象。\n!web_nativeMessaging.
+run() = 启动本地消息服务端，
 _CREATE_BREAKAWAY_FROM_JOB=@0x1000000/*_CREATE_BREAKAWAY_FROM_JOB*/
 end intellisense**/
 
 /**intellisense(!web_nativeMessaging)
 onMessage = @.onMessage = function(data){
-	__/*网页发送消息过来时触发\ndata是网页上JS发过来的对象\n*/
+	__/*网页发送消息过来时触发\ndata 是网页上 JS 发过来的对象\n*/
 }
 onError = @.onError = function(err){
-	__/*遇到错误时触发,err是错误信息\n建议自己写日志文件*/
+	__/*遇到错误时触发,err 是错误信息\n建议自己写日志文件*/
 }
 onClose = @.onClose = function(){
 	__/*客户端断开连接程序进程即将退出时触发\n*/
 }
 onOpen = function(extension,parentWindow){
-	__/*进程已启动客户端已连接时触发\nextension为扩展ID,parentWindow为父窗口句柄\n*/
+	__/*进程已启动客户端已连接时触发\nextension 为扩展ID,parentWindow 为父窗口句柄\n*/
 }
 end intellisense**/
 

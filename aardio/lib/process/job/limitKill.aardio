@@ -6,7 +6,7 @@ namespace process.job;
 
 var limitKillJob;
 limitKillJob = class {
-	ctor(){
+	ctor(limitFlags){
 		this.handle = ::Kernel32.CreateJobObjectP( null,null); 
 		if( !this.handle ) return null;
 	
@@ -14,7 +14,7 @@ limitKillJob = class {
 			struct BasicLimitInformation = {
 				LONG PerProcessUserTimeLimit;
 				LONG PerJobUserTimeLimit;
-				INT LimitFlags = 0x2000/*JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE*/;
+				INT LimitFlags = 0x2000/*JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE*/|(limitFlags:0);
 				INT MinimumWorkingSetSize;
 				INT MaximumWorkingSetSize;
 				INT ActiveProcessLimit;
@@ -101,7 +101,9 @@ limitKill = limitKillJob();
 
 /**intellisense()
 process.job.limitKill = 使用子进程对象的 assignToJobObject 函数绑定此对象,\n则进程退出时子进程自动终止\n!processJobLimitKill.
-process.job.limitKill() = 创建新的 process.job.limitKill 作业对象\n!processJobLimitKill.
+process.job.limitKill( = 创建新的 process.job.limitKill 作业对象
+process.job.limitKill(.(limitFlags) = 创建新的 process.job.limitKill 作业对象。\nlimitFlags 可指定以下值：\n_JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK 下级进程不自动继承作业对象\n_JOB_OBJECT_LIMIT_BREAKAWAY_O 允许创建下级进程时指定 CREATE_BREAKAWAY_FROM_JOB
+process.job.limitKill() = !processJobLimitKill.
 end intellisense**/
 
 /**intellisense(!processJobLimitKill)

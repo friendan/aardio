@@ -1,7 +1,39 @@
 ﻿import dotNet;
-dotNet.import("System.Data")
+dotNet.import("System.Data");
+
+/*
+C# 源码编译后内存嵌入 aardio 非常方便（用 aardio 就可以编译） 。
+而且 C# 生成的 DLL 非常小（只要使用系统自带 .NET Framework 就可以）。
+可以直接在 C# 里做一些密集调用，避免过于频繁地在 aardio 与 C# 间交互。
+*/
+DataTableUtil = dotNet.loadFile($"~\lib\System\Data\.res\DataTableUtil.dll").import("aardio.Interop.DataTableUtil");
+
+System.Data.DataTable[["ctor"]] = function(this){
+	this[["FillFromArray"]] = function(arr,clear){
+		DataTableUtil.FillFromArray(this,arr,!!clear);
+	}
+	
+	this[["ExtractToArray"]] = function(){
+		/*
+		aardio 会将 .NET object 数组封包为 DispatchableObject，
+		但这个数组里放的都是 aardio 可转换的值，不必要封包。
+		所以解包直接返回原始数组。
+		*/
+		return ..dotNet.getObject( DataTableUtil.ExtractToArray(this),true ); 
+	}
+}
 
 /**intellisense()
 System.Data = .NET System.Data 名字空间\n!dotNetNameSpace.
+System.Data.DataTable(__) = 创建表格，可在参数 @1 使用字符串指定表格名称。\n其他参数用法请参考 .NET 文档。
+System.Data.DataTable() = !sysDataDataTable.
 end intellisense**/
 
+/*****intellisense(!sysDataDataTable)
+Columns.Add( = 添加列
+Columns.Add(.("列名",类型) = 参数 @2 可以直接指定 System 库导入的 System.Boolean 等类型。\n或用 System.Type.GetType 获取类型。
+Columns.Add(.(->->->) = 添加列，其他参数用法请参考 .NET 文档
+FillFromArray(__) = 参数 @1 指定二维数组。\n将二维数组一次性填充为表格数据。\n可选用参数 @2 指定是否清空之前的数据，默认为 false 。\n此方法避免了用 aardio 密集调用 .NET 函数，避免了不必要的交互成本。
+ExtractToArray() = 提取所有数数据到 com.SafeArray 类型数组。\nSafeArray 数组实际上就是声明了 COM 类型的普通 aardio 数组，\n可以作为普通数组直接使用。\n\n此函数的返回值可以作为 FillFromArray 的参数使用。
+Clear() = 清除所有数据。
+end intellisense*****/

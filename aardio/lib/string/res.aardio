@@ -9,7 +9,7 @@ class res{
 	};
 	load = function(id){
  		var len,str = ::User32.LoadString( this.module,id ,{ptr p},0 ) 
- 		if(len)return ..string.fromUnicode(str.p,,len)
+ 		if(len)return ..string.fromUtf16(str.p,,len)
 	} 
 }
 //fsys.lnk

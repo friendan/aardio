@@ -13,7 +13,7 @@ namespace win.ole;
 
 fromSysString = function(bstr){
     if(type(bstr)==="pointer"){
-    	var s = ..string.fromUnicode(bstr,,::OleAut32.SysStringLen(bstr)); 
+    	var s = ..string.fromUtf16(bstr,,::OleAut32.SysStringLen(bstr)); 
 		::SysFreeString(bstr)
 		return s;
     }	

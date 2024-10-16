@@ -73,7 +73,7 @@ getDescription = function(hk){
 		if(size){
 			var buf = ..raw.buffer(size*2);
 			var size = ::Imm32.ImmGetDescription(hk, buf, size) 
-			if(size)return ..string.fromUnicode(buf);
+			if(size)return ..string.fromUtf16(buf);
 		}
 	} 		
 }

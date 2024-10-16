@@ -11,7 +11,7 @@ class reg{
             	var buffer = ..raw.buffer(len.value)
             	ret = ::Ntdll.NtQueryKey(this.handle, 3, buffer, len.value, len);
             	if (ret == 0/*_STATUS_SUCCESS*/){
-                	var path = ..string.right(..string.fromUnicode(buffer),-4); 
+                	var path = ..string.right(..string.fromUtf16(buffer),-4); 
                 	path = ..string.replace(path,"^\\REGISTRY\\MACHINE\\","HKEY_LOCAL_MACHINE\");
  					this.path = ..string.replace(path,"^\\REGISTRY\USER\\","HKEY_USERS\");
             	}
@@ -127,10 +127,10 @@ class reg{
 				value = ..raw.convert(buffer,{INT v }).v; 
 			}
 			elseif (  vType == 1/*_REG_SZ*/ || vType == 2/*_REG_EXPAND_SZ*/  ){
-				value = ..string.fromUnicode(buffer,,cbBuffer>=2 ? cbBuffer/2 - 1 : 0);
+				value = ..string.fromUtf16(buffer,,cbBuffer>=2 ? cbBuffer/2 - 1 : 0);
 			}
 			elseif ( vType == 7/*_REG_MULTI_SZ*/ ){ 
-				value = ..string.fromUnicode(buffer,,cbBuffer>=2 ? cbBuffer/2 - 1 : 0);
+				value = ..string.fromUtf16(buffer,,cbBuffer>=2 ? cbBuffer/2 - 1 : 0);
 					value = ..string.trimright(value,'\0');
 					value = ..string.split(value,'\0');
 			}
@@ -167,13 +167,13 @@ class reg{
 		return true; 
 	};
 	setSzValue = function( name,value)  {
-		value = ..string.toUnicode(value);
+		value = ..string.toUtf16(value);
 		var res=RegSetValueExBinary( this.handle,name,0,0x1/*_REG_SZ*/,value,#value+2);
 		if (res!=0/*_ERROR_SUCCESS*/) return null,res;
 		return true; 
 	};
 	setExpandValue = function( name,value)  {
-		value = ..string.toUnicode(value);
+		value = ..string.toUtf16(value);
 		var res=RegSetValueExBinary( this.handle,name,0,2/*_REG_EXPAND_SZ*/,value,#value+2);
 		if (res!=0/*_ERROR_SUCCESS*/) return null,res;
 		return true; 
@@ -183,7 +183,7 @@ class reg{
 		v = ..string.join(v,'\0');
 		if(  ..string.endWith( v,'\0\0') == false) v ++= '\0\0';
 		
-		v = ..string.toUnicode(v);
+		v = ..string.toUtf16(v);
 		var res =RegSetValueExBinary( this.handle,name,0,0x7/*_REG_MULTI_SZ*/,v,#v );
 		if (res!=0/*_ERROR_SUCCESS*/) return null,res;
 		return true; 
@@ -229,7 +229,7 @@ class reg{
 		select(t) { 
 			case 0x1/*_REG_SZ*/,0x2/*_REG_EXPAND_SZ*/ {
 				r,t,p,len = RegQueryValueExBinary( this.handle,name,0,0,len,len); 
-				return ..string.fromUnicode(p,,-1);
+				return ..string.fromUtf16(p,,-1);
 			}
 			case 0x4/*_REG_DWORD*/ {
 				r,t,p,len = RegQueryValueEx( this.handle,name,0,0,{INT val },len);
@@ -242,7 +242,7 @@ class reg{
 			} 
 			case 0x7/*_REG_MULTI_SZ*/ {
 				r,t,p,len = RegQueryValueExBinary( this.handle,name,0,0,len,len);
-				p = ..string.fromUnicode(p);
+				p = ..string.fromUtf16(p);
 				p = ..string.trimright(p,'\0');
 				p = ..string.split(p,'\0');
 				return p,t;
@@ -284,7 +284,7 @@ class reg{
 		return true; 
 	};
 	renameKey = function(newName) {
-		newName =..string.toUnicode(newName);
+		newName =..string.toUtf16(newName);
 		return ::Ntdll.NtRenameKey(this.handle, {
 			WORD len = #newName;
 			WORD max =  #newName + 2;

@@ -1,9 +1,37 @@
 ﻿import dotNet;
 dotNet.import("System.Windows.Forms"); 
 
+System.Windows.Forms.DataGridView[["ctor"]] = function(this){
+	this.ColumnHeadersHeightSizeMode = 2; //避免在高分屏下错乱 
+	this.AutoSizeRowsMode = 11/*DisplayedCells*/ //修正部分高分屏下不显示复选框 
+	
+	this[["ReplaceColumn"]] = function(name,col){
+		col.Name = name; 
+		var old =this.Columns.Item[name];
+		col.DataPropertyName  = old.DataPropertyName;
+		col.HeaderText = old.HeaderText;
+		
+		var idx = old.DisplayIndex;  
+		this.Columns.Remove(name);  
+		this.Columns.Add(col);
+		
+		this.Columns.Item[name].DisplayIndex = idx;
+	}
+	 
+	this[["ReplaceNameValueListColumn"]] = function(name,width,names,values){
+		var cmb = System.Windows.Forms.DataGridViewComboBoxColumn(); 
+		cmb.Width = width || 120;   
+		cmb.DisplayMember = "Name";
+		cmb.ValueMember = "Value";
+		cmb.DataSource = ..dotNet.createNameValueList(names,values); 
+		this.ReplaceColumn(name,cmb);
+	} 
+}
+
 System.Windows.Forms[["CreateEmbed"]] = function(ctrl,parent){
 	var form = System.Windows.Forms.Form();  
 	form.FormBorderStyle = boderStyle : 0 /*System.Windows.Forms.FormBorderStyle.None*/;
+	
 	if(type.isString(ctrl)){
 		ctrl = System.Windows.Forms[ctrl]();
 	}

@@ -1,28 +1,31 @@
-//performance 高性能计时器
+//performance 高精度计时器
 namespace time.performance;
 
-QueryPerformanceCounter := ::Kernel32.api("QueryPerformanceCounter","bool(struct &lpPerformanceCount)")
-QueryPerformanceFrequency := ::Kernel32.api("QueryPerformanceFrequency","bool(struct &lpPerformanceCount)")
-
-LARGE_INTEGER  = class{ 
-    long QuadPart;
-}
-var endf = LARGE_INTEGER();
-
-//此参数获取定时器每秒的震荡频率数
-var ok ,freq = QueryPerformanceFrequency( LARGE_INTEGER() );
-if(!ok)
-	error("系统不支持高性能计数器",2)
-	
+var freq = ..raw.long(0,true)
+::Kernel32.QueryPerformanceFrequency(freq);//Win XP 开始不可能会失败。
+freq = freq.value;//定时器每秒的震荡频率数
+ 
+var queryCounter = ::Kernel32.api("QueryPerformanceCounter","bool(long &count)")	
 tick = function(){
-	var count = LARGE_INTEGER();
+	
 	//获得当前系统频率记数器的震荡次数
-	if( QueryPerformanceCounter(count) ){
-		return ( count.QuadPart / freq.QuadPart) * 1000;
+	var ok,count = queryCounter(0);
+	if( ok ){
+		return ( count / freq ) * 1000;
 	}
 }
 
+delay = function(ms){
+	var t= tick()
+	while(tick()-t<ms){}	
+}
+
 /**intellisense()
-time.performance.tick() = 返回高性能计时\n以毫秒(千分之一秒)为单位 
-time.performance = 高性能计时器,可精确到毫秒
+time.performance = 创建高精度计时器。
+time.performance.tick() = 返回高精度计时。\n以毫秒（ms，千分之一秒）为单位，精度为微秒（us，千分之一毫秒）。
+time.performance.delay(__) = 高精度延时函数。\n参数 @1 指定延时，以毫秒为单位，精度可小于 0.01 毫秒。\n此函数占用 CPU，慎用并避免用于界面线程以避免卡界面且无法处理消息。
 end intellisense**/
+
+/**details(相关库与函数)
+time.period, time.timer, time.tick, sleep 
+end details**/

@@ -11,7 +11,7 @@ class rundll{
 		
 		this@ = {
 			_get = function(arg,ownerCall){
-				if(ownerCall || type.isString(k) ){
+				if(ownerCall || type.isString(arg) ){
 					return function(...){
 						var cmd = this.dll +"," +arg;
 						if(...)  cmd = cmd +" "+ ..string.join({ ...},",")

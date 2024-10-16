@@ -243,7 +243,7 @@ class reader{
 		var path = ..io.joinpath(extractDir,pathFile);
 		if(!..io.createDir(..io.splitpath(path).dir ) ) error('创建文件目录失败\n' + ..io.splitpath(path).dir ,2);
 		
-		var outfile = ..io.open(path,"w+b")
+		var outfile = ..io.file(path,"w+b")
 		if(!outfile) error('创建文件失败\n' + path ,2);
 		
 		var totalSize = this.totalSize;
@@ -281,7 +281,7 @@ class reader{
 				
 				var path = ..io.joinpath(extractDir,pathFile);
 				if(!..io.createDir(..io.splitpath(path).dir ) ) error('创建文件目录失败\n' + ..io.splitpath(path).dir ,2); 
-				outfile = ..io.open(path,"w+b")
+				outfile = ..io.file(path,"w+b")
 				if(!outfile) error('创建文件失败\n' + path ,2);
 		
 				return next();

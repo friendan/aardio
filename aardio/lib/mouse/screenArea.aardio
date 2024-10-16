@@ -8,10 +8,11 @@ namespace mouse;
 class screenArea{
 	ctor(parent) begin
 	/*DSG{{*/
-	this = ..win.form(text="aardio form";right=759;bottom=469;border="none";composited=1;topmost=1;exmode="toolwindow";mode="popup";parent=parent)
+	this = ..win.form(text="aardio form";right=759;bottom=469;border="none";composited=1;exmode="toolwindow";mode="popup";parent=parent;topmost=1;)
 	this.add(
-	mask={cls="plus";left=0;top=0;right=930;bottom=606;clip=1;db=1;dl=1;dr=1;dt=1;notify=1;z=2};
-	staticClipRect={cls="plus";left=137;top=638;right=656;bottom=988;z=1}
+	mask={cls="plus";left=0;top=0;right=930;bottom=606;clip=1;db=1;dl=1;dr=1;dt=1;notify=1;z=2;};
+	staticClipRect={cls="plus";left=137;top=638;right=656;bottom=988;z=1;};
+	
 	)
 	/*}}*/
 	
@@ -28,7 +29,7 @@ class screenArea{
 			var srcX,srcY,srcCx,srcCy = ..win.getScreenPos(this.hwnd); 
 			this.setPos( srcX,srcY,srcCx,srcCy,-1/*_HWND_TOPMOST*/ );
 
-			var pic = ..com.picture.snap();
+			var pic = ..com.picture.snap(,srcX,srcY,srcCx,srcCy);
 			this.setBitmap(pic.CopyHandle() )
  			..com.Release(pic);	
  			

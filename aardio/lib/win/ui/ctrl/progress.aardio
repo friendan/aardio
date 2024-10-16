@@ -90,7 +90,14 @@ progress._metaProperty =  metaProperty(
 		var this = owner;
 		var max = this.max;
 		owner.animationId = owner.setInterval(function(){
-			if( this.stepIt() >= max ) this.pos = this.min;
+		 
+			if( this.pos >= max ) { 
+				..thread.delay(600);
+				this.pos = this.min;  
+			}
+			else{
+				this.stepIt()
+			}
 		},interval:10)
 	};
 	stopProgress = function(){
@@ -101,11 +108,11 @@ progress._metaProperty =  metaProperty(
 )
 
 /***intellisense()
-win.ui.ctrl.progress = 进度条控件支持库
+win.ui.ctrl.progress = 进度条控件
 win.ui.ctrl.progress() = 进度条控件\n!progress.
 ?win.ui.ctrl.progress  =!progress.
 !progress.delta(.(偏移值) = 修改当前进度,参数指定相对于当前进度的偏移值
-!progress.stepIt() = 进度条前进一个增量\n返回步进前位置
+!progress.stepIt() = 进度条前进一个增量，最出最大值时设为最小值。\n返回步进前位置
 !progress.step = 设置stepIt()函数的步进增量\n默认为10
 !progress.pos = 进度条当前值,不能大于0xFFFF,不要使用负数
 !progress.setRange(.(最小值,最大值) = 设置进度条最大值,最小值\n注意值不能大于0xFFFF,不要使用负数

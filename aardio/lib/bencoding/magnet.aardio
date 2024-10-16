@@ -6,6 +6,38 @@ import crypt;
 namespace bencoding.magnet;
 
 get = function(strTorrentData){
+	if(#strTorrentData < 0x410/*_MAX_PATH_U8*/ && ..io.exist(strTorrentData) ){
+		if(  ..string.endWith(strTorrentData,".torrent",true) ){
+			strTorrentData = ..string.load(strTorrentData);
+		}
+		elseif(  ..string.endWith(strTorrentData,".aria2",true) ){
+			var file = ..io.file(strTorrentData,"rb");
+			if(file){ 
+				var header = file.seek("set",2) ? file.read({INT extension;INT infoHashLength})
+				if(header){
+					header.extension = ..raw.swap(header.extension);
+					header.infoHashLength = ..raw.swap(header.infoHashLength);
+					
+					if(header.extension){
+						var hash = file.read(header.infoHashLength)
+						if(hash){
+							hash = ..string.hex(hash ,"" );
+							file.close();
+							
+							return 'magnet:?'+ "xt=urn:btih:" + hash+ "&" +..inet.url.stringifyParameters({   
+								dn = ..io.splitpath(strTorrentData).name; 
+							})	
+						} 
+					}		
+				}
+				
+				file.close();
+			} 
+			
+			return;
+		}
+	}
+	
 	var bdecoder = ..bencoding.decoder(strTorrentData);
 	var torrentInfo,err =  bdecoder.parse();
 	if(!torrentInfo[["info"]]) return null,err;
@@ -16,9 +48,32 @@ get = function(strTorrentData){
 			dn = torrentInfo['info']['name'];
 			tr = torrentInfo['announce']; 
 			xl = torrentInfo['info']['length']
-		},false)
+		})
 }
 
-/**intellisense()
-bencoding.magnet.get(.(torrent数据) = torrent数据为bencoding编码的字符串,\n返回磁力链接
+getName = function(url){
+	var tUrl = ..inet.url.split(url);
+	if(tUrl ? tUrl.scheme=="magnet"){
+		var param = ..inet.url.splitParameters(tUrl.extraInfo,null,null,{"xt"});
+		if(param.dn) return param.dn;
+		
+		for(k,v in param.xt){
+			 var m = ..string.match(v,"urn\:btih\:(.+)");
+			 return m,true;
+		}
+		
+		for(k,v in param.xt){
+			 var m = ..string.match(v,"\w+\:\w+\:(.+)");
+			 return m,true;
+		}
+		
+		return "",true;
+	} 
+
+	return ..inet.url.getFileName(url);
+}
+
+/**intellisense(bencoding.magnet)
+get(__/*torrent 数据*/) = 参数 @1 可指定 Bencoding 编码的字符串，\n也可以指定本地 *.torrent 或 *.aria2 文件路径。\n返回磁力链接。
+getName(__/*URL*/) = 如果参数 @1 为磁力链则返回文件名或元数据哈希值。\n在磁力链中获取不到文件名且返回哈希值或空串时，第 2 个返回值为 true。\n如果指定的 URL 不是磁力链，则返回 URL 中的文件名。
 end intellisense**/

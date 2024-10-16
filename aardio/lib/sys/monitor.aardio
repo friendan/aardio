@@ -24,8 +24,12 @@ class MONITORINFOEX{
 		this.cbSize = 104;
 	};
 	WORD deviceName[32];
+	eachDevice = $eachDevice;
 }
 MONITORINFOEX.MONITORINFO = MONITORINFO;
+MONITORINFOEX.$eachDevice = function(){
+	return eachDevice(1,owner.deviceName);
+} 
 
 getInfo = function(hm){
 	var info = MONITORINFO(); 
@@ -80,6 +84,12 @@ eachDevice = function(flags,deviceName){
 		var device = DISPLAY_DEVICE();
 		if(  ::User32.EnumDisplayDevicesW(deviceName,idx,device,flags) ){
 			idx++;
+			
+			if(flags && #device.deviceId){
+				var idStr = ..string.split(device.deviceId,"#"); 
+				device.deviceId2 = idStr[3];
+			}
+			
 			return device;
 		}
 	}
@@ -150,6 +160,10 @@ changeMode = function(mode,flags,deviceName){
 	return ::User32.ChangeDisplaySettingsExW(deviceName,mode,null,flags,mode[["videoParameters"]]);
 }
 
+/*****intellisense()
+sys.monitor = 显示器函数库。\n相关库: com.monitor, sys.display, sys.ddcci 。
+end intellisense*****/
+
 /**intellisense(sys.monitor)
 getInfo(.(hMonitor) = 参数为显示设备句柄\n返回显示器信息
 getInfo() = !MONITORINFO.
@@ -162,8 +176,8 @@ eachMode(flags,deviceName) = @for( devMode in sys.monitor.eachMode() ){
 			__/*遍历显示器支持的模式，\n所有参考可选，用法请参考此函数源码。\n可通过 sys.monitor.eachDevice 获取可用 deviceName*/
 	}
 }
-eachDevice(flags,deviceName) = @for( dev in sys.monitor.eachDevice() ){
-	__/*用法请参考此函数源码*/
+eachDevice(flags,deviceName) = @for( dev in sys.monitor.eachDevice(1) ){
+	__/*如果不指定参数则遍历所有显示适配器。\n如果参数 @2 指定适配置的设备名（ eachMode 或 eachDevice 遍历返回对象的 deviceName 字段），\n则遍历该适配器上的所有显示器设备。\n\n如果指定了参数 @2 ，且参数 @1 值为 1，\n则遍历返回对象的 deviceId2 字段为设备 ID。*/
 }
 
 eachInfo(hdc,rcClip) = @for( hMonitor,monitorInfo in sys.monitor.eachInfo() ){
@@ -171,6 +185,7 @@ eachInfo(hdc,rcClip) = @for( hMonitor,monitorInfo in sys.monitor.eachInfo() ){
 }
 eachInfo() = !MONITORINFO.
 eachMode() = !DEVMODE_DISPLAY_DEVICE.
+eachDevice() = !DISPLAY_DEVICE.
 changeMode( = 修改显示器设置
 changeMode(.(mode,flags,deviceName) = 修改显示器设置\n参数 @mode 指定 DEVMODE_DISPLAY_DEVICE 结构体，\n @mode 也可以传一个普通表，仅指定部分需要更新的结构体字段。也可以使用 sys.monitor.eachMode 获取的结构体作为参数 @mode。\n省略  @mode 与 @flags 恢复默认设置。\n\n@flags 可省略,该值可使用 _CDS_ 前缀的常量指定,默认为 0。\n\n@deviceName 指定显示器名，省略则设置默认显示器。\n可用 sys.monitor.eachDevice 获取可用 deviceName\n用法请参考 API 函数 ::User32.ChangeDisplaySettingsExW 的文档
 end intellisense**/
@@ -198,6 +213,12 @@ _CDS_RESET=@0x40000000/*_CDS_RESET*/
 _CDS_RESET_EX=@0x20000000/*_CDS_RESET_EX*/
 _CDS_NORESET=@0x10000000/*_CDS_NORESET*/
 _MONITORINFOF_PRIMARY=@1/*_MONITORINFOF_PRIMARY*/
+_DISPLAY_DEVICE_ACTIVE=@1/*_DISPLAY_DEVICE_ACTIVE*/
+_DISPLAY_DEVICE_MIRRORING_DRIVER=@8/*_DISPLAY_DEVICE_MIRRORING_DRIVER*/
+_DISPLAY_DEVICE_MODESPRUNED=@0x8000000/*_DISPLAY_DEVICE_MODESPRUNED*/
+_DISPLAY_DEVICE_PRIMARY_DEVICE=@4/*_DISPLAY_DEVICE_PRIMARY_DEVICE*/
+_DISPLAY_DEVICE_REMOVABLE=@0x20/*_DISPLAY_DEVICE_REMOVABLE*/
+_DISPLAY_DEVICE_VGA_COMPATIBLE=@0x10/*_DISPLAY_DEVICE_VGA_COMPATIBLE*/
 end intellisense**/
 
 /**intellisense(!MONITORINFO)
@@ -205,6 +226,7 @@ rcMonitor = 显示器的在屏幕坐标系中的矩形\n!rect.
 rcWork = 显示器的工作区域\n!rect.
 flags = 该值为1时为主显示器
 deviceName = 仅 sys.monitor.getInfoEx 或 sys.monitor.eachInfo 函数会返回该值
+eachDevice() = @for dev in ??.eachDevice() {\n	__/*遍历此适配器上的所有显示器设备。 \n则遍历返回对象的 deviceId2 字段为设备 ID。*/\n}\n!DISPLAY_DEVICE.
 end intellisense**/
 
 /**intellisense(!DEVMODE_DISPLAY_DEVICE)
@@ -214,3 +236,13 @@ bitsPerPel = 像素位宽
 displayOrientation = 显示方向,参考_DMDO_ 前缀常量
 displayFrequency = 刷新频率
 end intellisense**/
+
+/*****intellisense(!DISPLAY_DEVICE)
+deviceName = 适配器设备或监视器设备的设备名
+deviceString = 显示适配器或显示监视器的描述
+stateFlags = 设备状态标志。\n_DISPLAY_DEVICE 前缀常量数值或这些数值的组合
+deviceId = 设备 ID。\n典型的格式为 \\.\DISPLAY#<VendorID>#<DeviceID>#<InstanceID>
+deviceId2 = 设备 ID。\n仅保留 deviceId 字段的 <VendorID> 部分。\n可通用于 com.monitor 的设备 ID 参数。
+deviceKey = 设备在注册表中的键路径，主要用于获取和配置设备的详细信息。
+end intellisense*****/
+ 

@@ -3,7 +3,7 @@ import web;
 import inet.url;
 namespace inet;
 
-var toUnicode = ..string.toUnicode
+var toUtf16 = ..string.toUtf16
 
 class whttp{
 		
@@ -99,7 +99,7 @@ class whttp{
 		
 		if( this.request ){ this.endRequest() }
 		if( this.connectFlags ) connectFlags = connectFlags | this.connectFlags;
-		this.connect = Connect(this.session,toUnicode(tUrl.host) ,tUrl.port,connectFlags)  
+		this.connect = Connect(this.session,toUtf16(tUrl.host) ,tUrl.port,connectFlags)  
         if( ! this.connect ) 
         	return null,..lasterr(,"beginRequest->Connect")
 	 
@@ -111,7 +111,7 @@ class whttp{
 	    if(accept){
 	    	var tAccept = ..string.split(accept,",");
 	    	for(k,v in tAccept){
-	    		 tAccept[k] = toUnicode(v);
+	    		 tAccept[k] = toUtf16(v);
 	    	} 
 	    	lplpszAcceptTypes = ..raw.toarray( #tAccept+1,"pointer","array" );
 	    	lplpszAcceptTypes.array = tAccept;
@@ -125,19 +125,19 @@ class whttp{
 	    	referer = ..inet.url.encodeMbcs(referer,true);
 	    }
 	    if(this.flags ) flags = flags | this.flags;
-	    this.request = OpenRequest(this.connect, toUnicode(method),toUnicode( ..string.concat(tUrl.path ,tUrl.extraInfo) ) ,null,toUnicode(referer),lplpszAcceptTypes,flags  & ~0x200000/*_INTERNET_FLAG_NO_AUTO_REDIRECT*/ ) 
+	    this.request = OpenRequest(this.connect, toUtf16(method),toUtf16( ..string.concat(tUrl.path ,tUrl.extraInfo) ) ,null,toUtf16(referer),lplpszAcceptTypes,flags  & ~0x200000/*_INTERNET_FLAG_NO_AUTO_REDIRECT*/ ) 
 		if( ! this.request ){ 
 			return null,..lasterr(,"beginRequest->OpenRequest");
 		} 
 		
 		var proxyName = this.proxyUsername : ..thread.get("inet.proxyUsername");
 	    if(proxyName){
-	    	proxyName = toUnicode(proxyName);
+	    	proxyName = toUtf16(proxyName);
 	    	 ::WinHttp.WinHttpSetOption(this.request,0x1002/*_WINHTTP_OPTION_PROXY_USERNAME*/,proxyName,#proxyName);
 	    	 
 	    	var proxyPassword = this.proxyPassword : ..thread.get("inet.proxyPassword")
 			if(proxyPassword){
-				proxyPassword = toUnicode(proxyPassword);
+				proxyPassword = toUtf16(proxyPassword);
 				 ::WinHttp.WinHttpSetOption(this.request,0x1003/*_WINHTTP_OPTION_PROXY_PASSWORD*/,proxyPassword,#proxyPassword);
 			} 
 		} 
@@ -208,7 +208,7 @@ class whttp{
 	 			if(!ok)
 	 				return null,err,code;
 	 				
-	 			var sendstat = SendRequest(this.request,toUnicode(headers),-1,null,0,bufferTotal ,0);
+	 			var sendstat = SendRequest(this.request,toUtf16(headers),-1,null,0,bufferTotal ,0);
 	 			if( !sendstat ){
 	 				return null,..lasterr(,"beginSendData->retry");
 	 			} 
@@ -303,10 +303,10 @@ class whttp{
 		if(!this.request) error("无效调用",2);
 		var ok,schemes,firstScheme,target = QueryAuthSchemes( this.request,0,0,0);
  		if( ok && firstScheme ){
- 			return SetCredentials( this.request,target,firstScheme,  toUnicode(user),  toUnicode(pwd) );
+ 			return SetCredentials( this.request,target,firstScheme,  toUtf16(user),  toUtf16(pwd) );
  		}
  		else {
- 			return SetCredentials( this.request,target,1/*_WINHTTP_AUTH_SCHEME_BASIC*/,  toUnicode(user),  toUnicode(pwd) );
+ 			return SetCredentials( this.request,target,1/*_WINHTTP_AUTH_SCHEME_BASIC*/,  toUtf16(user),  toUtf16(pwd) );
  		}
 	};
 	setProxyAuth = function(user,pwd){ 
@@ -478,7 +478,7 @@ class whttp{
 			error("无效调用",2) 
 			
 		header = ..web.joinHeaders(header);
-		header = ..string.toUnicode(header);	 
+		header = ..string.toUtf16(header);	 
 		return AddRequestHeaders(this.request,header,-1,modifiers)
 	}; 
 	replaceHeader = function(header){
@@ -500,7 +500,7 @@ class whttp{
 		}
 			
 		var lev = name?65535:0x16
-		name = ..string.toUnicode(name);
+		name = ..string.toUtf16(name);
 		var ok,headers,len,next = QueryHeadersByString(this.request,lev,name,0,0,index-1);
 		ok,headers,len = QueryHeadersByString(this.request,lev,name,len*2,len,index-1); 
 		if(!ok) return null,..lasterr(,"readHeader->QueryHeadersByString");  
@@ -559,8 +559,7 @@ class whttp{
 		//RFC6266,RFC5987,RFC2231
 		var disposition = owner.readHeader("Content-disposition")
 		if( disposition ){
-			var charset;
-			_type,charset,filename =  ..string.match(disposition,"([^;\s]+?)\s*\;.*!\wfilename\s*\*\s*\=\s*(<[a-zA-Z0-Z\-]+>)%''([^\s\;]+)");
+			var _type,charset,filename =  ..string.match(disposition,"([^;\s]+?)\s*\;.*!\wfilename\s*\*\s*\=\s*(<[a-zA-Z0-Z\-]+>)%''([^\s\;]+)");
 			if(filename){
 				filename = ..inet.url.decode(filename,..string.cmp("UTF-8",charset)==0 ? 65001 : 0)
 			}
@@ -649,7 +648,7 @@ class whttp{
 	    if( (method == "POST") && postdata && !( this.headers  &&  ..string.find( this.headers,"@@Content-Type:") ) ){  
 			this.headers = ..web.joinHeaders( this.headers
 		    	, ( postdata[1]=='{'# or  postdata[1]=='['#) 
-		    	? 'Content-Type: application/json; charset=utf-8' : 'Content-Type: application/x-www-form-urlencoded; charset=utf-8'
+		    	? 'Content-Type: application/json' : 'Content-Type: application/x-www-form-urlencoded; charset=utf-8'
 		    	);
 		} 
 		
@@ -741,7 +740,7 @@ class whttp{
 		if( !value[["_struct"]] ) {
 			if( type(value) == type.number ) value = {int v = value }
 			elseif( type(value) == type.string ) {
-				value = toUnicode(value);
+				value = toUtf16(value);
 				return ::WinHttp.WinHttpSetOption(this.session,opt,value,#value);
 			}
 			else error("参数@2必须是结构体",2);
@@ -754,7 +753,7 @@ class whttp{
 		if( !value[["_struct"]] ) {
 			if( type(value) == type.number ) value = {int v = value }
 			elseif( type(value) == type.string ) {
-				value = toUnicode(value);
+				value = toUtf16(value);
 				return ::WinHttp.WinHttpSetOption(this.request,opt,value,#value);
 			}
 			else error("参数@2必须是结构体",2);

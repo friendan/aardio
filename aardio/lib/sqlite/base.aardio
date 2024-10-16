@@ -220,12 +220,12 @@ class statement{
 				return this;
 		};
 		utf16 = function( str,i=1){
-			if(type(str)=="string") str = ..string.toUnicode(str);
+			if(type(str)=="string") str = ..string.toUtf16(str);
 			if(! bind.text16(pstmt,i,str,#str) )
 				return this;
 		};
 		text16 = function( str,i=1){
-			if(type(str)=="string") str = ..string.toUnicode(str);
+			if(type(str)=="string") str = ..string.toUtf16(str);
 			if(! bind.text16(pstmt,i,str,#str) )
 				return this;
 		};

@@ -6,11 +6,11 @@ import gdip.pen;
 import gdip.stringformat;
 import gdip.font;
 import gdip.path;
+import gdip.textureBrush;
+import gdip.pathGradientBrush;
+import win.ui.ctrl.metaProperty;
 import win.ui.tracker;
 import win.ui.ctrl.richedit;
-import gdip.textureBrush;
-import win.ui.ctrl.metaProperty;
-import gdip.pathGradientBrush;
 
 namespace win.ui.ctrl;
 
@@ -762,7 +762,7 @@ class plus {
 			} 
 			[ 0xC/*_WM_SETTEXT*/ ] = function (hwnd, uMsg, wParam, lParam) {
 				if(lParam){
-				 	var text = ..string.fromUnicode( topointer(lParam),,true ); 
+				 	var text = ..string.fromUtf16( topointer(lParam),,true ); 
 				 	if( text != this[["(text)"]] || owner[["(cueBanner)"]] ){
 				 		if(owner[["(editable)"]] ) {
 							if( owner[["(cueBanner)"]] ){ 
@@ -1979,7 +1979,7 @@ tryCreateEmbed(.(clsId,embedObj) = 创建嵌入控件,返回控件容器对象,\
 createEmbedEx() = !embedObject.
 createEmbed() = !embedObject.
 tryCreateEmbed() = !embedObject.
-hide = 控件是否隐藏
+hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。
 disabled = 是否禁用
 left = 左侧坐标
 right = 右侧坐标

@@ -54,7 +54,7 @@ saveSession = function(ses,expires){
     var path = "/config/session/#." + id;
 	var file,err;
 	for(i=1;10;1){
-		file ,err= ..io.open(path,"w+b",0x10/*独占读写*/);
+		file ,err= ..io.file(path,"w+b",0x10/*独占读写*/);
 		if(file) break;
 		sleep(100);
 	}

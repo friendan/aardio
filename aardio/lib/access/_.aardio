@@ -15,9 +15,7 @@ class access {
 			var ext =  ..string.match(path,"[^.]+$");
 			ext = ext ? ..string.lower(ext); 
 			var excelFormat = ({xls="xls";xlsx="xlsx";xlsm="xlsm";xlsb="xlsb"}) [ext]; 
-			
-			
-	
+
 			if( ( ! ..string.find(path,"\;") && !... )
 				&& ( ( param === null ) || ( type(param) == type.table ) )
 	    	) { 
@@ -30,11 +28,17 @@ class access {
 					}
 				}
 	 		
-				if(  !tList.find("Provider")  && !tList.find("Driver") ) {
+	 			var _,_,provider = tList.find("Provider"); 
+				if(  !provider && !tList.find("Driver") ) {
 					var isText = ({csv=1;tab=1;txt=1;asc=1})[ext]; 
 					if( ! ( ..fsys.isDir(path) || isText ) ){
 						if( (excelFormat && excelFormat != "xls")  or ( ext == "accdb" ) ){
-							tList.Provider="Microsoft.ACE.OLEDB.12.0"; 
+							if(..access.oleDb[["install"]]){
+								tList.Provider = ..access.oleDb.install(,true);
+							}
+							else {
+								tList.Provider = "Microsoft.ACE.OLEDB.16.0"
+							} 
 						}
 						else{
 							tList.Provider="Microsoft.Jet.OLEDB.4.0"; 
@@ -45,22 +49,31 @@ class access {
 						if(!tList.Extensions && !tList.extensions ){
 							tList.Extensions = "asc,csv,tab,txt";
 						} 
-					}
-				 	
+					} 
 				}
+				elseif( ..string.cmp(provider,"Microsoft.ACE.OLEDB.16.0") === 0 ) {
+					if(..access.oleDb[["install"]]) ..access.oleDb.install();
+				}
+				
 				if(excelFormat && !tList.find("Extended Properties") ) {
+					var _,_,hdr = tList.find("HDR");
+					if(!hdr) hdr = "Yes";//第一行作为列名（Header Row Directive）
+					else tList.remove("HDR");
+					
 					if( excelFormat == "xls" ){
-						tList["Extended Properties"] = "'Excel 8.0;HDR=Yes'";
+						tList["Extended Properties"] = "'Excel 8.0;HDR="+hdr+"'";
 					}
 					else {
+						var xmlVersion = "12.0";//Xml 格式只存在这一个版本，不能改为 16.0
+						
 						if( excelFormat == "xlsx" ){
-							tList["Extended Properties"] = '"Excel 12.0 Xml;HDR=YES"';
+							tList["Extended Properties"] = '"Excel '+xmlVersion+' Xml;HDR='+hdr+'"';
 						}
 						elseif( excelFormat == "xlsm" ){
-							tList["Extended Properties"] = '"Excel 12.0 Macro;HDR=YES"';
+							tList["Extended Properties"] = '"Excel '+xmlVersion+' Macro;HDR='+hdr+'"';
 						} 
 						else {
-							tList["Extended Properties"] = '"Excel 12.0;HDR=YES"';
+							tList["Extended Properties"] = '"Excel '+xmlVersion+';HDR='+hdr+'"';
 						}
 					}
 				}
@@ -144,6 +157,21 @@ class access {
 			if( tbl ) return tbl.getName(),tbl.getType(),tbl;
 		} 
 	}; 
+	firstTableName = function(dType){
+		return this.firstTableObject(dType)[["name"]]; 
+	};
+	firstTableObject = function(dType,cache){ 
+		var cat = this.getCatalog();
+		cat.Tables.Refresh();
+		
+		if(!dType) dType = "TABLE";
+		for index,tbl in ..com.each(cat.Tables) {
+			if( tbl.Type = "TABLE" ){
+				if(cache) this._tables[ tbl.Name] = tbl;
+				return tbl;
+			}
+		}	
+	};
 	findTableObject = function(name,cache=true){
 		if(cache && this._tables[name] ) return this._tables[name];
 		
@@ -161,9 +189,10 @@ class access {
 	}; 
 	exec = function(sql,...){ 
 		if( ... )sql = format(sql,...); 
-		var ret,err = call(this.connection.Execute,this.connection,sql );
-		if(!ret) error(err,2); 
-		return ret;
+		var ret,result,recordsAffected = call(this.connection.Execute,this.connection,sql,0,1 | 0x80/*_adCmdText | adExecuteNoRecords*/);
+		if(!ret) error(result,2);  
+		 
+		return recordsAffected;
 	}; 
 	openRecordSet = function(sql,cursorType,lockType,...){
 		var rs = ..com.CreateObject("ADODB.RecordSet");
@@ -273,7 +302,7 @@ class access {
 			select(t) {
 				case "string" {
 					adType = 203/*adLongVarWChar*/
-					value = ..string.toUnicode(value);
+					value = ..string.toUtf16(value);
 					adSize = #value/2;
 				}
 				case "number" {
@@ -589,7 +618,7 @@ end details**/
 
 /**intellisense()
 access = 使用系统自带组件连接access数据库,可支持excel\n[数据库连接串大全](https://www.connectionstrings.com/access/)
-access("数据库路径") = 打开数据库连接,\n数据库路径可以指定mdb,xls等文件格式,\n如果指定的数据库不存在将自动创建数据库文件
+access("数据库路径") = 打开数据库连接。\n数据库路径可以指定 mdb,xls等文件格式,\n如果指定的数据库不存在将自动创建数据库文件\n\n如果在其他参数前添加一个 false 参数，则不打开连接，仅返回连接语句。
 access("数据库路径",其他连接参数) = @ access("__/*数据库路径(mdb,xls等)*/",{ \n	["Mode"]="Share Deny Read|Share Deny Write"; \n	["Jet OLEDB:Database Password"] = "123456"; \n}) 
 access("数据库连接语句",其他格式化参数) = @access("Provider=Microsoft.Jet.OleDb.4.0;Data Source=%s;Jet OLEDB:Database Password=%s;",\n	"/test.db","__/*密码*/" );
 打开数据库连接,\n如果指定的数据库不存在将自动创建数据库文件\n如果存在格式化参数，则调用string.fomat格式化连接串
@@ -606,8 +635,8 @@ close() = 关闭数据库连接
 getTable(.("select * from [表名]",其他格式化参数) = 返回查询结果集数组\n每个元素代表一行,每行由N个键值对列组成\n返回值的fields成员记录了所有数据列的字段名\n结果集为空也会返回空数组,使用#操作符获取结果集长度
 getRows() = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值,\n也可以使用 数据.字段名[列号] 获取对应的值\n\n返回数组的元表中使用recordCount记录了总行数,\n结果集为空也会返回空数组,可使用 @.recordCount判断记录集的行数\n元表中的fields字段则是记录了所有字段名的数组.\n\n所有值后面的占位空白没有去除\n可使用getTable函数获取处理过空白占位符的数据,\n或参考该函数源码自行处理尾部空白
 stepQuery(.("select * from [表名]",其他格式化参数) = 返回查询结果集第一行的数据,由键值对列组成,\n无数据返回null\n\n\n格式化规则请参考 access.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
-openRecordSet(.(sql,游标类型,锁定方法,其他格式化SQL参数) = 打开记录集,游标类型如下:\n0:默认值,启动一个只能向前移动的游标\n1:打开键集类型游标,允许任意移动，并且允许更改记录集\n2:打开动态类型游标,许所有操作，其他用户对记录集的添加、删除、更改在此记录集中\n3:打开静态类型游标\n\n锁定方法如下：\n1:默认值,不能改变数据\n2:悲观锁,编辑时立即锁定数据源的记录\n3:乐观锁,只在调用Update 方法时才锁定记\n4: 乐观批更新
-exec(.(sql,其他格式化SQL参数) =  执条SQL语句\n格式化参数规则请参考 access.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
+openRecordSet(.(sql,游标类型,锁定方法,其他格式化SQL参数) = 打开记录集,游标类型如下:\n0:默认值,启动一个只能向前移动的游标\n1:打开键集类型游标,允许任意移动，并且允许更改记录集\n2:打开动态类型游标,许所有操作，其他用户对记录集的添加、删除、更改在此记录集中\n3:打开原生类型游标\n\n锁定方法如下：\n1:默认值,不能改变数据\n2:悲观锁,编辑时立即锁定数据源的记录\n3:乐观锁,只在调用Update 方法时才锁定记\n4: 乐观批更新
+exec(.(sql,其他格式化SQL参数) =  执条SQL语句\n格式化参数规则请参考 access.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化。\n\n执行失败抛出异常。\n执行成功返回受影响的记录行数
 createCommand(.(sql,其他格式化SQL参数) = 创建命令对象\n格式化规则请参考 access.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
 existsTable(.("表名") = 判断数据库中是否存在指定表
 each(sql,其他格式化参数) = @for(rs in ??.each("select * from [表名]") ){ 
@@ -624,6 +653,8 @@ connection.Errors = 错误集合
 connection.Errors.count = 错误数
 connection.Errors(.(0) = 参数指定错误索引
 connection.Errors() = !ado_conn_err.
+firstTableName() = 返回数据库的第一个表名。。\n参数 @1 可选用一个字符串指定表类型，默认为 "TABLE"。
+firstTableObject() = 返回数据库中的第一个表对象。\n参数 @1 可选用一个字符串指定表类型，默认为 "TABLE"。\n!ADOX_Catalog_tbl.
 findTableObject() = !ADOX_Catalog_tbl.
 findTableObject(.("表名") = 返回表对象
 eachTableObject = @for(tbName,tbType,tbObj in ??.eachTableObject() ){
@@ -689,6 +720,10 @@ NativeError = 数据源错误代码
 end intellisense**/
 
 /**intellisense(!ADOX_Catalog_tbl)
+Name = 表名
+Type = 表示表类型的字符串。\n例如  "TABLE", "SYSTEM TABLE", 或 "GLOBAL TEMPORARY"
+Keys = 键集合
+Indexes = 索引集合
 Columns = 列集合
 Columns.Count = 总数
 Columns(.("列名") = 参数也可以写数值索引

@@ -1,20 +1,42 @@
 ﻿import win.reg;
 import web.json;
+import fsys.crx;
+import fsys;
 
 import web.nativeMessaging;
 namespace web.nativeMessaging;
 
 class install{
 	ctor( param){
-		if(!param.name) error("参数中必须用name字段指定应用名称",2);
+		if(!param.name) error("参数中必须用 name 字段指定应用名称",2);
 		param.type = "stdio";
 		
-		allowed_origins = param.allowed_origins;
-		for(k,v in allowed_origins){
-			 if(!..string.startWith(v,"chrome-extension://",true) )
-			 	allowed_origins[k] = ..string.format("chrome-extension://%s/",v)
+		if(_STUDIO_INVOKED){
+			error("请发布为 EXE 后再运行本程序！");
 		}
 		
+		var allowed_origins2 = {};
+		allowed_origins = param.allowed_origins;
+		for(k,v in allowed_origins){
+			 if(!..string.startWith(v,"chrome-extension://",true) ){
+			 	if(..string.endWith(v,".pem",true)){
+			 		if(! ..io.exist(v) ) continue;
+			 		var k,id = ..fsys.crx.key(v);
+			 		v = id;
+			 	}
+			 	elseif( ..io.exist(v) && ..fsys.isDir(v) ){
+			 		v = ..fsys.crx.pathId(v);
+			 	}
+			 	
+			 	if(#v==32){ 
+			 		..table.push(allowed_origins2,..string.format("chrome-extension://%s/",v));
+			 	}
+			 }
+			 else {
+			 	..table.push(allowed_origins2,v);
+			 } 
+		}
+		param.allowed_origins = allowed_origins2;
 		
 		if(!param.path) param.path = ..io._exepath; 
 		var json = ..web.json.stringify(param,true,true);
@@ -24,9 +46,12 @@ class install{
 		var reg = ..win.reg("HKEY_CURRENT_USER\SOFTWARE\Google\Chrome\NativeMessagingHosts\" + param.name);
 		reg.setSzValue("",..io.fullpath(jsonPath))
 		
+		var reg = ..win.reg("HKEY_CURRENT_USER\SOFTWARE\Microsoft\Edge\NativeMessagingHosts\" + param.name);
+		reg.setSzValue("",..io.fullpath(jsonPath))
+		
 		return json;
 	}; 
-}
+} 
 
 /**intellisense()
 web.nativeMessaging.install = @.install(\n	name = "com.my_company.my_application";\n	path = "不写这个属性会自动设置为当前EXE文件路径";\n	description = "应用描述";\n	allowed_origins = {\n		  "__/*授权与本地消息主机进行通信的Chrome浏览器扩展ID\n可用不用写chrome-extension:只要写ID就可以*/";\n	}\n)

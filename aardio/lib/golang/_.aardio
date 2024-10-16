@@ -1,4 +1,5 @@
 ﻿import process;
+import process.popen;
 import console;
 import zlib.httpFile;
 import win.path;
@@ -9,24 +10,59 @@ assert(!golang,"请先引入 golang 库，然后再引入 golang 名字空间下
 
 class golang{
 	ctor(workDir,root){
-		 
-		this.installGo = function(version){
-			 
-			if(_WINXP){ version = "1.11" }	 
-			var ok,err = ..zlib.httpFile.download("https://mirrors.aliyun.com/golang/go"+(version:"1.20.10"/*最后一个支持 Win7 版本*/)
-				+( _WIN_64 ? ".windows-amd64.zip" : ".windows-386.zip" ) ,"正在下载 Go 编译器"
-				,"~\lib\golang\.res","~\lib\golang\.res") 
-			
-			if( !ok  ){
-				..console.log(err);
-				..fsys.delete("~\lib\golang\.res\go")
-			} 
-		}
 		
+		var customVersion;
+		var version = _WINXP ? "1.11" : "1.20.10"/*最后一个支持 Win7 版本*/
+		if(type(root)=="string" && ..string.match(root,"^\d+\.\d+\.\d+$")){
+			version = root;
+			customVersion = root;
+			root = null; 
+		}
+		  
 		if(!root){
-	
-			if( ..io.exist("~\lib\golang\.res\go\bin\go.exe") ){
-				root = ..io.fullpath("~\lib\golang\.res\go")
+			   
+			var appDataGoRoot =  ..io.appData("aardio/std/golang/" + version + "/go");
+		 
+			var install = function(){
+			
+				var ok,err = ..zlib.httpFile.download("https://mirrors.aliyun.com/golang/go"+version
+					+( _WIN_64 ? ".windows-amd64.zip" : ".windows-386.zip" ) ,"正在下载 Go 编译器"
+					,..io.appData("aardio/std/golang/" + version)  
+					,..io.appData("aardio/std/golang/" + version) 
+				)
+		 		
+				if( !ok  ){
+					..console.log(err);
+					..fsys.delete(appDataGoRoot);
+				} 
+				
+				return ok;
+			}
+	 
+			if( ..fsys.searchFile("bin\go.exe",appDataGoRoot) ){
+				root = appDataGoRoot;
+			}
+			elseif(customVersion) {
+				return;
+				
+				//明确限定了 Go 版本
+				if( install() && ..fsys.searchFile("bin\go.exe",appDataGoRoot) ){
+					root = appDataGoRoot;
+				}
+				else {
+					error("未安装Go编译器",2);
+				} 
+			}
+			 
+			//没找到，继续找
+			if( ! ..io.exist(root) ){
+				if( ..io.exist("~\lib\golang\.res\go\bin\go.exe") ){
+					root = ..io.fullpath("~\lib\golang\.res\go")
+				}
+			}
+			
+			if( ! ..io.exist(root) ){
+				root = ..string.load( ..io.appData("aardio/std/golang/latest") ); 
 			}
 			
 			if( ! ..io.exist(root) ){
@@ -46,22 +82,20 @@ class golang{
 				if(..io.exist("C:\Go\bin\go.exe")){
 					root = "C:\Go"
 				}
-			} 
+			}  
 			
 			if( ! ..io.exist(root) ){
-				if(!..io.exist("~\lib\golang\.res\go\bin\go.exe") ){
-					this.installGo();
-				}
+				install();
 				
-				if(!..io.exist("~\lib\golang\.res\go\bin\go.exe") ){
-					error("未安装Go编译器",2);
-				}
-				
-				root = ..io.fullpath("~\lib\golang\.res\go")
+				if( ..fsys.searchFile("bin\go.exe",appDataGoRoot) ){
+					root = appDataGoRoot;
+				} 
 			}
 		}
 		
-		this.root = ..io.fullpath(root); 
+		this.root = ..io.fullpath(root);  
+		..io.appData("aardio/std/golang/latest",this.root)
+		
     	..string.setenv("GOROOT",this.root); 
     	..string.setenv("GO111MODULE","auto");
 		..string.setenv("GOPROXY","https://goproxy.io,direct");
@@ -91,6 +125,22 @@ class golang{
 			prcs.free();
 		};
 		
+		this.goPath = function(){
+			var path = ..string.getenv("GOPATH");
+			if(!path){
+				path = ..io.getSpecial(0x28/*_CSIDL_PROFILE*/,"go")
+			}
+			
+			return path 
+		}
+		
+		this.binPath = function(filename){
+			var path  = this.goPath();
+			path = ..io.joinpath(path,"bin","windows_"+..string.getenv("GOARCH")  );
+			path = ..io.joinpath(path,filename);
+			return path;
+		}  
+		
 		this.command("version");
 	};
 	runCode = function(path,code,...){
@@ -118,7 +168,22 @@ class golang{
 			return this.command("build","-o",..string.left(path,-4) + ".exe","-ldflags","-s -w",path,...);
 		}
 		
-		return this.command("build","-o",outpath,"-ldflags","-s -w",path,...);
+		return this.command("build","-o",outpath
+			,"-ldflags","-s -w"
+			,"-ldflags","-X buildTime="+tonumber(..time())
+			,path,...);
+	};
+	build64 = function(...){
+		..string.setenv("GOARCH","amd64");
+		var r,e = this.build(...);
+		..string.setenv("GOARCH","386");
+		return r,e;
+	};
+	buildStrip64 = function(...){
+		..string.setenv("GOARCH","amd64");
+		var r,e = this.buildStrip(...);
+		..string.setenv("GOARCH","386");
+		return r,e;
 	};
 	addPath = function(path){
 		..win.path.add(path);
@@ -194,30 +259,78 @@ class golang{
 	install = function(path,...){
 		return this.command("install",..io.localpath(path) : path,...);
 	};
+	generate = function(...){
+		var args = ..string.cmdline.arguments(...);
+		..table.unshift(args,"generate");
+		
+		this.command(args); 
+	};
+	cmd = function(cmd,...){
+		..console.open() 
+		
+		var args;
+		if(...===null){
+			args = ..string.cmdline.arguments(cmd);
+			cmd = ..table.shift(args,1);
+			if(!..string.endWith(cmd,".exe",true)){
+				cmd = cmd + ".exe";
+			}
+		}
+		else {
+			args = ..string.cmdline.arguments(...);	
+		}  
+		
+		var prcs,err =  ..process.popen( this.binPath(cmd) , ..string.args.join(args)
+			,{workDir=this.workDir;environment=this.environment} ); 
+			
+		if(prcs){
+			prcs.codepage = 65001;
+			prcs.killOnExit();
+		}
+		return prcs,err;
+	};
+	yaegiExtract = function(...){
+		var path = this.binPath("yaegi.exe");
+		if( !..io.exist(path) ){
+			this.install("github.com/traefik/yaegi/cmd/yaegi@latest")
+		}
+		
+		..console.showLoading("正在提取符号表");
+		
+		var args = ..string.cmdline.arguments(...);
+		..table.unshift(args,"extract");
+		
+		var prcs = this.cmd("yaegi.exe",args);
+		if(prcs){
+			prcs.logResponse();
+		}
+	};
 	version = function(){
 		return this.command("version");
 	};
 	env = function(){
 		return this.command("env");
 	}; 
-}
-
+}  
 import golang.string;
 
 /**intellisense()
 golang = 调用 Go 编译器。\n调用 Go 编译后的执行程序并不需要此扩展库。\n\n此扩展库可自动下载配置 Go 编译器
 golang( = 创建 Go 编译器调用程序
-golang(.("Go项目目录","Go安装目录") = 创建 Go 编译器调用程序，所有参数可选。\nGo 项目目录默认为 aardio 应用程序根目录的 "/" 。\n如果不指定 Go 安装目录,自环境变量 GOROOT 中获取\n如果查找 Go 编译器失败会自动下载 Go 编译器
+golang(.("Go项目目录","Go安装目录") = 创建 Go 编译器调用程序，所有参数可选。\nGo 项目目录默认为 aardio 应用程序根目录的 "/" 。\n如果不指定 Go 安装目录，\n刚搜索可能的 Go 安装目录或环境变量 GOROOT ，找不到则安装默认版本 Go 编译器。\n具体规则请查看 golang 支持库源码。
+golang(.("Go项目目录","1.22.3") = 创建 Go 编译器调用程序。\n参数 @1 如果为 null ，则默认设为应用程序根目录 "/" 。\n参数 @2 限定 Go 编译器的版本号，必须是 "数值.数值.数值" 格式。\n如果 aardio 未安装指定版本 Go 编译器则先下载安装。\n不使用系统安装的其他 Go 编译器
 golang() = !golang.
-!golang.command(__) = 执行 go 命令,支持一个或多个命令参数
+!golang.command(__) = 执行 go 命令。\n可指定一个或多个命令行参数。\n可指定字符串或参数表等任何 string.args.join 支持的参数。
 !golang.run(__) = 执行 go run 命令,参数中指定要编译运行的代码
 !golang.runCode(.("代码路径","Go代码") = 保存 Go 代码并运行文件
 !golang.build(__) = 执行 go build 命令生成 EXE 文件。\n参数@1指定要编译的代码文件，可增加多个参数。\n默认按第一个参数指定的 *.go 文件路径输出同名 *.exe 文件
 !golang.buildShared( = 执行 go build 命令生成DLL动态库。\n如果未找 gcc 到则自动安装 Mingw-w64
 !golang.enableCgo() = 启用 cgo ，依赖 gcc 。\n如果未找 gcc 到则自动安装 Mingw-w64
 !golang.buildShared(.("源文件文件路径","输出文件路径") = 执行 go build 命令生成 DLL 动态库,\n参数@1必须指定要编译的代码文件,可选指定输出 DLL 文件路径,\n可增加多个参数\n\n编译 DLL 需要依赖 GCC,请先调用 process.gcc.check\n\n注意每个Go导出函数前面都要加上 //export 要导出的函数名 
-!golang.buildArchive(.("源文件文件路径","输出文件路径") = 执行 go build -buildmode=c-archive命令
+!golang.buildArchive(.("源文件文件路径","输出文件路径") = 执行 go build -buildmode=c-archive 命令生成 C 静态库
 !golang.buildStrip(__) = 执行 go build 命令生成体积较小的 EXE 文件。\n参数@1指定要编译的代码文件，可增加多个参数。\n默认按第一个参数指定的 *.go 文件路径输出同名 *.exe 文件。\n默认添加编译参数 -ldflags "-s -w" 以移除调试信息
+!golang.build64(__) = 执行 go build 命令生成 64 位 EXE 文件。\n注意 aardio 里调用 64 位或 32 位 EXE 没有区别，都支持。\n参数@1指定要编译的代码文件，可增加多个参数。\n默认按第一个参数指定的 *.go 文件路径输出同名 *.exe 文件
+!golang.buildStrip64(__) = 执行 go build 命令生成体积较小的 64 位 EXE 文件。\n注意 aardio 里调用 64 位或 32 位 EXE 没有区别，都支持。\n参数@1指定要编译的代码文件，可增加多个参数。\n默认按第一个参数指定的 *.go 文件路径输出同名 *.exe 文件。\n默认添加编译参数 -ldflags "-s -w" 以移除调试信息
 !golang.install(__) = 执行 go install 命令,参数中指定要编译安装的代码。
 !golang.addPath(__) = 添加路径到 PATH 环境变量
 !golang.setGoProxy("__") = 设置 GOPROXY 环境变量指定的 Go 镜像服务器
@@ -227,6 +340,12 @@ golang() = !golang.
 !golang.env() = 执行 go env 命令，显示环境变量
 !golang.version() = 执行 go version 命令，显示版本
 !golang.main = @.main = /**********\npackage main\n\nimport "C"  \nimport (\n	"aardio"\n	"fmt"\n)\n\n__/*如果在这里指定了 Go 码，\n则调用 build 前缀的函数将自动覆盖参数 @1 指定的 *.go 文件。*/\nfunc init() {}\n\nfunc main() {} \n**********/
+!golang.goPath() = 返回 GOPATH 路径。
+!golang.binPath(.(filename) = 返回 go install 安装的执行文件路径
+!golang.cmd(.(exe,->->->) = 执行  go install 安装的执行文件命令。\n参数 @1 指定 EXE 文件名。\n后面可以指定一个或多个参数，\n可指定字符串或参数表等任何 string.args.join 支持的参数。\n\n此函数返回 process.popen 对象。
+!golang.cmd() = !process_popen.
+!golang.generate(__) = 执行 generate 命令，可添加一个或多个命令行参数。\n\n可指定字符串或参数表等任何 string.args.join 支持的参数。
+!golang.yaegiExtract(.(->->->) = 执行 yaegi extract 命令导出模块符号表。\n参数可以是一个或多个命令行参数，\n这些参数可以是 string.args.join 支持的字符串或表参数。\n\nyaegi 用法可参考 golang.excelize 扩展库的 DLL 源码。\n不要看网上过时的文章，这个命令没有重定向，也不需要指定输出文件名。\n直接到应用程序根目录找默认输出的文件。
 end intellisense**/
 
 /**details(必读)

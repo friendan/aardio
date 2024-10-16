@@ -250,19 +250,35 @@ namespace form {
 			var s = ..web.json[isArray?"stringifyArray":"stringify"](data); 
         	return owner.eval(s);
 		};
-		jsConstructor = function(cls){
+		jsNew = function(cls,...){
 			if(!owner.script.jsConstructor){
 				var js = /*  
- 				jsConstructor = function(jsObject) {
+ 				jsConstructor = function() {
+ 					jsObject = arguments[0];
 					if(typeof(jsObject) == "string") jsObject = eval(jsObject);
     				function ctor(args) { return jsObject.apply(this, args); }
     				ctor.prototype = jsObject.prototype;
-    				return function() { return new ctor(arguments); }
-				};
+    				
+    				var args = Array.prototype.slice.call(arguments);
+    				args.shift();
+    				
+    				return new ctor(args);
+				}
 				*/
 				owner.doScript(js);  
 			}
-			return owner.script.jsConstructor( cls );
+			
+			var args = {cls,...};
+			if(..table.find(args,..com.IsObject)){
+				return owner.script.jsConstructor( cls,...);
+			}
+			
+			var js  = "jsConstructor.apply(null," + ..web.json.stringifyArray(args) + ")";
+			return owner.eval(js);
+		};
+		jsConstructor = function(cls){
+			var this = owner;
+			return function(...){ return this.jsNew(cls,...) }
 		};
 		ready = function( proc,... ){
 			var wb = owner;
@@ -899,7 +915,7 @@ namespace form {
 	
 	with _metaProperty{ 
 		html = { 
-			_set = write;
+			_set = lambda(v) owner.write(v);
 			_get = lambda() owner.read();
 		};
 	}
@@ -969,6 +985,8 @@ namespace form {
 		return ..web.form(...); 
 	}
 }
+
+..thread.set("@web.form.imported!!!", true);//用于避免与 web.script("ES6") 同时使用
  
 /******intellisense( ) 
 web.form = web 窗体。\n基于系统自带 IE 内核 WebBrowser 浏览器控件。\n注意新版系统虽移 除IE，但 WebBrowser 属于系统组件仍可正常使用.\n\n导入此库时已默认设为启用IE最高兼容版本,\n可调用web.form.emulation函数修改,或在网页HTML中设置,例如:\n<meta http-equiv="X-UA-Compatible" content="IE=edge" />\n可自动启用IE最高版本
@@ -1222,8 +1240,6 @@ web.form.ie11() = !wb.
 !ele.outerHTML = 返回该节点的HTML代码
 !ele.innerText = 设置或获取对象的文本 
 !ele.outerText = 设置或获取对象的文本 
-!ele.innerHTMLUnicode = 返回节点内的HTML代码
-!ele.innerTextUnicode = 设置或获取对象的文本
 !ele.insertAdjacentHTML("beforeBegin",__/*HTML代码*/) = 在节点之前插入HTML
 !ele.insertAdjacentHTML("afterBegin",__/*HTML代码*/) = 在节点内部最前面插入HTML
 !ele.insertAdjacentHTML("beforeEnd",__/*HTML代码*/) = 在节点内部最后面插入HTML 
@@ -1269,7 +1285,6 @@ web.form.ie11() = !wb.
 !ele.getReadyState() = 获取对象的当前状态。 \n'uninitialized','loading','interactive','loaded' 'complete'
 !ele.sourceIndex = 获取对象在源序中的依次位置 
 !ele.title = 提示信息 
-!ele.titleUnicode = 提示信息
 !ele.attributes["name__/*属性名称*/"] = 对象 HTML 标签属性的集合指定名称的对象\n返回对象的 name 属性为 HTML 属性名称，\nvalue 属性为 HTML 属性值
 !ele.childNodes(0__) =  对象直接后代的 HTML元素和TextNode对象的集合指定位置的对象
 !ele.children(0__) =  获取作为对象直接后代的DHTML对象的集合指定位置的对象 
@@ -1316,7 +1331,6 @@ document.getElementById("__") = 获取对 ID 标签属性为指定值的第一�
 document.getElementsByName("__") =  根据 NAME 标签属性的值获取对象的集合。 
 document.getElementsByTagName("__") =  获取基于指定元素名称的对象集合。 
 document.title = 网页标题
-document.titleUnicode = 网页标题 
 document.body = !ele.
 document.focus() = 设置焦点
 document.hasFocus() = 是否拥有焦点
@@ -1383,7 +1397,8 @@ document.compatMode = "BackCompat" 对应 quirks mode(无DTD声明)\n"CSS1Compat
 !wb.jsObject(__/*aardio对象*/) = 使用 JSON 将 aardio 对象转换为纯 JS 对象。\n如果参数 @2 为 true，则将空表转换为 JS 数组
 !wb.xcall( = 调用 JS 函数并返回值。\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值
 !wb.xcall(.("object->func",->->->) = 调用JS函数并返回值。\n此函数使用 JSON 在 JS/aardio 之间转换参数与返回值。\n\n参数 @1 指定要调用的函数名或返回函数的表达式,\n\n如果参数 @1 不包含回车或换换行、分号、大括号、圆括号，\n则参数 @1 最后一个点号前的对象作为调用 JS 函数的 this 参数
-!wb.jsConstructor("Array__") = 获取JS对象构造函数,\n参数可以是JS对象，或字符串类型的对象名
+!wb.jsConstructor("Array__") = 获取 JS 使用 new 语句创建对象的构造函数。\n参数 @1 可以是 JS 对象，或字符串类型的对象名字。\n\n调用返回的构造函数时：\n构造参数包含 COM 对象则直接传参，否则使用 JSON 转换为纯 JS 参数。
+!wb.jsNew("Array__") = 调用 JS 的 new 语句构造 JS 对象。\n参数 @1 可以是 JS 对象，或字符串类型的对象名字。\n可指定一个或多个构造参数。\n构造参数包含 COM 对象则直接传参，否则使用 JSON 转换为纯 JS 参数。
 !wb.eval( = 运行js代码
 !wb.eval(.("JS代码") = 返回表达式的值
 !wb.doScript = @var js = /**\n	alert("Javascript!");\n**/\n??.doScript(js,__ )

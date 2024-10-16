@@ -42,7 +42,7 @@ namespace guid{
 			var ps = {ptr p};
 			var re = Rpcrt4.UuidToString(owner,ps)
 			if( ps.p ){
-				var str = ..string.fromUnicode(ps.p,,true );
+				var str = ..string.fromUtf16(ps.p,,true );
 				Rpcrt4.RpcStringFree(ps);
 				if(str){
 					if(!lower) str = ..string.upper(str);
@@ -69,13 +69,13 @@ namespace guid{
 				}
 			}
 
-			if( (::Ole32.CLSIDFromProgID( ..string.toUnicode(progId),owner))>=0/*_SUCCEEDED*/ )
+			if( (::Ole32.CLSIDFromProgID( ..string.toUtf16(progId),owner))>=0/*_SUCCEEDED*/ )
 				return owner; 
 		};
 		toProgId = function(){ 
 			var hr,,progId = ::Ole32.ProgIDFromCLSID(owner,{ptr value});
 			if( (hr)>=0/*_SUCCEEDED*/ ){ 
-				var str = ..string.fromUnicode(progId.value,,true);
+				var str = ..string.fromUtf16(progId.value,,true);
 				::Ole32.CoTaskMemFree(progId.value) 
 				return str;  
 			};

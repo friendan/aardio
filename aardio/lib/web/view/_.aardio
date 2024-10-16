@@ -4,18 +4,30 @@ import util.registry;
 import web.json;
 import win.reg;
 import wsock;
-import sys.locale;
+import string.args; 
 
 namespace web
 
 class view {
-	ctor( winform,userDataDir,browserArguments){{
-		if(!_WIN7_LATER) return;
-		if(!checkRuntime(winform)) return;
+	ctor( winform,createBrowserOptions,browserArguments,...){{
+		if(!_WIN10_LATER) return;
 		
-		if(!userDataDir){
-			userDataDir = ..io.appData("/aardio/webview2/user-data/" + ..io._exefile);
+		if(!checkRuntime(winform)) return;
+		if(!winform) winform = ..win.form().messageOnly();
+		 
+		if(type.isString(createBrowserOptions)){
+			createBrowserOptions = {
+				userDataDir = createBrowserOptions;
+			}
 		}
+		elseif(!createBrowserOptions) createBrowserOptions = {};
+		elseif(type(createBrowserOptions)!="table") error("参数 @2 必须是表对象或字符串",2);
+		
+		if(!createBrowserOptions.userDataDir){
+			createBrowserOptions.userDataDir = ..io.appData("/aardio/webview2/user-data/" + ..io._exefile);
+		}
+		
+		if(!browserArguments) browserArguments = createBrowserOptions.startArguments;
 		
 		if(browserArguments!==null){
 			if(type(browserArguments)=="number"){
@@ -23,39 +35,42 @@ class view {
 				browserArguments = "--remote-debugging-port=" + browserArguments;
 			} 
 			
+			browserArguments = ..string.args.joinEx(true,"=",false,browserArguments,...);
+			
 			this.remoteDebuggingPort = ..string.match(browserArguments,"\-\-remote\-debugging\-port\=(\d+)");
 			if(this.remoteDebuggingPort) this.remoteDebuggingPort = tonumber(this.remoteDebuggingPort);
-			
-			if(!..string.find(browserArguments,"--accept-lang") ) {
-				browserArguments = browserArguments + " --accept-lang=" + ..sys.locale.getUserDefault();
-			}
-			
+		 
 			if(!..string.find(browserArguments,"--remote-allow-origins") ) {
 				browserArguments = browserArguments + " --remote-allow-origins=http://127.0.0.1";
 			}
-			
-			..string.setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",browserArguments);
 		}
 		else {
-			var browserArguments = self.browserArguments;
+			browserArguments = self.browserArguments;
 			if(type(browserArguments) == "function") browserArguments = browserArguments()
 			
-			..string.setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS" ,browserArguments);
+			if(type(browserArguments)==="table"){
+				browserArguments = ..string.args.joinEx(true,"=",false,browserArguments,...);
+			}
 		}
-
+		
 		var browser = _dll.webview_newP();
 		this.browser = browser;
 		
-		this.userDataDir = ..io.fullpath(userDataDir);
-		var hr = _dll.webview_createW(browser,this.userDataDir, winform.hwnd); 
-		if( hr < 0/*_FAILED*/){
-			if( ((hr&2) != 2/*_ERROR_FILE_NOT_FOUND*/) || (!installRuntime(winform)) ){
-				return null,..lasterr(hr);
-			}
+		var hr = _dll.webview_createW(browser,{
+  				addr window = winform.hwnd;
+  				ustring userDataDir = ..io.fullpath(createBrowserOptions.userDataDir);
+  				ustring language = createBrowserOptions.language;//例如 "zh-CN" 格式参考 ..sys.locale 库
+  				ustring startArguments = browserArguments;
+  				
+  				//浏览器最低兼容版本: https://aka.ms/webviewrelease 不能低于 "86.0.616.0"
+  				ustring compatibleBrowserVersion = createBrowserOptions.compatibleBrowserVersion || "86.0.616.0";
+  				bool extensions = createBrowserOptions.extensions;
+			} )
 			
-			hr = _dll.webview_createW(browser,..io.fullpath(userDataDir), winform.hwnd); 
-			if( hr < 0/*_FAILED*/) return null,..lasterr(hr);
+		if( hr < 0/*_FAILED*/){
+			return null,..lasterr(hr);
 		}
+		this.userDataDir = createBrowserOptions.userDataDir;
 		
 		winform._onDestroy = function(){
 			if(this.browser){
@@ -339,13 +354,25 @@ class view {
 	wait = function(p,timeout){ 
 		return this._form.wait(function(){
 			var url = this.$readyUrl; 
-			if( url ? ..string.find( url,p) ) return url; 
-		},timeout);
+			if( url ? (!p || ..string.find( url,p)) ) {
+				if(this.eval("document.readyState == 'interactive' || document.readyState == 'complete' ") )
+					return url; 
+			}
+		},timeout,200);
 	}; 
+	waitDoc = function(p,timeout){  
+		return this._form.wait(function(){
+			var ret = this.eval(p ? "document.readyState == 'complete' " : "document.readyState == 'interactive' || document.readyState == 'complete' ");
+			if( ret ) return true; 
+		},timeout,500);
+	};  
 	waitUrlParam = function(p,k,timeout){ 
 		return this._form.wait(function(){ 
 			var url = this.$readyUrl; 
-			if( url ? ..string.find( url,p) ) return ..inet.url.getParams(url,k); 
+			if( url ? ..string.find( url,p) ) {
+				if(this.eval("document.readyState == 'interactive' || document.readyState == 'complete' ") )
+					return ..inet.url.getParams(url,k); 
+			}
 		},timeout);
 	};
 	cdp = function(name,param,callbackArg){
@@ -500,6 +527,9 @@ namespace view{
 				this._form.wait(function(){
 					return this.$readyUrl;
 				});
+			} 
+			_get = function(){
+				return owner.eval("document.body.outerHTML");
 			} 	
 		}; 
 		external = {
@@ -587,12 +617,30 @@ namespace view{
 		enableDefaultContextMenus = function(enabled){
 			_dll.webview_setAreDefaultContextMenusEnabled(owner.browser,enabled);
 		};
+		loadExtension = function(path){ 
+			if(..chrome[["extensions"]]){
+				if(!..io.exist(path)){
+					var info = ..chrome.extensions.find(path);
+					path = info[["fullpath"]];
+				}
+			}
+			
+			path = ..io.exist(path);
+			if(!path) return null,"文件不存在";
+			
+			var hr = _dll.webview_loadExtensionW(owner.browser,path); 
+			if(!hr) return true;
+			
+			if(hr&0x80070032 /*_ERROR_NOT_SUPPORTED*/){
+				error("创建 web.view 对象的第 2 个参数必须指定 extensions 字段的值为 true",2);
+			}
+			
+			return false,..lasterr(hr);
+		};
 		focus = function(){
 			..win.setFocus( owner.hwndChrome );
 		};
-	)
-	
-	browserArguments = lambda() " --accept-lang=" + ..sys.locale.getUserDefault();
+	) 
 	
 	//https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#understand-the-webview2-runtime-and-installer-preview
 	getRuntimeInfo = function(path){
@@ -612,38 +660,21 @@ namespace view{
 				return { location = location; version = version; }	
 			} 
 		}	
-	}
+	} 
 	
 	checkRuntime = function(winform){
-		if(getRuntimeInfo()) return true;
+		if(getRuntimeInfo()) return true; 
 		return installRuntime(winform);
 	}
 	
-	//此地址不作任何保证，请修改 web.view.legacyInstaller 为您自己提供的网址。
-	legacyInstaller = "http://d.aardio.com/download/web-view-109/";
-	
 	installRuntime = function(winform){
+		 
 		//https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/#download-section
 		import inet.installer; 
 		var downloadUrl = "https://go.microsoft.com/fwlink/?linkid=" +( _WIN_64 ? "2124701" : "2099617");
 		
 		if(!_WIN10_LATER){ 
-			if(_WIN7_LATER && legacyInstaller){
-				
-				downloadUrl  = ..inet.http.get(legacyInstaller);
-				if(!#downloadUrl) return;
-				
-				if(downloadUrl[[1]] == "="){
-					if ..win.msgboxTest('系统未安装运行程序必须的 WebView2 Runtime 组件！\n是否打开 WebView2 Runtime 下载页面？',winform[["hwnd"]]){
-						..raw.execute(..string.right(downloadUrl,-2));
-						return;
-					} 
-					return;
-				} 
-			} 
-			else {
-				return;
-			}
+			return;
 		}
 		 
 		if( inet.installer.asInvoker("WebView2 Runtime", downloadUrl ," /silent /install",,winform
@@ -654,7 +685,9 @@ namespace view{
 	
 	jsonTryParse = ..web.json.tryParse;
 	
-	if(!_WIN7_LATER) return;
+	if(!_WIN10_LATER) {
+		return;
+	}
 	
 	/*
 	感谢：
@@ -666,13 +699,14 @@ namespace view{
 
 /**intellisense()
 web.view = WebView2（Edge/Chromium内核）控件，\n可生成体积很小的独立 EXE 程序。\n\nWebView2 支持 Win10 以及之后的系统。\nWin11 已自带 WebView2，Win10 1803 以及之后的系统也已经自动推送 WebView2。\n因为 Win10 会自动更新，版本小于 1803 的 Win10 数量极少，可以忽略不计。\n其他检测到未安装 WebView2 的系统 —— aardio 会自动安装（不需要写任何代码）
-web.view( = 创建  WebView2（Edge/Chromium内核） 浏览器控件。\n\n此对象支持多线程界面回调，可传入工作线程使用
-web.view(.(winform,userDataDir,browserArguments) = 创建浏览器控件，\n参数 @winform 指定嵌入网页的宿主窗口，\n└── @winform 可指定窗体对象或 static,custom 等控件对象。\n可选用参数 @userDataDir 参数自定义用户数据目录，\n可选用参数 @browserArguments 传入一个字符串指定浏览器启动参数，多个参数用空格分开。\n└── 例如修改 UA：`--user-agent="Mozilla/5.0 aardio"` \n└──例如切换语言：`--accept-lang=zh-CN`\n[└──更多参数：](https://peter.sh/experiments/chromium-command-line-switches)\n参数 @browserArguments 也可用数值指定要启动的远程调试端口，\n└── 调试端口为 0 则自动分配空闲端口，\n└── 同一用户数据目录不能同时使用远程调试与内置 CDP 接口\n如果未指定启动参数，则取 web.view.browserArguments 设为默认启动参数
+web.view( = 创建 WebView2（Edge/Chromium内核） 浏览器控件。\n\n此对象支持多线程界面回调，可传入工作线程使用
+web.view(.(winform,userDataDir,browserArguments,->->->) = 创建浏览器控件，\n参数 @winform 指定嵌入网页的宿主窗口，\n└── @winform 可指定窗体对象或 static,custom 等控件对象。└── 不指定 @winform 则自动创建 messageOnly 隐藏窗口。\n可选用参数 @userDataDir 参数自定义用户数据目录，\n可选用参数 @browserArguments 传入一个命令行参数表或多个非 null 命令行参数。\n所有命令行参数调用 string.args.joinEx 合成为 WebView2 的启动参数。\n表参数中的驼峰参数名自动转为连字符风格并加 -- 前缀。\n其他规则请参考原码与 string.args.joinEx 说明。\n└── 例如修改 UA：`--user-agent="Mozilla/5.0 aardio"` \n└──例如切换语言：`--accept-lang=zh-CN`\n[└──更多参数：](https://peter.sh/experiments/chromium-command-line-switches)\n参数 @browserArguments 也可用数值指定要启动的远程调试端口，\n└── 调试端口为 0 则自动分配空闲端口，\n└── 同一用户数据目录不能同时使用远程调试与内置 CDP 接口\n如果未指定 @browserArguments，则取 web.view.browserArguments 设为默认启动参数。\n@browserArguments 之后的参数仍会合成到启动参数内
+web.view(.(winform,createBrowserOptions) = @.view(winform,{\n	extensions = true;\n	language =  "zh-CN";\n	startArguments = {acceptLang = "zh-CN" };\n	__/*extensions 是否启用浏览器扩展，启用后可调用 loadExtension 函数加载扩展。\nuserDataDir 一般可省略，不同的 userDataDir 创建不同的会话。\n\nlanguage 指定浏览器界面语言，也影响 --accept--lang 参数的值。\n一般自动指定为系统语言，可省略。\n\nstartArguments 指定浏览器启动参数，\n可以是 string.args 兼容的字符串、表对象都可以。\n\ncompatibleBrowserVersion 指定最低兼容的浏览器版本，可省略。\n*/})
 web.view() = !stdWebView2.
 web.view.getRuntimeInfo() = 获取 WebView2 Runtime 安装信息\n未安装返回 null
 web.view.checkRuntime(.(winform) = 如果未安装 WebView2 Runtime 就自动下载安装
 web.view.installRuntime(.(winform) = 重装 WebView2 Runtime
-web.view.browserArguments = 用于指定默认的浏览器启动参数。\n可指定字符串或返回字符串的函数对象。\n\n已默认指定为函数对象：\nlambda() " --accept-lang=" + sys.locale.getUserDefault();
+web.view.browserArguments = 用于指定默认的浏览器启动参数。\n可以指定一个 string.args.joinEx 支持的命令行参数表或字符串。\n也可以指定一个可以返回上述参数的函数。
 end intellisense**/
 
 /****intellisense(!stdWebView2) 
@@ -680,7 +714,7 @@ go( = 打开网址或文件地址。\n如果需要用这个函数打开工程内
 go(.(url,devPort,devTimeout) = 打开 @url 参数指定的网址。\n\n如果提前导入 wsock.tcp.simpleHttpServer 或 wsock.tcp.asynHttpServer \n则 io.localpath 支持的路径转换为通过嵌入 HTTP 服务器访问的网址。\n\n使用 HTTP 嵌入服务器可自动支持嵌入资源路径与 SPA 单页应用。\n如果同时文件名为 index.html 或 index.aardio。\n则上级目录设为 documentBase 根目录，后续请求路径应当以 "/" 代替 documentBase。\n\n可选使用@devPort参数指定前端项目开发环境调试端口，\n可选用@devTimeout参数指定检测调试端口超时\n@devPort,@devTimeout参数仅在开发环境中有效
 preloadScript(__/*JS 脚本*/) = 将 字符串参数@1 指定的 JS 脚本添加为网页默认加载脚本,\n在网页初始化时执行，保证在 window.onload 事件前执行,\n不会覆盖之前添加的脚本
 doScript(__/*JS 脚本*/) = 执行 字符串参数@1 指定的 JS 脚本
-html = @.html = /**\n<!doctype html>\n<html>\n<head>\n    <meta charset="utf-8">\n    <style type="text/css">\n    html,body{ height:100%; margin:0; } __/*将网页写入内存。\n支持 aardio 模板语法，模板的 owner 参数为当前 web.view 对象。\n包含 HTML 的段注释可赋值为字符串，首尾星号数目要一致。\n\n如果要引用其他本地文件，必须改用 wb.go 打开 html 文件。*/\n    </style>\n    <script type="text/javascript"></script>\n</head>\n<body>\n    <div id="header"></div>\n    <div id="container"> \n        <div class="lside"> </div> \n        <div class="rside"> </div>  \n    </div>\n</body>\n</html>\n**/
+html = @.html = /**\n<!doctype html>\n<html>\n<head>\n    <meta charset="utf-8">\n    <style type="text/css">\n    html,body{ height:100%; margin:0; } __/*将网页写入内存。\n支持 aardio 模板语法，模板的 owner 参数为当前 web.view 对象。\n包含 HTML 的块注释可赋值为字符串，首尾星号数目要一致。\n\nWebView2 通过 html 属性内存加载体积太大的 HTML 会卡住，改用本地文件可流畅打开。\n如果要引用其他本地文件，也必须改用 wb.go 打开 html 文件。*/\n    </style>\n    <script></script>\n</head>\n<body></body>\n</html>\n**/
 export( = 导出 aardio 函数为 JS 全局变量\n注意 JS 调用这里导出的本地函数时，\n传入 JS 参数通过 JSON 转换为 aardio对象,\n返回值通过 JSON 转换为 JS 对象\n\n在被网页回调 aardio 函数内执行 JS 时要避免在 JS 中再次回调此 aardio 函数。\n\n被网页回调的 aardio 函数内不要调用可能阻塞的 webView.xcall，webView.eval 函数。\n应改用非阻塞的 webView.invoke 函数，或通过 winform.setTimeout 异步调用 webView.xcall，webView.eval 函数
 export(.(JS变量名,回调函数) = 导出aardio函数为JS全局变量,\n参数也可以使用一个表包含多个需要绑定到JS的变量名值对,值必须是函数。\nJS脚本中调用这里绑定的本地函数返回值为 Promise 对象
 exportHostObject( = 直接导出 aardio 对象到 JavaScript，\n直接转换为 COM 对象，中间不需要经过 JSON 转换,\n用法请参考: https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2?view=webview2-1.0.705.50#addhostobjecttoscript
@@ -719,10 +753,12 @@ notifyPositionChanged() = 通知 WebView2 控件父窗口已移动
 enableStatusBar(__) = 是否允许在网页窗口底部显示默认状态栏，默认不显示。\n参数 @1 可指定 true 或 false
 enableDevTools(__) = 设置是否启用网页开发工具。\n参数 @1 可指定 true 或 false 。\n必须在加载网页前设置
 enableDefaultContextMenus(__) = 设置是否启用默认右键菜单。\n参数 @1 可指定 true 或 false 。\n必须在加载网页前设置
+loadExtension(__) =  加载浏览器扩展目录。\n参数 @1 必须指定浏览器扩展配置文件 manifest.json 所在的目录。\n\n如果事先导入 chrome.extensions 库，\n则参数可指定系统浏览器扩展 ID、或名称、描述包含的关键字（忽略大小写）。\n在浏览器扩展管理页面可查看 ID。
 _form = 创建浏览器控件传入的窗口对象\n!static.
 userDataDir = 创建浏览器控件指定的浏览器用户数据目录\n如果该目录下数据异常会导致浏览器异常组件并显示空白，\n此时关闭程序并清空或更新用户数据目录即可
 wait("__") = 等待参数@1指定的网址打开，\n参数@2支持模式匹配语法，\n在指定的网页创建 document 对象后返回，\n窗口关闭也会返回。\n\n成功返回页面 URL
 waitUrlParam("__","") = 等待参数@1指定的网址打开，支持模式匹配。\n参数 @1 的等待规则与 wait 函数相同。\n\n参数 @2 指定要等待的 URL 参数名，\n如果找到该参数则返回参数值，否则继续等待到参数出现或社会窗口关闭
+waitDoc() = 等待文档对象准备就绪。\n也就是页面的 document.readyState 为 "interactive" 时返回 true。\n如果参数 @1 为 true 则  document.readyState 为 "complete" 时返回 true。\n可选用参数 @2 指定超时。
 onDocumentInit(url) = @.onDocumentInit = function(url){
 	__/*打开网页并创建 document 对象后触发此事件,\nurl为当前网址*/
 }
@@ -748,9 +784,9 @@ Win11 已自带 WebView2，Win10 1803 以及之后的系统早已自动推送 We
 实际上现在 WebView2 已经是无法卸载的系统级组件。
 没有自带 WebView2 的旧系统已经非常罕见，可以忽略不记。
 
-只要简洁，不求完美！<br>
+只要简洁，不求完美！
 Win7 在市场上已经接近消失，现在开发软件再处处考虑 Win7 兼容是不必要的。
-当然：目前 aardio 的 web.view 仍然支持在 Win7 上快速自动安装 WebView2 。
+web.view 支持库不再支持 Win7，可通过 web.view.7 扩展库导入兼容 Win7 的旧版 web.view 。 
 
 在网页上点右键菜单项<b>（Inspect / 检查）</b>或按 F12 键可以打开网页开发工具（ DevTools ），
 在开发工具的「设置 / 语言」<b>（Settings / Language」）</b>界面可切换开发工具的界面语言。

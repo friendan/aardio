@@ -6,6 +6,7 @@ import web.rest.jsonLiteClient;
 import process;
 import process.cache;
 import fsys.version;
+import fsys.latest;
 import inet.http;
 
 namespace chrome;
@@ -176,9 +177,31 @@ namespace path{
         	return ..process.executeWait(downloadPath ," /qn /quiet /passive /norestart")
         } 
 	}
+	
+	profile = function(p,path,uDir){
+		if(uDir===null) {
+			return profile(p,path,..io.appData("\Microsoft\Edge\User Data\"))
+				|| profile(p,path,..io.appData("\Google\Chrome\User Data\")); 
+		}
+			
+		var profilePath;
+		if(p===null){
+			profilePath = ..fsys.latest(uDir,{"Profile*","Default"}); 
+		}
+		elseif(p) {
+			profilePath = ..io.joinpath(uDir,p);
+		} 
+		
+		if( ..io.exist(profilePath) ){
+			if(path) profilePath = ..io.joinpath(profilePath,path);
+			return ..io.exist(profilePath)
+		}	
+	}  
+
 }
 
 /**intellisense()
 chrome.path( = 用于获取 Edge（Chromium ）、Chrome 、 Supermium 安装路径 
 chrome.path(.(允许自动安装,优先查找Chrome) = 用于获取 Chrome 安装路径，所有参数可省略。\n支持  Chrome 、 Edge（Chromium ）、Supermium 等浏览器\n\n如果允许自动安装，且没有可用浏览器,，将会下载安装 Edge（Chromium） \n\n默认优先获取 Edge（Chromium）路径，如参数 @2 为 true 则优先获取 Chrome 路径\n\nWin10 以后系统自带 Edge（Chromium ）一般不需要安装。\n如果允许自动安装，则 Win10 以后安装 Edge（Chromium ）。\nWin7 安装 Chrome 109，XP 安装 Chrome 49
+chrome.path.profile(.(profile,path,userDataDir) = 获取 Edget 或 Chrome 用户配置文件（Profile）所在目录。\n\n所有参数可选：\n@profile 指定配置目录名。\n@path 批定子路径。\n@userDataDir 指定用户数据根目录。\n如果返回的文件路径（拼接 @path 以后）不存在则返回 null 。
 end intellisense**/

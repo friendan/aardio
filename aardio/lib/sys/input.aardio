@@ -16,7 +16,7 @@ getDescription = function(v){
 	var buf = ..raw.buffer(512);
 	var len = {int v = 256 }
 	if(dll.GetLayoutDescription(v,buf,len) >= 0){ 
-		return ..string.fromUnicode(buf,,len.v);
+		return ..string.fromUtf16(buf,,len.v);
 	}
 }
 

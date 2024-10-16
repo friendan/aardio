@@ -1,4 +1,4 @@
-//partFile 分卷文件
+﻿//partFile 分卷文件
 import fsys;
 namespace fsys.partFile;
 
@@ -9,7 +9,7 @@ class joiner {
 		var buffer = ..raw.buffer( bufsize ); 
 		
 		var file; 
-		if( path ) file =  ..io.open(path,mode);
+		if( path ) file =  ..io.file(path,mode);
 		if( !file ) return null,"打开文件失败" + path;
 		
 		..table.gc(this,"close");
@@ -26,7 +26,7 @@ class joiner {
 			return true;
 		}
 		
-		var file2,err = path ? ..io.open(path,"rb");
+		var file2,err = path ? ..io.file(path,"rb");
 		if( !file2 ) return null,err;
 	
 		var blocks = 0;	
@@ -61,7 +61,7 @@ class splitter{
 		var buffer = ..raw.buffer( bufsize or 0xA00000 ); 
 		
 		var file; 
-		if( path ) file =  ..io.open(path,"r+b");
+		if( path ) file =  ..io.file(path,"r+b");
 		if( !file ) return null,"打开文件失败" + path;
 		
 		this.formatName = ..io.splitpath(path).file + ".%03d";
@@ -75,8 +75,8 @@ class splitter{
 		
 		var blocks = 0;
 		var blockCount = ..math.ceil(file.size(bufsize)) : 1;
-		var path = ..fsys.joinpath(dir,..string.format(this.formatName , idx) ); 
-		var file2,err = ..io.open(path,"w+b");
+		var path = ..io.joinpath(dir,..string.format(this.formatName , idx) ); 
+		var file2,err = ..io.file(path,"w+b");
 		if(!file2) return null,err;
 		var remain = this.partSize;
 		  
@@ -94,8 +94,8 @@ class splitter{
 			if( remain == 0 ) {
 				idx++; 
 				file2.close();
-				path = ..fsys.joinpath(dir,..string.format(this.formatName , idx) ); 
-				file2,err = ..io.open(path,"w+b");
+				path = ..io.joinpath(dir,..string.format(this.formatName , idx) ); 
+				file2,err = ..io.file(path,"w+b");
 				if(!file2) return null,err;
 				remain = this.partSize;
 			}
@@ -156,7 +156,7 @@ group = function(path) {
 		return tonumber(a,10) < tonumber(b,10);  
 	} ); 
 
-	return parts,..fsys.joinpath(tPath.dir,b++e); 
+	return parts,..io.joinpath(tPath.dir,b++e); 
 }
 
 /**intellisense()

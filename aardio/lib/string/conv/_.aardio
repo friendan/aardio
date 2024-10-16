@@ -1,7 +1,7 @@
 namespace string.conv;
 
 mapString = function(str,locale,flags){
-	str = ..string.toUnicode(str);
+	str = ..string.toUtf16(str);
 	var len = LCMapString( locale,flags, str, #str/2, 0,0) 
 	if(len){
 		var len,str = LCMapString( locale,flags, str, #str/2, (len+1)*2,len) 
@@ -59,7 +59,7 @@ localized = function(value){
 	}
 	elseif( t == "string" ){
 		if( !#value ) return value; 
-		if(!(..string.isUtf8(value) || ..string.isUnicode(value) ) ) ..string.setUtf(value,1);
+		if(!(..string.isUtf8(value) || ..string.isUtf16(value) ) ) ..string.setUtf(value,1);
 		if( codepage == 950 ) return traditionalized(value)
 		elseif( codepage == 936 ) return simplized(value);
 	}

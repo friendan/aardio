@@ -102,10 +102,10 @@ fsys.res.enum(
 /*Manifest{{*/
 var projectPath = ide.getProjectPath();
 var projectFileName = io.splitpath(projectPath).name;
-var manifestPath = ..fsys.joinpath( ide.getProjectDir(),".build\" + projectFileName + ".Manifest.xml" );
+var manifestPath = ..io.joinpath( ide.getProjectDir(),".build\" + projectFileName + ".Manifest.xml" );
 var manifestData = ..string.load( manifestPath ); 
 if( !manifestData ){
-	manifestPath = ..fsys.joinpath( ide.getProjectDir(),".build\Manifest.xml" ); //兼容旧版
+	manifestPath = ..io.joinpath( ide.getProjectDir(),".build\Manifest.xml" ); //兼容旧版
 	manifestData = ..string.load( manifestPath ); 
 }
 
@@ -185,7 +185,7 @@ manifestVersion="1.0">
 	string.save(manifestPath,manifestData ) ;
 }
  
-var fileMain = io.open(ide.getProjectMainFile(),"rb"); 
+var fileMain = io.file(ide.getProjectMainFile(),"rb"); 
 if( fileMain ){
 	var tag = fileMain.read(9);
 	if( tag == "//RUNAS//" ){
@@ -217,7 +217,7 @@ for(k,resName in resLibs){
 		function(resName){
 			var libPath,libDir = io.libpath(resName);
 			if(libDir && libPath && ..string.endWith(libPath,"_.aardio",true) ){
-				var builder = fsys.joinpath(libDir,".build\main.aardio");
+				var builder = io.joinpath(libDir,".build\main.aardio");
 				if( io.exist( builder ) ){
 					var tHnd,tId = thread.create(builder)
 					if(tHnd){
@@ -234,7 +234,7 @@ for(k,resName in resLibs){
 
 var projectPath = ide.getProjectPath();
 var projectFileName = io.splitpath(projectPath).name;
-var builder = fsys.joinpath(ide.getProjectDir(),".build\" + projectFileName + ".main.aardio");
+var builder = io.joinpath(ide.getProjectDir(),".build\" + projectFileName + ".main.aardio");
 if( io.exist( builder ) ){  
 	var tHnd,tId  = thread.create(builder)
 	if(tHnd){
@@ -252,7 +252,7 @@ import fsys;
 //获取生成的EXE文件路径
 var publishFile = ide.getPublishPath();
 */
-	var builder = fsys.joinpath(ide.getProjectDir(),".build\" + projectFileName + ".main.aardio");
+	var builder = io.joinpath(ide.getProjectDir(),".build\" + projectFileName + ".main.aardio");
 	..string.save(builder,code)  
 }
 
@@ -330,7 +330,7 @@ winform.btnClose.oncommand = function(id,event){
 	winform.close()
 }
 
-var cmdStorePath = ..fsys.joinpath( ide.getProjectDir(),".build\cmdline.txt" );
+var cmdStorePath = ..io.joinpath( ide.getProjectDir(),".build\cmdline.txt" );
 winform.editCmdLine.text = string.load(cmdStorePath) : "";
 winform.btnRun.oncommand = function(id,event){
 	winform.btnRun.text = "请稍候..."
@@ -374,12 +374,12 @@ winform.onClose = function(hwnd,message,wParam,lParam){
 
 winform.buttonMakeUpdater.oncommand = function(id,event){
     winform.close()
-    loadcodex("~\tools\3) 编码\1) maker.aardio")
+    loadcodex("~\tools\Code\maker.aardio")
 }
 
 winform.btnEvb.oncommand = function(id,event){
 	winform.close();
-	loadcodex("~\tools\1) 开发环境\evb.aardio")
+	loadcodex("~\tools\IDE\evb.aardio")
 }
 
 win.setActive(winform.hwnd);

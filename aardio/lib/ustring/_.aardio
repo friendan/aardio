@@ -30,7 +30,7 @@ trimright = function(s,set){
 	var pl = span(reverse(s),set);
 	if(pl == 0) return s; 
 	
-	return ..string.sliceUnicode(s,1,-pl); 
+	return ..string.sliceUtf16(s,1,-pl); 
 }
 
 trimleft = function(s,set){
@@ -41,7 +41,7 @@ trimleft = function(s,set){
 	
 	var pl = span(s,set); 
 	if(pl == 0) return s;
-	return ..string.sliceUnicode(s,pl+1); 
+	return ..string.sliceUtf16(s,pl+1); 
 }
  
 trim = function(s,set){
@@ -52,7 +52,7 @@ trim = function(s,set){
 	var pr = span(reverse(s),set); 	
 	var pl = span(s,set); 
 	if(!(pr || pl) ) return s; 
-	return ..string.sliceUnicode(s,pl+1,-pr ); 
+	return ..string.sliceUtf16(s,pl+1,-pr ); 
 }
 
 wcstok  = Msvcrt.api("wcstok","pointer(pointer s,STRING delimit)")
@@ -125,7 +125,7 @@ split = function(str,sep,limit){
 	var addr = tonumber(..raw.toPointer(str));
 	for( i=1;#arr-1 ){ 
 		var b = tonumber(arr[i])-addr;
-		arr[i] = ..string.sliceUnicode(str,b/2+1,(b + ( tonumber(arr[i+1])-tonumber(arr[i]) - sparr[i]) )/2 ); 
+		arr[i] = ..string.sliceUtf16(str,b/2+1,(b + ( tonumber(arr[i+1])-tonumber(arr[i]) - sparr[i]) )/2 ); 
 	}
 	
 	if( #arr ){
@@ -206,15 +206,15 @@ len = function(s){
 }
 
 left = function(s,n){
-	return ..string.sliceUnicode(s,1,n);
+	return ..string.sliceUtf16(s,1,n);
 }
 
 right = function(s,n){
-	return ..string.sliceUnicode(s,-n)
+	return ..string.sliceUtf16(s,-n)
 }
 
-slice = ..string.sliceUnicode
-sub = ..string.sliceUnicode
+slice = ..string.sliceUtf16
+sub = ..string.sliceUtf16
  
 fromCharCode = function(chrs,...){
 	if(type(chrs)!= type.table) chrs ={chrs;...};
@@ -231,7 +231,7 @@ fromCharCode = function(chrs,...){
 
 charCodeEx = function(ustr,b,e){
 	var bytes = {};
-	ustr = ..string.toUnicode(ustr);
+	ustr = ..string.toUtf16(ustr);
 	
 	var len = #ustr/2;
 	if( b===null) b =1;
@@ -270,36 +270,36 @@ charCodeAt = function(str,i){
 pack = fromCharCode;
 unpack = charCode;
 /**intellisense()
-ustring = Unicode - UTF16编码字符串函数库
-::Msvcrt := VC6运行库,所有操作系统都自带的系统 DLL,\nconsole,ustring,string.builder 等标准库加载了此 DLL,\n\n加载此 DLL的正确写法为:\n::Msvcrt := ..raw.loadDll("Msvcrt.dll",,"cdecl"),\n!dllModule.
+ustring = UTF-16 字符串（ustring）函数库。\n用于操作 UTF-16 编码的 Unicode 字符串。\naardio 字符串默认为 UTF-8 编码。\naardio 字符串包含在单引号内并在尾部加小写 u 标记可创建 UTF-16 字符串（ustring）。
+::Msvcrt := VC6运行库,所有操作系统都自带的系统 DLL。\nconsole,ustring,string.builder 等标准库加载了此 DLL。\n!dllModule.
 end intellisense**/
 
 /**intellisense(ustring)
-fromCharCode(__) = 使用1个或多个Unicode编码值转换为Unicode字符串(UTF16编码)\n参数可以指定1个或多个Unicode编码数值,也可以直接指定一个包含多个编码的数组参数\n可指定大于0x10000的编码
-charCodeEx(.(字符串,开始位置,结束位置) = 返回一个数组，包含每个字符的Unicode编码值,\nUnicode代理对字符转换为大于0x10000的Unicode编码值\n参数@1如果未标记为UTF16编码,会自动转换为Unicode字符串\n其他参数可省略\n\n开始位置、结束位置按UTF16编码字符计数(每字符占2个字节)\n可以使用负数表示尾部倒计数字符位置
-charCode(.(字符串,开始位置,结束位置) = 返回每个字符的Unicode编码值\n参数@1如果未标记为UTF16编码,会自动转换为Unicode字符串\n其他参数可省略\n\n开始位置、结束位置按UTF16编码字符计数(每字符占2个字节)\n可以使用负数表示尾部倒计数字符位置
-charCodeAt(.(字符串,位置) = 返回指定位置的Unicode编码值\n位置按字符计数（无论字符占用几个字节,需要4字节编码的字符计数仍然为1）
-len(.('字符串'u) = 计算文本字符串的字符数,\n如果字符串内包含文本终止符'\u0000',则计数到该字节前停止
+fromCharCode(__) = 使用1个或多个 Unicode 编码值转换为 UTF-16 字符串（ustring）。\n参数可以指定 1 个或多个 Unicode 编码数值,也可以直接指定一个包含多个编码的数组参数。\n可指定大于 0x10000 的编码。
+charCodeEx(.(字符串,开始位置,结束位置) = 返回一个数组，包含每个字符的 Unicode 编码值。\nUnicode 代理对字符转换为大于 0x10000 的 Unicode 编码值。\n参数@1如果未标记为UTF16编码,会自动转换为 UTF-16 字符串（ustring）@2\n其他参数可省略。\n\n开始位置、结束位置按 UTF16 编码字符计数（每字符占2个字节）。\n可以使用负数表示尾部倒计数字符位置
+charCode(.(字符串,开始位置,结束位置) = 返回每个字符的 Unicode 编码值。\n参数 @1 如果未标记为 UTF16 编码,会自动转换为 UTF-16 字符串（ustring）。\n其他参数可省略\n\n开始位置、结束位置按UTF16编码字符计数（每字符占2个字节）@2\n可以使用负数表示尾部倒计数字符位置
+charCodeAt(.(字符串,位置) = 返回指定位置的 Unicode 编码值。\n位置按字符计数（无论字符占用几个字节,需要 4 字节编码的字符计数仍然为1）。
+len(.('字符串'u) = 计算文本字符串的字符数。\n如果字符串内包含文本终止符`'\u0000'`，则计数到该字节前停止。
 format(.('%s__'u,) = 格式化字符串
-left(.(str__,n) =  从字符串左侧截取n个字符\n按字符计数,汉字为一个字符
-right(.(str__,n ) =  从字符串右侧截取n个字符\n按字符计数,汉字为一个字符
-slice(.(str__,i,j ) =  从字符串中截取位置i开始的字符串,\n如果i为负数则从右侧倒数计数\n按字符计数,汉字为一个字符
+left(.(str__,n) =  从字符串左侧截取 n 个字符\n按字符计数，汉字为一个字符。
+right(.(str__,n ) =  从字符串右侧截取 n 个字符\n按字符计数，汉字为一个字符。
+slice(.(str__,i,j ) =  从字符串中截取位置 i 开始的字符串。\n如果 i 为负数则从右侧倒数计数，\n按字符计数，汉字为一个字符。
 reverse(.('字符串'u) = 反转字符串
 tokenize('字符串'u,"分隔符") = @for(tok in ustring.tokenize(,'__/*分隔符,默认为空白字符*/'u)){
 	console.log( tok );
 }
 span(.('字符串'u,'查找字符集'u) = 返回字符串开始在指定字符集中的字符所占字节长度
-cspan(.('字符串'u,"字符补集") = 查找字符补集组成的开始标记长度- complement span\n即所有不在指定字符集中的字符所占字节长度
-trimright(.('字符串'u,"字符集") = 清除尾部在指定字符集中的字符,\n参数2可选,默认为空白字符
-trimleft(.('字符串'u,"字符集") = 清除头部在指定字符集中的字符,\n参数2可选,默认为空白字符
-trim(.('字符串'u,"字符集") = 清除头尾在指定字符集中的字符,\n参数2可选,默认为空白字符
-breakAny(.('字符串'u,'查找字符集'u) = 查找字符集中任意字符开始的字符串,\n参数2默认为空白字符
-indexAny(.('字符串'u,'查找字符集'u) = 查找字符集中任意字符出现位置
-lastIndexAny(.('字符串'u,'查找字符集'u) = 自后向前查找字符集中任意字符出现位置
-indexOf(.('字符串'u,'查找文本'u,开始索引) = 查找匹配文本,成功返回开始与结束字符位置,\n不支持模式语法
-lastIndexOf(.('字符串'u,'查找文本'u) = 在字符串尾部查找匹配文本\n不支持模式语法
+cspan(.('字符串'u,"字符补集") = 查找字符补集组成的开始标记长度。\n即所有不在指定字符集中的字符所占字节长度。
+trimright(.('字符串'u,"字符集") = 清除尾部在指定字符集中的字符。\n参数 @2 可选,默认为空白字符。
+trimleft(.('字符串'u,"字符集") = 清除头部在指定字符集中的字符。\n参数 @2 可选,默认为空白字符。
+trim(.('字符串'u,"字符集") = 清除头尾在指定字符集中的字符。\n参数 @2 可选,默认为空白字符。
+breakAny(.('字符串'u,'查找字符集'u) = 查找字符集中任意字符开始的字符串。\n参数 @2 默认为空白字符。
+indexAny(.('字符串'u,'查找字符集'u) = 查找字符集中任意字符出现位置。
+lastIndexAny(.('字符串'u,'查找字符集'u) = 自后向前查找字符集中任意字符出现位置。
+indexOf(.('字符串'u,'查找文本'u,开始索引) = 查找匹配文本,成功返回开始与结束字符位置。\n不支持模式语法。
+lastIndexOf(.('字符串'u,'查找文本'u) = 在字符串尾部查找匹配文本。\n不支持模式语法。
 eachIndexOf('字符串'u,'查找文本'u) = @for i,j in ustring.eachIndexOf(str,'__/*查找文本*/'u){
 	
 } 
-split(.('字符串'u,'分隔符'u,拆分次数) = 拆分为数组,\n分隔符为可选参数,默认为空白字符\n拆分次数为可选参数,负数指定最后拆分次数,其他分组保持不变
+split(.('字符串'u,'分隔符'u,拆分次数) = 拆分为数组。\n分隔符为可选参数，默认为空白字符。\n拆分次数为可选参数，负数指定最后拆分次数，其他分组保持不变。
 end intellisense**/

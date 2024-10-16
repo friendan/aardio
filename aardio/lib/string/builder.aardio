@@ -140,13 +140,13 @@ namespace builder{
 			owner[["ptr"]] = concat(owner[["ptr"]],s,l);
 			return owner;
 		}
-		fromUnicode = function(l,codepage){
+		fromUtf16 = function(l,codepage){
 			if(l===null) l = -1;
-			return ..string.fromUnicode(owner[["ptr"]],codepage,l);
+			return ..string.fromUtf16(owner[["ptr"]],codepage,l);
 		}
-		toUnicode = function(l,codepage){
+		toUtf16 = function(l,codepage){
 			if(l===null) l = -1;
-			return ..string.toUnicode(owner[["ptr"]],codepage,l);
+			return ..string.toUtf16(owner[["ptr"]],codepage,l);
 		}
 		str = function(u,off){
 			return ..raw.str(owner[["ptr"]],u,off);
@@ -183,8 +183,8 @@ end intellisense**/
 /**intellisense(!stdstringbuilder)
 str( = 转换为纯文本字符串\n如果需要转换为二进制字符串,直接使用 tostring 函数转换string.builder对象即可
 str(.(是否unicode,偏移) = 去掉尾部多余终结符转换为纯文本字符串,参数可省略,偏移默认为0\n参数@1为true反回字符串标记会设置UTF-16标记,否则设为UTF-8标记
-toUnicode(.(转换字节数,源编码) =  转换并返回UTF16编码字符串\n字节数可省略,默认为-1\n字节数为-1时表示查找'\0'终止符自动获取长度
-fromUnicode(.(转换字符数,目标编码) = 自UTF16编码转换为多字节编码字符串，默认为UTF8\n参数@1以字符计数，即2个字节为一个单位,字符数只能为数值，省略时默认值为-1\n字符数为-1表示查找'\u0000'终止符获取可打印文本长度
+toUtf16(.(转换字节数,源编码) =  转换并返回UTF16编码字符串\n字节数可省略,默认为-1\n字节数为-1时表示查找'\0'终止符自动获取长度
+fromUtf16(.(转换字符数,目标编码) = 自UTF16编码转换为多字节编码字符串，默认为UTF8\n参数@1以字符计数，即2个字节为一个单位,字符数只能为数值，省略时默认值为-1\n字符数为-1表示查找'\u0000'终止符获取可打印文本长度
 free() = 释放内存\n此函数设置内部动态指针值为null\n释放动态指针以后,仍然可以调用reserve函数重新分配内存
 empty() = 存储内容是否为空
 capacity() = 返回预分配内存大小\n释放指针后此函数返回0

@@ -1,4 +1,4 @@
-import fonts.fontAwesome;
+﻿import fonts.fontAwesome;
 import ide;
 import fsys;
 import zlib.httpFile;
@@ -228,7 +228,7 @@ winform.btnPack.oncommand = function(id,event){
 	else {
 		if( winform.chePortable.checked ){
 			var exe = ide.getPublishPath();
-			var file = io.open(exe,"a+b");
+			var file = io.file(exe,"a+b");
 			if( file ){
 				var bin = ..string.loadBuffer(outpath)
 				if( bin ){
@@ -264,7 +264,7 @@ winform.btnPack.oncommand = function(id,event){
 	winform.close();
 }
 
-winform.editOutPath.text = fsys.joinpath(publisDir,"/electron.app.asar" );
+winform.editOutPath.text = io.joinpath(publisDir,"/electron.app.asar" );
 winform.editOutPath.disabled = true;
 
 winform.btnRemove.oncommand = function(id,event){

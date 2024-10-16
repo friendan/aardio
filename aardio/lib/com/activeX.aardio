@@ -65,7 +65,7 @@ class com.activeX{
 			} 
 			return ret,err;
 		}  
-		elseif(  _ARGV.r || _ARGV.regserver || _ARGV.RegServer || _ARGV.RegServerPerUser ){ 
+		elseif(  _ARGV.r || _ARGV.R || _ARGV.regserver || _ARGV.RegServer  ){ 
 			var ret,err;
 			try{
 				this.register();
@@ -76,8 +76,8 @@ class com.activeX{
 				err = e;
 			} 
 			return ret,err;
-		}
-		elseif( _ARGV.u || _ARGV.unregserver || _ARGV.UnregServer || _ARGV.UnregServerPerUser){
+		} 
+		elseif( _ARGV.u || _ARGV.U || _ARGV.unregserver || _ARGV.UnregServer ){
 			var ret,err;
 			try{
 				this.unRegister();
@@ -89,16 +89,44 @@ class com.activeX{
 			} 
 			return ret,err; 
 			
+		} 
+		elseif( _ARGV.RegServerPerUser ){ 
+			var ret,err;
+			try{
+				this.register(false);
+				ret = true;
+				err = "注册组件成功";
+			}
+			catch(e){
+				err = e;
+			} 
+			return ret,err;
+		}
+		elseif( _ARGV.UnregServerPerUser){
+			var ret,err;
+			try{
+				this.unRegister(false);
+				ret = true;
+				err = "卸载组件成功";
+			}
+			catch(e){
+				err = e;
+			} 
+			return ret,err;  
 		}
 		 
 	};
-	register = function() { 
+	register = function(runas) { 
 		if( _STUDIO_INVOKED ) error("请生成EXE文件后再注册控件",2)
+		
+		if(runas===null){
+			runas = ..process.admin.isRunAs();
+		}
 			
 		::Kernel32.SetCurrentDirectoryW(..io.fullpath("/"));
 		
 		var succeeded;
-		..win.reg.overrideClasses(..process.admin.isRunAs(),
+		..win.reg.overrideClasses(runas,
 			function(){
 				succeeded = ..com.RegisterObject( this )
 				if(succeeded && this._class.safeForScripting){
@@ -106,20 +134,24 @@ class com.activeX{
 				}	
 			}
 		)
-		
+		 
 		if(!succeeded) error("RegisterObject failed!"); 
 	};
-	unRegister = function() { 
+	unRegister = function(runas) { 
 		if( _STUDIO_INVOKED ) error("请生成EXE文件后再卸载控件",2)
+		
+		if(runas===null){
+			runas = ..process.admin.isRunAs();
+		}
 
 		::Kernel32.SetCurrentDirectoryW(..io.fullpath("/"));
 		
 		var succeeded;
-		..win.reg.overrideClasses(..process.admin.isRunAs(),
+		..win.reg.overrideClasses(runas,
 			function(){
 				succeeded = ..com.UnRegisterObject( this ) 	
 			}
-		)
+		) 
 		 
 		if(!succeeded) error("UnRegisterObject failed!");
 	}; 
@@ -176,17 +208,26 @@ namespace com.activeX{
 	install = function( filepath,i,... ){
 		..process.admin.runasWait("regsvr32", {"/s";"/i";i?"":"/u";filepath;...} );
 	};
-	regsvr32As = function(filepath,reg=true){
+	regsvr32As = function(filepath,install=true){
 		var filepath = ..io.localpath(filepath) : filepath; 
-		..process.admin.runasWait("regsvr32", "/s "  + ( reg? "" : "/u " ) + '"' + filepath + '"' )
+		..process.admin.runasWait("regsvr32", "/s "  + ( install? "" : "/u " ) + '"' + filepath + '"' )
 	};
-	regsvr32 = function( filepath,install ){
+	regsvr32 = function( filepath,install,runas ){
 	
 		if( install === null ) install = true;
 		
+		if(runas===null){
+			runas = ..process.admin.isRunAs();
+		}
+		else {
+			if(runas && !..process.admin.isRunAs()){
+				return regsvr32As(filepath,install);
+			}
+		}
+		
 		var err;
 		var succeeded;
-		..win.reg.overrideClasses(..process.admin.isRunAs(),
+		..win.reg.overrideClasses(runas,
 			function(){
 				try{  
 					var ocx = ..raw.loadDll(filepath)
@@ -261,15 +302,33 @@ namespace com.activeX{
 !com_activeX.unRegister() = 卸载组件
 !com_activeX.main() = 该函数检测传入参数并执行相应操作\n/r 注册控件 /u卸载控件 /Automation 运行
 !com_activeX.start() = 运行控件 
+com.activeX = 用于创建或注册 ActiveX 控件。
+com.activeX(.(progId,version) = 创建 ActiveX 控件。\n参数 @progId 用一个字符串指定 ProgId。\n可选用 @version 指定版本数值，默认值为 1。\n\n请通过『工程向导 / 其他 / 创建 ActiveX EXE』使用此对象。
 com.activeX.registerSafeForScripting(.("CLSID") = 注册类名为脚本安全\n参数可以是CLSID或已注册ProgID
 com.activeX.install() = 尝试用普通权限安装控件\n如果失败则申请管理权限注册控件
-com.activeX.regsvr32("__") = 尝试用普通权限注册控件,参数@1指定dll路径,\n如果~/或~\开头的路径不存在，自动转换为/或\开头的路径重试
-com.activeX.regsvr32("__",false) = 尝试用普通权限卸载外部控件,参数@1指定dll路径,\n如果~/或~\开头的路径不存在，自动转换为/或\开头的路径重试
+com.activeX.regsvr32("__") = 尝试用当前进程相同的权限注册控件,参数@1指定dll路径,\n如果~/或~\开头的路径不存在，自动转换为/或\开头的路径重试。\n\n参数 @3 为 null 则进程有管理权限为所有用户注册，否则为当前用户注册。\n参数 @3 为 false 则始终仅为当前用户注册控件，\n为 true 则始终为所有用户注册控件（管理权限）。
+com.activeX.regsvr32("__",false) = 尝试用当前进程相同的权限卸载外部控件,参数@1指定dll路径,\n如果~/或~\开头的路径不存在，自动转换为/或\开头的路径重试。\n\n参数 @3 为 null 则进程有管理权限为所有用户卸载，否则为当前用户卸载。\n参数 @3 为 false 则始终仅为当前用户卸载控件，\n为 true 则始终为所有用户卸载控件（管理权限）。
 com.activeX.regsvr32As("__") = 注册外部控件,\n如果需要管理权限则申请管理权限
 com.activeX.regsvr32As("__",false) = 卸载外部控件,\n如果需要管理权限则申请管理权限
 com.activeX.install("__",true,->->->) = 安装控件,可添加任意个命令行参数,\n如果需要管理权限则申请管理权限
 com.activeX.license(.(clsid,licKey) = 参数@1为类名或GUID，\n参数@2为授权码
-com.activeX.appData(.(path,data) = 将@path指定的相对路径转换为系统AppData目录下的绝对路径,\n可选使用@data指定需要存入的数据,\n只有在存入字节与目标文件内容长度不同时才会更新文件,\n最后使用该路径注册
+com.activeX.appData(.(path,data) = 将@path指定的相对路径转换为系统AppData目录下的绝对路径,\n可选使用@data指定需要存入的数据,\n只有在存入字节与目标文件内容长度不同时才会更新文件。\n最后使用该路径自动注册控件,不需要管理权限。
 com.activeX.createObject(.(clsid,filepath,appData) = 创建并返回 @clsid 指定 CLSID 的对象,\n如果控件未注册,则注册 @filepath 参数指定路径的控件,\n如果指定了appData参数,\n则将@filepath,@appData传入 io.appData 获取路径
 com.activeX.createEmbed(.(formOrCtrl,clsid,embedObj,filepath,appData) = 嵌入 @clsid 指定的控件到 @formOrCtrl 指定的窗口或控件,\n此函数返回控件容器,可选用 @embedObj 参数指定控件容器,\n关于控件容器请参数 com.CreateEmbed 函数说明,\n如果控件未注册,则注册 @filepath 参数指定路径的控件,\n如果指定了appData参数,\n则将@filepath,@appData传入 io.appData 获取路径
 end intellisense**/
+
+/**details(说明)
+请通过『工程向导 / 其他 / 创建 ActiveX EXE』创建 com.activeX 对象。
+
+创建 ActiveX EXE 时一般不需要改动 *.odl 类型库声明文件。
+保持默认就可以，所有接口函数可用 com.activeX 自动导出。
+
+如果要自定义类型库，
+建议继承 aardio.idl 提供的 IDispeatchExecutable 接口。
+
+类型库中所有 DISPID 不应大于 10000 ，
+这是因为aardio 自动生成 DISPID 以 10000 为起始值递增。
+
+所有 aardio 表对象、函数对象都实现了 IDispatch 接口，
+表对象可在 DISPID_NEWENUM 调用时返回 IEnumVARIANT 枚举接口。
+end details**/

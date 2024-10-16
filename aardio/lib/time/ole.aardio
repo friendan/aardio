@@ -97,7 +97,7 @@ namespace ole{
     		if( size > 0){
     			var buf = ..raw.buffer((size-1)*2);
     			if( ::Kernel32.GetTimeFormatW(locale,flags,owner,format,buf,size) )
-    				return ..string.fromUnicode(buf);
+    				return ..string.fromUtf16(buf);
     		}
     	};
     	toSystemFormat = function(format){

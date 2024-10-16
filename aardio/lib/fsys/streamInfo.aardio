@@ -27,7 +27,7 @@ class streamInfo{
 			} )
 			
 			if(info.streamNameLength){
-				var name = ..string.fromUnicode(topointer(pInfo,24),,info.streamNameLength/2)	
+				var name = ..string.fromUtf16(topointer(pInfo,24),,info.streamNameLength/2)	
 				..table.push(this,name);	
 			}
 		

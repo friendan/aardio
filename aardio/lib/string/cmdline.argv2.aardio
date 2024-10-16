@@ -1,4 +1,4 @@
-﻿//cmdline.argv2 命令行参数
+﻿//cmdline.argv2 命令行参数解析
 import string.cmdline;
 
 namespace string.cmdline;
@@ -150,7 +150,7 @@ end intellisense*****/
 
 示例：
 
-```
+```aardio
 var argv = string.cmdline.argv2(` -a -deffff  "c:\test.txt" "c:\test2.txt"`,{
     m = true;
     n = function(value,argv){

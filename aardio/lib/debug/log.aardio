@@ -38,7 +38,7 @@ checkSize = function( maxSize ){
 	..thread.lock( LOCKNAME ) {
 		if( !logPath ) setPath();
 		
-		var file,err = ..io.open(logPath,"r");
+		var file,err = ..io.file(logPath,"r");
 		if( file ) {
 			var size = file.size(1);
 			file.close();
@@ -73,7 +73,7 @@ var printArgs = function(args,dumpTable){
 	 
 	
 	..thread.lock("LOCKNAME",function(){
-		var file,err = ..io.open(logPath,"a+t");
+		var file,err = ..io.file(logPath,"a+t");
 		if(!file) return;
 		
 		if( _STUDIO_INVOKED ){

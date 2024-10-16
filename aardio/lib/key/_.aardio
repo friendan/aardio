@@ -1,10 +1,9 @@
 import key.VK;
 namespace key;
 
-::MapVirtualKey := ::User32.api("MapVirtualKey","INT( INT uCode, INT uMapType)" ); 
-::keybd_event := ::User32.api("keybd_event","void(BYTE bVk,BYTE bScan,INT dwFlags,INT dwExtraInfo)");
 ::GetAsyncKeyState := ::User32.api("GetAsyncKeyState","word(int vKey)" );
 ::GetKeyState := ::User32.api("GetKeyState","word(int vKey)" );
+::MapVirtualKey := ::User32.api("MapVirtualKey","INT(INT uCode,INT uMapType)" );
 
 delayPress = 5;
 delayDown = 5;
@@ -55,7 +54,7 @@ class INPUTDATA {
 sendString = function(str,tk=0){
 	var d = INPUTDATA();
 	var cbSize = ..raw.sizeof(d);
-	var wstr = ..string.toUnicode(str); 
+	var wstr = ..string.toUtf16(str); 
 	for(i=1;#wstr/2;1){    
 		d.ki.scan = wstr[i];
 		d.ki.flags = 4/*_KEYEVENTF_UNICODE*/;
@@ -79,6 +78,8 @@ char = function(n){
 	::User32.SendInput(1,d, cbSize ) ;
 }
 
+var kbEvent = ::User32.api("keybd_event","void(BYTE vk,BYTE scan,INT flags,INT extra)");
+
 combine = function(...){
 	var vk,ext;
 	var args ={ ... }; 
@@ -86,7 +87,7 @@ combine = function(...){
 	for(i=1;#args;1){
 		vk,ext = getCode(args[i]); 
 		if(!vk)error("输入的键名无效:" + args[i],2); 
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );  
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );  
 		..thread.delay(1)
 	}
 	
@@ -94,7 +95,7 @@ combine = function(...){
 	
 	for(i=#args;1;-1){
 		vk,ext = getCode(args[i]); 
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
 		..thread.delay(1)
 	}
 	..thread.delay( delayPress );
@@ -108,10 +109,10 @@ press = function(...){
 	for(i=1;#args;1){ 
 		vk,ext = getCode(args[i]);  
 		if(!vk)error("输入的键名无效:" + args[i],2); 
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );
 		..thread.delay( delayDown );
 		
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
 		..thread.delay( delayPress );
 	}
 }
@@ -121,10 +122,10 @@ repeat = function(k,rep=1,tk=0){
 	if(!vk)error("输入的键名无效:" + args[i],2);
 	tk :=  delayPress;
 	for(i=1;rep){
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext | 8, extraInfo );
 		..thread.delay( delayDown );
 		
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
 		..thread.delay( tk ); 
 	}
 		
@@ -138,7 +139,7 @@ down = function( ... ){
 	for( i=1; #args; 1 ){
 		vk,ext = getCode(args[i]); 
 		if(!vk)error("输入的键名无效:" + args[i],2); 
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext   | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext   | 8, extraInfo );
 		..thread.delay(1);
 	}
 	..thread.delay( delayDown );
@@ -151,7 +152,7 @@ up = function( ... ){
 	for( i=1; #args; 1 ){
 		vk,ext = getCode(args[i]); 
 		if(!vk)error("输入的键名无效:" + args[i],2); 
-		::keybd_event( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
+		kbEvent( vk, ::MapVirtualKey(  vk ,0), ext |  0x2/*_KEYEVENTF_KEYUP*/ | 8, extraInfo );
 		..thread.delay(1);
 	}
 	..thread.delay( delayUp );

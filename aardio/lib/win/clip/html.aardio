@@ -9,14 +9,18 @@ class html{
 
 namespace html{
 
-	CF_HTML = ::User32.RegisterClipboardFormat("HTML Format"); 
+	format = ::User32.RegisterClipboardFormat("HTML Format"); 
+	test = function(){
+		return ..win.clip.test(format); 
+	};
+		
 	_metaProperty = ..util.metaProperty(
 		read = function(){
 			var cbHtml;
 			if(!::User32.OpenClipboard(0))
 				return;	
 				
-			var hClip = ::User32.GetClipboardDataP(CF_HTML);
+			var hClip = ::User32.GetClipboardDataP(format);
 			if(hClip){
 				var p = ::GlobalLock(hClip)
 				if(p){ 
@@ -40,7 +44,7 @@ namespace html{
     			::CopyMemory(buffer,cbHtml,#cbHtml+1); 
 				::GlobalUnlock(clipbuffer); 
 				
-				var hdl =  ::User32.SetClipboardDataP(CF_HTML,clipbuffer);
+				var hdl =  ::User32.SetClipboardDataP(format,clipbuffer);
 				::User32.CloseClipboard();
 				return hdl;
 			} 
@@ -116,13 +120,15 @@ win.clip.html() = 创建剪贴板HTML对象\n!win_clip_html.
 !win_clip_html.parse(.(剪贴板数据,是否UTF8) = 解析剪贴板数据,\n参数@2默认为true,注意HTML在剪贴板为UTF8编码\n成功返回对象自身
 !win_clip_html.stringify(.(HTML,是否UTF8) = 参数@1如果省略则获取对象的html或fragment属性生成复制数据,\n成功返回可写入剪贴板的数据
 !win_clip_html.write(.(剪贴板数据,是否UTF8) = 参数@1如果省略则获取对象的html或fragment属性生成复制数据,\n可选使用参数@3指定在复制前是否清空剪贴板,默认清空,\n成功返回剪贴板数据句柄
-!win_clip_html.read() = 读取并解析剪贴板HTML\n成功返回对象自身\n!win_clip_html.
+!win_clip_html.read() = 读取并解析剪贴板 HTML。\n成功返回对象自身。\n通过对象的 html,fragment 获取读取的 HTML 代码。\n!win_clip_html.
 !win_clip_html.parse() = !win_clip_html.
 !win_clip_html.ClipboardData  = 剪贴板数据,UTF8编码\n该属性在解析剪贴板数据时自动生成,不要修改该属性
 !win_clip_html.StartFragment = 复制的片段开始位置\n该属性在解析剪贴板数据时自动生成,不要修改该属性
 !win_clip_html.EndFragment = 复制的片段结束位置\n该属性在解析剪贴板数据时自动生成,不要修改该属性
-!win_clip_html.StartHTML = HTML开始位置\n该属性在解析剪贴板数据时自动生成,不要修改该属性
-!win_clip_html.EndHTML = HTML结束位置\n不要修改该属性
-!win_clip_html.html = HTML
-!win_clip_html.fragment = HTML中需要复制的片段
+!win_clip_html.StartHTML = HTML 开始位置，\n该属性在解析剪贴板数据时自动生成,不要修改该属性
+!win_clip_html.EndHTML = HTML 结束位置，\n不要修改该属性
+!win_clip_html.html = 自剪贴板读取或写入的 HTML 代码，由其他函数自动设置。\n不要修改此属性。
+!win_clip_html.fragment = 自剪贴板读取或写入的 HTML 代码中需要复制的片段，由其他函数自动设置。\n不要修改此属性。
+win.clip.html.test() = 如果剪贴析包含 HTML 格式数据返回 true
+win.clip.html.format = 注册的 CF_HTML 图像格式，数值。
 end intellisense**/

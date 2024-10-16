@@ -6,7 +6,7 @@ class ICLRRuntimeInfo{
 	ctor(  ){
 		this = ..com.interface.IUnknown(); 
 	}; 
-	pointer GetRuntimeDirectory = "int(ustring &wstrBuffer,INT &cchBuffer)"; 
+	pointer GetVersionString = "int(ustring &wstrBuffer,INT &cchBuffer)"; //实际上就是 System.Environment.Version 
 	pointer GetRuntimeDirectory = "int(ustring &wstrBuffer,INT &cchBuffer)"; 
 	pointer IsLoaded = "int(pointer hndProcess,bool &loaded)"; 
 	pointer LoadErrorString = "int(INT iResourceID,ustring &wstrBuffer,INT &cchBuffer,int localeId)"; 
@@ -20,4 +20,3 @@ class ICLRRuntimeInfo{
 	pointer IsStarted = "int(bool &started,INT &startupFlags)";  
 }
 ICLRRuntimeInfo.IID = "{BD39D1D2-BA2F-486a-89B0-B4B0CB466891}";
- 

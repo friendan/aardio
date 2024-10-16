@@ -7,7 +7,7 @@ class padding {
 		this._space = space : " ";
 	};
 	len = function(s){ 
-		s = ..string.toUnicode(s);
+		s = ..string.toUtf16(s);
 		var l = #s/2;
 		for(i=1;l;1){
 			if(s[i]>0x7F) l++;

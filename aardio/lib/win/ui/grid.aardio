@@ -184,9 +184,18 @@ win.ui.grid() = !win_ui_grid.
 	__/*点击列排序时回调此函数\n@column参数为列序号，1为首列，@desc参数指定是否倒序\n返回true排序，否则不排序*/
 	return true;
 } 
-!win_ui_grid.setTable(__) = 用listview控件显示数据表\n此函数会自动清空控件之前的所有项,\n如果没有创建任何列,则自动创建列\n\n数据表应当包含行组成的数组,\n每行的数据列必须是由列名和列值组成的键值对\n数据表应使用fields包含需要显示的列名称数组\n可以通过fields控制要显的列、以及要显示的顺序\n\n使用sqlite,access,sqlServer等数据库对象提供的getTable函数可获取符合此规格的数据表 
+!win_ui_grid.setTable( = 用 listview 控件显示数据表（包含名值对的对象或数组组成的数组）。\n此函数会自动清空控件之前的所有项。\n如果没有创建任何列，则自动创建标题列。\n如果要重新创建列，请先调用 clear 函数并指定参数为 true 以清空原来的列。
+!win_ui_grid.setTable(.(dataTable) =  参数 @dataTable 指定要加载的数据表。\n数据表应当包含行组成的数组。\n数据行可以是数组，也可以是名值，值用 tostring 转为文本显示。\n可选通过数据表的 fields 字段指定要显示的索引数组（键名或索引数值）。\n\n如果视图控件的标题列为空，则用显示键名（或数组值）创建标题列。\n如果数据行为数组，第一行填充到标题列以后，默认从第二行加载数据。\n\n可用 startIndex 属性或元属性自定义要加载的起始行。\n可用 length 属性自定义要加载的行数，默认加载所有行。\n\nsqlite,access,sqlServer 等数据库对象，\n提供的 getTable 函数可获取通过 fields 字段指定列名数组的数据表。
+!win_ui_grid.getTable(__) = 返回数据表。\n如果参数 @1 指定列名数组（被复制为返回表的 fields 字段），\n则返回的每行数据都是名值对，否则返回的每行数据都是文本数组。\n\n如果参数 @1 为 true，则返回的文本数组第一行为列标题文本数组。
 !win_ui_grid.setColumns(__) = 用一个字符串数组指定要显示的列\n如果参数为空则清空所有列
 !win_ui_grid.setReadonlyColumns(__) = 可以使用一个或多个参数指定要禁止编辑的列序号，\n也可以用一个数组参数指定多个列序号。\n\n如果参数为 -1，则禁止编辑所有列
+!win_ui_grid.setColumnText(.(位置,文本) = 设置指定列文本
+!win_ui_grid.getColumnText(__) = 取指定列文本
+!win_ui_grid.setColumnWidth(.(列宽,列序号,->->->) = 设置列宽，可指定一个或多个列序号。\n这里不能指定宽度为  -1 。
+!win_ui_grid.delColumn(__) = 删除指定列
+!win_ui_grid.columnCount = 列总数
+!win_ui_grid.setColumn(.({cx=100},列序号) = 改变列宽，参数@1必须是个表对象
+!win_ui_grid.setColumn(.(列参数表,列序号) = 参数一指定 wLVCOLUMN 结构体成员键值的参数表,\n也可以是LVCOLUMN结构体对象,自动设置掩码参数.
 !win_ui_grid.clear() = 清空所有行
 !win_ui_grid.clear(true) = 清空所有行,并且清空所有列
 !win_ui_grid.beginEdit(.(行,列) = 切换到编辑状态

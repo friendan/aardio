@@ -28,9 +28,12 @@ class clr{
 		}
 		if( version == "v2.0" ||  ..string.startWith( version,"v3.") ){ 
 			version = "v2.0.50727";
+			this.majorVersion = 2;
 		}
 		elseif( version == "v4.0" ||  ..string.startWith( version,"v4.") ){
+			//必须是 2 或 3 位版本号，CLR 4 只有这一个 3 位版本号，不能写 v4.0.30319.42000
 			version = "v4.0.30319";
+			this.majorVersion = 4;
 		};
 		
 		this.version = version;
@@ -189,7 +192,8 @@ dotNet.clr() = !dotNetClr.
 !dotNetClr.runtimeHost = !dotNetCorRuntimeHost.
 !dotNetClr.createAppDomain(.("域名称") = 创建应用程序域,参数可选\n\n如果尚未创建默认单例应用程序域，\n则不指定 @domainName 参数时创建并返回为默认单例应用程序域，\n无参数调用 dotNet.appDomain 总是返回默认单例应用程序域，\n引入 dotNet 库也会自动创建默认应用程序域 
 !dotNetClr.createAppDomain() = !dotNetAppDomain.
-!dotNetClr.version = 运行时版本
+!dotNetClr.version = CLR 运行时版本。\n这个值只有可能是 "v2.0.50727" 或 "v4.0.30319"。\n注意 CLR 版本不完全等于 .NET 版本\n\n获取完整 CLR 版本号或检测 .NET Framework 版本请查看\naardio 提供的 System.Environment.Version 库
+!dotNetClr.majorVersion = CLR 运行时版本号，数值。\n只有可能是 2 或 4，不会有其他主版本。\n\n注意 CLR 版本不完全等于 .NET 版本\n\n获取完整 CLR 版本号或检测 .NET Framework 版本请查看\naardio 提供的 System.Environment.Version 库
 end intellisense**/
 
 /**intellisense(!dotNetClr.AppDomainSetup)

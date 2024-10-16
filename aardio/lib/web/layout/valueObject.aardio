@@ -51,8 +51,8 @@ namespace valueObject {
  	ValueNthElementValueSet = dll.api("ValueNthElementValueSet", "INT(struct &pval,int n,struct pval_to_set)"); 
  	ValueNthElementValue = dll.api("ValueNthElementValue", "INT(struct pval,int n, struct& pretval)");
  	ValueEnumElements = dll.api("ValueEnumElements", "INT(struct pval,pointer penum, pointer param)");
- 	var fromUnicode = ..string.fromUnicode;
-  	var toUnicode = ..string.toUnicode;
+ 	var fromUtf16 = ..string.fromUtf16;
+  	var toUtf16 = ..string.toUtf16;
   	
   	VALUE_UNIT_TYPE = { 
   		"em";"ex";"pr";"sp";"";"";"px";"in";"cm";"mm";"pt";"pc";"dip";"";"color";"url";"symbol";
@@ -85,11 +85,11 @@ namespace valueObject {
 		getString = function(){ 
 			var re,p, n = ValueStringData(owner, null, 0);
 			if( re==0/*_HL_HV_OK*/  ){
-				return (( p && n) ? fromUnicode(p,,true) : "");
+				return (( p && n) ? fromUtf16(p,,true) : "");
 			}
 		}
 		setString = function( v ){
-			v = toUnicode(v); 
+			v = toUtf16(v); 
 			return ValueStringDataSet(owner, v, #v/2, 0)==0/*_HL_HV_OK*/;  
 		};
 		getBinary = function(){
@@ -293,11 +293,11 @@ namespace valueObject {
 			return owner.getString();
 		}
 		parse = function(str){
-			str = toUnicode(str);
+			str = toUtf16(str);
 			return 0 == ValueFromString(owner,str,#str-2,0/*_HL_CVT_SIMPLE*/); 
 		};
 		jsonParse = function(str){
-			str = toUnicode(str);
+			str = toUtf16(str);
 			return 0 == ValueFromString(owner,str,#str-2,1/*_HL_CVT_JSON_LITERAL*/);
 		}
 		jsonStringify = function(){

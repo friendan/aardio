@@ -68,10 +68,13 @@ class jsonClient {
 							}
 						}
 						return true;
-					} 
+					}
 					
 					if(data[["error"]]){
-						return data,..web.json.stringify(data[["error"]],true);
+						var err = ..web.json.stringify(data[["error"]],true) ;
+						if(owner.onError) owner.onError(err,data[["error"]]);
+						
+						return data,err;
 					}
 					return data;
 				}
@@ -81,6 +84,8 @@ class jsonClient {
 						if(!utf8)errMsg = ..string.fromto( errMsg,codepage,65001); 
 					}
 					owner.lastResponseData = errMsg;
+					
+					if(owner.onError) owner.onError(tostring(errMsg));
 					return null,errMsg,errCode;
 				}
 			}; 
@@ -231,4 +236,7 @@ afterJsonStringify = @.afterJsonStringify = function(jsonData){
     __/*可以在这里加密客户端JSON,返回null中止本次调用*/
 	return jsonData;
 }
+onError = function(errMessage,rpcError){
+    __/*出错时触发此函数，errMessage 为错误信息。\n如果服务端按 jsonrpc 协议返回 error 对象，\n则 rpcError 有值，包含 messge，code 字段。*/	
+} 
 end intellisense**/ 

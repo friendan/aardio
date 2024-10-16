@@ -73,6 +73,6 @@ class functions{
 } 
 
 /**intellisense()
-raw.functions = 用于将结构体指针绑定到静态类型接口\n与raw.interface的区别是结构体中的函数指针不使用虚表,不使用this指针参数,其他用法相同,\n添加不属于接口的aardio自定义函数，必须用owner代替this访问当前接口对象
+raw.functions = 用于将结构体指针绑定到原生接口\n与raw.interface的区别是结构体中的函数指针不使用虚表,不使用this指针参数,其他用法相同,\n添加不属于接口的aardio自定义函数，必须用owner代替this访问当前接口对象
 raw.functions() = @.functions( __/*结构体指针*/,"\n	void getName(string &buffer,int len);\n	bool getInfo(struct &pInfo); \n	","stdcall"\n)
 end intellisense**/

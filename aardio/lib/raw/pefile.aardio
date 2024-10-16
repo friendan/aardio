@@ -322,6 +322,9 @@ class pefile{
   			INT entryPoint
   		})  
 	};
+	getSectionByName = function(name){
+		return ..table.find(this.sections,lambda(v) v.name==name);
+	};
 }
 
 namespace pefile{
@@ -498,4 +501,6 @@ raw.pefile() = !rawPeFile.
 !rawPeFile.imageHeader.timeDateStamp = PE 文件创建时间戳，数值
 !rawPeFile.imageHeader.timeDate = PE 文件创建时间，time 对象\n!time.
 !rawPeFile.path = 文件路径
+!rawPeFile.sections = PE 节信息数组。
+!rawPeFile.getSectionByName(__) = 返回参数 @1 指定名称的 PE 节信息。
 end intellisense**/

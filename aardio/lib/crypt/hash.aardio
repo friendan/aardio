@@ -41,13 +41,21 @@ class hash{
 	setParamStruct = function(param,data,flag=0){ 
 		return CryptSetHashParamStruct(this.handle ,param ,data,flag);
 	};
+	hashFile = function(path){
+		var buf = ..string.loadBuffer(path);
+		if(buf) return this.hashBuffer(buf);
+	};
 	hashBuffer = function (buffer,l) {
+		if(buffer[["_struct"]]){
+			buffer = ..raw.buffer(buffer);
+		}
+		
 		var m = #buffer;
 		if( !l ) l = m;
 		elseif( l > m ) l = m;
 		elseif( l < 0 ) return;
 		return HashData(this.handle , buffer,l, 0);
-	};
+	};  
 	deriveKey = function(algId = 0x6801/*_CALG_RC4*/, flag=0,bits=0){
 		if(algId==0x6801 && bits === null) bits = 128;
 		var ret,hKey = DeriveKey(this.cryptContent.hCryptProv,algId,this.handle,flag | (bits <<16) ); 
@@ -105,8 +113,9 @@ crypt.hash() = !crypt_hash.
 !crypt_hash.getValue() = 返回原始哈希值数据,\n即未转换为16进制
 !crypt_hash.getHexValue() = 返回十六进制哈希值(大写)
 !crypt_hash.getHexValue(false) = 返回十六进制哈希值(小写)
-!crypt_hash.hashData(__/*字符串*/) = 计算哈希值
-!crypt_hash.hashBuffer(.(buffer,长度) =  参数@1 必须是 raw.buffer 创建的 buffer 对象,\n长度为可选参数
+!crypt_hash.hashData(__/*字符串*/) = 计算哈希值。\nhash 前缀的函数都可以多次调用连续计算。
+!crypt_hash.hashFile(__/*文件路径*/) = 计算文件哈希值。\nhash 前缀的函数都可以多次调用连续计算。
+!crypt_hash.hashBuffer(.(buffer,长度) =  参数@1 可以是 raw.buffer 创建的 buffer 对象或者结构体。\n长度为可选参数。\n\nhash 前缀的函数都可以多次调用连续计算。
 !crypt_hash.deriveKey(.(算法ID,选项) = 从哈希表中派生密钥,\n参数可选,算法ID默认为_CALG_RC4,选项默认为0\n密钥自动绑定到CSP密钥容器对象\n该函数无返回值
 !crypt_hash.size() = 返回摘要值字节长度
 !crypt_hash.sign(.(keySpec,flags) = 返回签名\n可选用 @keySpec 参数中指定密钥类型,\n@flags 不必指定,默认为_AT_SIGNATURE\n导入密钥时请改为_AT_KEYEXCHANGE

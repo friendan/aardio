@@ -51,10 +51,17 @@ namespace struct{
 		get = function(){
 			return convert(owner[["_structPointer"]],owner[["_structObject"]]); 
 		};
-		set = function(v){
-			..table.assign(owner[["_structObject"]],v);
+		set = function(v,overwrite){ 
+			if(v){
+				if( !overwrite) convert(owner[["_structPointer"]],owner[["_structObject"]]);  
+				..table.assign(owner[["_structObject"]],v);	
+			}
+			
 			copy(owner[["_structPointer"]],owner[["_structObject"]]);
-		} 
+		};
+		sizeof = function(){
+			return #owner[["_structPointer"]]);
+		};
 	}
 	
 	_meta = { 
@@ -124,14 +131,69 @@ namespace struct{
 	} 
 } 
 
+/**details(用法说明)
+
+### raw.struct 要点：
+
+- raw.struct 的构造参数如果是类，则返回一个创建静态内存结构体的类。
+- raw.struct 的构造参数如果是结构体，则直接创建并返回 raw.struct 实例。
+- raw.struct 本身是一个代理对象，它管理着一个 aardio 结构体、一个原生内存指针，并负责双向同步操作。
+
+### raw.struct 对象两种内存同步方式：
+
+- 自动同步：
+
+	使用 raw.struct 的成员操作符（点号与下标）读写对象时，
+	会自动双向同步 aardio 结构体与原生内存的值。
+	这种方式较方便，操作简单容易理解，但每次读写字段都要同步。
+	
+- 手动同步：
+
+	使用 raw.struct 对象的 get,set 函数手动控制内存同步。
+	这种方式必须熟悉内存同步规则与原理，略有些复杂，但有更好的效率。
+	
+	这两个函数通常需要配对使用。 
+	例如：
+	
+	```aardio
+	//自原生内存单向读取普通结构体
+	var struct = rawStruct.get();
+	
+	//修改普通结构体字段，读写操作不会自动同步原生内存。
+	struct.a = 1;
+	struct.b = 2;
+	
+	//单向写入原生内存，不保留原生内存的任何值
+	rawStruct.set();
+	
+	//上面的代码可以简化为：
+	rawStruct.set(
+		a = 1;//这种方式必须指定非 null 值。
+		b = 2;
+	) 
+	```
+	
+	raw.struct 对象的 set 函数执行如下操作：
+	- 如果未指定参数 @1 ，则用结构体的所有字段覆写原生内存，不保留原生内存的任何字段值。
+	- 如果参数 @1 用表对数指定了要更新的字段值，则：
+		- 未在参数中指定非 null 字段值的字段默认会先自原生内存读取值并保留该值。
+		- 如果参数 @2 为 true 则直接覆写原生内存，不保留原生内存的任何字段值。
+		
+	使用 raw.struct 对象的 get 函数自原生内存读到结构体。 
+	对 get 函数返回的普通结构体做读写操作不会自动同步。
+
+end details**/
+
 /**intellisense()
-raw.struct = 创建静态内存结构体。\naardio 结构体在与静态 API 交互时动态分配内存指针，\n但静态内存结构体可以分配固定不变的内存指针。\n\n读写静态内存结构体字段时直接自内存读写\n如果结构体首个成员为静态类型数组，可直接用数值索引读写该数组成员。\n\n静态内存结构体实例可作为原型函数调用复制新的静态内存结构体，\n作为原型函数调用时可接控受任意个自定义返回对象字段值的表参数
+raw.struct = 创建静态内存结构体，在原生 API 函数中可作为指针类型参数使用。\naardio 结构体在与原生 API 交互时动态分配内存指针，\n但静态内存结构体可以分配固定不变的内存指针。\n\n读写静态内存结构体字段时直接自内存读写\n如果结构体首个成员为原生类型数组，可直接用数值索引读写该数组成员。\n\n静态内存结构体实例可作为原型函数调用复制新的静态内存结构体，\n作为原型函数调用时可接控受任意个自定义返回对象字段值的表参数
 raw.struct( = 创建静态内存结构体。\n静态内存结构体可直接传入其他线程，\n多线程可直接共享同一静态内存结构体内存指针，\n但必须由创建静态内存结构体的线程负责维护该结构体的有效生命周期，\n多线程读写此静态内存结构体时不会自动加锁
 raw.struct(.(结构体类) = 返回用于创建静态内存结构体的类对象,\n返回类创建静态内存结构体时自动分配 buffer 并绑定该 buffer 指针
 raw.struct(.(结构体对象) = 创建并返回静态内存结构体实例,\n返回的静态内存结构体将自动分配 buffer 并绑定该 buffer 指针
 raw.struct(.(结构体类,内存指针) = 创建并返回返回静态内存结构体实例,并绑定参数@2指定的内存指针,\n参数@1可以是结构体类或结构体实例对象
 raw.struct() = !stdRawStruct.
 !stdRawStruct.? = 读写结构体的字段值。\n每次读写都会访问绑定的原生内存并交换数据。\n\n可以使用 get 函数读出为普通结构体。\n或用 set 函数一次写入普通结构体。\n这样有更好的性能
-!stdRawStruct.get() = 读出为普通结构体。\n普通结构体操作更快，在修改完成以后\n再调用 set 函数写回去就可以了。\n\nget 函数只能用 . 成员操作符访问，且只能用于函数调用语句。\n仅获取 get 字段时作为结构体字段使用。
-!stdRawStruct.set() = 用参数 @1 指定的结构体更新对象并写入绑定的原生内存。\n参数 @1 也可以是仅指定部分结构体字段的普通表对象。\n\nset 函数只能用 . 成员操作符访问，且只能用于函数调用语句。\n仅获取 set 字段时作为结构体字段使用
+!stdRawStruct.get() = 返回对象绑定的普通结构体。\n普通结构体操作更快，在修改完成以后\n再调用 set 函数写回去就可以了。\n\nget 函数只能用 . 成员操作符访问，且只能用于函数调用语句，\n否则 get 仅作为结构体字段名使用。
+!stdRawStruct.set( =  将结构体的值写入原生内存。\n\nset 函数只能用 . 成员操作符访问，且只能用于函数调用语句，\n否则 set 仅作为结构体字段名使用
+!stdRawStruct.set(.(tab,overwrite) =  如果参数 @tab 指定了表对象，\n且参数 @overwrite 不为 true，则先自原生内存读取结构体。\n然后用参数 @tab 指定表对象的所有字段非 null 值更新结构体。\n未在参数中指定的字段将保留原生内存当前字段值。\n\n注意此函数不能写入字段的 null 值。
+!stdRawStruct.set(.() = 如果不指定任何参数，则将结构体所有字段重新写入原生内存。\n写入前不会先自原生内存读取结构体，不保留原生内存的任何字段值。
 end intellisense**/

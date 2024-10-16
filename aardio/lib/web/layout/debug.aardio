@@ -13,7 +13,7 @@ _output_debug = ..thread.tostdcall(
   		
   		import console;
   		console.open(); 
-  		io.stdout.write( string.fromUnicode( 
+  		io.stdout.write( string.fromUtf16( 
   			string.pack(wchar & 0xFF,wchar >> 8 & 0xFF) 
   		) );
   	},"void(pointer parma,INT ch)"

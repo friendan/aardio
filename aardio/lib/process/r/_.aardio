@@ -3,17 +3,20 @@ import web.json;
 import process.popen;
 import process.rpc.jsonClient;
 import process.job.limitKill;
+import string.args;
 
 namespace process;
 
 class r{
 	ctor(...){ 
-		var path = install();
+		var path = install(); 
 		if(!path) return;
 		  
 		var args = ...;
-		if(type.isString(args) ){
-			if( !..string.startWith(args,"--")  ) args = ..table.assign(,options);
+		if((args !== null) && type(args)!="table" ){
+			if( ! (type.isString(args) && ..string.startWith(args,"--") ) ) {
+				args = ..table.assign(,options);
+			}
 			else args = {};
 			
 			..table.push(args,...);
@@ -25,8 +28,10 @@ class r{
 		}
 		
 		//移除回车,避免 R 报错
-		args = ..string.crlf(..process.joinArguments(args),'\n'); 
-		
+		args = ..string.crlf(
+			..string.args.joinEx(true,"=",false,args) //R.utils commandArgs
+			,'\n'); 
+
 		var prcs,err = ..process.popen(path,args,{ workDir = workDir }); 
 		if(prcs) prcs.codepage = codepage;
 		return prcs,err;
@@ -52,97 +57,164 @@ namespace r{
 	setLibPaths({..io.appData("aardio/std/r/site-library")});
 	
 	exec = function(code,...){
-		var prcs;
-		if(..io.exist(code) ){
-			prcs = ..process.r(code,...);
+		
+		var prcs,err;
+		if(..io.exist(code) ){  
+			prcs,err = ..process.r(..io.fullpath(code),...)
 		}
 		elseif( ..io.localpath(code) ) {
-			prcs = ..process.r("-e",..string.load(code),... );
+			prcs,err = ..process.r("-e",..string.load(code),...) 
 		}
 		else {
-			prcs = ..process.r("-e",code,...);
+			prcs,err = ..process.r("-e",code,...)  
 		}
 		
-		var out = prcs.readAll();
-		if(#out ){
-			if( !..string.match(out,"\[\d+\]\s+") ) return ..web.json.tryParse(out) || out;
-			return out;
-		}
+		//process.r 第一个参数不是表对象，才会将其他能数里的表转换为字符串。
+		
+		if(!prcs) return null,err;
+		 
+		prcs.killOnExit();
+		return prcs.readAll(); 
 	}
 	
-	start = function(code,...){
-		var code = ..string.loadcode("?>" + code);
-		
-		args = ..table.assign(,options);
-		..table.push(args,"-e",code);
-		
-		var codes = {...};
-		for i,v in ..table.eachIndex(codes){
-			if(..io.exist(v) || ..io.localpath(v)){
-				v = ..string.load(v);
+	json = function(code,...){
+		var out,err = exec(code,...);
+		if(#out ){
+			if(!err){
+				if( !..string.match(out,"\[\d+\]\s+") ) return ..web.json.tryParse(out) || out;
+				return out;	
 			}
-			
-			..table.push(args,"-e",v);
+			return null,err;
 		}
+	} 
+	
+	start = function(code,...){
+		
+		args = {};
+		
+		if(..io.exist(code) ){ 
+			..table.push(args,..io.fullpath(code));
+		}
+		elseif( ..io.localpath(code) ) {
+			..table.push(args,"-e",..string.load(code)); 
+		}
+		else {
+			..table.push(args,"-e",code);  
+		}
+
+		if(...)..table.push(args,...);
 		
 		var prcs,err = ..process.r(args);
-		if(prcs) prcs.assignToJobObject(..process.job.limitKill); 
+		if(prcs) prcs.killOnExit();
 		return prcs,err;
 	}
 	
-	startRpc = function(code,...){
-		if(!require("rjson","https://mirrors.ustc.edu.cn/CRAN/") ) return;
+	var rpcInitCode;
+	startRpcSet = function(autoUnbox,simplifyDataFrame,simplifyVector,simplifyMatrix){
+		rpcInitCode = ..string.loadcode($"~\lib\process\r\.res\process.rpc.r",{
+			autoUnbox = autoUnbox;
+			simplifyVector = simplifyVector;
+			simplifyDataFrame = simplifyDataFrame;
+			autoUnbox = autoUnbox;
+		});
+	}
+	startRpcSet(true,true);
+	
+	startRpc = function(code,...){ 
+		if(!require("jsonlite") ) return;
 		
-		var code = ..string.loadcode("?>" + code);
+		args = {};  
+		..table.push(args,"-e",code); 
 		
-		args = ..table.assign(,options);
-		..table.push(args,"-e",code);
+		//必须是最后一个代码文件。
+		..table.push(args,"-e",rpcInitCode); 
 		
-		var codes = {...};
-		for i,v in ..table.eachIndex(codes){
-			if(..io.exist(v) || ..io.localpath(v)){
-				v = ..string.load(v);
-			}
+		if(...)..table.push(args,...);
+		 
+		//移除回车,避免 R 报错
+		args = ..string.crlf(
+			..string.args.joinEx(true,"=",false,args) //R.utils commandArgs
+			,'\n'); 
 			
-			..table.push(args,"-e",v);
-		}
-		
-		..table.push(args,"-e",$"~\lib\process\r\.res\rjson-server.r");
-		var prcs =  ..process.r(args);
-		if(prcs){
-			return ..process.rpc.jsonClient(prcs);
-		}
+		var path = install(); 
+		return ..process.rpc.jsonClient(path,args); 
 	}
 	
-	require = function(package,repos){
-		var path = existPath("library\" + package);
-		if(path) return path;
+	repos = "https://mirrors.ustc.edu.cn/CRAN/"
+	require = function(package,...){
+		 
+		var code = `
+install_if_missing <- function(package) {
+  	if (!require(package, character.only = TRUE)) {
+    	install.packages(package, repos='`+ repos + `') 
+  	}
+}`
+
+		var count = 0;
+		lst = {package,...};
+		for(k,pkg in lst){
+			var path = existPath("library\" + pkg);
+			if(path) continue
+			
+			for(k,lib in libPaths){
+			 	path = ..io.exist( ..io.joinpath(lib,pkg));
+			 	if(path) continue 2;
+			}
 		
-		for(k,v in libPaths){
-			 path = ..io.exist( ..io.joinpath(v,package));
-			 if(path) return path;
+			count++;
+			code = code + '\r\ninstall_if_missing("'+pkg+'")' 
 		}
 		
-		exec(`install.packages('`+package+`', repos='`+(repos:`https://cran.rstudio.com/`)+`')`); 
+		if(!count) return true; 
+		 
+		var prcs,err = start(code);
+		if(prcs){
+			prcs.logger = self.logger;
+			
+			if(!(..console || prcs.logger ) ){
+				..io.open(); 
+			}
+			prcs.logResponse();
+			
+			count = 0;
+			for(k,pkg in lst){
+				var path = existPath("library\" + pkg);
+				if(path) continue
+				
+				for(k,lib in libPaths){
+			 		path = ..io.exist( ..io.joinpath(lib,pkg));
+			 		if(path) continue 2;
+				}
+			
+				count++; 
+			} 
+		} 
 		
-		var path = existPath("library\" + package);
-		if(path) return path;
-		
-		for(k,v in libPaths){
-			 path = ..io.exist( ..io.joinpath(v,package));
-			 if(path) return path;
-		}
+		if(!count) return true; 
+		return null,err; 
 	}
 	
 	self.loadcode = function(code,...){ 
-		var prcs = ..process.r("-e",..string.loadcode("?>" + code,...));
-		return prcs.readAll();
+		if(!..io.exist(code)){
+			if(!..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>')){
+				code = ("?>" + code);
+			}
+		}
+		
+		var code,err  = ..string.loadcode(code,...);
+		if(code===null) error(2,err);
+		
+		return ..process.r("-e",code); 
 	}
 	
 	self@ = {
 		_set = function(k,v){
-			if(k=="code"){
-				self.loadcode(v);
+			if(k=="code"){ 
+				var prcs,err = self.loadcode(v);
+				if(!prcs) error(2,err:"未知错误");
+				
+				prcs.logger = logger;
+				prcs.logResponse();
 			}
 			else {
 				self[[k]] = v;
@@ -169,7 +241,11 @@ namespace r{
 	getScriptPath = function(){
 		if(scriptPath) return scriptPath;
 		
-		var root = ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath")  || ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath");
+		var root = ..win.reg.queryWow64("HKEY_CURRENT_USER\SOFTWARE\R-core\R\","InstallPath") 
+			|| ..win.reg.query("HKEY_CURRENT_USER\SOFTWARE\R-core\R\","InstallPath")
+			|| ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath") 
+			|| ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath");
+			
 		if(root){ 
 			if( !_WIN_64 || self.x86 ){
 				var path = ..io.joinpath(root,"bin\i386\Rscript.exe");
@@ -187,10 +263,13 @@ namespace r{
 			return  ..io.exist( ..io.joinpath(installDir,path) );
 		}
 		
-		var root = ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath") || ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath");
+		var root = ..win.reg.queryWow64("HKEY_CURRENT_USER\SOFTWARE\R-core\R\","InstallPath") 
+			|| ..win.reg.query("HKEY_CURRENT_USER\SOFTWARE\R-core\R\","InstallPath")
+			|| ..win.reg.queryWow64("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath") 
+			|| ..win.reg.query("HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\","InstallPath");
 		if(root) return  ..io.exist( ..io.joinpath(root,path) );	
 	}
-	 
+	
 	install = function(){
 		var path = getScriptPath();
 		if(path) return path; 
@@ -208,15 +287,26 @@ namespace r{
 				import inet.installer;
 				
 				var href = inet.url.joinpath("https://cloud.r-project.org/bin/windows/base/",lnk[1].href);
-				var r = inet.installer("R",href,"/SP- /SILENT /SUPPRESSMSGBOXES /NORESTART  /CURRENTUSER" )
+				var r = inet.installer.asInvoker("R",href,"/SP- /SILENT /SUPPRESSMSGBOXES /NORESTART  /CURRENTUSER" )
 				return getScriptPath();
 			}
 		}
 	} 
 }
 
+/**details(调用参数说明)
+如果参数 @1 不是表，则所有参数先置入数组，数组中的表对象转换为 JSON。
+如果参数 @1 不是以 -- 开始的字符串，则添加 process.r.options 中指定的默认选项。
+
+aardio  将自动合成命令行，按需在首尾添加双引号并处理必要的转义。
+但启用驼峰参数名自动转连字符格式（加--前缀），并以 = 号分隔名值对，省略 true 值。
+
+process.r 中所有创建 R 进程的函数传启动参数都遵守此规则。
+可用 R 或 R.utils 包提供的 commandArgs 解析收到的参数。
+end details**/
+
 /**intellisense()
-process.r(__) = 运行 RScript.exe，\n成功返回空串或进程标准输出，失败返回错误输出信息，\n可传入多个参数，\n单个参数如果包含空格或引号等需要转义的字符，自动进行转义处理\n如果参数@1不是以 -- 开如，则支持 process.r.options 中指定的默认选项,\n可用 process.r.workDir 指定默认工作目录
+process.r(__) = 运行 RScript.exe，\n成功 process.popen 对象，失败返回 null,错误输出信息，\n\n如果参数 @1 不是表，则所有参数先置入数组，数组中的表对象转换为 JSON。\n如果参数 @1 不是以 -- 开始的字符串，则添加 process.r.options 中指定的默认选项。\n\naardio 将自动合成命令行，按需在首尾添加双引号并处理必要的转义。\n但启用驼峰参数名自动转连字符格式（加--前缀），并以 = 号分隔名值对，省略 true 值。\n\n可用 process.r.workDir 指定默认工作目录
 process.r() = !process_popen.
 process.r = R 语言扩展库，\n运行 R 代码时，如果没有 R 语言环境将自动下载安装
 setScriptPath(__) = 可使用参数 @1 自定义 Rscript.exe 的路径，\n如果未指定 Rscript.exe 路径，默认自动获取系统安装的 Rscript.exe 路径
@@ -224,23 +314,29 @@ process.r.getScriptPath() = 返回 Rscript.exe 路径
 process.r.x86 = 如果设为 true，则始终运行 32 位 Rscript.exe
 process.r.existPath(__) = 查找 R 安装目录，并检测否存在参数@1指定的子目录，\n如果存在返回完整路径。\n不指定参数返回 R 安装目录根目录
 process.r.setLibPaths(__) = 参数可用一个数组指定默认的 R 包搜索目录，可使用环境变量。\n不建议指定需要管理权限才能读写的 R 安装目录，\n默认包目录为 { "%localappdata%/aardio/std/r/site-library" }
-process.r.require("__/*包名*/","https://mirrors->ustc->edu->cn/CRAN/") = 如果指定的 R 包未安装，则安装该包，\n参数@1 为包名，参数@2 为镜像地址，\n成功返回包安装路径
+process.r.require("__/*包名*/") = 如果指定的 R 包未安装，则安装该包，\n可指定一个或多个要安装的包名参数。\n如果参数指定的包都已安装则返回 true，失败返回 null,错误信息。
+process.r.repos = 修改安装包的镜像服务器。\n默认为 "https://mirrors->ustc->edu->cn/CRAN/"
+process.r.logger = 指定 process.r.require 的默认回显对象。\n回显对象必须有 log 或 write 成员函数。\n可指定 console 或 winform.edit 等控件对象。
+process.r.require() =  !process_popen.
 end intellisense**/
 
 /**intellisense(process.r)
 codepage = 指定 R 编译器进程默认代码页，设为空值使用系统默认代码页，\nWin10以及更新的操作系统默认值为 65001，\nR 4.2 开始在 Win10以及更新的操作系统使用 UTF-8 编码（代码页 65001）
 workDir = 工作目录\n默认为 "/" 目录，也就是 aardio 应用程序根目录\n应用程序根目录在开发时指工程目录或工程外的启动代码所在目录，\n发布后指 EXE 目录
 options = 应指定为 null 或包含运行 RScript.exe 默认选项参数的数组，\n默认值为 {"--vanilla"}
-exec( = 执行 R 代码,\n除代码以外的参数，如果参数是表则转换为 JSON，\n在 R 语言中请用 args <- commandArgs(T) 取参数，\n用 rjson 包解析 JSON，\nR 语言中用 cat 输出的内容，aardio 视为 JSON 解析并返回值
-exec(.(code,->->->) = 参数@code 可以是 R 代码或 R 代码文件路径，\n可指定多个启动参数，\n单个启动参数如果包含空格或引号等需要转义的字符，自动进行转义处理
-loadcode(.(code,->->->) =  使用 aardio 模板语法加载 R 代码,\n参数 code 可以是 aardio 代码或 aardio 代码文件路径,\n所有参数传入 string.loadcode 函数解析并返回 R 代码,\n具体用法请参考该函数以及 aardio 模板语法说明
-code = @.code = /***\n__/*请输入要执行的 R 代码，支持 aardio 模板语法*/\n***/
-start( = 启动 RScript.exe 执行多个 R 代码，返回 process.popen 对象
-start(.(code,->->->) = 所有参数都可以是 R 代码或 R 代码文件路径，\n仅第一个参数支持 aardio 模板语法
-startRpc( =  执行多个 R 代码，并启动 启动 JSON-RPCS 服务端，\n返回 process.rpc.jsonClient 对象
-startRpc(.(code,->->->) = 所有参数都可以是 R 代码或 R 代码文件路径，\n仅第一个参数支持 aardio 模板语法
+exec( = 执行 R 代码，并等待完成。\n成功返回进程输出，出错返回 null, 错误输出。\n返回 JSON 时不解析，改用 json 函数可解析返回 JSON
+exec(.(code,->->->) = 参数 @code 可以是 R 代码或 R 代码文件路径。\n如果参数 @2 不是表，则所有参数先置入数组，数组中的表对象转换为 JSON。\naardio 将自动合成命令行，按需在首尾添加双引号并处理必要的转义。\n但启用驼峰参数名自动转连字符格式（加--前缀），并以 = 号分隔名值对，省略 true 值。\n在 R 语言中请用 args <- commandArgs(T) 取参数，\n用 R.utils 提供的 commandArgs 解析命名参数，用 jsonlite 包解析 JSON。
+json( = 执行 R 代码，并等待完成。\n成功返回解析进程输出的 JSON，解析失败则直接返回进程输出。\n出错返回 null, 错误输出。
+json(.(code,->->->) = 参数@code 可以是 R 代码或 R 代码文件路径。\n如果参数 @1 不是表，则所有参数先置入数组，数组中的表对象转换为 JSON。\naardio 将自动合成命令行，按需在首尾添加双引号并处理必要的转义。\n但启用驼峰参数名自动转连字符格式（加--前缀），并以 = 号分隔名值对，省略 true 值。\n在 R 语言中请用 args <- commandArgs(T) 取参数，\n用 R.utils 提供的 commandArgs 解析命名参数，用 jsonlite 包解析 JSON。
+loadcode(.(code,->->->) =  使用 aardio 模板语法加载 R 代码。\n此函数返回 process.popen 对象。\n参数 code 可以是 aardio 代码或 aardio 代码文件路径。\n如果参数 @1 不是表，则所有参数先置入数组，数组中的表对象转换为 JSON。\n如果参数 @1 不是以 -- 开始的字符串，则添加 process.r.options 中指定的默认选项。\n\naardio 将自动合成命令行，按需在首尾添加双引号并处理必要的转义。\n但启用驼峰参数名自动转连字符格式（加--前缀），并以 = 号分隔名值对，省略 true 值。\n在 R 语言中请用 args <- commandArgs(T) 取参数，\n用 R.utils 提供的 commandArgs 解析命名参数，用 jsonlite 包解析 JSON。
+code = @.code = /***\n__/*请输入要执行的 R 代码，支持 aardio 模板语法。\n执行进程并等待结束，使用 process.r.logger 回显输出。*/\n***/
+start( = 启动 RScript.exe 执行代码或代码文件，返回 process.popen 对象
+start(.(code,->->->) =参数 @1 指定R 代码或 R 代码文件路径。\n其他参数可选指定一个或多个启动参数。\n启动参数可以是字符串、数组、表对象，\n由 string.args.joinEx 合成为启动命令行参数。\n参数中出现的表不会转为 JSON ，而是由 string.args 合成为命令行。\n命令行参数在 R 代码中可用 commandArgs 函数获取
+startRpc( =  执行 R 代码，并启动 启动 JSON-RPCS 服务端，\n返回 process.rpc.jsonClient 对象
+startRpc(.(code,->->->) = =参数 @1 指定R 代码，并启动 启动 JSON-RPCS 服务端。\n其他参数可选指定一个或多个启动参数。\n启动参数可以是字符串、数组、表对象，\n由 string.args.joinEx 合成为启动命令行参数。\n参数中出现的表不会转为 JSON ，而是由 string.args 合成为命令行。\n命令行参数在 R 代码中可用 commandArgs 函数获取
 startRpc() = !process_rpcJsonClient.
+startRpcSet( = 设置 startRpc 创建的 R 语言JSON RPC 服务端 JSON 转换参数。
+startRpcSet(.(autoUnbox,simplifyDataFrame,simplifyVector,simplifyMatrix) = 设置 startRpc 创建的 JSON RPC 服务端转换 JSON 的默认参数。\n@autoUnbox 是否自动解包单原子向量，默认为 true。\n@simplifyDataFrame 对象数组是否自动转 R 的数据帧，默认为 true。\n@simplifyVector 原子数组是否自动转 R 的原子向量，默认为 fasle。\n@simplifyMatrix 符合要求的对象数组是否自动转 R 的矩阵，默认为 false。\n@autoUnbox，@simplifyVector 建议保持默认，不然单字符串这些转回来会变成数组。\n如果要设置更多参数，可以将个别有特殊要求的对象传 JSON 文本给 R，\n然后 R 用 fromJSON 函数自己转，可参考 R 语言 jsonlite 文档指定参数。
 start() = !process_popen.
+loadcode() = !process_popen.
 end intellisense**/
-
-

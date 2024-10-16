@@ -175,7 +175,8 @@ class simpleHttpServer{
 							return owner._raw_stdin_data;
 						};
 						postJson = function(){  
-							if ( environ.CONTENT_TYPE && ..string.endWith(environ.CONTENT_TYPE,"/json",true) ) {
+							if ( environ.CONTENT_TYPE 
+								&& ..string.find(environ.CONTENT_TYPE,"<@@text@>|<@@application@>/<@@json@>!\W") ) {
 								var data = owner.postData();
 								if(data) return ..web.json.tryParse(data);
 							}
@@ -204,7 +205,7 @@ class simpleHttpServer{
 									tempPath = ..io.joinpath(tempDir,pid ++ tempPathId);
 								}
 						
-								var file,err = ..io.open(tempPath,"w+b");
+								var file,err = ..io.file(tempPath,"w+b");
 								if(!file) error(..string.concat("Upload failed: ",err) ,2);
 								
 								var len = request.contentLength;
@@ -587,7 +588,13 @@ class simpleHttpServer{
 								if(remainSize==contentSize)response.status = 200;
 									
 								if( request.method != "HEAD" ){
-									var file2 = ..io.open(path,"r+b");
+									var file2,err = ..io.file(path,"rb");
+									if(!file2){
+										..io.stderr.write(err,'\r\n');
+										response.errorStatus(404);
+										return;
+									}
+									
 									var buffer = ..raw.buffer(65535);
 									file2.seek("set",rangeBegin)
 									for(i=rangeBegin;rangeEnd;65535){ 
@@ -860,8 +867,7 @@ wsock.tcp.simpleHttpServer.stopUrl(__) = 退出startUrl函数创建的HTTP服务
 wsock.tcp.simpleHttpServer = HTTP服务端\n支持文件上传,下载,下载支持断点续传\n支持多线程处理请求
 wsock.tcp.simpleHttpServer(.(IP,端口,请求队列大小) = 创建HTTP服务端,所有参数可选,\n\n如果不写IP，则默认设为"0.0.0.0"也即监听本机所有IP,访问此服务端也不限制IP\n限制仅本机可以访问建议写127.0.0.1\n\n端口为0或省略则自动选择未用端口\n注意0-1023为系统通用服务保留端口,\n1024-49151为用户服务端口,其中大约%9已由IANA注册分配\n49152-65535为私有或临时端口
 wsock.tcp.simpleHttpServer() = !stdHttpSimpleServer.
-!stdHttpSimpleServer.bind(.(IP,端口) = 绑定IP端口
-!stdHttpSimpleServer.listen(.(请求队列大小) = 监听指定的IP端口
+!stdHttpSimpleServer.listen(.(请求队列大小) = 监听构造函数绑定的 IP 端口，成功返回 true 。\n已自动调用此函数。
 !stdHttpSimpleServer.close() = 关闭 HTTP 服务端
 !stdHttpSimpleServer.getLocalIp() = 返回当前绑定的IP,端口号
 !stdHttpSimpleServer.getUrl() = 返回首页URL\n如果参数@1为true，IP "0.0.0.0"替换为上网卡IP而不是localhost		

@@ -438,7 +438,7 @@ namespace METHOD_CALL{
 	}
 } 
 
-var fromUnicode = ..string.fromUnicode; 
+var fromUtf16 = ..string.fromUtf16; 
 var getAttributeByName = element_t.GetAttributeByName; 
 var raw_convert = ..raw.convert; 
 
@@ -464,7 +464,7 @@ _defaultHandlerMethodCalls ={
 	} 
 	[ 5/*_HL_TEXT_EDIT_REPLACE_SELECTION*/  ] = function(this,ltEle,tag, prms){  
 		var replaceParams = raw_convert( prms ,{ INT methodID ; pointer text; INT text_length; }  );
-		return this.onReplaceSel( ltEle, fromUnicode(replaceParams.text,,true) )
+		return this.onReplaceSel( ltEle, fromUtf16(replaceParams.text,,true) )
 	}
 	[ 8/*_HL_TEXT_EDIT_GET_CARET_POSITION*/  ] = function(this,ltEle,tag, prms){  
 		var handled;
@@ -490,11 +490,11 @@ var callEvent = function(this,handler,target,...){
 	}
 	elseif(target){
 		var re,id = getAttributeByName(target,"id");
-		var func = ( id ? handler[ fromUnicode(id,,true) ] );
+		var func = ( id ? handler[ fromUtf16(id,,true) ] );
 		
 		if( !func ){
 			var re,name = getAttributeByName(target,"name");
-			func = ( name ? handler[ fromUnicode(name,,true) ] ) : handler.default;
+			func = ( name ? handler[ fromUtf16(name,,true) ] ) : handler.default;
 		}
 
 		if( func ){
@@ -663,7 +663,7 @@ _defaultHandler = {
 			} );  
 		var ltEle = he ? (element_t(he) ) ;
 		return  callEvent( this,handler,p.init,ltEle
-				,p.size ? ..raw.tostring(p.data,1,p.size) : null ,p.dataType,p.status,fromUnicode(p.uri,,true) );
+				,p.size ? ..raw.tostring(p.data,1,p.size) : null ,p.dataType,p.status,fromUtf16(p.uri,,true) );
 	}
 	[ HANDLE_GROUPS.METHOD_CALL ] = function(this,tag, he,methodId,prms){  
 		if( methodId == 0xFF/*_HL_XCALL*/){  

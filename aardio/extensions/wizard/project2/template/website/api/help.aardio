@@ -39,7 +39,7 @@ sleep(1000);
     </ul>
 
     <br>aardio 提供 string.loadcode() 函数可直接解析 aardio 模板并获取模板输出。 <br>
-请在标准库 preload/string 中查看此函数的源代码，了解如何通过自定义 print 函数捕获或修改模板输出。
+请在标准库 builtin/string 中查看此函数的源代码，了解如何通过自定义 print 函数捕获或修改模板输出。
    </p>
 
    <p>四、模板开始标记  &lt;? 必须独立，不能紧跟英文字母。例如 &lt;?xml.....  不被解析为 aardio 代码段开始标记。 <br>

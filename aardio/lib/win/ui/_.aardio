@@ -1,5 +1,6 @@
-import win.ui.ctrl; 
+import win;
 import win.ui.background;
+import win.ui.ctrl; 
 import gdi;
 
 namespace win.ui{
@@ -29,6 +30,24 @@ class win.form {
  
 	ctor( tParam ) begin   
 	
+		//实现延迟加载的伪窗口对象
+		if(tParam[["fake"]]){
+			if(tParam.thisObject){
+				//创建真实窗口
+				this = tParam.thisObject;
+				tParam.thisObject = null;
+			}
+			else{
+				//返回伪窗口，访问伪窗口的任何属性或方法时创建真实窗口
+				return {
+					fake = true;
+					loadForm = tParam.loadForm;
+					tParam = tParam;
+					@_fakeMeta;
+				}; 
+			}
+		}
+	 
 		//这句必须放最前面,以保证自定义控件设计时大小不会被修改
 		tParam = ..table.mix(tParam,{
 	    	left = -1;top = -1;right = 759;bottom = 469;
@@ -300,6 +319,8 @@ class win.form {
 		  
 		..win.resetMessage();//移除_WM_QUIT消息,重置消息循环
 	end; 
+	
+	//考虑伪窗口，所有函数应放入 _metaProperty
 } 
 
 namespace win.form{ 
@@ -376,7 +397,7 @@ namespace win.form{
        		
        		var unicode;
        		if(!(name&&struct)){
-       			proto = ..string.fromUnicode(p,,true); //::User32.SendMessageW
+       			proto = ..string.fromUtf16(p,,true); //::User32.SendMessageW
        			name,struct = ..string.match(proto,"\s*(.+?)\s*(%\(\))");
        			unicode = true;
        		}
@@ -391,7 +412,7 @@ namespace win.form{
        			var r;
        			var a = topointer(lParam);
        			if(struct=="JSON"&&..web[["json"]] ){ 
-       				var json = unicode ? ..string.fromUnicode(a,,-1) : ..raw.str(a); 
+       				var json = unicode ? ..string.fromUtf16(a,,-1) : ..raw.str(a); 
        				r = invoke(f,this,..table.unpack(..web.json.parse(json)) ); 
        				if( this.onThreadCallBackReturn ){ r = this.onThreadCallBackReturn(r) };
        			}
@@ -867,13 +888,15 @@ namespace win.form{
 			} 
 			
 			for(hwnd,ctrl in this._ctrlHwnd){ 
-				if(  ! ctrl.isForm ){ 
+				if(  ! ctrl.isForm ){
 					
-					if( ctrl._onDestroy )ctrl._onDestroy ();
 					if( ctrl.onDestroy){
 						ctrl.onDestroy ();
 						ctrl.onDestroy = null;
 					}
+					
+					if( ctrl._onDestroy ) ctrl._onDestroy();
+					if( ctrl._onDestroy_stdReserved__ ) ctrl._onDestroy_stdReserved__();
 					
 					if( ctrl[["(bgbrush)"]] ){  
 						::DeleteObject( ctrl[["(bgbrush)"]]  );
@@ -893,21 +916,22 @@ namespace win.form{
 				this[["(ownFontHandle)"]] = null;
 			}
    				
-			for(k,ctrl in this._onlyDirectDrawBackground){
-   				if( ctrl._onDestroy )ctrl._onDestroy ();
+			for(k,ctrl in this._onlyDirectDrawBackground){ 
    				if( ctrl.onDestroy){
 					ctrl.onDestroy ();
 					ctrl.onDestroy = null;
 				}
+				
+				if( ctrl._onDestroy ) ctrl._onDestroy();
+   				if( ctrl._onDestroy_stdReserved__ ) ctrl._onDestroy_stdReserved__();
    			}
-			
-			if( this._onDestroy ){ 
-				this._onDestroy ();
-			}
+
 			if( this.onDestroy){
 				this.onDestroy ();
 				this.onDestroy  = null;
 			}
+			if( this._onDestroy ) this._onDestroy (); 
+			if( this._onDestroy_stdReserved__ ) this._onDestroy_stdReserved__();
 			
 			if(this._onDestroyInTabs)this._onDestroyInTabs();
 
@@ -1086,7 +1110,8 @@ namespace win.form{
  	defaultProc[0x114/*_WM_HSCROLL*/] = defaultProc[0x115/*_WM_VSCROLL*/] 
   	/*}}*/
 
-	_metaProperty = ..win.ui.ctrl.metaProperty( 
+	_metaProperty = ..win.ui.ctrl.metaProperty(
+			_eq = lambda(form) owner.hwnd == form.hwnd;
 			isForm = {
 				_get = function(){ return true } 
 			};
@@ -1100,6 +1125,18 @@ namespace win.form{
 			};
 			getForm = function(){
 				return owner;
+			};
+			preloadForm = function(...){
+				if( (...)[["hwnd"]] || (...===null) ) return owner.loadForm(...); 
+				
+				var this = owner;
+				var args = {...};
+				return ..win._form({
+					fake = true; 
+					loadForm = function(){
+						return this.loadForm(..table.unpackArgs(args));
+					} 
+				} )	
 			};
 			loadForm = function(path,...){
 				return ..win.loadForm(path,,owner,... );
@@ -1622,6 +1659,12 @@ namespace win.form{
 						owner.restoreFullScreen = null;
       				}
       			}
+      		
+      			if(owner.onSetOrphanWindowPos){
+      				var x,y,cx,cy = ..win.getPos(hwnd);
+					owner.onSetOrphanWindowPos(x,y,cx,cy,0x14); 	
+      			}	
+      			
       			return owner.restoreFullScreen;;
       		};
       		getScale = function(){
@@ -1693,6 +1736,7 @@ namespace win.form{
       			}
       			owner[name] = null;
       		};
+      		this = lambda() owner;
 			add = function( tParam,parentCtrl ) {
 				var parent = parentCtrl : owner;
 				var dpiScaleX,dpiScaleY = (parent.dpiScaleX : 1) ,(parent.dpiScaleY : 1);
@@ -1708,10 +1752,18 @@ namespace win.form{
 					return;
 				}
 				
-				var zorder,zorderBk = {},{};
-				var cls;
+				var cls = tParam[["cls"]];//注意后面的 cls = opt.cls;
+				if( cls && ..win.ui.ctrl[ cls ]){ 
+					//容错写法不入文档，创建单个控件直接返回控件对象 
+					var k = (parent[[ cls ]] === null ) ?  cls : 1;
+					var r = parent.add({ [k] = tParam});  
+					return r[k];
+				}
+				
+				var zorder,zorderBk = {},{}; 
         		for name,opt in tParam{
         			cls = opt.cls;
+        			if(opt.z===null) opt.z = #zorder + 1;
         			..table.push( (cls=="bk")||(cls=="bkplus") ? zorderBk :zorder,{name;opt});
         		}
         		..table.sort(zorder,lambda(b) owner[2].z < b[2].z);
@@ -1894,6 +1946,41 @@ namespace win.form{
 	_metaProperty.clearTimeout = _metaProperty.clearInterval;
 	_metaProperty.hitmin = _metaProperty.hitMin;
 	_metaProperty.hitmax = _metaProperty.hitMax;
+	
+ 	_fakeMeta = {
+		_float = true;
+		_get = function(k){
+			import console
+		 
+			var tParam = owner.tParam;
+			owner.tParam = null;
+			owner@ = null;
+			
+			var form;
+			if(owner.loadForm){
+				form = owner.loadForm();
+				..table.assign(owner,form);
+				owner@ = form@; 
+			}
+			else{
+				form = ..win._form({
+					fake = true;
+					thisObject = owner;
+					tParam = tParam;
+				})
+			}
+			if(owner.onCreated) owner.onCreated(form);
+
+			return owner[k]
+		} 
+		_set = function(k,v){
+			if(k === "onCreated" ) owner[[k]] = v;
+			else{
+				var hwnd = owner.hwnd;//触发上面的 _get 元方法
+				owner[k] = v;
+			}
+		}
+ 	}
 }
 
 win._form = win.form;
@@ -1915,7 +2002,7 @@ win._form.createWindowEx = @.createWindowEx = function(exStyle,className,windowN
 win.form.loadForm() = !winform.
 ?.loadForm = !winform.
 ?.getForm = !winform.
-win.form() = 创建的窗体对象,\n可选用一个表指定创建参数，\n请使用窗体设计器自动生成参数。\n\n窗体对象以及窗体创建的控件对象可作为参数传入其他线程，\n跨线程调用窗体对象的成员函数时将转发到创建窗口的线程执行。\n!winform.
+win.form(propertiesTable) = 创建的窗体对象,\n可选用参数 @propertiesTable 指定一个表对象以指定窗口设置和属性。\n请使用窗体设计器自动生成参数表。\n\n窗体对象以及窗体创建的控件对象可作为参数传入其他线程，\n跨线程调用窗体对象的成员函数时将转发到创建窗口的线程执行。\n!winform.
 win._form() = !winform.
 !winform._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 end intellisense**/

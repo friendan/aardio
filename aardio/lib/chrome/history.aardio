@@ -2,12 +2,21 @@
 import fsys;
 import sqlite;
 import chrome.time;
+import chrome.path;
 
 namespace chrome.history;
 
-open = function(profile="Default"){
-	var historyPath = ..io.appData("\Google\Chrome\User Data\" + profile + "\History");
-	if(!..io.exist(historyPath)){ historyPath = ..io.appData("\Google\Chrome\User Data\" + profile + "\Archived History"); }
+path = function(profile){
+	var historyPath = ..chrome.path.profile(profile,"History",..io.appData("\Google\Chrome\User Data\"))
+	if(!historyPath) historyPath = ..chrome.path.profile(profile,"Archived History",..io.appData("\Google\Chrome\User Data\"))
+  	 
+  	if(!historyPath) historyPath = ..chrome.path.profile(profile,"History",..io.appData("\Microsoft\Edge\User Data\"))
+	if(!historyPath) historyPath = ..chrome.path.profile(profile,"Archived History",..io.appData("\Microsoft\Edge\User Data\"))
+  	return historyPath;
+} 
+
+open = function(profile){
+	var historyPath = path(profile);
 	
 	if(..io.exist(historyPath)){
 		..fsys.copy( historyPath,historyPath + ".aardio.db" );
@@ -15,7 +24,7 @@ open = function(profile="Default"){
 	} 
 }
 
-get = function(profile="Default"){
+get = function(profile){
 	var db = open(profile);
 	if(!db) return;
 
@@ -36,8 +45,8 @@ get = function(profile="Default"){
 	return history;
 }
 
-clear = function(profile="Default"){
-	var historyPath = ..io.appData("\Google\Chrome\User Data\" + profile + "\History");
+clear = function(profile){
+	var historyPath = path(profile);
 	if(..io.exist(historyPath)){
 		var db = ..sqlite(historyPath);
 		if(db){
@@ -50,9 +59,10 @@ clear = function(profile="Default"){
 	}
 }
 
-readOnly = function(readOnly,profile="Default"){
+readOnly = function(readOnly,profile){
 	
-	var historyPath = ..io.appData("\Google\Chrome\User Data\" + profile + "\History");
+	var historyPath = path(profile);
+	
 	if(..io.exist(historyPath)){
 		if(readOnly){  
 			..fsys.attrib(historyPath,1); 	
@@ -63,8 +73,8 @@ readOnly = function(readOnly,profile="Default"){
 }
 
 /**intellisense()
-chrome.history.open() = 打开数据库,可选在参数中指定配置名\n!sqliteConn.
-chrome.history.get() = 返回数据表,可选在参数中指定配置名
-chrome.history.clear() = 清空数据,可选在参数中指定配置名,\n需要事先关闭chrome
-chrome.history.readOnly(true) = 参数@1设置是否只读,\n参数为 true 会同时清空数据,\n可选在参数@2中指定配置名
+chrome.history.open() = 打开 Chrome 或 Edge 历史记录数据库,可选在参数中指定配置名\n!sqliteConn.
+chrome.history.get() = 返回 Chrome 或 Edge 历史记录数据表,可选在参数中指定配置名
+chrome.history.clear() = 清空 Chrome 或 Edge 历史记录数据表,可选在参数中指定配置名,\n需要事先关闭chrome
+chrome.history.readOnly(true) = 参数 @1 设置是否历史记录数据表只读,\n参数为 true 会同时清空数据,\n可选在参数@2中指定配置名
 end intellisense**/

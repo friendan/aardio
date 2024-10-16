@@ -5,7 +5,7 @@ class multipartFormData{
 
 	ctor( path,boundary,blockSize){ {
 	
-		var file,err = ..io.open(path,"rb");
+		var file,err = ..io.file(path,"rb");
 		if(!file) return null,err;
 		
 		path = path;
@@ -116,7 +116,7 @@ class multipartFormData{
 			formData["contentValue"] = part["contentValue"];
 			formData.value = function(){
 				if( !owner["contentValue"] ){
-					var file,err = ..io.open(this.getPath(),"r+b");
+					var file,err = ..io.file(this.getPath(),"r+b");
 					if(!file) return;
 					
 					file.seek("set",owner["contentOffset"])
@@ -130,10 +130,10 @@ class multipartFormData{
 					..string.save(savePath,owner["contentValue"]);
 					return true;
 				}
-				var fileR,err = ..io.open(this.getPath(),"rb");
+				var fileR,err = ..io.file(this.getPath(),"rb");
 				if(!fileR) return null,err;
 					
-				var fileW,err = ..io.open(savePath,"w+b");
+				var fileW,err = ..io.file(savePath,"w+b");
 				if(!fileW) {
 					fileR.close();
 					return null,err;

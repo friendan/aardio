@@ -23,8 +23,8 @@ class syslink{
 
 namespace syslink{
  
-	class LITEM{
-  		INT mask;
+	class LITEM {
+  		INT mask= 0xF/*_LIF_ITEMINDEX | _LIF_STATE | _LIF_ITEMID | _LIF_URL*/;
   		int iLink;
   		INT state;
   		INT stateMask;
@@ -32,35 +32,66 @@ namespace syslink{
   		WORD url[2084];
 	} 
 
-	_metaProperty = ..win.ui.ctrl.metaProperty( 
-		setItem = function(item){
-			return !! ::SendMessageByStruct(owner.hwnd,0x702/*_LM_SETITEM*/,0,item);
+	_metaProperty = ..win.ui.ctrl.metaProperty(
+		link = {
+			_get = function(){
+				var i = owner.getItem();
+				return i?i.url;
+			};
+			_set = function(url){
+				var item = LITEM();
+				item.mask = 1|8;
+				item.url = url;
+				if( ! ::SendMessageByStruct(owner.hwnd,0x702/*_LM_SETITEM*/,0,item) ){
+					var t = owner.text;
+					owner.text = `<a href="` + url + `" >` + t + `</a>`; 
+				}
+			};
 		}
-		getItem = function(item){ 
+		setItem = function(item){
+			item.iLink = item.iLink - 1
+			var r = !! ::SendMessageByStruct(owner.hwnd,0x702/*_LM_SETITEM*/,0,item);
+			item.iLink = item.iLink + 1;
+			return r;
+		}
+		getItem = function(idx){ 
 			var item = LITEM();
-			if( ::SendMessageByStruct(owner.hwnd,0x703/*_LM_GETITEM*/,0,item) )
+			if(idx) item.iLink = idx-1;
+			
+			if( ::SendMessageByStruct(owner.hwnd,0x703/*_LM_GETITEM*/,0,item) ){
+				item.iLink = item.iLink + 1;
 				return item;
+			}
 		};
 		_prenotify = {
 			[0xFFFFFFFC/*_NM_RETURN*/] = function(id,code,ptr,nmhdr){
+				var nmSysLink = ..raw.convert(ptr,{
+					struct hdr = ::NMHDR();
+   					struct item = LITEM();
+				});
+				
+				var url = nmSysLink.item.url;
 				if( owner.onHyperlinkClick  ){
-    				var nmSysLink = ..raw.convert(ptr,{
-						struct hdr = ::NMHDR();
-   						struct item = LITEM();
-					});
-					 
-					owner.onHyperlinkClick(nmSysLink,nmSysLink.item.url,nmSysLink.item.id)
+					owner.onHyperlinkClick(nmSysLink,url,nmSysLink.item.id,nmSysLink.item.iLink)
 				}	
+				elseif(#url){
+					..raw.execute(url);
+				} 
+					
 			};
 			[0xFFFFFFFE/*_NM_CLICK*/] = function(id,code,ptr,nmhdr){
+				var nmSysLink = ..raw.convert(ptr,{
+					struct hdr = ::NMHDR();
+   					struct item = LITEM();
+				});
+				
+				var url = nmSysLink.item.url;
 				if( owner.onHyperlinkClick  ){
-    				var nmSysLink = ..raw.convert(ptr,{
-						struct hdr = ::NMHDR();
-   						struct item = LITEM();
-					});
-					
-					owner.onHyperlinkClick(nmSysLink,nmSysLink.item.url,nmSysLink.item.id)
+					owner.onHyperlinkClick(nmSysLink,url,nmSysLink.item.id,nmSysLink.item.iLink)
 				}	
+				elseif(#url){
+					..raw.execute(url);
+				} 
 			} 
 		};
 	)
@@ -70,8 +101,9 @@ namespace syslink{
 !syslink.cls = 设计时类名
 !syslink.className = 运行时类名
 !syslink.hwnd = 控件句柄
-!syslink.id = 控件ID
-!syslink.text = 控件文本
+!syslink.id = 控件 ID，注意这个不是指超链接的 ID。
+!syslink.text = 控件文本。\n此控件的文本属性支持 HTML 的超链接语法，也就是 a 标签。\n可选使用 href 属性设置超链接，可选使用 id 属性指定链接 ID。\n一个控件可以指定多个普通文本或者超链接，使用超链接索引区分。\n不支持其他 HTML 语法，例如换行应当直接换行而不是使用 `<br>`换行。\n\n可使用 link 属性获取或设置第一个超链接地址。
+!syslink.link = 创建、设置或者获取控件的第一个超链接地址。\n这个参数应当指定一个网址，可使用任意协议。
 !syslink.getForm() = 如果是窗体返回自身\n如果是控件则返回_parentForm\n!winform.
 !syslink._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 !syslink.getParent() = 返回父窗口\n!syslink.
@@ -113,20 +145,19 @@ namespace syslink{
 !syslink.setInterval(回调函数,延时毫秒数,->->->) = @.setInterval( \n	function(){\n		__/*参数@1指定执行函数,参数@2指定执行间隔，\n可选指定一个或多个回调参数，不指定回调参数则默认为:\n hwnd,message,timerId,tick,\n\n如果在定时器中执行了win.delay等继续消息循环的代码，\n在定时器退出前不会再触发同一定时器（重入）。\n\n定时器回调函数返回数值可修改时间间隔,\n返回false取消该定时器*/\n	},1000 \n)
 !syslink.changeInterval(.(定时器ID,间隔时间,回调函数) = 重新设置间隔时间或回调函数
 !syslink.clearInterval(__/*定时器ID*/) = 删除定时器
-!syslink.getItem() = 返回控件数据,该值为为LITEM结构体
-!syslink.setItem(.(item) = 修改控件数据,参数为LITEM结构体
+!syslink.getItem(__/*索引*/) = 返回超链接设置,该值为 LITEM 结构体。\n参数指定获取第几个超链接的设置，默认值为 1。
+!syslink.setItem(.(item) = 修改超链接设置,参数为 getItem 函数返回的 LITEM 结构体
 !syslink.getItem() = !syslinklitem.
-!syslink.onHyperlinkClick = @.onHyperlinkClick = function(nmSysLink,url,id){
-	import process;
-	process.openUrl(url);__/*点击超链接回调此事件，可使用此代码打开超链接*/
+!syslink.onHyperlinkClick = @.onHyperlinkClick = function(nmSysLink,url,id,index){
+	raw.execute(url);__/*点击超链接回调此事件，可使用此代码打开超链接。\n如果不指定回调函数，控件会默认调用 raw.execute 打开链接。\nnmSysLink 为通知消息使用的 LITEM 结构体，一般忽略即可。\nurl 为触发的超链接地址，也就是 href 属性。\nid 为触发的链接 ID，也就是 id 属性。\nindex 为索引，一个控件可以有多个超链接，第一个超链接索引为 1。*/
 }
-!syslinklitem.mask = 掩码
-!syslinklitem.iLink = 索引
-!syslinklitem.state = 状态 
-!syslinklitem.stateMask = 状态掩码
-!syslinklitem.id = ID,unicode编码
-!syslinklitem.url = URL,unicode编码
-?win.ui.ctrl.syslink  =!syslink.
-win.ui.ctrl.syslink() = 静态文本控件\n!syslink.
-win.ui.ctrl.syslink = 静态文本控件支持库
+!syslinklitem.mask = 有效字段掩码。\n默认已设为 _LIF_ITEMINDEX | _LIF_STATE | _LIF_ITEMID | _LIF_URL
+!syslinklitem.iLink = 索引。\n一个控件可以有多个超链接，第一个超链接索引为 1。
+!syslinklitem.state = 状态，一般用不上。\n可选值为 _LIS_ENABLED, _LIS_FOCUSED, _LIS_VISITED 等
+!syslinklitem.stateMask = 有效状态掩码
+!syslinklitem.id = 超链接的 ID 属性。
+!syslinklitem.url = 超链接的 URL 属性。
+?win.ui.ctrl.syslink  = !syslink.
+win.ui.ctrl.syslink() = 超链接控件。\n!syslink.
+win.ui.ctrl.syslink = 超链接控件类
 end intellisense***/

@@ -15,8 +15,8 @@ class findReplace{
 					if(!this.hwnd) return;
 					
 					var this = ..raw.convert(this.rawBuffer,this );
-					this.findWhat = ..string.fromUnicode(this.findWhatBuffer,,this.findWhatLen);
-					this.replaceWith = ..string.fromUnicode(this.replaceWithBuffer,,this.replaceWithLen);
+					this.findWhat = ..string.fromUtf16(this.findWhatBuffer,,this.findWhatLen);
+					this.replaceWith = ..string.fromUtf16(this.replaceWithBuffer,,this.replaceWithLen);
 				 
     				if (this.flags & 0x40/*_FR_DIALOGTERM*/) {
     					this.hwnd = null;
@@ -49,9 +49,9 @@ class findReplace{
 			return;
 		}
 		
-		this.findWhatBuffer = ..raw.buffer(250,..string.toUnicode(this.findWhat));
+		this.findWhatBuffer = ..raw.buffer(250,..string.toUtf16(this.findWhat));
 		this.findWhatLen = 250;	
-		this.replaceWithBuffer = ..raw.buffer(250,..string.toUnicode(this.replaceWith));
+		this.replaceWithBuffer = ..raw.buffer(250,..string.toUtf16(this.replaceWith));
 		this.replaceWithLen = 250;	
 		this.rawBuffer =  ..raw.buffer(this);//避免提前释放内存
 		this.hwnd = createDlg(this.rawBuffer);

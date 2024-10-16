@@ -294,8 +294,8 @@ end intellisense**/
 
 /**intellisense(!stdwebsocketjsonserver)
 web.socket.jsonServer( = 创建WebSocket/JSON-RPC 2.0服务端
-external = 指定包含客户端可以调用的远程函数的表对象,可嵌套子表\n\n如果远程函数名第一个字符是$,则第一个回调参数为hSocket,用于表示当前发送请求的客户端套接字,\n\n如果客户端请求方法名为"?"时，并且服务端没有指定aasdl属性\n服务端会根据aasdl协议将对象序列化为json并返回客户端， \n[关于aasdl](http://bbs.aardio.com/doc/aasdl)
-aasdl = 指定自定义的aasdl\n如果客户端请求的方法名为"?"时,返回此属性,\n[关于aasdl](http://bbs.aardio.com/doc/aasdl)
+external = 指定包含客户端可以调用的远程函数的表对象,可嵌套子表\n\n如果远程函数名第一个字符是$,则第一个回调参数为hSocket,用于表示当前发送请求的客户端套接字,\n\n如果客户端请求方法名为"?"时，并且服务端没有指定aasdl属性\n服务端会根据aasdl协议将对象序列化为json并返回客户端， \n[关于aasdl](https://github.com/aardio/aardio-js/blob/master/AASDL.md)
+aasdl = 指定自定义的aasdl\n如果客户端请求的方法名为"?"时,返回此属性,\n[关于aasdl](https://github.com/aardio/aardio-js/blob/master/AASDL.md)
 start(hSocket) = 对指定的套接字启动JSON-RPC服务\n参数hSocket指定客户端套接字句柄,\nhSocket参数必须在web.socket.server服务端对象\n的onUpgradeToWebsocket事件中获取
 send(.(hSocket,rep) = 对指定的套接字发送数据,\n参数hSocket指定客户端套接字句柄,\nrep应当是符合JSON-RPC 2.0编码协议的响应对象\n不建议直接调用此函数发送消息
 notify(.(hSocket,method,->->->) = 主动向客户端发送通知\n参数hSocket指定客户端套接字句柄,\nmethod指定客户端方法名,\n可添加任意个调用参数

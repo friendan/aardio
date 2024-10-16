@@ -5,7 +5,7 @@ namespace process.ruby.simpleHttpServer;
 
 startUrl = function(path,documentRoot,startPort){
    
-    var cgiPath = ..process.ruby.install();
+    var cgiPath = ..process.ruby.getScriptPath();
  	if( ! ..io.exist(cgiPath) ){
  		error("请先调用 process.ruby.path 指定 Ruby 路径")
  	}

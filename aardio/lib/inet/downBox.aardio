@@ -23,7 +23,7 @@ class  downBox{
 		this.wndproc = {
 			[ 0xC/*_WM_SETTEXT*/ ] = function (hwnd, uMsg, wParam, lParam) {
 				if(lParam){
-					this.caption.text = ..string.fromUnicode( topointer(lParam),,true ); 
+					this.caption.text = ..string.fromUtf16( topointer(lParam),,true ); 
 				}
 			}
 		}

@@ -22,7 +22,7 @@ if(!dotNet.v4()){
         	,"https://go.microsoft.com/fwlink/?linkid=2088631"
         	,"/passive /norestart"
     	)) {
-    		
+    		return;
     	}   
     }
     else{
@@ -45,10 +45,10 @@ if(!dotNet.v4()){
         	,"/passive /norestart"
     	)) {
     		return;
-    	}
-    	
-    	dotNet.v4(); 
+    	} 
     }
+    
+    dotNet.v4(); 
 }
 
 /**intellisense()

@@ -7,49 +7,214 @@ var right = ..string.right;
 var push = ..table.push;
 
 class fuzzyMatching{
-	ctor(str,m=":|<[\a\p]+>"){ 
+	ctor(str,charPattern=":|<[\a\p]+>",method){ 
 		
-		this.tmplate = {}
-		for t in ..string.gmatch( str,m) { 
-			..table.push(this.tmplate,"@"+t);
+		this.charPattern = charPattern;
+		if(!method || method=="fuzzyMatching"){
+			this.tmplate = {}
+			this.length = ..string.len(str);
+			this.str = ..string.trim(str);
+			
+			for t in ..string.gmatch( str,charPattern) { 
+				push(this.tmplate,"@"+t);
+			}
+			
+			this.match = function(strCmp){ 
+				if(strCmp==this.str) return 1; 
+				if(!strCmp) return 0;
+				
+				var rs,rc = strCmp,0;  
+				var count = 0; 
+				for(i,t in this.tmplate){ 
+					rs,rc = replace(rs,t,"",1);
+					if(rc)count += rc;
+				}
+		
+				var ls;
+				var str = this.str;
+				for(i=this.length;1;-1){ 
+					
+					if( left(str,i,true) == left(strCmp,i,true) ){ 
+						count += i; 
+						ls = i;
+						break;
+					} 
+				}; 
+				
+				
+				for(i=this.length;(ls:1);-1){ 
+					
+					if( right(str,i,true) == right(strCmp,i,true) ){ 
+						count += i;
+						break;
+					} 
+				}; 
+				
+				return count / ( ( this.length + #this.tmplate + ..math.abs(this.length-..string.len(strCmp)) )/100 )/100;
+			}; 
 		}
-		
-		this.length = ..string.len(str);
-		this.str = ..string.trim(str);
+		elseif(type(method)=="number"){
+			assert(method>=1,"n 值不能小于 1");
+			
+			this.nGrams = function(str, n) {
+				var grams = {};
+				var arr =..table.array(, ..string.gmatch( str,this.charPattern ) );
+				var slice = ..table.slice;
+				var join = ..string.join;
+				for(i=1; #arr-n+1; 1) {
+        			var gram = join( slice(arr, i, i+n-1) ); 
+        			grams[gram] = (grams[gram] : 0) + 1;
+    			} 
+				 
+    			return grams,#arr;
+			}
+			
+			this.n = method;
+			this.tmplate,this.length = this.nGrams(..string.lower(str),this.n);
+			
+			this.match = function(strCmp){   
+    			var grams1,len1 = this.tmplate,this.length;
+    			var grams2,len2 = this.nGrams(..string.lower(strCmp), this.n);
+    			var min = ..math.min;
+    			
+    			var intersection = 0;
+    			for(gram, count in grams1) {
+        			intersection = intersection + min(count, grams2[gram] : 0);
+    			}
+    			
+    			var total = ..math.max(len1, len2) - this.n + 1;
+    			return intersection / total;
+			}
+		}
+		elseif(method="cos"){
+		    var tmplate = {}
+    		for c in ..string.gmatch(str, charPattern) {
+        		tmplate[c] = (tmplate[c] : 0) + 1;
+    		}
+    		this.tmplate = tmplate;
+    		
+    		this.match = function(strCmp) {
+    		    if(strCmp==this.str) return 1; 
+				if(!strCmp) return 0;
+				
+    			var v1 = this.tmplate;
+    			
+    			var v2 = {}; 
+    			for c in ..string.gmatch(strCmp, this.charPattern) {
+        			v2[c] = (v2[c] : 0) + 1;
+    			}
+    			
+    			var intersection = {};
+    			for k in v1 {
+        			if(v2[k]) push(intersection, k);
+    			}
+    			
+    			var dotProduct = 0;
+    			for(i=1; #intersection; 1){
+        			var key = intersection[i];
+        			dotProduct = dotProduct + v1[key] * v2[key];
+    			}
+    			
+    			var magnitude1 = 0;
+    			for(k,v in v1) magnitude1 = magnitude1 + v * v;
+    			magnitude1 = ..math.sqrt(magnitude1);
+    			
+    			var magnitude2 = 0;
+    			for(k,v in v2) magnitude2 = magnitude2 + v * v;
+    			magnitude2 = ..math.sqrt(magnitude2);
+    			
+    			return dotProduct / (magnitude1 * magnitude2);
+			}
+		} 
+		elseif(method="jaccard"){
+		    var tmplate = {}
+    		for c in ..string.gmatch(..string.lower(str), charPattern) {
+        		push(tmplate, c);
+    		}
+    		
+    		this.tmplate = ..table.unique(tmplate)
+    		
+    		this.match = function(strCmp) {
+    		    if(strCmp==this.str) return 1; 
+				if(!strCmp) return 0;
+				
+    			var set1 = this.tmplate;
+    			var set2 = {};
+    			var find = ..table.find;
+    			 
+    			for c in ..string.gmatch(..string.lower(strCmp),this.charPattern) {
+        			push(set2, c);
+    			}
+    			set2 = ..table.unique(set2)
+    			
+    			var intersection = {};
+    			for(i=1; #set1; 1){
+        			if(find(set2, set1[i])) {
+            			push(intersection, set1[i]);
+        			}
+    			}
+    			
+    			var union = {};
+    			for(i=1; #set1; 1) push(union, set1[i]);
+    			for(i=1; #set2; 1) {
+        			if(!find(union, set2[i])) push(union, set2[i]);
+    			}
+    			
+    			return #intersection / #union;
+			}
+		} 
+		elseif(method="levenshtein"){ 
+		    var tmplate = {}
+    		for c in ..string.gmatch(str, charPattern) {
+        		push(tmplate, c);
+    		} 
+    		
+    		this.tmplate = tmplate;
+    		
+       		this.match = function(strCmp) {
+    		    if(strCmp==this.str) return 1; 
+				if(!strCmp) return 0;
+				
+    			var a = this.tmplate;
+    			var b = {};
+    			 
+    			for c in ..string.gmatch(strCmp,this.charPattern) {
+        			push(b, c);
+    			}
+    			
+  				if(#a == 0) return #b==0?1:0; 
+    			if(#b == 0) return #a==0?1:0; 
+			
+    			var m = {};
+    			var i;
+    			for(i=1;#b+1;1){
+        			m[i] = {i-1};
+    			}
+			
+    			var j;
+    			for(j=1;#a+1;1){
+        			m[1][j] = j-1;
+    			}
+			
+				var min = ..math.min;
+    			for(i=2;#b+1;1){
+        			for(j=2;#a+1;1){
+            			if(b[i-1] == a[j-1]){
+                			m[i][j] = m[i-1][j-1];
+            			} else {
+                			m[i][j] = min(m[i-1][j-1] + 1,
+                                        			min(m[i][j-1] + 1,
+                                                 			m[i-1][j] + 1)); 
+            			}
+        			}
+    			}
+ 			
+ 				var max = ..math.max(#b,#a)-1;
+    			return (max-m[#b][#a]) / max;
+    			
+    		}
+		}
 	};
-	match = function(strCmp){ 
-		if(strCmp==this.str) return 1; 
-		if(!strCmp) return 0;
-		
-		var rs,rc = strCmp,0;  
-		var count = 0; 
-		for(i,t in this.tmplate){ 
-			rs,rc = replace(rs,t,"",1);
-			if(rc)count += rc;
-		}
-
-		var ls;
-		var str = this.str;
-		for(i=this.length;1;-1){ 
-			
-			if( left(str,i,true) == left(strCmp,i,true) ){ 
-				count += i; 
-				ls = i;
-				break;
-			} 
-		}; 
-		
-		
-		for(i=this.length;(ls:1);-1){ 
-			
-			if( right(str,i,true) == right(strCmp,i,true) ){ 
-				count += i;
-				break;
-			} 
-		}; 
-		
-		return count / ( ( this.length + #this.tmplate + ..math.abs(this.length-..string.len(strCmp)) )/100 )/100;
-	}; 
 	find = function(array,minSimilar){
 		var tMatch = {}
 		for(i=1;#array;1){
@@ -90,7 +255,8 @@ class fuzzyMatching{
 
 /**intellisense()
 string.fuzzyMatching = 模糊匹配字符串
-string.fuzzyMatching("模板字符串") = 创建模糊匹配对象
+string.fuzzyMatching( = 创建字符串模糊匹配对象
+string.fuzzyMatching(.(strTemplte,charPattern,method) = 创建模糊匹配对象。\nstrTemplte 参数指定需要匹配的模板字符串。\ncharPattern 为可选参数，用模式匹配语法指定提取待比较字符的模式串。\nmethod 为可选参数，可选指定以下算法：\n- fuzzyMatching 相似度算法，关注字符频率，首尾连续性敏感。\n- n 此参数用数值指定比较单元字数则使用 N-gram 算法，局部连续性敏感，效果较好，速度最快。\n- levenshtein 准确度高，对字符位置敏感 ，较慢。\n- cos 考虑了字符频率，不关注顺序。\n- jaccard 只考虑字符是否出现。
 string.fuzzyMatching() = !string_fuzzyMatching.
 !string_fuzzyMatching.search(.(字符串,最小相似度) = 模糊检测参数传入的字符串是否包含模板字符串\n最小相似度默认为 0.8
 !string_fuzzyMatching.match(.(匹配字符串) = 返回文本相似度\n相似度为小数,最大相似为1,不相似为0\n比较规则为先比较相同字符数,\n然后再自左侧或右侧查找相同的最长字符串

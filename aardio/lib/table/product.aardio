@@ -67,7 +67,15 @@ p = function(a,b,...){
 
 class product{
 	ctor( a,unpack,... ){
-		if(unpack===true) return p( ..table.unpack(a) )
+		if(unpack){
+			if(unpack===true) return p( ..table.unpack(a) )
+			if(type(unpack)=="number"){
+				var arr = {}
+				for(i=1;unpack) ..table.push(arr,a); 
+				return ..table.product(arr,true);
+			}
+		}
+		
 		return p(a,unpack,...);
 	}; 
 }
@@ -75,5 +83,6 @@ class product{
 /**intellisense()
 table.product = 创建迭代器用于运算笛卡尔积，需导入 table.product 库
 table.product(.(__) = 创建迭代器用于计算笛卡尔积,\n参数支持任意个数的数组或字符串,\n迭代器返回数组值,参于运行的数组有几个,返回的数组就包含几个值\n参与运算的空数组或空值将被忽略
-table.product(.(__,true) = 创建迭代器用于计算笛卡尔积,\n每次迭代返回一个包含当前组合结果的数组值,\n参数@1为包含多个数组的数组,参数@2为true时先展开数组再计算笛卡尔积,\n迭代器返回数组值,参于运行的数组有几个,返回的数组就包含几个值\n参与运算的空数组或空值将被忽略
+table.product(.(__,true) = 创建迭代器用于计算笛卡尔积。\n每次迭代返回一个包含当前组合结果的数组值,\n参数@1为包含多个数组的数组,参数@2为true时先展开数组再计算笛卡尔积,\n迭代器返回数组值,参于运行的数组有几个,返回的数组就包含几个值\n参与运算的空数组或空值将被忽略
+table.product(.(__,repeat) = 创建迭代器用于计算笛卡尔积。\n参数 @1 可指定数组或字符串，参数 @2 指定重复将参数 @1 添加为参数的次数。
 end intellisense**/

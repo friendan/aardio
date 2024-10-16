@@ -264,9 +264,9 @@ namespace metaProperty {
 					return ..win.getStyle(owner[["hwnd"]],0x8000000/*_WS_DISABLED*/ ) 
 				}
 				_set = function(v){
-					..win.enable(owner[["hwnd"]],!v?1:0);  
+					if(!v && owner[["(disabledText)"]] ) owner.disabledText = null;
+					else ..win.enable(owner[["hwnd"]],!v?1:0);  
 				}
-			
 			};
 			tailWndproc = {
 				_set = function(v){
@@ -790,7 +790,7 @@ namespace metaProperty {
 					}
 				}
 				
-				var hfont = ..gdi.setFont( owner[["hwnd"]],f ); 
+				var hfont = ..gdi.setFont( owner[["hwnd"]],f,owner[["dpiScaleY"]] ); 
 				if(f[["color"]]!==null) owner.color = f.color;
 				if(h) f[["h"]] = h;
 				
@@ -1048,7 +1048,7 @@ namespace metaProperty {
 					owner[["singletonReduceId"]]  = id;
 				}
 			}
-			orphanWindow = function(trans,hwndBuddy){
+			orphanWindow = function(trans,hwndBuddy,borderless){
 				if( owner._parentForm ){
 					owner.directDrawBackgroundOnly = null;
 					
@@ -1077,7 +1077,9 @@ namespace metaProperty {
 			 	 
 					if(hwndBuddy){
 						..win.setOwner(hwndBuddy,owner.hwnd);
-						owner.onSetOrphanWindowPos = function(x,y,cx,cy,flags){
+						if(borderless)..win.modifyStyle(hwndBuddy,0xCF0000);
+						
+						owner.onSetOrphanWindowPos = function(x,y,cx,cy,flags){ 
 							..win.setPos(hwndBuddy,x,y,cx,cy,,flags:(0x14/*_SWP_NOACTIVATE | _SWP_NOZORDER*/));
 						}
 						
@@ -1086,6 +1088,13 @@ namespace metaProperty {
 						
 						var rc = ..win.getClientRect(hwndBuddy);
 						::SendMessageInt(hwndBuddy,0x5/*_WM_SIZE*/,0,::MAKELONG(rc.width(),rc.height()) );
+					
+						owner.hwndBuddy = hwndBuddy;
+						if(!owner._onDestroy_stdReserved__){
+							owner._onDestroy_stdReserved__ = function(){ 
+								::PostMessage(owner.hwndBuddy,0x10/*_WM_CLOSE*/,0,0); 
+							} 	
+						}
 					} 
 					
 					return true;

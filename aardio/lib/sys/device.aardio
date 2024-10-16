@@ -42,7 +42,7 @@ class device{
 
 						select(dataType) { 
 								case 0x1/*_REG_SZ*/,0x2/*_REG_EXPAND_SZ*/ {
-									property[i] = ..string.fromUnicode(propertyBuffer);
+									property[i] = ..string.fromUtf16(propertyBuffer);
 									property[i] = ..string.trimright(property[i],'\0');
 								}
 								case 0x4/*_REG_DWORD*/ {
@@ -55,7 +55,7 @@ class device{
 									property[i] = propertyBuffer;
 								} 
 								case 0x7/*_REG_MULTI_SZ*/ {
-									var p = ..string.fromUnicode(propertyBuffer,,requiredSize/2);
+									var p = ..string.fromUtf16(propertyBuffer,,requiredSize/2);
 									p = ..string.trimright(p,'\0');
 									property[i] = ..string.split(p,'\0'); 
 								}

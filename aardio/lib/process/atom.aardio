@@ -6,7 +6,7 @@ GlobalAddAtom = ::Kernel32.api("GlobalAddAtom","word(ustring str)")
 add = function(name){
     
 	if( type(name) == type.string ){
-		name = ..string.toUnicode(name);
+		name = ..string.toUtf16(name);
 		if(#name < 255){
 			return GlobalAddAtom( name );
 		}

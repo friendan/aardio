@@ -173,9 +173,9 @@ askYesNo  = function(title){
 pause = function(close,msg,erase){ 
 	open(); 
 	if( msg ){
-		msg = ..string.toUnicode(msg);
+		msg = ..string.toUtf16(msg);
 		if( erase ){
-			erase = ..string.toUnicode(erase);
+			erase = ..string.toUtf16(erase);
 			if( #erase < #msg ) erase = erase + ..string.repeat((#msg-#erase)/2 ," ");
 		}
 		else erase = msg;
@@ -213,7 +213,7 @@ fullscreen = function(){
 
 writeText = function(s,...){
     s = tostring(s);
-    if( (!..string.isUtf8(s)) && (!..string.isUnicode(s)) ){
+    if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
 		..string.setUtf(s,1);
 	}
 	open().edit.appendText(s,...)
@@ -221,7 +221,7 @@ writeText = function(s,...){
 
 print = function(s,...){ 
     s = tostring(s);
-    if( (!..string.isUtf8(s)) && (!..string.isUnicode(s)) ){
+    if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
 		..string.setUtf(s,1);
 	}	
 	
@@ -237,7 +237,7 @@ showLoading = function(msg,dots){
 
 printf = function(s,...){ 
     s = tostring(s);
-    if( (!..string.isUtf8(s)) && (!..string.isUnicode(s)) ){
+    if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
 		..string.setUtf(s,1);
 	}	
 	
@@ -253,7 +253,7 @@ hex = function(s){
 }
 
 writeBack = function( s,... ){
-	if( ... !== null  ) s = ..string.toUnicode( ..string.format(s,... ) );
+	if( ... !== null  ) s = ..string.toUtf16( ..string.format(s,... ) );
 	writeText( ..string.repeat(#s/2,'\b') );
 	writeText( s );
 }

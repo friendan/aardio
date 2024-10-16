@@ -40,7 +40,7 @@ getComputerName = function(nameType){
     if(nameSize.value>1){
         var name = ..raw.buffer((nameSize.value-1)*2);
 		if( ::Kernel32.GetComputerNameEx(nameType,name,nameSize) ) { 
-			return ..string.fromUnicode(name);
+			return ..string.fromUtf16(name);
 		}
     }
 }
@@ -54,7 +54,7 @@ setComputerName = function( name,nameType  ){
 ::Advapi32 := ..raw.loadDll("Advapi32.dll") 
 getUserName = function(){ 
     var name = ..raw.buffer(0x202);
-	if( ::Advapi32.GetUserNameW(name,{INT size=0x101}) ) return ..string.fromUnicode(name,,-1);
+	if( ::Advapi32.GetUserNameW(name,{INT size=0x101}) ) return ..string.fromUtf16(name,,-1);
 }
 
 /**intellisense(sys)

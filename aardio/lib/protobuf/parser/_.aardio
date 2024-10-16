@@ -1,4 +1,4 @@
-//parse 语法分析
+﻿//parse 语法分析
 if(_STUDIO_INVOKED) import ide;
 
 import fsys;
@@ -103,7 +103,7 @@ class parser{
 
 	_createLib = function(inProject,packageSpace){ 
  		var libDir = inProject ? ( _STUDIO_INVOKED ? ..ide.getProjectDir() ) : "\" 
- 		libDir = ..fsys.joinpath( libDir,"lib\\");   
+ 		libDir = ..io.joinpath( libDir,"lib\\");   
  		
  		for(k,message in packageSpace.subMessage){  
  			if(!message.isClass){
@@ -131,7 +131,7 @@ class parser{
  			var classDir = ..io.fullpath( libDir ++ ..string.replace(message.nameSpace,"\.","\") );
  			..fsys.createDir(classDir);
  			
- 			var path = ..fsys.joinpath(classDir,message.name + ".aardio")
+ 			var path = ..io.joinpath(classDir,message.name + ".aardio")
  			..string.save(path, (#message.nameSpace?("namespace "+message.nameSpace + ';\r\n'):"")
  				+ 'import protobuf.message;\r\nimport util.metaProperty;\r\n\r\n' + code )
  		} 
@@ -149,7 +149,7 @@ class parser{
 				body = body;
 			)
 			
-			var path = ..fsys.joinpath(classDir,name + ".aardio")
+			var path = ..io.joinpath(classDir,name + ".aardio")
 			
  			..string.save(path,(#packageSpace.nameSpace?("namespace "+packageSpace.nameSpace + ';\r\n'):"") + 'import protobuf.message;\r\nimport util.metaProperty;\r\n\r\n' + code )
  		}  

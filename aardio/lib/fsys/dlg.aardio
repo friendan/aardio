@@ -14,7 +14,7 @@ OPENFILENAME = class{
 	pointer customFilter;
 	INT maxCustFilter = 0;
 	INT filterIndex = 1;
-	pointer file = ..raw.buffer(bufSize,..string.toUnicode(defFile):0 ); 
+	pointer file = ..raw.buffer(bufSize,..string.toUtf16(defFile):0 ); 
 	INT maxFile =  bufSize-1;
 	ustring fileTitle;
 	INT maxFileTitle = 0;
@@ -36,7 +36,7 @@ OPENFILENAME = class{
 		this.initialDir =  ..io.exist(this.initialDir )  
 		
 		if(type(this.filter) == type.string){
-			this.filter = ..string.replace( ..string.fromUnicodeIf(this.filter),'@|','\0');
+			this.filter = ..string.replace( ..string.fromUtf16If(this.filter),'@|','\0');
 			this.filter = ..string.trimright(this.filter,'\0');
 			this.filter = this.filter + '\0'u; 
 			
@@ -61,7 +61,7 @@ OPENFILENAME = class{
 	_getFileName = function(){ 
 		var len = ..string.find(this.file,"\z\z\z\z+$");
 		if(len){ if( len%2) len = len - 1; } else len = #this.file;
-		file = ..string.fromUnicode(this.file,,len/2);
+		file = ..string.fromUtf16(this.file,,len/2);
 			
 		if( this.flags & 0x200/*_OFN_ALLOWMULTISELECT*/){  
 			var rawFiles = ..string.split(file,'\0');
@@ -183,8 +183,8 @@ save(.(指定文件类型,对话框标题,默认目录,父窗口,选项参数,�
 saveOp( = 显示保存文件对话框框,\n覆盖已存在的文件时显示确认对话框（overwrite prompt）
 saveOp(.(指定文件类型,对话框标题,默认目录,父窗口,默认文件名) = 显示保存文件对话框框,\n覆盖已存在的文件时显示确认对话框。\n\n所有参数为可选参数\n文件类型以竖线分隔,并以坚线分隔类型说明与后缀名,例如\n"所有文件|*.*|文本文件|*.txt;*.md|"\n\n一个类型说明匹配多个后缀名应以分号分隔
 openDir( = 打开选择目录对话框，\n建议改用 fsys.dlg.dir
-openDir(.(目录__,父窗口,标题,窗口标题) = 打开选择目录对话框,\n所有参数都是可选参数,支持unicode字符串
-openDir(.() = 打开选择目录对话框\n参数支持unicode字符串
+openDir(.(目录__,父窗口,标题,窗口标题) = 打开选择目录对话框,\n所有参数都是可选参数。
+openDir(.() = 打开选择目录对话框。
 end intellisense**/
 
 /**intellisense()

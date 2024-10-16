@@ -10,7 +10,7 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm,endP
 	..fsys.createDir(saveDir);
 	
 	if(saveName){
-		saveDir = ..fsys.joinpath(saveDir,saveName);
+		saveDir = ..io.joinpath(saveDir,saveName);
 	}
 	
 	var downBox = ..inet.downBox( parentForm,title,false);
@@ -29,7 +29,7 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm,endP
 			else {
 				extraDir = ..string.match(tPath.file,"(.+)\.[^\.]+$"  ); 
 				if(!extraDir) extraDir = tPath.file + ".uncompress";
-				extraDir = ..fsys.joinpath(saveDir,extraDir) 
+				extraDir = ..io.joinpath(saveDir,extraDir) 
 			}
 		}
 		else {
@@ -65,7 +65,7 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm,endP
 			}
 			
 			..io.createDir(extraDir);
-			var file = ..io.open(..io.joinpath(extraDir,..io.splitpath(downBox.savePath).name),"w+b",0x10 /* _SH_DENYRW */);
+			var file = ..io.file(..io.joinpath(extraDir,..io.splitpath(downBox.savePath).name),"w+b",0x10 /* _SH_DENYRW */);
 			if(!file){
 				gzFile.close();
 				downBox.labProgress.text = "写入文件时遇到错误"

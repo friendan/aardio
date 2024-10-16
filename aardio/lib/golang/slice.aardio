@@ -4,7 +4,7 @@ namespace golang{
 	class slice{
 		ctor( items ){{
 			var t,n = ..raw.typeOfArray(items);  
-			if(n!="value") error("请在 value 字段中指定静态数组",2);
+			if(n!="value") error("请在 value 字段中指定原生数组",2);
 	
 			this["(type)"] = t;
 	 	}} 
@@ -75,7 +75,7 @@ namespace golang{
 }
 
 /**intellisense()
-golang.slice(__) = 创建 Go 切片。\n参数@1可用结构体指定静态数组，数组字段名必须为 value。\nGo 函数的参数类型必须声明为相同静态类型的数组指针。\n\n自 Go 调用返回以后，建议立即访问 value 字段获取 Go 返回的数组。\n因为 Go 的内存回收器稍后会回收 Go 数组的内存（至少在调用结束那一刻并不会立即回收）。\n转换以后此对象的内部指针即安全地指向 aardio 分配的内存。\n只要正确使用，go.slice 不会造成内存泄漏。\n\n如果不需要在 Go 中修改数组，则 value 字段总是指向  aardio 分配的内存。
+golang.slice(__) = 创建 Go 切片。\n参数@1可用结构体指定原生数组，数组字段名必须为 value。\nGo 函数的参数类型必须声明为相同原生类型的数组指针。\n\n自 Go 调用返回以后，建议立即访问 value 字段获取 Go 返回的数组。\n因为 Go 的内存回收器稍后会回收 Go 数组的内存（至少在调用结束那一刻并不会立即回收）。\n转换以后此对象的内部指针即安全地指向 aardio 分配的内存。\n只要正确使用，go.slice 不会造成内存泄漏。\n\n如果不需要在 Go 中修改数组，则 value 字段总是指向  aardio 分配的内存。
 golang.slice() = !stdGoSlice.
-!stdGoSlice.value = 返回或设置静态数组的值
+!stdGoSlice.value = 返回或设置原生数组的值
 end intellisense**/

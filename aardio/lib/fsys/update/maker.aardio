@@ -1,4 +1,4 @@
-//maker 生成更新文件
+﻿//maker 生成更新文件
 import fsys;
 import fsys.version;
 import sevenZip.lzma;
@@ -50,11 +50,11 @@ class maker {
 			);
 		}
 		
-		if( ! ( this.main && ..io.exist( ..fsys.joinpath(this.appDir,this.main)) ) ){
+		if( ! ( this.main && ..io.exist( ..io.joinpath(this.appDir,this.main)) ) ){
 			return null,"请指定主程序文件路径";
 		}
 		
-		var srcExeFile = ..fsys.joinpath(this.appDir,this.main);
+		var srcExeFile = ..io.joinpath(this.appDir,this.main);
 		if( !this.version ){
 			var v = ..fsys.version.getInfo(srcExeFile)
 			if( v ) this.version = tostring(v.productVersion);
@@ -78,7 +78,7 @@ class maker {
 		
 		var chksum = {};
 		var buffer = ..raw.buffer(1024 * 1024); 
-		var filesOutDir = ..fsys.joinpath(this.outDir,"files");
+		var filesOutDir = ..io.joinpath(this.outDir,"files");
 	 	..fsys.delete(filesOutDir);
 	 	..fsys.createDir(filesOutDir);
 	 	
@@ -93,7 +93,7 @@ class maker {
 	        		..fsys.createParentDir(outpath)
 	      		
 	      			var crc32;  
-	           		var file = ..io.open(fullpath,"rbS");	
+	           		var file = ..io.file(fullpath,"rbS");	
 	           		var size = file.size(1);
 	        		file.seek("set",0); 
 	        		this.onFile(path,size);
@@ -112,7 +112,7 @@ class maker {
 	        			return null,"压缩文件失败:" + path;
 	        		}
 	        		
-	        		var file = ..io.open(outpath + ".lzma","rbS");	
+	        		var file = ..io.file(outpath + ".lzma","rbS");	
 	           		var sizeLzma = file.size(1);
 	        		file.close();    
 	        		
@@ -129,13 +129,13 @@ class maker {
 		);
 		
 		..sevenZip.lzma.save( ..string.join(chksum,'\r\n') 
-			, ..fsys.joinpath(this.outDir,"checksum.lzma") ); 
+			, ..io.joinpath(this.outDir,"checksum.lzma") ); 
 			
 		if( !this.updater ){ 
 			this.updater = this.main;
 		} 
 		
-		..string.save(..fsys.joinpath(this.outDir,"version.txt"),..web.json.stringify( {
+		..string.save(..io.joinpath(this.outDir,"version.txt"),..web.json.stringify( {
 			version = this.version; //tostring( ..fsys.version(this.version) );
 			url = this.url;
 			description = this.description;

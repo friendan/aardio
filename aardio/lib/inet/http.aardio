@@ -305,7 +305,7 @@ class http{
 		var ok,headers,len,next = QueryInfoByString( this.request,lev,buf,#name,index-1) 
 		
 		if(name){
-			name = ..string.toUnicode(name);
+			name = ..string.toUtf16(name);
 			len = #name + len;
 			buf = ..raw.buffer(len,name);
 		}
@@ -374,8 +374,7 @@ class http{
 		//RFC6266,RFC5987,RFC2231
 		var disposition = owner.readHeader("Content-disposition")
 		if( disposition ){
-			var charset;
-			_type,charset,filename =  ..string.match(disposition,"([^;\s]+?)\s*\;.*!\wfilename\s*\*\s*\=\s*(<[a-zA-Z0-Z\-]+>)%''([^\s\;]+)");
+			var _type,charset,filename =  ..string.match(disposition,"([^;\s]+?)\s*\;.*!\wfilename\s*\*\s*\=\s*(<[a-zA-Z0-Z\-]+>)%''([^\s\;]+)");
 			if(filename){
 				filename = ..inet.url.decode(filename,..string.cmp("UTF-8",charset)==0 ? 65001 : 0)
 			}
@@ -490,7 +489,7 @@ class http{
 	    if( (method == "POST") && postdata && !( this.headers  &&  ..string.find( this.headers,"@@Content-Type:") ) ){  
 			this.headers = ..web.joinHeaders( this.headers
 		    	, ( postdata[1]=='{'# or  postdata[1]=='['#) 
-		    	? 'Content-Type: application/json; charset=utf-8' : 'Content-Type: application/x-www-form-urlencoded; charset=utf-8'
+		    	? 'Content-Type: application/json' : 'Content-Type: application/x-www-form-urlencoded; charset=utf-8'
 		    	);
 		} 
 		
@@ -799,7 +798,7 @@ end details**/
 /**intellisense()
 inet.http = WinINet 支持库\n支持进程内多对象共享会话 cookie,支持持久化 cookie\n与 web.form 浏览器控件,IE 浏览器共享 cookie 与代理设置。\n\ninet.http 错误代码请参考库 inet.errorMessage
 inet.http( = 创建HTTP会话对象,所有参数可选，\n注意提前导入zlib库，readAll 函数才能支持 gzip 自动解压。
-inet.http(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 所有参数可选,例：\ninet.http("Mozilla/4.0", "HTTP=HTTP://proxyserver:port","localhost,127.0.0.*")\n代理参数语法请参考inet.setProxy函数说明
+inet.http(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 HTTP 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
 inet.http(.("UserAgent",false) =  禁用代理，UserAgent 为可选参数
 inet.http.isAlive(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 当前是否能正常访问互联网,所有参数可选
 inet.http.get(.(url,headers,referer) = 用于界面线程创建线程并获取 @url 指定网址的数据,\n此函数等待下载完成但不会阻塞界面消息循环,\n可选用 @headers 指定 HTTP 头,\n可选用 @referer 指定引用网址,\n所有参数用法与 格式请参考 inet.http 对象的 get 函数相同

@@ -1,5 +1,4 @@
 ﻿//zip 压缩
-//http://www.winimage.com/zLibDll/minizip.html 
 import zlib;
 import fsys; 
 import fsys.file;
@@ -12,7 +11,7 @@ class zip{
 		if( localDir ? ( ! ..fsys.isDir(localDir) ) ){
 			error("参数@2指定的路径必须是一个目录",2);
 		}
-		var zipFile = zipOpen64(..string.fromto( ..io.fullpath(path) ) ,append?1:0);
+		var zipFile = zipOpen64(..io.fullpath(path) ,append?2:0);
 		if(!zipFile)error("压缩文件路径参数错误",2);
 		
 		path = ..io.exist(path);
@@ -37,10 +36,9 @@ class zip{
 		 
 		var file,err = ..fsys.file(fileName,"rbR")
 		if(!file)return null,err;
-		if( !isDir ){
-			var size,unit,unitName = file.size(0x40000000)
- 			zip64 = size >=4; 
- 			
+		if( !isDir ){ 
+ 			zip64 = file.size64().greaterThan(0xffffffff);  
+ 		 
  			if( password ){ 
  				var crc32 = ..string.crc32;
  				var bufsize = 0x100000;
@@ -64,8 +62,9 @@ class zip{
    
 		fileName = ..fsys.path.relative(fileName,localDir,false);
 		if(!#fileName)return;
-	      
-		if (zipOpenNewFileInZip4_64(zipFile, fileName,info,  , 0,  , 0,  , 8/*_Z_DEFLATED*/, level,
+		
+		fileName = ..string.replace(fileName,"\\","/");
+		if (zipOpenNewFileInZip4_64(zipFile,fileName,info,  , 0,  , 0,  , 8/*_Z_DEFLATED*/, level,
 			0,-15/*_Z_MAX_WBITS*/, 8/*_Z_DEF_MEM_LEVEL*/, 0/*_Z_DEFAULT_STRATEGY*/,password, crcForCrypting, 0/*_VERSIONMADEBYDOS*/, 0x800, zip64) != 0/*_ZIP_OK*/){
             return;
         }
@@ -98,7 +97,7 @@ class zip{
     	else{
     		buffer = ..raw.buffer(bufSize);
     	};
-    	var file = ..io.open(path,"rb")
+    	var file = ..io.file(path,"rb")
     	return function(){
     		var len = file.readBuffer(buffer)
     		if( len ){
@@ -119,14 +118,18 @@ class zip{
 	compress = function(compressPath,proc,password,level=9,bufSize = 0xA00000){
 		var compressPath = ..io.exist(compressPath);
 		if(!compressPath)error("压缩源文件路径错误",2); 
-	  	if(!localDir)localDir = ..fsys.getParentDir(compressPath);
+	  	
 	  	
 		if( !..fsys.isDir(compressPath) ){ 
+			if(!localDir)localDir = ..fsys.getParentDir(compressPath);
+			
 			for len in this.eachWriteFile(compressPath,password,bufSize,level){
 				if(proc)proc( len,compressPath );
 			}
 		}
 		else { 
+			if(!localDir)localDir = compressPath;
+			
 			..fsys.enum(compressPath, "*.*",
 				function(dir,file,fullpath,findData){ 
 					if(file){  
@@ -145,7 +148,7 @@ class zip{
 }
                                                   
 namespace zip{ 
-	zipOpen64 = dll.api("zipOpen64","pointer(string path,int append)"); 
+	zipOpen64 = dll.api("zipOpen64W","pointer(ustring path,int append)"); 
 	zipClose = dll.api("zipClose","int(pointer file,string comment)");    
 	zipOpenNewFileInZip4_64 = dll.api("zipOpenNewFileInZip4_64","int(POINTER file, str filename, struct zipfi,pointer extrafield_local, INT size_extrafield_local,  pointer extrafield_global,INT size_extrafield_global,str comment
 		, int method,int level,int raw,int windowBits,int memLevel,int strategy,string password,INT crcForCrypting,INT versionMadeBy,INT flagBase,bool zip64)"); 
@@ -168,7 +171,7 @@ namespace zip{
 }
 
 /**intellisense()
-zlib.zip(.(zip路径,根目录,是否追加) = 创建压缩文件对象\n参数二,参数三都可以省略
+zlib.zip(.(zip路径,根目录,是否追加) = 创建压缩文件对象。\n参数二,参数三都可以省略。\n如果不指定根目录，首先调用 compress 函数时将自动指定。\n如果首次压缩的是目录，则该目录设为根目录，否则文件的父目录设为根目录。
 zlib.zip() = !zlib_zip.
 !zlib_zip.beginWrite(.(文件路径,压缩密码,压缩级别) = 开始添加压缩文件,\n密码为可选参数,压缩级别可省略,默认为0
 !zlib_zip.endWrite() = 添加压缩文件完成

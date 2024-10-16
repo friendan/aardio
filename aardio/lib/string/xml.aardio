@@ -15,28 +15,35 @@ var cmp = cmp;
 var createElementMeta;
 
 var ncr = function(html){
-	html = ..string.replace(html,"&#(x?)(\x+);",function(h,c){
-    	c = tonumber(c,#h?16:10);return  ..string.unescape( ..string.format("\U%06x",c ) );
-   } ); 
+
+	html = ..string.replace(html,"&#x(\x+);",function(c){
+    	return ..string.unescape( ..string.format("\U%06x",tonumber(c,16) ) );
+    } ); 
+    
+    html = ..string.replace(html,"&#(\d+);",function(c){
+    	return ..string.unescape( ..string.format("\U%06x",tonumber(c,10) ) );
+    } ); 
     	
 	return ( ..string.replace(html,"&[a-zA-Z]+;",{
 			["&nbsp;"] = ' ';["&lt;"] = '<';["&gt;"] = '>'; ["&amp;"] = '&';["&quot;"] = '"';["&apos;"] = "'";["&ldquo;"] = '“';["&rdquo;"] = '”';["&rdquo;"] = '”';
 			["&mdash;"] = '—';["&euro;"] = "€";["&cent;"] = '￠';["&pound;"] = '￡';["&yen;"] = '￥'; ["&frasl;"] = "/";["&raquo;"] = "▼";["&times;"] = "×";["&division;"] = "÷";
 			["&sum;"] = "∑";["&currency;"] = "¤"; ["&brvbar;"] = "|";["&sect;"] = "§";["&uml;"] = "¨";["&macr;"] = "ˉ";["&deg;"] = "°";["&plusmn;"] = "±";["&acute;"] = "′";
 			["&micro;"] = "μ";["&middot;"] = "·";["&ordm;"] = "o";["&copy;"] = "©";["&radic;"] = '√';["&uarr;"] = "↑";["&darr;"] = "↓";["&larr;"] = "←";["&rarr;"] = "→";
-			["&harr;"] = "↔";["&reg;"] = "®";
+			["&harr;"] = "↔";["&reg;"] = "®";["&num;"] = "#";
 		} ) );
 }
 
 var nodePrototype = {
 	enumNodes = function(p,findTagName){ 
-		for(index,tagName,childCount,xNode in owner.eachChild(tagName) ){ 
+		for(index,tagName,childCount,xNode in owner.eachChild() ){ 
+			if(findTagName && 0!=..string.cmp(findTagName,tagName)) continue;
+				
 			var ret,ret2 = p(owner,index,tagName,childCount,xNode)
-			if( ( ret !== null ) && ( !ret ) ) return ret,ret2;
+			if( ret !== null ) return ret,ret2;	 
 		}
-		for(index,tagName,childCount,xNode in owner.eachChild(tagName) ){ 
+		for(index,tagName,childCount,xNode in owner.eachChild() ){ 
 			var ret,ret2 = xNode.enumNodes(p,findTagName);
-			if( ( ret !== null ) && ( !ret ) ) return ret,ret2;
+			if( ret !== null ) return ret,ret2;
 		}
 	};
 	eachQuery = function(opt){
@@ -536,15 +543,24 @@ class xml{
 
 xml.ncr = ncr;
 xml.elementPattern = "\<([\/]?)([\d\s]?![\?!\w_\-\::]+)(.*?)([\/\?]?)\>";
+
+//xml 只规定了 5 个实体字体，HTML 4 则规定了 252 个
 xml.escape = function(v){
 	if(v) return ..string.replace(v,`[\&\<\>\"\']`,{`&`:'&amp;',`<`:"&lt;",`>`:"&gt;",`"`:"&quot;",`'`:"&apos;"})
 }
 
+xml.ncrEncode = function(str,pattern){
+	return (..string.replace(str,pattern || ":|.",function(c){
+		var u = ..string.charCodeAt(c,1);
+		var r = "&#"+u+";"
+		return #r<5 ? u : "&#x"+..string.format("%x",u)+";"
+	}));
+}
 /**intellisense()
-string.xml = 简单XML解析,\n严格的校验XML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写
-string.xml(__/*xml字符串*/) = 创建xml对象。\n此对象不支持 table.tostring , console.dump 函数，不能跨线程传递。\n\n严格的校验XML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写
+string.xml = 简单 XML 解析器。\n严格的校验 XML 语法正确性不是本模块的设计目标，\n所以此解析器尽可能兼容错误，兼容了 HTML，SGML 的部分规则:\n\n1. 不要求存在根标签 \n2. 尝试自动修正不配对的标记 \n3. 在有必要的时候尝试忽略大小写。
+string.xml(__/*xml字符串*/) = 创建 XML 对象。\n此对象不支持 table.tostring , console.dump 函数，不能跨线程传递。\n\n严格的校验XML语法正确性不是本模块的义务和目标,\n所以,此解析器尽可能兼容错误,兼容了HTML,SGML的部分规则:\n1、不要求存在根标签 \n2、尝试自动修正不配对的标记 \n3、在有必要的时候尝试忽略大小写
 string.xml() = !string_xml.
-!string_xml.eachChild(标签名) = @for(index,tagName,childCount,xNode in ??.eachChild(__/*标签名*/) ){
+!string_xml.eachChild(标签名) = @for(index,tagName,childCount,xNode in ??.eachChild(__/*标签名，区分大小写*/) ){
 	io.print( index,tagName,childCount,xNode ) 
 }
 !string_xml.eachAttribute() = @for( k,v in ??.eachAttribute() ){
@@ -557,9 +573,9 @@ string.xml() = !string_xml.
 !string_xml.getEles("__") = 获取所有指定相同name的节点对象,返回数组,\n即使找不到节点,也会返回空数组,\n参数指定节点name,忽略大小写,支持模式匹配规则
 !string_xml.queryEles(.( 查询参数表) = 搜索节点对象,该函数返回的是一个数组,\n即使找不到节点,此函数也会返回一个空数组,\n\n参数@1指定一个表对象，\n该参数表可包含一个或多个键值，用于匹配节点的属性值,\n可使用tagName属性指定节点的标签名,\n可使用parent属性指定开始查询节点的父节点，parent可以是ID或者节点对象。\n属性值使用 string.cmpMatch函数进行比对，\n等价于调用string.cmp函数进行忽略大小写的比较,\n并且在失败后调用 string.match函数使用模式匹配语法进行比较\n\n注意在匹配节点属性时有几个例外：\nparent属性不使用模式匹配进行比对，\ntagName,id,name属性如果匹配值不含标点则使用忽略大小写的完全比对（禁用模式匹配和部分匹配）
 !string_xml.eachQuery(查询参数表) = @for ele in ??.eachQuery(tagName="img"__/*搜索并遍历节点对象,\n\n参数@1指定一个表对象，\n该参数表可包含一个或多个键值，用于匹配节点的属性值,\n可使用tagName属性指定节点的标签名,\n可使用parent属性指定开始查询节点的父节点，parent可以是ID或者节点对象。\n属性值使用 string.cmpMatch函数进行比对，\n等价于调用string.cmp函数进行忽略大小写的比较,\n并且在失败后调用 string.match函数使用模式匹配语法进行比较\n\n注意在匹配节点属性时有几个例外：\nparent属性不使用模式匹配进行比对，\ntagName,id,name属性如果匹配值不含标点则使用忽略大小写的完全比对（禁用模式匹配和部分匹配）*/){\n	\n}\n!string_xml.
-!string_xml.queryEle(.( 查询参数表) = 搜索节点对象,参数@1指定一个表对象，\n\n该参数表可包含一个或多个键值，用于匹配节点的属性值,\n可使用tagName属性指定节点的标签名,\n可使用parent属性指定开始查询节点的父节点，parent可以是ID或者节点对象。\n属性值使用 string.cmpMatch函数进行比对，\n等价于调用string.cmp函数进行忽略大小写的比较,\n并且在失败后调用 string.match函数使用模式匹配语法进行比较\n\n注意在匹配节点属性时有几个例外：\nparent属性不使用模式匹配进行比对，\ntagName,id,name属性如果匹配值不含标点则使用忽略大小写的完全比对（禁用模式匹配和部分匹配）
+!string_xml.queryEle(.(查询参数表) = 搜索节点对象,参数@1指定一个表对象，\n\n该参数表可包含一个或多个键值，用于匹配节点的属性值,\n可使用tagName属性指定节点的标签名,\n可使用parent属性指定开始查询节点的父节点，parent可以是ID或者节点对象。\n属性值使用 string.cmpMatch函数进行比对，\n等价于调用string.cmp函数进行忽略大小写的比较,\n并且在失败后调用 string.match函数使用模式匹配语法进行比较\n\n注意在匹配节点属性时有几个例外：\nparent属性不使用模式匹配进行比对，\ntagName,id,name属性如果匹配值不含标点则使用忽略大小写的完全比对（禁用模式匹配和部分匹配）
 !string_xml.queryEles() = !string_xml.
-!string_xml.enumNodes(枚举函数,节点名) = @.enumNodes( \n	function(parentElement,index,tagName,childCount,xNode){ \n	\n	},__/*可选指定节点名*/\n)
+!string_xml.enumNodes(枚举函数,搜索标签名) = @.enumNodes( \n	function(parentElement,index,tagName,childCount,xNode){ \n	\n	},__/*可选指定要查找的标签名（tagName），忽略大小写\n回调函数返回非 null 值时退出枚举，并返回回调函数的所有返回值*/\n)
 !string_xml.tagName = 节点标签名 
 !string_xml.getAttribute(__) = 取属性值,\n参数中指定属性名字,属性名忽略大小写,\n如果通过下标或成员操作符直接获取属性时区分大小写的
 !string_xml.eachChild() = !string_xml.
@@ -572,6 +588,7 @@ string.xml() = !string_xml.
 !string_xml.pushXml() = !string_xml.
 !string_xml.getParent() = 获取父节点
 !string_xml.remove() = 如果存在父节点,在父节点中移除此节点
-string.xml.ncr(__) = NCR字符编码、HTML实体字符还原为UTF8文本
-string.xml.escape(__) = 转义编码字符串中的 < > " ' & 等 XML 标记字符。\n如果参数为非 null 值则返回转换后的字符串。\n参数只能是 null 或字符串、buffer
+string.xml.ncrEncode(.(str,pattern) = 将字符串参数 @str 中以 @pattern 指定模式串所匹配的字符进行 NCR 编码。\n参数 @pattern 可用模式匹配语法指定要编码的字符，省略则默认为 ":|."。\n返回编码后的字符串。
+string.xml.ncr(__) = NCR 字符编码、HTML实体字符还原为 UTF8 文本
+string.xml.escape(__) = 将字符串中的 < > " ' & 等 XML 标记字符编码为实体字符（entity）。\n如果参数为非 null 值则返回转换后的字符串。\n参数只能是 null 或字符串、buffer
 end intellisense**/

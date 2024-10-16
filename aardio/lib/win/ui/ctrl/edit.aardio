@@ -170,7 +170,7 @@ edit._metaProperty =  metaProperty(
 		
 	    var buffer = ..raw.buffer(cch* 2 + 4,{INT cch = cch} ); 
 		if( ::User32.SendMessage(  owner[["hwnd"]],0xC4/*_EM_GETLINE*/,ind-1,buffer) )
-			return ..string.fromUnicode(buffer,,cch)
+			return ..string.fromUtf16(buffer,,cch)
     };
     lines = function(trim){
         var this = owner;
@@ -251,12 +251,29 @@ edit._metaProperty =  metaProperty(
 	appendText = function(s,...){
 		var len = ::SendMessage(owner[["hwnd"]],0xE/*_WM_GETTEXTLENGTH*/ ); 
 		owner.setsel(len+1);
-		 
+		  
 		if(s!==null){
-			s = ..string.toUnicode(s);
-			::SendMessage(owner[["hwnd"]],0xC2/*_EM_REPLACESEL*/,,s)
-			len = ::SendMessage(owner[["hwnd"]],0xE/*_WM_GETTEXTLENGTH*/ ); 
-			owner.setsel(len+1,len+1);
+			if(type(s)=="table"){
+				owner.setSelCharformat(s)
+				if(s.text) len = owner.appendText(s.text);
+				
+				if(...!==null) {
+					var len = owner.appendText(...);
+					owner.setSelCharformat(null)
+					return len;
+				}
+				elseif(#s){
+					var len = owner.appendText( ..table.unpack(s) );
+					owner.setSelCharformat(null)
+					return len;
+				} 
+			}
+			else{
+				s = ..string.toUtf16(s);
+				::SendMessage(owner[["hwnd"]],0xC2/*_EM_REPLACESEL*/,,s)
+				len = ::SendMessage(owner[["hwnd"]],0xE/*_WM_GETTEXTLENGTH*/ ); 
+				owner.setsel(len+1);
+			}
 		}
 		
 		if(...===null) return len;
@@ -276,7 +293,7 @@ edit._metaProperty =  metaProperty(
 				else args[i] = tostring(args[i]); 
 			}
 			else {
-				args[i] = ..string.fromUnicodeIf(args[i]);
+				args[i] = ..string.fromUtf16If(args[i]);
 			}
 		};
 		var str = ..string.crlf(..string.join(args,'\t'));
@@ -320,6 +337,26 @@ edit._metaProperty =  metaProperty(
 		if(!...)return;
 		return owner.dump(...);
 	};
+	validateText = function(cond,tip,tip2){
+		var text = owner.text;   
+		
+		var valid;
+		if(type.isString(cond)) valid =  ..string.match(text,cond);
+		else valid = cond(text);
+		  
+		if(text != (valid  || "") ){  
+			owner.text = valid;  
+			
+			if(tip){
+				owner.setFocus(); 
+				if(type.isString(tip)) owner.showErrorTip(tip,tip2); 
+			}
+			
+			return false;
+		}
+		
+		return true;
+	}; 
 	getClientRect = function(){
 		var rc = ::RECT();
 		::SendMessageByStruct(owner[["hwnd"]],0xB2/*_EM_GETRECT*/,0,rc);
@@ -502,11 +539,22 @@ edit._metaProperty =  metaProperty(
      		::User32.SendMessage(owner[["hwnd"]],0xC2/*_EM_REPLACESEL*/,,tostring(v))
 		} 	
 	};
+	load = function(path){
+		if(!type.isString(path)) error("文件路径必须是字符串",2); 
+		owner.text = ..string.load(path);
+		owner.modified = false;
+	};
+	save = function(path){
+		if(!type.isString(path)) error("文件路径必须是字符串",2); 
+		var r,e = ..string.save(path,owner.text);
+		owner.modified = false;
+		return r,e;
+	};
 );
 
 /***intellisense()
 !edit.setCueBannerText( = 指定单行文本框文本为空时的显示的默认提示文本
-!edit.setCueBannerText(.("提示文本",是否一直显示) = 指定单行文本框默认提示文本。\n参数 @1 必须是字符串，\n参数 @2 可省略，默认仅获得焦点时显示。\n\nXP 系统不支持此函数、但调用不报错\n注意 plus 控件提供支持XP系统的 setCueBannerText 函数
+!edit.setCueBannerText(.("提示文本",是否一直显示) = 指定单行文本框默认提示文本。\n参数 @1 必须是字符串，\n参数 @2 可省略，默认仅失去焦点时显示。\n\nXP 系统不支持此函数、但调用不报错。\n注意 plus 控件提供支持XP系统的 setCueBannerText 函数
 !edit.cls = 设计时类名
 !edit.color = 获取或修改字体颜色数值
 !edit.bgcolor= 获取或修改景颜色数值
@@ -518,16 +566,21 @@ edit._metaProperty =  metaProperty(
 !edit.selText = 获取或替换选区文本
 !edit.selLine = 获取或设置当前行,\n光标移动到该行开始处,并且滚动到该行,\n设为-1跳转到最后一行
 !edit.getLength() = 获取文本长度\n注意是按字符计数，而不是按字节计数
-!edit.modified = 文本内容是否已修改 
-!edit.text = 编辑控件文本属性\n注意 edit 控件使用'\r\\n'表示换行,而richedit控件则使用'\\n'表示换行，\n用多行注释作为字符串赋值时换行会自动格式化换行为'\r\\n'，\n例如 winform.edit.txt = /*文本\n第二行文本*/
-!edit.disabledText = 指定文本时,禁用此控件,并显示指定文本,\n指定为null时,启用此控件,并恢复控件之前的正常文本
+!edit.modified = 文本内容是否已修改，可修改此属性。\n修改 text 属性、以及调用 log,print 等函数不会自动变更此属性。\n用户输入、selText 变更、 appendTexxt,appendLink 调用都会变更此属性为 true。
+!edit.validateText( = 校验输入文本。\n全部文本完全符合要求返回 true，否则返回 false。\n\n可在 onChange 事件内调用此函数实时校验输入。\n\n如果需要限制数字，\n更简单的方法是在窗体设计器中设置控件的『限制数字』属性为 true，\n也就是指定控件的创建参数 num 的值为 true。
+!edit.validateText(.(模式串,错误标题,错误信息) = 用字符串参数 @1 指定的模式串校验控件的文本属性。\n将文本设为符合匹配的文本，如果找不到匹配文本设为空字符串。\n\n如果修改了文本且指定了字符串参数 @2,@3 ，\n则在控件内用气泡提示显示参数 @2,@3 指定的错误信息，\n并且将焦点切换到该控件，然后将输入光标设置到文本尾部。
+!edit.validateText(.(模式串,错误信息) = 用字符串参数 @1 指定的模式串校验控件的文本属性。\n将文本设为符合匹配的文本，如果找不到匹配文本设为空字符串。\n\n如果修改了文本且指定了字符串参数 @2 ，\n则在控件内用气泡提示显示参数 @2 指定的错误信息，\n并且将焦点切换到该控件，然后将输入光标设置到文本尾部。
+!edit.validateText(.(校验输入函数,错误信息) = 调用参数 @1 指定的函数校验控件的文本属性，\n该函数必须自参数中接收当前文本并返回合法文本或 null。\n然后将文本设为符合合法的文本，如果校验函数返回 null 设为空字符串。\n\n如果修改了文本且指定了字符串参数 @2 ，则在控件内用气泡提示显示参数 @2 指定的错误信息，\n并且将焦点切换到该控件，然后将输入光标设置到文本尾部。
+!edit.validateText(.(限制金额示例,错误标题,错误信息) = @.validateText("<\d+\.\d\d>|<\d+\.\d>|<\d+\.>|<\d+>",\n	"不能接受的字符","只能在此输入金额，小数点后不能超过 2 位!") 
+!edit.text = 获取或写入编辑控件文本属性。\n可写入 UTF8 或 UTF16 字符串，写入 null 值转换为空字符串，\n其他类型值用 tostring 转为字符串后写入。\n注意 edit 控件使用'\r\\n'表示换行,而 richedit 控件则使用'\\n'表示换行，\n用双引号或反引号包含字符串赋值时换行会自动将换行解析为'\\n'，\n\n用块注释赋值为字符串时会自动将换行规范化解析为'\r\\n'，\n例如 winform.edit.txt = /*文本\n第二行文本*/
+!edit.disabledText = 当指定文本时，禁用此控件并显示指定文本。\n指定为 null 时，启用此控件并恢复控件之前的正常文本。
 !edit.hwnd = 控件句柄
 !edit.id = 控件ID
 !edit.readonly = 是否只读\n只读时禁止编辑
 !edit._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 !edit.getParent() = 返回父窗口\n!static.
 !edit.setParent(__/*控件对象*/) = 改变父窗口 
-!edit.hide = 控件是否隐藏
+!edit.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。
 !edit.disabled = 控件时否禁用
 !edit.left = 左侧坐标
 !edit.right = 右侧坐标
@@ -541,7 +594,8 @@ edit._metaProperty =  metaProperty(
 !edit.deselect() = 取消选定 
 !edit.print(.(->->->) = 将多个参数转换为字符串,\n并使用制表符分隔各参数追加到文本尾部\n并追加换行\n如果超出limit属性设定的字符数限制则移除头部多余的字符\n为提升性能,limit不可过大\n\n对于table对象,aardio会序列化为文本然后输出,\n如果当前已经导入了web.json，则自动转换为json后输出,\n可以用于调试代码显示变量的值
 !edit.printf(.(->->->) = 将多个参数调用string.format格式化后追加到文本尾部\n并追加换行
-!edit.appendText(.(追加文本) = 追加文本并移动光标到文本尾部\n支持零个、或多个参数,参数使用tostring()转换为文本\n返回文本总长度
+!edit.appendText( = 追加文本并移动光标插入点到文本尾部。
+!edit.appendText(.(追加文本-->->) = 追加文本并移动光标插入点到文本尾部。\n可指定零个、或多个参数，参数可以是字符串、buffer、数值。\n传入其他类型参数会抛出异常。\n返回文本总长度
 !edit.scrollCaret() = 滚动到光标处
 !edit.lineScroll(.(滚动到指定行) = 滚动条移动到指定行\n如果不指定参数则滚动到最后一行 
 !edit.lineToChar(__/*指定行号*/) = 获取指定行首字符位置\n省略参数表示当前行,小于0表示自尾部倒数到指定行,-1表示最后一行
@@ -606,7 +660,7 @@ edit._metaProperty =  metaProperty(
 !edit.saveScale() = 根据控件当前位置、缩放比例，更新控件的设计时位置参数。\n以避免下次窗口缩放自适应调整控件当前位置更改被清除，\n控件所有调整位置的属性或成员函数已自动调用此函数。
 !edit.reloadScale() = 按设计时位置参数、重新调整控件位置以适应窗口当前缩放比例。\n父窗口缩放时会自动执行此操作。\n默认在启动窗口消息循环时会自适应调整所有控件。\n所以在启动消息循环前添加控件不必调用此函数。
 !edit.threadCallable() = 开启此控件的跨线程调用功能
-!edit.orphanWindow(.(transparent,hwndBuddy) = 创建悬浮窗口,\n悬浮窗口仍然显示在原来的位置,\n悬浮窗口如影随形的跟随父窗口移动或改变大小,控件原来的固定边距等参数仍然有效\n此控件不建议指定参数
+!edit.orphanWindow(.(transparent,hwndBuddy,borderless) = 创建悬浮窗口。\n悬浮窗口是模仿子窗口外观效果的独立窗口，父窗口可自动调整子窗口到设定位置。\n可选参数 @transparent 为 true 则转换为分层透明窗口。\n可选利用 @hwndBuddy 参数指定外部进程窗口句柄的并附加在内部控件上以实现相同的效果。\n伙伴窗口总是会保持在悬浮窗口前面，并保持相同的大小、位置。\n可重复调用此函数更换伙伴窗口，旧的伙伴窗口必须自行关闭。\n可选指定 @borderless 参数 为 true 以移除 @hwndBuddy  的窗口边框。
 !edit.lines(忽略空白) = @for line in ??.lines(true){ 
 	__/*遍历所有文本行,\n如果迭代器参数为true则清除每行首尾空格,并忽略空行*/
 }
@@ -630,7 +684,11 @@ edit._metaProperty =  metaProperty(
 }
 !edit.onChange() = @.onChange = function(){ 
 	if(owner.onModified)owner.onModified(true);
-	__/*响应事件，文本内容已变更，\n多行编辑框用 text 属性赋值文本不会触发此事件*/
+	
+	owner.validateText("<\d+\.\d\d>|<\d+\.\d>|<\d+\.>|<\d+>"
+		,"请输入金额，小数点后不能超过 2 位!"); 
+	 	
+	__/*响应事件，文本内容已变更，\nedit 控件启用多行时用 text 属性赋值文本不会触发此事件。\nlog,print 函数调用也是基于修改 text 属性实现，也不会触发此事件。\n但 appendText,selText 修改插入点文本的调用会触发此事件。*/
 }
 !edit.onFocusGot() = @.onFocusGot = function(){ 
 	__/*响应事件，文本框已获得输入焦点*/
@@ -665,6 +723,8 @@ edit._metaProperty =  metaProperty(
 !edit._defWindowProc(hwnd,message,wParam,lParam) = 用于在 wndproc 回调中提前调用默认消息回调函数,\n所有窗口和控件定义了 wndproc 回调以后会自动创建这个函数,\n调用此函数以后,wndproc 必须指定非 null 返回值,\n以避免再次重复调用默认回调函数
 !edit.translateCommand() = 允许转发转发子窗口的命令（_WM_COMMAND）与通知（_WM_NOTIFY）消息，\n避免子窗口 oncommand，onnotify 等回调失效。\n同时会处理子窗口的 _WM_CTLCOLORSTATIC 等消息，\n以避免部分外观属性失效
 !edit.valid = 窗口是否有效，\n窗口未关闭返回 true ，\n窗口已关闭或正在关闭返回 false
+!edit.load(__) = 自参数 @1 指定的文件路径加载文本。
+!edit.save(__) = 保存控件文本到参数 @1 指定的文件路径。
 ?win.ui.ctrl.edit  =!edit.
 win.ui.ctrl.edit() = 文本框控件\n!edit.
 win.ui.ctrl.edit = 文本框控件支持库

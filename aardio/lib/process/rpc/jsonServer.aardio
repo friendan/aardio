@@ -273,7 +273,7 @@ rpc.external = 指定包含客户端可以调用的远程函数的表对象,可�
 rpc.onError = @.onError = function(err,requestData){
 	__/*服务器内部错误时触发此事件\nerr为抛出的异常对象,一般为错误信息\nrequestData为客户端发送的请求数据*/
 } 
-rpc.aasdl = 指定自定义的aasdl\n如果不指定,服务端会根据external自动生成aasdl\n如果客户端请求的方法名为"?"时,返回此属性,\n[关于aasdl](http://bbs.aardio.com/doc/aasdl)
+rpc.aasdl = 指定自定义的aasdl\n如果不指定,服务端会根据external自动生成aasdl\n如果客户端请求的方法名为"?"时,返回此属性,\n[关于aasdl](https://github.com/aardio/aardio-js/blob/master/AASDL.md)
 rpc.beforeJsonParse = @.beforeJsonParse = function(jsonData){
     __/*可以在这里解密客户端数据,返回null中止本次调用*/
 	return jsonData;

@@ -10,7 +10,7 @@ class family {
 		}
 		
 		if(type(name) == type.string){ 
-			var e,f = gdip.CreateFontFamilyFromName ( ..string.toUnicode(name),collection) ;
+			var e,f = gdip.CreateFontFamilyFromName ( ..string.toUtf16(name),collection) ;
 			if( e ) return null,gdip.errMsg[e];
 			this.pFamily = f;  
 			this.name = name; 

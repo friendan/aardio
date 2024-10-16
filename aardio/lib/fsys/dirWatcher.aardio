@@ -34,7 +34,7 @@ class dirWatcher{
 				
 				convert( buffer, entry,offset);  
 				var path = ..raw.tostring(buffer,offset + 13,offset + 12 + entry.FileNameLength );  
-				push(changes,{filename = ..string.fromUnicode(path);filenameW = path; action=entry.Action;actionText = ACTION_TEXT[entry.Action]});
+				push(changes,{filename = ..string.fromUtf16(path);filenameW = path; action=entry.Action;actionText = ACTION_TEXT[entry.Action]});
 				offset = offset + entry.NextEntryOffset; 
 			}while(entry.NextEntryOffset ? ( offset + 14/*12+WCHAR*/ <= size ) )
 			return changes;

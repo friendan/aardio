@@ -178,14 +178,14 @@ groupbox._metaProperty = metaProperty( )
 !button.cls = 设计时类名
 !button.className = 运行时类名
 !button.text = 按钮文本属性
-!button.disabledText = @.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}__/*指定文本时,禁用此控件,并显示指定文本,\n指定为数组时,创建动画并在主文本前循环显示数组中的字符串,\n数组可选用 text 属性指定按钮禁用状态按钮主文本,\n指定为null时,启用此控件,并恢复控件之前的正常文本*/
+!button.disabledText = @.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"}__/*disabledText 属性指定为文本时，禁用此控件并显示指定文本。\n指定为数组时,创建动画并在原控件文本前面循环显示数组中的字符串。\n数组内可选用 text 属性指定按钮禁用状态按钮主文本。\ndisabledText 属性指定为 null 时，启用此控件并恢复控件之前的正常文本。*/
 !button.note = 设置按钮附注\n必须在创建控件的初始化参数中也指定该属性,\n\n指定该属性会切换为「命令链接」样式,\n支持Vista,Win7 以及之后的系统,不支持 XP 系统\n「命令链接」样式忽略控件的字体设置，但支持背景色属性
 !button.hwnd = 控件句柄
 !button.id = 控件ID 
 !button._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 !button.getParent() = 返回父窗口\n!static.
 !button.setParent(__/*控件对象*/) = 改变父窗口  
-!button.hide = 控件是否隐藏
+!button.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。
 !button.disabled = 是否禁用
 !button.left = 左侧坐标
 !button.right = 右侧坐标
@@ -224,7 +224,7 @@ groupbox._metaProperty = metaProperty( )
 !button.saveScale() = 根据控件当前位置、缩放比例，更新控件的设计时位置参数。\n以避免下次窗口缩放自适应调整控件当前位置更改被清除，\n控件所有调整位置的属性或成员函数已自动调用此函数。
 !button.reloadScale() = 按设计时位置参数、重新调整控件位置以适应窗口当前缩放比例。\n父窗口缩放时会自动执行此操作。\n默认在启动窗口消息循环时会自适应调整所有控件。\n所以在启动消息循环前添加控件不必调用此函数。
 !button.threadCallable() = 开启此控件的跨线程调用功能
-!button.orphanWindow(.(transparent,hwndBuddy) = 创建悬浮窗口,\n悬浮窗口仍然显示在原来的位置,\n悬浮窗口如影随形的跟随父窗口移动或改变大小,控件原来的固定边距等参数仍然有效\n此控件不建议指定参数
+!button.orphanWindow(.(transparent,hwndBuddy,borderless) = 创建悬浮窗口。\n悬浮窗口是模仿子窗口外观效果的独立窗口，父窗口可自动调整子窗口到设定位置。\n可选参数 @transparent 为 true 则转换为分层透明窗口。\n可选利用 @hwndBuddy 参数指定外部进程窗口句柄的并附加在内部控件上以实现相同的效果。\n伙伴窗口总是会保持在悬浮窗口前面，并保持相同的大小、位置。\n可重复调用此函数更换伙伴窗口，旧的伙伴窗口必须自行关闭。\n可选指定 @borderless 参数 为 true 以移除 @hwndBuddy  的窗口边框。
 !button.onMeasureItem(measureItem,dpiScaleX,dpiScaleY) = @.onMeasureItem = function(measureItem){
 	measureItem.itemHeight = 51;  
 	__/*控件属性里指定 ownerDraw 为 true 触发此事件\n在这里配置自绘控件项参数*/

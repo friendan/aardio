@@ -1,4 +1,4 @@
-//httpFile 断点续传
+﻿//httpFile 断点续传
 import fsys;
 import inet.http;
 namespace inet
@@ -59,7 +59,7 @@ class httpFile {
 			resumePath  = ..io.exist( path + ".dowload" ) || path + ".dow!oad" ;
 		}
 		elseif( ..fsys.isDir(resumePath)  ||  !(  ..io.exist(resumePath)  ||  ..string.match(resumePath,"\.[^\\/.]+$")  ) ){
-			resumePath = ..fsys.joinpath(resumePath,..io.splitpath(path).name + ".dow!oad");
+			resumePath = ..io.joinpath(resumePath,..io.splitpath(path).name + ".dow!oad");
 		}
 		this.resumePath = resumePath;
 		
@@ -68,14 +68,14 @@ class httpFile {
 		
 		var fileSize = 0;
 		if(!test){
-			this.file = ..io.open(path,"a+b",0x10 /* _SH_DENYRW */)
+			this.file = ..io.file(path,"a+b",0x10 /* _SH_DENYRW */)
 			if(!this.file) return null,'创建文件失败,请指定正确的存储路径';
 				
 			this.file.seek("end")
 			fileSize = this.file.seek();	
 		}
 		else {
-			this.file = ..io.open(path,"rb",0x10 /* _SH_DENYRW */)
+			this.file = ..io.file(path,"rb",0x10 /* _SH_DENYRW */)
 			if(this.file){
 				this.file.seek("end")
 				fileSize = this.file.seek();
@@ -176,7 +176,7 @@ class httpFile {
 
 			if(fileSize!=0){
 				this.file.close();
-				this.file = ..io.open(path,"w+b",0x10 /* _SH_DENYRW */);
+				this.file = ..io.file(path,"w+b",0x10 /* _SH_DENYRW */);
 				if(!this.file) return null,'创建文件失败,请指定正确的存储路径';
 				fileSize = 0;
 			}

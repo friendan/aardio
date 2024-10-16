@@ -142,7 +142,7 @@ queryinfo(2,"select source") =  = 查询调用椎栈源码相关信息\n参数�
 end intellisense**/
 
 /**intellisense()
-debug = 调试函数库,\ndebug 属于内核库,但必须使用 import debug 导入才能使用
+debug = 调试函数库,\ndebug 属于内置库,但必须使用 import debug 导入才能使用
 debug.hook() = !debugHook.
 debug.queryinfo() = !debugInfo.
 end intellisense**/

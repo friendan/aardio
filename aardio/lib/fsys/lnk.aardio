@@ -1,4 +1,4 @@
-//lnk 快捷方式
+﻿//lnk 快捷方式
 import fsys; 
 import fsys.version;
 import util.metaProperty;
@@ -40,7 +40,7 @@ lnk._metaProperty = ..util.metaProperty(
 		if( ..fsys.isDir(path) ){
 			var filename = owner.filename;
 			if( !#filename ) error("未指定快捷方式存储文件名或目标路径",2);
-			path = ..fsys.joinpath(path,filename);
+			path = ..io.joinpath(path,filename);
 		}
 		
 		var hr = owner.$persistFile.Save( ..io.fullpath(path) ,true);
@@ -210,8 +210,8 @@ lnk._metaProperty = ..util.metaProperty(
 
 		var commonPath = ..fsys.getSpecial( 0x17 /*_CSIDL_COMMON_PROGRAMS*/,sudir ); 
 		var userPath = ..fsys.getSpecial( 0x2 /*_CSIDL_PROGRAMS*/,sudir ); 
-		var userDelPath = #sudir ? userPath : ..fsys.joinpath(userPath,filename) 
-		var commonDelPath =  #sudir ? commonPath : ..fsys.joinpath(commonPath,filename) 
+		var userDelPath = #sudir ? userPath : ..io.joinpath(userPath,filename) 
+		var commonDelPath =  #sudir ? commonPath : ..io.joinpath(commonPath,filename) 
 		
 		if( pin ){
 			if( allUsers ) {
@@ -348,7 +348,7 @@ namespace lnk {
         	var cchBuf = {INT value = #target/2 }
         	var r = msi.MsiGetComponentPathW(product,component,target,cchBuf);
         	if (r == 3/*INSTALLSTATE_LOCAL*/ || r == 4/*INSTALLSTATE_SOURCE*/){
-            	return ..string.fromUnicode(target,,-1);
+            	return ..string.fromUtf16(target,,-1);
         	}
     	}	
 	}

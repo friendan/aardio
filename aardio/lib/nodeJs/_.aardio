@@ -8,7 +8,7 @@ import string.cmdline;
 import web.json;
 import fsys;
 import fsys.lnk;
-import process.job.limitKill;
+import process.rpc.jsonClient;
 
 namespace nodeJs;
 
@@ -38,7 +38,7 @@ install = function(portable){
 
     if( ..io.exist(nodeExePath) ){
     	nodeDir = ..fsys.getParentDir(nodeExePath);
-    	npmCliJsPath  = ..fsys.joinpath(nodeDir,"\node_modules\npm\bin\npm-cli.js");
+    	npmCliJsPath  = ..io.joinpath(nodeDir,"\node_modules\npm\bin\npm-cli.js");
     	
     	nodeDir = ..fsys.shortpath(nodeDir);
 		nodeExePath = ..fsys.shortpath(nodeExePath);
@@ -100,7 +100,7 @@ install = function(portable){
 		
 		if( ..io.exist(nodeExePath) ) {
 			nodeDir = ..fsys.getParentDir(nodeExePath);
-			npmCliJsPath  = ..fsys.joinpath(nodeDir,"\node_modules\npm\bin\npm-cli.js");
+			npmCliJsPath  = ..io.joinpath(nodeDir,"\node_modules\npm\bin\npm-cli.js");
 			
 			nodeDir = ..fsys.shortpath(nodeDir);
 			nodeExePath = ..fsys.shortpath(nodeExePath);
@@ -160,6 +160,7 @@ cmd = function(filename,param,...){
 	}
 		
 	var cmd =  ..io.exist( ..io.joinpath(nodePath,filename + ".cmd" )) : ..fsys.shortpath( filename + ".cmd" ) :  filename;
+	
 	var prcs,err = ..process( cmd ,param,{workDir=..io.fullpath(self.workDir)});
 	if(prcs){
 		prcs.wait();
@@ -174,6 +175,8 @@ execFile = function(path,param,...){
     
     param = ..string.cmdline.arguments(param,...); 
 	..table.unshift(param, (..fsys.shortpath(path)));
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs,err = ..process.popen(nodeExePath,param,{workDir=..io.fullpath(self.workDir)})
 	if(prcs){
 		prcs.codepage = 65001;
@@ -199,7 +202,10 @@ exec = function(code,param,...){
 		return prcs,err;
     }
     
-    param = ..string.cmdline.arguments("-",param,...);  
+    param = ..string.cmdline.arguments(param,...);  
+    ..table.unshift(param,"-");
+    if(self.options)..table.unshift(param,self.options);
+   
 	var prcs,err = ..process.popen(nodeExePath,param,{workDir=..io.fullpath(self.workDir)})
 	if(prcs){
 		prcs.codepage = 65001;
@@ -217,7 +223,7 @@ exec = function(code,param,...){
 
 execLimit = function(...){
 	var prcs = exec(...);
-	if(prcs) prcs.assignToJobObject(..process.job.limitKill);
+	if(prcs) prcs.killOnExit();
 	return prcs;
 }
 
@@ -242,6 +248,70 @@ self.eval = function(js){
 	
 	
 	return null,err;
+}
+
+startLimit = function(...){
+	var prcs = start(...);
+	if(prcs) prcs.killOnExit();
+	return prcs;
+}
+
+start = function(path,...){
+    if(!install())return;
+    
+    if(!..io.exist(path)){
+    	var code = path;
+    	path = ..io.tmpname("node",".js");
+    	..string.save(path,code);
+    	..string.save(path,"; const fs = require('fs');fs.unlinkSync(__filename);"
+    		,true)
+    }
+    else
+    {
+    	path = ..io.fullpath(path)
+    }
+    
+    var args = ..string.cmdline.arguments(...); 
+    ..table.unshift(args,path);
+    if(self.options)..table.unshift(args,self.options);
+    
+    var prcs,err = ..process.popen(nodeExePath,args,{workDir=..io.fullpath(self.workDir)});
+ 	if(prcs){ 
+		prcs.codepage = 65001;  
+	}	
+	
+	return prcs,err
+}
+
+//RPC 协议会占用标准输出，JS 里其他 console.log 可能失效。
+startRpc = function(path,...){
+    if(!install())return;
+    
+    if(!..io.exist(path)){
+    	var code = path;
+    	path = ..io.tmpname("node",".js");
+    	..string.save(path,code);
+    	..string.save(path,";require('aardio/process/rpc'); const fs = require('fs');fs.unlinkSync(__filename);"
+    		,true)
+    }
+    else
+    {
+    	var mainPath = ..io.tmpname("node",".js");
+    	..string.save(mainPath,"
+require('"+..string.escape(..io.fullpath(path),true)+"');
+require('aardio/process/rpc'); 
+const fs = require('fs');
+fs.unlinkSync(__filename);
+");
+		path = mainPath;
+    }
+    
+    var args = ..string.cmdline.arguments(...); 
+    ..table.unshift(args,path);
+    if(self.options)..table.unshift(args,self.options);
+    
+    return ..process.rpc.jsonClient(nodeExePath,args,{workDir=..io.fullpath(self.workDir)});
+ 
 }
 
 requireResolve =  function(module){
@@ -283,6 +353,8 @@ requireByJs = function(js){
 
 	for m in ..string.gmatch(js,`require\(\s*['"]([^'"\s``]+)`) { 
 	   if(m=="startEnviron") continue;
+	   elseif(m=="aardio/process/rpc") continue;
+	   
 	   if(!requireResolve(m) ){
 	   	 cnpm("install","-g",m);
 	   	 if(m == 'aardio') cnpm("install","-g","ws");
@@ -296,6 +368,8 @@ prequireByJs = function(echo,js){
 	
 	for m in ..string.gmatch(js,`require\(\s*['"]([^'"\s``]+)`) { 
 		if(m=="startEnviron") continue;
+		elseif(m=="aardio/process/rpc") continue;
+		
 	    if(!requireResolve(m) ) {
 	    	pcnpm(echo,"install","-g",m);
 	    	if(m == 'aardio') pcnpm(echo,"install","-g","ws"); 
@@ -342,6 +416,8 @@ cnpm = function(param,...){
 	
 	param = ..string.cmdline.arguments(param,...);
 	..table.unshift(param, (..fsys.shortpath( prefix()+"\node_modules\cnpm\bin\cnpm")) : "cnpm");
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs = ..process( ..fsys.shortpath( nodeExePath ) ,param,{workDir=..io.fullpath(self.workDir)});
 	prcs.waitOne();
 	return prcs;
@@ -353,6 +429,8 @@ npm = function(param,...){
 
 	param = ..string.cmdline.arguments(param,...); 
 	..table.unshift(param, npmCliJsPath);
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs = ..process( nodeExePath,param,{workDir=..io.fullpath(self.workDir)});
 	prcs.waitOne();
 	return prcs;
@@ -363,6 +441,8 @@ pnpm = function(echo,param,...){
     
     param = ..string.cmdline.arguments(param,...); 
 	..table.unshift(param, npmCliJsPath);
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs,err = ..process.popen( nodeExePath,param,{workDir=..io.fullpath(self.workDir)});
 	 
 	if(prcs){  
@@ -389,6 +469,7 @@ pcnpm = function(echo,param,...){
 	
 	param = ..string.cmdline.arguments(param,...);
 	..table.unshift(param, (..fsys.shortpath( prefix()+"\node_modules\cnpm\bin\cnpm")) : "cnpm")
+	if(self.options)..table.unshift(param,self.options);
 	
 	var prcs,err = ..process.popen( nodeExePath,param,{workDir=..io.fullpath(self.workDir)});
 	if(prcs){  
@@ -407,6 +488,8 @@ npmget = function(param,...){
     
     param = ..string.cmdline.arguments(param,...); 
 	..table.unshift(param, npmCliJsPath);
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs,err = ..process.popen( nodeExePath,param,{workDir=..io.fullpath(self.workDir)});
 	 
 	if(prcs){  
@@ -446,7 +529,9 @@ pcmd = function(filename,param,...){
 	else {
 		error("参数错误",2)
 	}
-		
+	
+	if(self.options)..table.unshift(param,self.options);	
+	
 	var cmd =  ..io.exist( ..io.joinpath(nodePath,filename + ".cmd" )) : ..fsys.shortpath( filename + ".cmd" ) :  filename;
 	var prcs,err = ..process.popen( cmd ,param,{workDir=..io.fullpath(self.workDir)});
  
@@ -480,6 +565,8 @@ cmdget = function(filename,param,...){
 popen = function(param,...){
     if(!install())return; 
 	param = ..string.cmdline.arguments(param,...); 
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs,err =  ..process.popen( nodeExePath ,param,{workDir=..io.fullpath(self.workDir)});
  
 	if(prcs){  
@@ -493,6 +580,8 @@ popen = function(param,...){
 pget = function(param,...){
     if(!install())return; 
 	param = ..string.cmdline.arguments(param,...); 
+	if(self.options)..table.unshift(param,self.options);
+	
 	var prcs,err = ..process.popen( nodeExePath ,param,{workDir=..io.fullpath(self.workDir)});
  
 	if(prcs){  
@@ -535,17 +624,22 @@ startEnviron = function(environ){
 	..string.setenv("aarStartEnviron",..web.json.stringify(environ));
 	var path = ..io.joinpath(nodeModulesPath,"\startEnviron.js");
 	..string.save(path,`module.exports = JSON.parse(process.env.aarStartEnviron)` );
+	
+	var path = ..io.joinpath(nodeModulesPath,"\aardio\process\rpc.js");
+	..string.save(path,$"~\lib\nodeJs\process.rpc.js");
+	
 	return environ;
 } 
 
 freePort();
 
 /**intellisense(nodeJs)
-workDir = 设置node.js的应用程序工作目录\n默认已设置为 io.fullpath("/")
+options = 默认 Node.js 启动命令行选项参数。\n此选项参数添加于 js 代码或路径参数之前。\n可以为 null 或 string.args 支持的表、数组。
+workDir = 设置 Node.js 的应用程序工作目录\n默认已设置为 io.fullpath("/")
 getInstallPath() = 如果系统已安装 Node.js,返回 node.exe 路径
 install(.(portable) = 检测并安装node环境\n如果portable为true或指定node版本号，则忽略系统安装的node.exe\n否则优先使用系统安装的node.exe\n也可以在调用此函数以前在环境变量中使用NODE_EXE设置node.exe的路径\n此函数会在执行其他node命令前自动调用
-exec(__/*JS代码*/) = 运行JS代码，返回 process.popen 对象,\n如果参数@1不为空,则返回进程对象会关闭目标进程的输入流
-execLimit(__/*JS代码*/) = 运行JS代码，返回 process.popen 对象,\n返回进程绑定 process.job.limitKill 在退出时自动关闭,\n如果参数@1不为空,则返回进程对象会关闭目标进程的输入流
+exec(__/*JS代码*/) = 运行JS代码，返回 process.popen 对象,\n如果参数@1不为空,则返回进程对象会关闭目标进程的输入流。\n参数 @2 开始可以指定一个或多个命令行参数。\n命令行参数可以是一个以空格分开多个参数的字符串。\n或者传入多个参数、表、数组等由 string.args 自动合成为单个命令行参数。\n合成命令行将按需在首尾添加双引号，并处理必要的转义。
+execLimit(__/*JS代码*/) = 运行JS代码，返回 process.popen 对象,\n返回进程绑定 process.job.limitKill 在退出时自动关闭,\n如果参数@1不为空,则返回进程对象会关闭目标进程的输入流。\n参数 @2 开始可以指定一个或多个命令行参数。\n命令行参数可以是一个以空格分开多个参数的字符串。\n或者传入多个参数、表、数组等由 string.args 自动合成为单个命令行参数。\n合成命令行将按需在首尾添加双引号，并处理必要的转义。
 execFile(.(JS代码文件,其他命令行参数->->->) = 运行JS代码文件,返回process.popen对象,\n\n第一个参数指定JS代码文件,可选自第二个参数开始指定命令行参数\n多个命令行参数则调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
 eval(js) = @.eval(`\n(function(){\n	return process.config;__/*执行JS表达式并返回结果,\n返回值如果是字符串,必须放到对象或数组中返回*/\n})()\n`) 
 npm(__) = 执行npm命令,\n此函数会打开控制台,\n\n多个命令行参数则调用 process.joinArguments 合并,\n不在双引号内、且包含空白或需要转义的参数转义处理后首尾添加双引号
@@ -566,12 +660,22 @@ freePort() = 分配新的服务端可用端口\n在node.js中可使用process.en
 popen(__) = 以管道方式打开node进程,\n支持不定个数启动参数,也可以在一个字符串参数中写多个参数
 pget(__) = 以管道方式打开node进程,并返回输出值,\n支持不定个数启动参数,也可以在一个字符串参数中写多个参数
 exec() = !process_popen.
+startLimit() = !process_popen.
 execLimit() = !process_popen.
 execFile() = !process_popen.
 popen() = !process_popen.
 pcmd() = !process_popen.
 startEnviron(环境变量表) = @.startEnviron(\n	appPath = io.fullpath("/");\n	__/*在这里设置的启动参数对象，在node.js中使用 require('startEnviron')导入*/\n)
 startEnviron() = !nodeJsStartEnviron.
+
+startLimit( = 执行 Node.js 代码，返回 process.popen 对象。\n此函数不会关闭 Node.js 的标准输入。\n\n当前进程退出时，Node.js 进程会自动退出。
+startLimit(.(code,->->->) = 参数 @code 指定 Node.js 代码或代码文件。。\n参数 @2 开始可以指定一个或多个命令行参数。\n命令行参数可以是一个以空格分开多个参数的字符串。\n或者传入多个参数、表、数组等由 string.args 自动合成为单个命令行参数。\n合成命令行将按需在首尾添加双引号，并处理必要的转义。
+start( = 执行 Node.js 代码。\n返回 process.popen 对象。\n此函数不会关闭 Node.js 的标准输入。
+start(.(code,->->->) = 参数 @code 指定 Node.js 代码或代码文件。。\n参数 @2 开始可以指定一个或多个命令行参数。\n命令行参数可以是一个以空格分开多个参数的字符串。\n或者传入多个参数、表、数组等由 string.args 自动合成为单个命令行参数。\n合成命令行将按需在首尾添加双引号，并处理必要的转义。
+start() = !process_popen.
+startRpc( = 启动 Node.js 的 process.rpc 兼容服务端。\n在当前进程退出时，Node.js 服务端进程会自动退出。\n返回 process.rpc.jsonClient 对象，可用于调用 Node.js 全局对象或函数。\n全局对象指 Node.js 中 global 对象的成员。\n被调用的 Node.js 函数不能是异步函数。\n\nRPC 协议会占用标准输出，JS 里其他 console.log 可能失效。
+startRpc(.(code,->->->) = 参数 @code 指定 Node.js 代码或代码文件。。\n参数 @2 开始可以指定一个或多个命令行参数。\n命令行参数可以是一个以空格分开多个参数的字符串。\n或者传入多个参数、表、数组等由 string.args 自动合成为单个命令行参数。\n合成命令行将按需在首尾添加双引号，并处理必要的转义。\n\n返回 process.rpc.jsonClient 对象，可用于调用 Node.js 全局对象或函数。
+startRpc() = !process_rpcJsonClient.
 port = aardio 为 Node.js 自动分配的空闲端口\n调用 nodeJs.startEnviron 会自动设置此函数,\n nodeJs.install 首次执行会自动调用  nodeJs.startEnviron,\n几乎所有 nodeJs 库函数都会自动调用 nodeJs.install
 version = node.js 运行时版本
 config(.(key,value) = npm config set设置值

@@ -1,4 +1,4 @@
-//httpFile 网络安装包
+﻿//httpFile 网络安装包
 import fsys;
 import inet.http;
 import sevenZip.lzma;
@@ -15,31 +15,32 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
 	
 	saveDir = ..io.fullpath(saveDir : "~\download\" )
 	..fsys.createDir(saveDir);
-	
-	if(!saveName){
-		saveName = tPath.file;
-	}
-	if(!extraDir){
-		extraDir = ..string.match(saveName,"(.+)\.[^\.]+$"  );
-		if(!extraDir) extraDir = saveName + ".uncompress";
-		extraDir = ..fsys.joinpath(saveDir,extraDir)
-	}
-	else {
-		extraDir = ..io.fullpath(extraDir);
-	} 
-
-	var pathCabinet = ..fsys.joinpath(saveDir,saveName)
+  
+	var savePath = ..io.joinpath(saveDir,saveName)
 	var downBox = ..inet.downBox(parentForm,title,false) 
 	downBox.headers = self.headers;
 	downBox.referer = self.referer;
 	downBox.userAgent = self.userAgent;
 	downBox.preget = self.preget;
 	
-	downBox.endProc = function(){
+	downBox.endProc = function(savePath){
+		if(!extraDir){
+			extraDir = ..string.match(saveName,"(.+)\.[^\.]+$"  );
+			if(!extraDir) extraDir = saveName + ".uncompress";
+			extraDir = ..io.joinpath(saveDir,extraDir)
+		}
+		else {
+			extraDir = ..io.fullpath(extraDir);
+		} 
+		
+		if(!saveName){
+			saveName = tPath.file;
+		}
+	
 		downBox.text = "正在解压缩:" + saveName; 
 		..win.peekPumpInputMessage();
 		
-		var tarTempName = pathCabinet + ".tar";   
+		var tarTempName = savePath + ".tar";   
 		downBox.progress.hide = false;
 		 
 		var processed = 0;
@@ -47,7 +48,7 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
 		downBox.progress.setProgressRange(1,1000);  
 		
 		var peekMsg = ..win.peekPumpMessage;
-		var ret = ..sevenZip.lzma.decodeFile(pathCabinet,tarTempName,function(inProcessed,outProcessed){ 
+		var ret = ..sevenZip.lzma.decodeFile(savePath,tarTempName,function(inProcessed,outProcessed){ 
 			if( (peekMsg()!==null) && downBox.continueModal ){
 			 	processed = processed + inProcessed; 
 			 	downBox.progress.progressPos = processed / step;
@@ -93,13 +94,13 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
 			downBox.text = tarFile.lastError
 		} 
 	}
-	downBox.download(url,pathCabinet,null,null,"" ) 
+	downBox.download(url,savePath,null,null,"" ) 
 	
 	if(!downBox.complete){ 
 		return;
 	} 
 	
-	if( ! ..io.exist(pathCabinet,4) ){  
+	if( ! ..io.exist(savePath,4) ){  
 		return false; 
 	} 
  
@@ -114,7 +115,7 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
  	);
  	if(!fileRootDir)return;
  	
- 	var setupFile = ..fsys.joinpath(fileRootDir,"setup.dl.aardio")
+ 	var setupFile = ..io.joinpath(fileRootDir,"setup.dl.aardio")
 	if( ..io.exist(setupFile) ){
 		var handle = ..thread.create( setupFile ); 
 		if( ..win.isClosed() ){

@@ -65,3 +65,15 @@ getPackageIndex(__) = 返回指定 Package 的版本信息。\n成功返回表�
 http = web.rest.jsonLiteClient 客户端。\n!web_restClient.
 query(__) = 搜索包。\n参数 @1 可选指定一个查询参数表。\n参数表支持的字段：\nhttps://learn.microsoft.com/nuget/api/search-query-service-resource
 end intellisense**/
+
+/*
+系统自带的都是 .NET Framework 。
+如果 nuget 包里找不到 .NET Framework 的程序集，
+那么可以改用 NET Standard  2.0 的程序集。
+
+自 .NET Framework 4.6.1 起支持 NET Standard  2.0，
+但实际上  NET Standard  2.0 推荐的最低版本是 .NET 4.7.2 。 
+
+Win10 1809 自带 .NET 4.7.2
+Win11 以及 Win10 1903 自带 .NET 4.8
+*/

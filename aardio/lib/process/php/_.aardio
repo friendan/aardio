@@ -3,26 +3,33 @@ import wsock.tcp.simpleHttpServer;
 import win.path;
 import win.reg;
 import fsys;
+import process.rpc.jsonClient;
 
 class process.php{
 	ctor( path,documentRoot,cgiPath,iniPath ){
     	if(!cgiPath)cgiPath=self.cgiPath;
-    	if(!iniPath)iniPath=self.iniPath;
-    	
- 		if( ! ..io.exist(cgiPath) ){
- 			error("请先指定 process.php.cgiPath")
+    	if( ! ..io.exist(cgiPath) ){
+    	    cgiPath = checkCgiPath()
+ 			if(!cgiPath) error("请先指定 process.php.cgiPath")
  		}
+ 		
+    	if(!iniPath)iniPath = self.iniPath; 
  		
  		..wsock.tcp.simpleHttpServer.customErrors = self.customErrors;
  		..wsock.tcp.simpleHttpServer.threadNum = self.threadNum;
  		..wsock.tcp.simpleHttpServer.startPort = self.startPort;
  		..wsock.tcp.simpleHttpServer.startIp = self.startIp;
  		..wsock.tcp.simpleHttpServer.defalutDocument = "index.php";
+ 		 
+ 		if(type(httpHandle[["/jsonrpc"]])==="table"){ 
+ 			enableJsonRpcClient(true);
+ 		}
  		
  		..wsock.tcp.simpleHttpServer.threadGlobal = ..table.assign(threadGlobal,{
  			phpCgiPath = cgiPath;
  			phpIniPath = iniPath;
  			httpHandle = httpHandle;
+ 			enableJsonRpcClientPath = ENABLE_JSON_RPC_CLIENT;
  		})
  		
  		return ..wsock.tcp.simpleHttpServer.startUrl(path,documentRoot,self.app); 
@@ -31,67 +38,250 @@ class process.php{
 
 namespace process.php;
 
-notify = function(url){
+notify = function(url,debug){
 	..thread.invoke( 
-		function(url){
+		function(url,debug){
 			import inet.http;
-			inet.http().location(url);
-		},..process.php(url)
+			 
+			var http = inet.http();  
+			http.beginRequest(url,"GET"); 
+			http.send(); 
+			
+			if(debug===false){
+				http.close();
+				return;
+			}
+			 
+			if(_STUDIO_INVOKED){
+				var headers = http.readHeader();
+				..io.stderr.write(headers);
+				
+				for(str,size in http.eachRead() ){ 
+					..io.stderr.write(str);  
+				}
+			}
+ 			
+ 			http.close();
+ 			
+		},..process.php(url),debug
 	)
 }
 
-cgiPath = ..io.exist("/php/php-cgi.exe");
+cgiPath = null;
 
-if( !..io.exist(cgiPath) ){
+checkCgiPath = function(){
+	if(..io.exist(cgiPath)){
+		return cgiPath;
+	}
+	
+	cgiPath = ..io.exist("/php/php-cgi.exe");
+	if ..io.exist(cgiPath) return cgiPath;
+	
 	cgiPath = ..string.getenv("PHP_CGI_EXE_PATH")
-}
- 
-if( !..io.exist(cgiPath) ){
+	if ..io.exist(cgiPath) return cgiPath;
+	
+	if(_WIN10_LATER){
+		cgiPath = ..io.appData("aardio\std\php\php-8.3-Win32-x86\php-cgi.exe");
+		if ..io.exist(cgiPath) return cgiPath;		
+	}
+	
+	if(_WIN7_LATER){
+		cgiPath = ..io.appData("aardio\std\php\php-7.4-Win32-x86\php-cgi.exe");
+		if ..io.exist(cgiPath) return cgiPath;	
+	} 
+			 
 	cgiPath = ..win.path.search("php-cgi.exe")
-}
-
-if( ! ..io.exist(cgiPath) ){
+	if ..io.exist(cgiPath) return cgiPath;
+				 
 	var reg = ..win.regReader("HKEY_LOCAL_MACHINE\SOFTWARE\PHP")
 	if(reg){
 		var dir = reg.queryValue("InstallDir")	
 		if(dir){
 			cgiPath = ..io.joinpath(dir,"php-cgi.exe")
+			if ..io.exist(cgiPath) {
+				reg.close();
+				return cgiPath;
+			}
 		}
+		
+		reg.close();
+	} 
+			
+			
+	if( ..io.exist("C:\Program Files\PHP") ){
+		cgiPath = null;
+		
+		..fsys.enum( "C:\Program Files\PHP", "*.*",
+			function(dir,filename,fullpath,findData){ 
+				if(!filename){ 
+	           		cgiPath = ..io.exist( ..io.joinpath(fullpath,"php-cgi.exe") )
+	           		if(cgiPath) return false;
+				} 
+			},false 
+		)
+	
+		if(cgiPath) return cgiPath; 
+	} 
+	
+	
+	cgiPath = "~\lib\php\.dll\php-cgi.exe";		
+	if( ..io.exist(cgiPath) ){
+		return cgiPath;
+	}	
+	
+	if(_WIN10_LATER){
+		import process.php.8.3;	
 	}
+	elseif(_WIN7_LATER){
+		import process.php.7.4;	
+	}
+	
+	return ..io.exist(process.php.cgiPath);
 }
 
-if( ( ! ..io.exist(cgiPath) ) && ..io.exist("C:\Program Files\PHP")){
-	..fsys.enum( "C:\Program Files\PHP", "php-cgi.exe",
-		function(dir,filename,fullpath,findData){ 
-			if(filename){ 
-	           	cgiPath = fullpath
-	           	return false;
-			} 
-		}  
-	);
-} 
-
-if( !..io.exist(cgiPath) ){
-	cgiPath = "~\lib\php\.dll\php-cgi.exe";
-}
-
-app = function(response,request,session){
+app = function(response,request,session){ 
 	if(  httpHandle && httpHandle[request.path] ){
-		return httpHandle[request.path](response,request,session);
+		var handler = httpHandle[request.path];
+		 
+		if(type.isString(handler)){
+			if(!..string.endWith(request.path,".aardio")){ 
+				response.contentType = ..fsys.mime.fromData(handler,request.url,"text/html"); 
+				return response.write(handler) 	
+			}
+			else { 
+				response.contentType = "text/html";
+				
+				var page,err = loadcode( handler );
+				if(!page){
+					response.error(err);  
+				}
+				
+				invoke(page);
+				return;
+			}
+		}
+		elseif(type(handler) === "table" ){
+			import web.rpc.jsonServer;
+			var jsonServer = web.rpc.jsonServer();  
+					
+			..table.assign(jsonServer,handler); 
+			jsonServer.rpc.run();
+			return;
+		}
+		
+		return handler(response,request,session);
 	}
 	
 	import process.php.cgi;
 	if( string.endWith(request.path,".php",true) ){
-		process.php.cgi(response,request,phpCgiPath,phpIniPath);		
+		
+		if(enableJsonRpcClientPath){
+			process.php.cgi(response,request,phpCgiPath,phpIniPath,"-d",`auto_prepend_file="` + enableJsonRpcClientPath + `"`);
+		}
+		else {
+			process.php.cgi(response,request,phpCgiPath,phpIniPath);
+		} 
 	}
 	else {
 		response.loadcode( request.path );
 	}
 }
 
+enableJsonRpcClient = function(e){
+	var cgiPath = checkCgiPath();
+	if(!cgiPath) error("请指定有效的 process.php.cgiPath");
+	
+	ENABLE_JSON_RPC_CLIENT = null;
+	
+	if(e){
+		var rpcPah = ..io.fullpath( ..io.joinpath(..io.splitpath(cgiPath).dir,"aardio\json-rpc-client.php") );
+	 	..string.save(rpcPah,$"~\lib\process\php\.php\json-rpc-client.php");
+	 	
+	 	ENABLE_JSON_RPC_CLIENT = rpcPah;
+	} 
+}
+
+startRpc = function(path,param){
+	var cgiPath = checkCgiPath();
+	if(!cgiPath) error("请指定有效的 process.php.cgiPath");
+	
+	var iniPath = self.iniPath;
+	if(!iniPath){
+		iniPath = ..io.joinpath(..io.splitpath(cgiPath).dir,"php.ini");
+	} 
+	
+	var rpcPah = ..io.fullpath( ..io.joinpath(..io.splitpath(cgiPath).dir,"aardio\process.rpc.php") );
+	 ..string.save(rpcPah,$"~\lib\process\php\.php\process.rpc.php");
+	 
+	if(!..io.exist(path) ){
+		var code = path;
+		if( !..string.indexOf(path,"<?")){
+			code = '<?php\r\n' + code + '\r\n?>';
+		}
+		
+		path = ..io.tmpname("php",".php");
+		..string.save(path,code)
+ 
+		..string.save(path,"<?php
+function deleteCurrentScript() {
+	unlink(__FILE__);
+} 
+register_shutdown_function('deleteCurrentScript');
+?>",true);
+	}
+	
+	var startUrlHost;
+	if(self.httpHandle){ 
+		var tUrl = ..inet.url.split( ..process.php("/") );
+		startUrlHost = tUrl.host + ":" + tUrl.port;  
+	}
+	
+	var path = ..io.fullpath(path);
+	var prcs,err = ..process.rpc.jsonClient(cgiPath
+		,{ "-a","-q"
+			,"-d","default_charset=UTF-8"
+			,ENABLE_JSON_RPC_CLIENT?"-d":"",ENABLE_JSON_RPC_CLIENT?`auto_prepend_file="` + ENABLE_JSON_RPC_CLIENT + `"`:""
+			,"-d",`auto_append_file="` + rpcPah + `"`
+			, "-c",..io.fullpath(iniPath)
+			, "-f",..io.fullpath(path)
+		}, {environment = { 
+            REDIRECT_STATUS = 200;
+            PHP_SELF = ..io.splitpath(path).path;
+            SCRIPT_NAME = ..io.splitpath(path).path;
+            SCRIPT_FILENAME = path;
+            REQUEST_METHOD = "GET"; 
+            CONTENT_LENGTH = 0;
+            GATEWAY_INTERFACE = "CGI/1.1";
+            HTTP_HOST = startUrlHost;
+            QUERY_STRING = ..inet.url.stringifyParameters(param);
+            HTTP_COOKIE = "";
+		} });
+		
+	if(!prcs) return prcs,err;
+	
+	prcs.codepage = 65001; 
+	return prcs;
+}
+
+code = {
+	@{
+		_get = function(k,ownerCall){
+			if(ownerCall===null){
+				return ..string.load(k);
+			}
+		}
+		_set = function(k,v,ownerAttr){ 
+			if(!ownerAttr){
+				..string.save(k,v)
+			}
+		};
+	}
+}
 
 /**intellisense(process.php)
-cgiPath = 可选指定php-cgi.exe路径,\n不指定则自动搜索，搜索顺序： \n1、\php\php-cgi.exe \n2、环境变量 PHP_CGI_EXE_PATH 指定的位置\n3、path 环境变量指定的目录下查找 php-cgi.exe\n4、自注册表搜索\n5、C:\Program Files\PHP 目录下搜索\n6、~\lib\php\.dll\php-cgi.exe
+checkCgiPath() = 自动搜索并返回  php-cgi.exe 路径。\n如果找不到 Win 7 自动安装 PHP 7.4 , Win 10 自动安装 PHP 8.3
+enableJsonRpcClient(true) = PHP 自动启用 JsonRpcClient 类。\n必须在调用所有其他 process.php 库函数之前调用才会有效。\n\n如果 httpHandle["/jsonrpc"] 指定为 JSON RPC 服务端函数表。\n则会自动调用此函数启用 PHP 的 JsonRpcClient 类。
+cgiPath = 可选指定 php-cgi.exe 路径,\n不指定则或为 null 则调用 checkCgiPath 函数自动搜索。\n搜索顺序： 请参考该函数源码。
 iniPath = 可选指定php.ini路径,\n不指定则在php-cgi.exe目录下查找
 threadNum = 设置服务器线程数，默认为2个线程
 startPort = 设置服务器端口,默认自动分配空闲端口
@@ -99,21 +289,39 @@ startIp = 设置服务器端IP,\n默认为"127.0.0.1"
 customErrors = @.customErrors = {\n    [404] = function(response){\n		response.status = "404 Not Found";\n		response.write("404 Not Found"); __/*自定义错误页*/\n	} \n}
 
 httpHandle = @.httpHandle = {
+	["/jsonrpc"] = { 
+		hello = function(name,value){ 
+			
+			__/*可在此用一个表自定义 HTTP 服务端处理程序
+			键为 HTTP 请求路径，值为处理程序（函数、aardio 代码、表对象）。
+			如果处理程序为表对象，则自动转换为 JSON RPC 服务端函数表。 
+			
+			JSON RPC 服务端函数第一个返回值为客户端返回值（result），
+			第二个可选的返回值为错误对象（error）。
+			*/
+			
+			if(!name) return null,-32602/*_JSONRPC_INVALID_PARAMS*/; 
+			return "hello " + name;
+		}
+	};
 	["/path"] = function(response,request,session){
-		response.write(web.json.stringify({a:123}));
-		__/*可在此用一个表自定义 HTTP 服务端处理程序\n键为请求路径，值为处理函数\n在 PHP 中发起 HTTP 请求 aardio 处理的例子：\nfile_get_contents('http://'.$_SERVER['HTTP_HOST'].'/path')\nPHP 也可以如上直接请求工程中的 aardio 代码文件*/
-	}
+	} 
 }
 
 threadGlobal = @.threadGlobal = {
 	__/*此表内的键值对将复制为所有处理 HTTP 请求的线程环境全局变量\nphpCgiPath,phpIniPath,httpHandle 为保留名称，请勿使用*/
 }
 
-notify("/__->php") = 通知指定的 PHP 页面运行，不阻塞当前线程。\n发送请求后关闭连接，不获出页面输出数据。\n\n参数指定 PHP 页面路径，不支持内嵌资源路径。\n放 *.php 文件的工程目录「内嵌资源」属性必须为 false。\n\n用法请参考：范例 > 调用其他语言 > php > CGI 回显
+notify("/__->php") = 通知指定的 PHP 页面运行，不阻塞当前线程。\n如果参数 @2 为 false ，则发送请求后关闭连接，不获取响应数据。\n否则在开发环境下将响应数据输出到 stderr 错误输出。\n不会自动打开控制台。\n\n参数指定 PHP 页面路径，不支持内嵌资源路径。\n放 *.php 文件的工程目录「内嵌资源」属性必须为 false。\n\n用法请参考：范例 > 调用其他语言 > php > CGI 回显
+
+code[__] = 可通过此对象的键值读应应用程序根目录下的文件。
 end intellisense**/
 
 /**intellisense()
-process.php = 基于 wsock.tcp.simpleHttpServer 启动 PHP CGI 服务端，\nHTTP 服务端默认自动分配空闲端口，当前线程结束时，HTTP 服务端会自动退出\n当前进程退出时，即使 PHP CGI 进程仍然运行也会自动退出
+process.php = 基于 wsock.tcp.simpleHttpServer 启动 PHP CGI 服务端，\nHTTP 服务端默认自动分配空闲端口，当前线程结束时，HTTP 服务端会自动退出\n当前进程退出时，即使 PHP CGI 进程仍然运行也会自动退出。\n\n自动搜索并返回  php-cgi.exe 路径。\n如果找不到 Win 7 自动安装 PHP 7.4 , Win 10 自动安装 PHP 8.3。\n如果要兼容 XP 系统，请导入 process.php.5.2 以替代 process.php 即可。
 process.php( =  查找可用端口创建 PHP/CGI 服务器，返回返回完整URL。\n此服务端限制使用本机IP 127.0.0.1 访问,并随机分配端口不会出现端口冲突\n如果 PHP/CGI 服务器已启动则直接返回URL而不是重复启动服务器,\n注意当前线程结束时,此服务器线程会自动退出
 process.php(.(path,documentRoot) = 查找可用端口创建 PHP/CGI 服务器，返回返回完整URL。\n如果 PHP/CGI 服务器已启动则直接返回 URL 而不是重复启动服务器,\n省略参数返回首页 URL,尾部不包含斜杠\n\n可选用 @path 参数指定请求目标文件的相对路径。\n└── 因 PHP 不支持内嵌资源路径，\n└── 放 *.php 文件的工程目录「内嵌资源」属性必须为 false。\n\n可选使用参数 @documentRoot 指定网站根目录,默认为"/"
+process.php.startRpc( = 启动 PHP 的 process.rpc 兼容服务端。\n返回 process.rpc.jsonClient 对象。
+process.php.startRpc(.(code,params) = 参数 @code 指定 PHP 代码或 PHP 代码文件。\n返回 params 可用表对象指定模拟 GET 请求参数。\n返回 process.rpc.jsonClient 对象，可用于调用 PHP 函数
+process.php.startRpc() = !process_rpcJsonClient.
 end intellisense**/

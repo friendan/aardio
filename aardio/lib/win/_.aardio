@@ -179,8 +179,8 @@ setTopmost = function(hwnd,top=true){
 } 
 
 getForeground = u.api( "GetForegroundWindow", "addr()" );
-setForeground = function(hwnd){
-	if( isIconic(hwnd) ) show(hwnd,9/*_SW_RESTORE*/ );
+setForeground = function(hwnd,nr){
+	if( !nr && isIconic(hwnd) ) show(hwnd,9/*_SW_RESTORE*/ );
 	return ::User32.SetForegroundWindowB(hwnd);
 }
 
@@ -214,7 +214,7 @@ registerClassEx = function(cls,srcWc,srcName){
 	if(srcName){
 		if( ::GetClassInfoEx(_HINSTANSE, srcName, wc) ){
 			if ( ! ::GetClassInfoEx( , srcName, wc) ) return; 
-			wc.lpszClassName = ..string.toUnicode(cls) ;
+			wc.lpszClassName = ..string.toUtf16(cls) ;
 			if( srcWc ) ..table.assign( wc, srcWc );
 			if( ::RegisterClassEx(wc) ) return cls;
 		} 
@@ -222,7 +222,7 @@ registerClassEx = function(cls,srcWc,srcName){
 	}
 	
 	wc.hInstance= _HINSTANSE ; 
-	wc.lpszClassName = ..string.toUnicode(cls);
+	wc.lpszClassName = ..string.toUtf16(cls);
 	wc.lpfnWndProc = ::DefWindowProc; 
 	if( srcWc ) ..table.assign( wc, srcWc );
 	if( ::RegisterClassEx(wc) ) return cls;
@@ -883,7 +883,7 @@ getDropFile = function(hDrop,finish=true){
 isChild(.(父窗口句柄,子窗口句柄) = 判断参数二指定的窗口是否参数一指定窗口的子窗口或间接子窗口\n任何一个参数为null或0返回false
 isVisible(__/*输入窗口句柄*/) = 判断窗口是否可见。\n如果上级父窗口不可见，则此函数仍然会返回 false。\n如果要检查子窗口本身的可见样式，\n可用 win.getStyle 函数检查是否设置 _WS_VISIBLE 样式。\n如果是 aardio 创建的窗口对象，通过 hide 属性可检查是否设置 _WS_VISIBLE 样式。 \n\n此函数不会检查伪装为可见的窗口隐形状态（Cloaked）,\nwinex.isVisible 支持检测隐形状态
 isWindow(__/*输入窗口句柄*/) = 判断是否有效窗口\n注意 aardio 创建的窗体或控件请使用 valid 属性判断，\naardio 创建的所有控件都有 valid 属性（不一定会出现在提示中）
-isIconic(__/*输入窗口句柄*/) = 判断窗口是否最小化为任务栏图标
+isIconic(__/*输入窗口句柄*/) = 判断窗口是否最小化为任务栏图标。\n如果参数可能为子窗口句柄，应调用 win.getRoot 函数先转换为顶层窗口。\n注意：对最小化窗口获取 ::RECT 或坐标时会包含类似 -32000 这种超大的伪坐标。
 isZoomed(__/*输入窗口句柄*/) = 判断窗口是否最大化
 isEnable(__/*输入窗口句柄*/) = 判断窗口是否启用状态
 show(hwnd,__/*可选输入显示参数*/) = 显示窗口,可选输入以_SW_为前缀的显示参数性，\n使用 win.show( hwnd,3/*_SW_MAXIMIZE*/ ) 最大化显示,\n使用 win.show( hwnd,6/*_SW_MINIMIZE*/ ) 最小化显示,\n使用 win.show( hwnd,9/*_SW_RESTORE*/ ) 自最大化或最小化恢复显示。
@@ -892,7 +892,7 @@ close(__/*输入窗口句柄*/) = 关闭窗口\n关闭外部进程窗口请使�
 enable(__/*输入窗口句柄*/,true) = 启用窗口
 enable(__/*输入窗口句柄*/,false) = 禁用窗口
 setTop(__/*输入窗口句柄*/)=前置窗口到当前线程Z序顶部\n顶层窗口或者设置了 _WS_CLIPSIBLINGS 重叠裁剪样式的窗口向前移动\n子窗口会向后面移动.
-setForeground(__/*输入窗口句柄*/) = 前置窗口并获取输入焦点,\n如果窗口已最小化，则先恢复并显示窗口。\n当前程序是背景窗口时,win7以上系统在任务栏闪烁,
+setForeground(.(窗口句柄,禁止从最小化恢复) = 前置窗口并获取输入焦点。\n如果参数 @2 未指定为 true ，且窗口已最小化，则先恢复并显示窗口。\n当前程序是背景窗口时，win7以上系统在任务栏闪烁。
 showForeground(.(窗口句柄,x,y,cx,cy) = 把窗口显示在屏幕最前面,最小化窗口自动还原\n类似setForeground但不会改变输入焦点,\n除句柄外,其他参数为可选参数
 getForeground()=获取前台窗口句柄
 getActive()=获取当前线程激活窗口句柄,如果要获取全局激活窗口请使用win.getForeground()

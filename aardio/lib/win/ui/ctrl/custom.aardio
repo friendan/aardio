@@ -69,6 +69,7 @@ namespace custom {
 		} 
 		if( !this._forms ){ this._forms = {}; };
 		
+		if(code===null) code = {};
 		if( type(code) == type.table ){
 			
 			if( code[["hwnd"]] ){

@@ -1,4 +1,4 @@
-﻿//tab 选项卡
+﻿//tab 简单选项卡
 import win.ui.ctrl.metaProperty;
 namespace win.ui.ctrl; 
 
@@ -71,9 +71,14 @@ namespace tab{
 		}
 		loadForm = function(code,...){
 			var this = owner;
+			if( (type(code)=="table") || (code===null) ){ 
+				return this.add(code);
+			} 
+			
 			var ret,wb = ..win.loadForm(code
 				,function(tParam) { return this.add(tParam) }
 				,owner,...);
+				
 			if( owner.lastForm != owner.form ){
 				owner.lastForm.show(false);
 				owner.adjustRect();
@@ -87,6 +92,10 @@ namespace tab{
 			return owner.loadForm(...);
     	}; 
     	add = function(tParam){
+    	   	if(type.isString(tParam) || tParam === null){
+    	   		return owner.add(text=tParam:"选项卡");
+    	   	}
+    	   	
     		var tci = TCITEM();
     		tci.pszText = tParam.text; 
     		tParam.text = null;
@@ -198,6 +207,11 @@ namespace tab{
     	_prenotify = {
     	    [4294966745/*_TCN_SELCHANGE*/] = function(id,code,nmdr){ 
     			owner._onChange();
+    			
+    			if(owner.onSelchange){
+    			    var sel = ::SendMessage(owner.hwnd,0x1300+11) + 1;
+    				owner.onSelchange(sel,owner.form);
+    			}
     		}
     	};
     	_onChange = function(){
@@ -219,13 +233,18 @@ namespace tab{
     		}
     	};
 	)
+	
+	_metaProperty.addPage = _metaProperty.add;//用于 AI 容错
 }
 
+//@guide [简单选项卡使用指南](doc://library-guide/std/win/ui/ctrl/tab.md)
 
 /***intellisense()
 !ui_tab.cls = 设计时类名
 !ui_tab.className = 运行时类名
-!ui_tab.loadForm("__/*请输入aardio文件路径*/") = 加载外部窗体文件并添加到tab页.\n请注意保存外部窗体文件以后测试运行.
+!ui_tab.loadForm( = 加载并添加显示内容的子窗口到选项卡控件。\n返回加载到选项卡的子窗体（ win.form 对象）。
+!ui_tab.loadForm(.(codePath) = 加载并添加显示内容的子窗口到选项卡控件。\n返回加载到选项卡的子窗体（ win.form 对象）。\n\n参数 @codePath 指定创建窗体的代码文件路径。\n请注意保存外部窗体文件以后测试运行。
+!ui_tab.loadForm(.(tParam) = 使用表参数 @tParam 创建显示内容的子窗口并添加到选项卡控件。\n返回加载到选项卡的子窗体（ win.form 对象）。\n\n参数 @tParam 用法与 win.form 构造参数相同。
 !ui_tab.hwnd = 控件句柄
 !ui_tab.id = 控件ID
 !ui_tab._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
@@ -257,7 +276,7 @@ namespace tab{
 !ui_tab.items.? = 选项卡子窗口\n!winform.
 !ui_tab.adjustRect() = 调整子窗口大小以适应客户区
 !ui_tab.selIndex = 读取或设置当前选项索引\n起始索引为1
-!ui_tab.add(__) = 请先用窗体设计器生成创建窗体代码,\n然后将创建窗体的win.form函数替换为此函数。\n函数参数即是win.form的参数(text参数表示选项卡标题)。
+!ui_tab.add(__) = 创建选项卡（同时创建选项卡按钮与显示内容的子窗口），返回子窗口（win.form 对象）。\n\n参数 @1 指定一个表参数，与 win.form 对象的构造参数相同。\n可在窗体设计器中复制  win.form 对象的构造参数作为此函数的参数。\n表参数中的 text 字段指定表示选项卡标题（也即子窗口标题）。\n参数 @1 也可以用字符串指定创建子窗口的代码文件路径。
 !ui_tab.modifyStyle(.(remove,add,swpFlags) = 修改窗口样式,所有参数都是可选参数,\n@remove 用数值指定要移除的样式,可使用 _WS_ 前缀的常量\n@add 用数值指定要添加的样式,可使用 _WS_ 前缀的常量\n@swpFlags 可选用数值指定调整窗口选项,可使用 _SWP_ 前缀的常量\n如果指定了 @swpFlag ,则使用该参数调用::SetWindowPos\n细节请参考 win.modifyStyle 函数源码 
 !ui_tab.modifyStyleEx(.(remove,add,swpFlags) = 修改窗口扩展样式,所有参数都是可选参数,\n@remove 用数值指定要移除的样式,可使用 _WS_EX_ 前缀的常量\n@add 用数值指定要添加的样式,可使用 _WS_EX_ 前缀的常量\n@swpFlags 可选用数值指定调整窗口选项,可使用 _SWP_ 前缀的常量\n如果指定了 @swpFlag ,则使用该参数调用::SetWindowPos\n细节请参考 win.modifyStyle 函数源码
 !ui_tab.capture = 是否捕获全局鼠标消息
@@ -284,8 +303,12 @@ namespace tab{
 !ui_tab.sendMessage(.(msg,wParam,lParam) = 发送窗口消息\n此函数用法请参考 ::User32.SendMessage
 !ui_tab.postMessage(.(msg,wParam,lParam) = 投递窗口消息到消息队列中\n此函数用法请参考 ::User32.PostMessage
 !ui_tab.adjust = @.adjust = function( cx,cy,wParam ) {	 \n	__/*窗口缩放时会自动触发此函数。\ncx 参数为窗口宽度,cy 参数为窗口高度,\nwParam 参数请参考 _WM_SIZE 消息参数说明,一般不用管。\n\n所有 win.form 创建的窗体和控件都支持此事件,\n重复赋值只会追加而不会覆盖此事件。\n一般不建议添加一个 wndproc 仅仅是为了处理  _WM_SIZE 消息，\n定义 adjust 事件是更好的选择。\n\n可主动调用此事件,省略参数时 cx,cy 参数默认设为窗口大小*/  \n}; 
+!ui_tab.onSelchange = @.onSelchange = function(idx,form){
+	__/*切找选项卡触发此事件，\nidx 为当前选项索引，数值。\nform 为当前选项页，等价于 tab 控件的 form 属性。*/
+}
 win.ui.ctrl.tab.TCITEM() = 选项结构体
-win.ui.ctrl.tab() = 选项卡控件\n!ui_tab.
+win.ui.ctrl.tab() = 简单选项卡控件（ classic tab control ）\n!ui_tab.
+!ui_tab.add() = !winform.
 ?win.ui.ctrl.tab  =!ui_tab.
 
 _TCS_SCROLLOPPOSITE=@1/*_TCS_SCROLLOPPOSITE*/

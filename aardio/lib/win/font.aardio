@@ -99,18 +99,18 @@ getResourceInfo = function(filename){
 	var info = {}; 
 	var size = { INT n }
 	var addFilename;
-	filename = ..string.toUnicode(filename);
+	filename = ..string.toUtf16(filename);
  
   	if(!::Gdi32.GetFontResourceInfoW) return;
   	if( ! ::Gdi32.GetFontResourceInfoW(filename,size,0,1) ){
-  		addFilename = add(..string.fromUnicode(filename),false );
+  		addFilename = add(..string.fromUtf16(filename),false );
   		if(!addFilename) return;
   	}
   	
 	if( ::Gdi32.GetFontResourceInfoW(filename,size,0,1) ){
 		var buffer = ..raw.buffer(size.n);
 		::Gdi32.GetFontResourceInfoW(filename,size,buffer,1) 
-		info.description  = ..string.fromUnicode(..raw.str(buffer,true));
+		info.description  = ..string.fromUtf16(..raw.str(buffer,true));
 	}
 
 	size.n = 0;

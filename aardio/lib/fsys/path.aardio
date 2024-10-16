@@ -14,6 +14,12 @@ cmp = function(path,path2){
 	return ..string.cmp(canonicalize(path),canonicalize(path2));
 }; 
 
+cmpName = function(path,name){
+	if(!path || !name) return -1;
+	if(..string.indexAny(name,"/\")) return cmp(path,name);
+	return ..string.cmp(..io.splitpath(path).file,name);
+}
+
 validName = function(name){
  	if( type(name) != "string" ) return;
  	var name = ..string.replace(name,"[\/\:\*\?\""\<\>\r\n]",""); 
@@ -22,13 +28,24 @@ validName = function(name){
  	return name;
 };
 
-canonicalize = function(path,lng=true){ 
+canonicalize = function(path,lng=true){  
 	if(!path) error("路径参数不能为空",2)
-	path = ..string.replace(path,'/','\\');
- 	if( path[#path] == ':' ) path = path + "\";
+	if(!#path) return path;
+	
+	path = ..string.replace(path,'/','\\');  
+ 	if( path[#path] == ':' ) path = path + "\"; 
+ 	
  	if( lng ) path = long(path);
- 	var ret,cp = PathCanonicalize(0x208/*_MAX_WPATH_BYTES*/,path ); 
+ 	if(!#path) return;
+ 	
+ 	//盘符大写
+ 	path = ..string.replace(path,"[a-z]\:",function(c){
+		return ..string.upper(c)
+	});
+	 
+ 	var ret,cp = PathCanonicalize(0x208/*_MAX_WPATH_BYTES*/,path );   
  	if(ret){ 
+ 		if( path[2] == ':'# && path[3] == '\\'# ) return cp;
  		return ( removeBackslash( cp ) );//除分区根目录外保证尾部不为斜杠
  	}
 };
@@ -37,7 +54,10 @@ ischild = function(dir,path){
  	if(!(dir&&path) ) return;
  	dir = addBackslash(canonicalize(dir,true));
  	path = canonicalize(path,true);
- 	return path ? ..string.startWith(path,dir,true);
+ 	if(path){
+ 		if( ..string.startWith(path,dir,true) ) return true; 
+ 		if( ..string.cmp( path+"\",dir ) == 0 ) return true; 
+ 	}
 };
 
 long = function(path){
@@ -141,6 +161,12 @@ replaceFile = function(path,filename){
 	return  ..io.joinpath(..io.splitpath(path).dir,filename);
 };	
 
+replaceExt = function(path,ext){ 
+	if(!path) error("路径参数不能为空",2); 
+	var t = ..io.splitpath(path);
+	return  ..io.joinpath(t.dir,t.name + ext);
+};
+
 full = function(path,root){
     var abs = ..string.match(path,"^<//>|<\\\\>|<[^\\/\:]+\:>");
     if( abs ) {
@@ -155,12 +181,14 @@ append = ..io.joinpath;
 
 /**intellisense(fsys.path) 
 long(.(路径) = 转为长路径
-short(.(路径) = 转为短路径\n如果文件不存在,返回空值,\n短文件名指向会因实际文件数变更,所以不能把短路径存入数据库\n\n存在特定文件目录无法获取短路径且返回包含空格的长路径的可能性\n如无必要，不建议使用或依赖此函数，正确使用 process 等可以自动\n转义路径参数中的空格。
+short(.(路径) = 转为符合 8.3 格式短路径。\n如果文件名符合 8.3 格式且包含空格（例如目录名不超过 8 个字符），则不会去除空格。\n如果文件不存在,返回空值。\n\n短文件名指向会因实际文件数变更,所以不能把短路径存入数据库\n且并不保证会去除空格。 \n创建 process 对象或调用类似函数时，\n用数组或多参数指定启动参数可自动处理包含空格的路径。
 isDir(.(路径) = 如果文件路径存在并且是一个目录,\n或者路径路径以斜杠、反斜杠结束返回真
-cmp(.(路径,比较路径) = 比较两个路径是否指向同一位置,\n任何一个参数为null时返回-1,\n返回值意义与 string.cmp()函数相同,\n路径相同则返回0,注意在条件表达式中为false\n\n更准确的检测相同或不同的路径是否指向同一真实文件,\n应使用fsys.fileInfo函数
+cmp(.(路径,比较路径) = 比较两个路径是否表示相同路径。\n\n此函数会归一化路径，并忽略大小写进行比较。\n返回值意义与 string.cmp 函数相同，\n路径相同则返回 0，注意 0 在条件表达式中为 false。\n如果任何一个参数为 null 时返回 -1。\n\n更准确的检测相同或不同的路径是否指向同一真实文件，\n应使用 fsys.fileInfo 函数
+cmpName(.(路径, 比较文件名) =  参数 @1 指定要比较的的文件路径。\n参数 @2 如果包含正斜杆或反斜杆，则调用比较与参数 @1 是否表示相同路径，\n否则仅比较两个参数的文件名是否相同。\n\n此函数会归一化路径，并忽略大小写进行比较。\n返回值意义与 string.cmp 函数相同，\n相同则返回 0，注意 0 在条件表达式中为 false。\n如果任何一个参数为 null 时返回 -1。\n\n如果要检测不同路径是否指向同一位置，请参考 fsys.fileInfo 函数。 
+两较参数 @1 指定的文件路径的文件名与参数 @2 是否相同
 compact(.(文件路径,显示像素宽度) = 截断路径来适合一定数目的像素
 commonPrefix(.(路径,路径2) = 返回两个文件路径的公共前缀目录\n该函数失败保证返回的是一个目录比以斜杠结尾,失败返回null,\n在比较以前自动对路径归一化处理,忽略大小写
-canonicalize(.(路径,是否处理短路径) = 转换为完整路径,\n并对路径进行归一化处理,参数2可选(默认为true),\n扩展和适当置换路径中包含的所有".."和"."\n该函数保证除分区根目录外保证尾部不为斜杠
+canonicalize(.(路径,是否处理短路径) = 转换为完整路径，并对路径进行归一化处理。\n参数 @2 可选（默认为true）。\n\n扩展和适当置换路径中包含的所有 ".." 和 "." \n该函数保证除分区根目录外保证尾部不为斜杠。\n盘符大写。
 eofBackslash(.("文件路径") = 首先替换所有正斜杠为反斜杠\n检测路径尾部是否有反斜杠
 addBackslash(__/*路径*/) = 首先替换所有正斜杠为反斜杠\n如果目录最后面没有反斜杠,则追加反斜杠,\n这个函数实际是调用  io.joinpath(path,"/")
 removeBackslash(__/*路径*/) = 首先转换为完整路径,替换所有正斜杠为反斜杠\n移除路径最后面的反斜杠,并返回新路径以及尾字符\n如果尾字符为反斜杠并已移除,第二个返回值为空字符\n如果是分区号后的反斜杠或路径只有一个反斜杠,第二个返回值为反斜杠
@@ -169,11 +197,12 @@ relative(.(路径,目录,返回路径是否以斜杠开始) = 将路径转换为
 validName(__/*路径*/) = 检测文件名是否合法,\n返回修正后的合法名称\n传入非字符串参数直接返回空值
 replaceDir(.(路径,根目录,新的根目录) = 将路径转换为参数2指定根目录下的相对路径\n再将其转换为新的根目录下的绝对路径
 replaceFile(.(路径,新文件名) = 替换路径中的文件名部分
-ischild(.(目录,路径) = 检测参数@2指定的路径是否在参数@1指定的目录之下
+replaceExt(.(路径,新后缀名) = 替换路径中的后缀名部分，后缀名要包含前面的 `.` 。
+ischild(.(目录,路径) = 检测参数 @2 指定的路径是否在参数 @1 指定的目录之下。\n两个参数指向同一目录时也会返回 true。
 full(.(path) = 如果路径是绝对路径则返回该路径（不作任何转换）,\n否则返回null
-full(.(path,root) = 如果path是相对路径，并且不以/、\、~等字符开始,\n则返回io.joinpath(root,path)\n否则转换为绝对路径返回
+full(.(path,root) = 如果path是相对路径，并且不以`/`、`\`、`~`等字符开始,\n则返回io.joinpath(root,path)\n否则转换为绝对路径返回
 end intellisense**/
 
 /**intellisense() 
-fsys.path = 提供文件路径相关函数,\n在导入fsys支持库时将自动导入fsys.path
+fsys.path = 提供文件路径相关函数,\n在导入 fsys 库时将自动导入 fsys.path 库。
 end intellisense**/

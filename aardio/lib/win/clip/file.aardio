@@ -22,7 +22,7 @@ write = function(file,effect="copy",rep){
     }
      
     if(!#file) error("参数错误",2);
-	file = ..string.toUnicode(file);
+	file = ..string.toUtf16(file);
 	
 	if(!::User32.OpenClipboard(0)) return;	 
 	if(rep===null || rep) ::User32.EmptyClipboard();

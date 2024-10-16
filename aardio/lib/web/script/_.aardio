@@ -17,25 +17,29 @@ class script {
  		var lowerLangId = ..string.lower(language);
  		var langClsId = __langIds__[lowerLangId];
 		if(langClsId){
-			if(!_WIN10_LATER && (lowerLangId== "es6" || lowerLangId== "jscript9" )){
+		
+			if( (!_WIN10_LATER || ..thread.get("@web.form.imported!!!"))
+				&& (lowerLangId== "es6" || lowerLangId== "jscript9" )){
+				//ES6(Chakra) 与 web.form(web.mshtml) 冲突，在同一程序中使用可能导致崩溃。
 				this.msc.Language = 'JScript';
 			}
 			else{
 				var apiHook = ..raw.apiHook(
 					"Ole32.dll", "CLSIDFromProgID", "int(ustring progId,ptr pClsId)", 
-					function( progId,pClsId ){ 
-				 		if(progId == language ) { 
-				 			..raw.copy(pClsId,langClsId,#langClsId);
+					function( progId,pClsId ){  
+				 		if(progId == language ) {
+				 			..raw.copy(pClsId,langClsId,#langClsId); 
 				 			return 0 ;
 				 		}
 				 		
-						return owner.callApi(progid,lpclsid); ;
+						return owner.callApi(progId,pClsId); 
 					}
 				);
 				
-				apiHook.install();
-				this.msc.Language = language;
-				apiHook.unInstall();			
+				apiHook.install();  
+			
+				this.msc.Language =language; 
+				apiHook.unInstall();
 			} 
 		}
 		else {
@@ -58,15 +62,30 @@ class script {
 			var lang = ..string.lower(this.msc.Language);
 			if(__jsLangIds__[lang]){
 				var javascript = /*     
- 				jsConstructor = function(jsObject) {
+ 				jsConstructor = function() {
+ 					jsObject = arguments[0];
 					if(typeof(jsObject) == "string") jsObject = eval(jsObject);
     				function ctor(args) { return jsObject.apply(this, args); }
     				ctor.prototype = jsObject.prototype;
-    				return function() { return new ctor(arguments); }
+    				
+    				var args = Array.prototype.slice.call(arguments);
+    				args.shift();
+    				
+    				return new ctor(args);
 				}
 				*/
 				this.msc.AddCode(javascript);
-				this.jsConstructor = this.msc.CodeObject.jsConstructor
+				this.jsNew = function(cls,...){
+					var args = {cls,...};
+					if(..table.find(args,..com.IsObject)){
+						return this.msc.CodeObject.jsConstructor( cls,...);
+					}
+
+					var js  = "jsConstructor.apply(null," + ..web.json.stringifyArray(args) + ")";
+					return owner.eval(js);
+				}
+				
+				this.jsConstructor = lambda(t) function(...){ return this.jsNew(t,...) };
 			} 
 			
 			for(k,v in self.preload){
@@ -164,12 +183,28 @@ script.__langIds__ = {
 	jscript9 = '\x79\x15\xD5\x16\x0B\xA3\x8B\x4C\xA2\x76\x0F\xF4\xDC\x41\xE7\x55';
 }
 
+/**details(说明)
+web.script 使用 ScriptControl 控件。
+而 ScriptControl 加载的脚本每行最好保持在 1000 字以内。
+ScriptControl 控件的不同版本每行字数上限在 1000 字到 2000 字以内是安全的，
+稳妥的方法是保证每行在 1000 字以内.
+
+现在很多压综的 JS 都去掉了所有换行， 
+建议用 aardio 提供的 java.yuiCompressor 重新压缩 JS。
+java.yuiCompressor 已默认设置为单行上限 1000 字。
+在扩展库管理器双击 java.yuiCompressor 可查看范例。
+
+对于较新的 JS 如果 java.yuiCompressor 压缩失败。
+可参考 aardio 自带 nodeJs 扩展库范例改用 uglify-js 压缩。
+end details**/
+
 /**intellisense()
 !web_script.executeStatement("__") = 执行代码,无返回值
 !web_script.timeOut = 脚本超时时间,以毫秒为单位,默认为-1表示不超时,\n如设置超时脚本运行太久会弹出是否继续运行的对话框
 !web_script.useSafeSubset = 脚本控件是否限制运行未被标记为“脚本安全”的组件
 !web_script.reset() = 重置脚本虚拟机,丢弃所有对象和代码\n并将State属性设为0
-!web_script.jsConstructor("Array__") = 获取JS对象构造函数,\n参数可以是JS对象，或字符串类型的对象名字
+!web_script.jsConstructor("Array__") = 获取 JS 使用 new 语句创建对象的构造函数。\n参数 @1 可以是 JS 对象，或字符串类型的对象名字。\n\n调用返回的构造函数时：\n构造参数包含 COM 对象则直接传参，否则使用 JSON 转换为纯 JS 参数。
+!web_script.jsNew("Array__") = 调用 JS 的 new 语句构造 JS 对象。\n参数 @1 可以是 JS 对象，或字符串类型的对象名字。\n可指定一个或多个构造参数。\n构造参数包含 COM 对象则直接传参，否则使用 JSON 转换为纯 JS 参数。
 !web_script.doScript("__") = 添加脚本代码\n参数可以是脚本代码、脚本文件路径，\n如果事先引入 inet.http 库，就可以在参数中指定脚本网址
 !web_script.addCode("__") = 添加脚本代码,\n调用这个函数的作用等价于直接对 script 属性赋值
 !web_script.language = 设置或获取正在使用的 Script 语言名称\n 可选值"VBScript","JScript"。\n注意 "ES6"，"JScript9" 只能在 web.script 构造函数里指定
@@ -193,7 +228,7 @@ script.__langIds__ = {
 !web_script.? = 可直接赋值为 aardio 对象或函数以允许脚本调用，\n在这里写入数组属性时，会自动调用 createArray 转换\n\n注意如果只是要读写脚本中的变量值，应通过 script 属性读写
 web.script("JScript") = 创建 JScript 脚本解释器\n参数可省略
 web.script("VBScript") = 创建 VBScript 脚本解释器
-web.script("ES6") = 创建 JavaScript（ES6） 脚本解释器，\n需要调用 Win10/Win11 自带 Chakra 组件。\nWin10 以下系统退化为 JScript。\nChakra 支持 ES6，支持箭头函数，let,const,类等 ES6 语法。\n但不支持一些 JScript 专有的函数，例如 VBArray。\n\n对于 Chakra，ScriptEngine 等函数返回的版本信息是无意义的
+web.script("ES6") = 创建 JavaScript（ES6） 脚本解释器。\n需要调用 Win10/Win11 自带 Chakra 组件。Win10 以下系统退化为 JScript。\nChakra 与 web.form, web.mshtml 冲突，导入这些库时自动退化为 JScript。  \nChakra 支持 ES6，支持箭头函数，let,const,类等 ES6 语法。\n但不支持一些 JScript 专有的函数，例如 VBArray。\n对于 Chakra，ScriptEngine 等函数返回的版本信息是无意义的
 web.script("JScript9") = 创建 JScript9 脚本解释器。\n操作系统最低要求 Win10/Win11，\nWin10 以下系统退化为 JScript。
 web.script() = 创建 JScript 脚本解释器\n!web_script.
 web.script.eval(__) = 计算并返回参数@1中 JScript 代码指定的表达式的值,\n如果有多个参数,则调用 string.format 格式化所有参数获取要执行的脚本代码

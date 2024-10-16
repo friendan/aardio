@@ -9,13 +9,13 @@ class lrc{
 		}
 		elseif( #s%2 == 0 ){
 			if ( s[1] == 0xFF  && s[2] == 0xFE ){
-				s = ..string.fromUnicode( ..string.right(s,-3) );
+				s = ..string.fromUtf16( ..string.right(s,-3) );
 			}
 			elseif ( s[1] == 0xFF  && s[2] == 0xFE ){
 				s = ..string.fromto( ..string.right(s,-3),1201,65001 );
 			}
 			elseif( s[2] == 0 && s[4] == 0 ) {
-				s = ..string.fromUnicode(s);
+				s = ..string.fromUtf16(s);
 			}
 			elseif( s[1] == 0 && s[3] == 0 ) {
 				s = ..string.fromto( s,1201,65001 );

@@ -99,23 +99,21 @@ namespace ps {
 	};
 	
 	var psJsonWeb = /*
-	if ($PSVersionTable.PSVersion.Major -lt 3){
-		Add-Type -assembly system.web.extensions
-		function ConvertTo-Json([object] $item){ 
-    		$jss=New-Object system.web.script.serialization.javascriptSerializer
-    		return $jss.Serialize($item)
-		}
-	};
-	*/
-
-	var psJsonNet = /* 
+if ($PSVersionTable.PSVersion.Major -lt 3){
+	Add-Type -assembly system.web.extensions
 	function ConvertTo-Json([object] $item){ 
-    	return [Newtonsoft.Json.JsonConvert]::SerializeObject($item)
-	} 
-	*/
+    	$jss=New-Object system.web.script.serialization.javascriptSerializer
+    	return $jss.Serialize($item)
+	}
+};
+*/
 
 	json = function(ps,...){
-		var ret,err = ..dotNet.ps(..string.concat(..dotNet.json ? psJsonNet : psJsonWeb,ps),...);
+		var j = psJsonWeb;
+		var ps,count = ..string.replace(ps,"param\s*\(.*?\)\N+","\1"+'\r\n'+j);
+		if(!count) ps = ..string.concat(j,ps); 
+	 
+		var ret,err = ..dotNet.ps(ps,...);
 		if(ret && !err){
 			return ..web.json.tryParse(ret) : ret;
 		}
@@ -173,5 +171,5 @@ dotNet.ps.onWriteProgress = @.onWriteProgress = function(sourceId,record){
 	winform.plus.progressPercentage = record.PercentComplete; 
 }
 dotNet.ps.export(__) = 将参数 @1 指定的 aardio 表对象转换为 PowerShell 参数对象\n在 PowerShell 中可使用  InvokeMember 调用成员函数，参数@1为成员函数名，\n也可以使用下标读写对象属性值。\n\nWin10/Win11 自带 PowerShell 5.1 已经直接支持回调 aardio 对象，\n如果不需要兼容旧版 PowerShell 则不需要使用此函数
-dotNet.ps.json(ps) = @.json(`ConvertTo-Json __/*执行 PowerShell 脚本，\nConvertTo-Json 兼容到 PowerShell 2.0，\n如果导入 dotNet.json 则用 dotNet.json 实现 ConvertTo-Json，\n返回文本作为 JSON 自动解析为 aardio 对象*/`)
+dotNet.ps.json(ps,parameters,useLocalScope) = @.json(`ConvertTo-Json __/*执行 PowerShell 脚本，所有参数与 dotNet.ps 相同。\nConvertTo-Json 兼容到 PowerShell 2.0，\n返回文本作为 JSON 自动解析为 aardio 对象*/`)
 end intellisense**/

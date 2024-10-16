@@ -73,7 +73,7 @@ class client{
 			tempPath = ..io.joinpath(tempDir,pid ++ tempPathId);
 		}
 
-		var file,err = ..io.open(tempPath,"w+b");
+		var file,err = ..io.file(tempPath,"w+b");
 		if(!file) error(..string.concat("Upload failed: ",err) ,2);
 		
 		var outBuffer = ..raw.buffer(65535);
@@ -325,7 +325,8 @@ class client{
 					return this.readUploadFile(owner);
 				};
 				postJson = function(){  
-					if ( environ.CONTENT_TYPE && ..string.endWith(environ.CONTENT_TYPE,"/json",true) ) {
+					if ( environ.CONTENT_TYPE 
+						&& ..string.find(environ.CONTENT_TYPE,"<@@text@>|<@@application@>/<@@json@>!\W") ) {
 						var data = owner.postData();
 						if(data) return ..web.json.tryParse(data);
 					}
@@ -779,14 +780,14 @@ cookies[__] = @.cookies["__/*键名*/"] = {
 	maxAge = 3600;
 }
 status = 响应状态码,值可以为数值或文本,\n默认为"200 OK"
-contentType = @.contentType = "text/json";__/*指定响应数据的MIME类型,默认为"text/html"*/
+contentType = @.contentType = "application/json";__/*指定响应数据的MIME类型,默认为"text/html"*/
 charset = 输出字符集\n可以为空,默认值为UTF-8\n不建议更改此值
 jsonPrettyPrint = @.jsonPrettyPrint = true;__/*指定respose.write函数将对象转换为JSON输出时否缩进格式化*/
 defalutDocument = 指定loadcode函数加载aardio代码时的默认文件名\n默认为"main.aardio",不建议修改
 keepAlive = 服务端是否保持连接\n此属性为标准库为HTTP服务器所保留\nHTTP服务器可以忽略该值\n或者由HTTP服务器自动维护该值\n用户不应修改此属性
 transferChunked = 是否使用分块传输协议\n此属性为标准库为HTTP服务器所保留\nHTTP服务器可以忽略该值\n或者由HTTP服务器自动维护该值\n用户不应修改此属性
-loadcode( = 加载并执行aardio模板文件
-loadcode(.("文件路径",->->->) = 加载并执行aardio模板文件,参数可省略,\n参数@1省略时默认赋值为 request.path\n其他参数作为模板参数传给被调用的文件,\n在被调用文件的函数外部可使用owner参数获取首个模板参数,\n也可以使用...获取多个模板参数
+loadcode( = 运行服务端 aardio 代码或下载其他文件。\n\n参数 @1 如果指定 *.aardio 文件则执行并解析 aardio 模板代码。\n如果指定其他类型的文件则直接下载文件。\n\n注意下载是比较复杂的功能，直接调用这个函数是更可靠的选择。\n自己去实现这一套代码工作量可能很大，一般没有必要。\n\n可以参考『扫码传文件』范例，这个程序在网上转发很多，用的人也不少。\n上传下载都支持，其中下载就是调用这里的 response.loadcode 函数。
+loadcode(.("文件路径",->->->) = 省略参数则默认以  request.path 为参数。\n\n参数 @1 如果指定 *.aardio 文件则执行并解析 aardio 模板代码。\n后面的其他参数作为模板参数传给被调用的 aardio 文件。\n在被调用文件的函数外部可使用 owner 参数获取首个模板参数，\n也可以使用...获取多个模板参数。\n关于模板语法请查看[帮助文档](doc://language-reference/templating/syntax.md)。\n\n如果指定其他文件路径，则下载文件。\n注意下载是比较复杂的功能，直接调用这个函数是更可靠的选择。
 customErrors[404] = @.customErrors[404] = function(response,request,session){
 	response.status = "404 Not Found";
 	response.write("404 Not Found"); __/*自定义错误处理函数,\n每次请求仅第一个自定义错误处理函数会被调用*/

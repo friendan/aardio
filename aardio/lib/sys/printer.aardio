@@ -126,7 +126,7 @@ namespace printer{
 	default = function(){
 		var buffer = ..raw.buffer(1024)
 		var length = { INT value = 1024};
-		if(api.GetDefaultPrinter(buffer,length) ) return ..string.fromUnicode(buffer);
+		if(api.GetDefaultPrinter(buffer,length) ) return ..string.fromUtf16(buffer);
 	}
 	
 	setDefault = function(printerName){

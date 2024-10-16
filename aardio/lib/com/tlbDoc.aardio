@@ -1,34 +1,46 @@
 ﻿//tlbDoc 控件文档
 import com;
 namespace com;
-    
+
 class tlbDoc{
     ctor( ... ){
-        var tlb;
-        if(..com.IsObject(...)){
-            var ti = ..com.GetTypeInfo(...);
-        	tlb = ti && ti.GetTypeLib();
-        }
-        else {
+        return getDoc(null,...); 
+    }; 
+}
+
+namespace tlbDoc {
+	
+	getDoc = function( log, ... ){
+    	var tlb;
+    	if(..com.IsObject(...)){
+        	var ti = ..com.GetTypeInfo(...); 
+        	
+        	tlb = {
+        		GetTypeInfoCount = lambda() 1;
+        		GetTypeInfo = lambda() ti;
+        	}
+    	}
+    	else {
         	tlb = ..com.LoadTypeLibrary( ... );
-        }
-        
+    	}
+    	
 		if(!tlb) return;
 		
-		var output = {}
-		for(i=1;tlb.GetTypeInfoCount();1){
+		var push = ..table.push;
+		var output = {};
+		var count = tlb.GetTypeInfoCount();
+		for(i=1;count;1){
 			var typeinfo = tlb.GetTypeInfo(i);
 			var typeattr = typeinfo.GetTypeAttr();
+			if(!typeattr.Funcs){
+				continue;
+			}
 			
-			var member ={};
-			for(i=1;typeattr.Funcs;1){
-				var func = typeinfo.GetFuncDesc(i)
-				if(!func) continue ;
-				if(!member[func.name]) member[func.name]= {};
-		 		member[func.name][func.invkind] = func; 
-			} 
-			
-			var push = ..table.push;
+			if(!log){
+				push( output,typeinfo.GetDocumentation().name,'\n' );
+				push( output,'________________________________________________________________\n\n' );	
+			}
+				
 			for(i=1;typeattr.Funcs;1){
 				var func = typeinfo.GetFuncDesc(i)
 				if(!func) continue;
@@ -67,17 +79,23 @@ class tlbDoc{
 					push( output,getParameters(func),'\n' );
 				} 
 				
-				push( output,'\n' );
+				push( output,'\n' ); 
 			} 
+			
+			if(log){ 
+				
+				push( output,'________________________________________________________________\n\n' );	
+	 			push( output,typeinfo.GetDocumentation().name,' 完成\n' );
+	 			
+				log( ..string.join(output,''),count )
+				output = {};
+			}
 		
 		}
 		
-		return ..string.join(output,'')
-    }; 
-}
-
-namespace tlbDoc {
-    
+		if(!log) return ..string.join(output,'')
+	}; 
+	
 	getFunction = function(func){
 		var output = func.name;
 		if( func.invkind == "_set" ){
@@ -133,7 +151,10 @@ namespace tlbDoc {
 		if(_STUDIO_INVOKED) global.import("console")
 
 		if(..console){
-			..console.log(..com.tlbDoc(...));
+			getDoc(function(doc,count){
+				..console.log(doc);
+				if(count>1) ..console.more();
+			} ,...);  
 		}
 	}
 }

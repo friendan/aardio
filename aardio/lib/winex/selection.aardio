@@ -4,17 +4,19 @@ import winex;
 import win.ui.ctrl.edit;
 import win.ui.ctrl.richedit;
 import win.clip;
+import win.clip.data;
 import key;
 
 namespace winex.selection;
 
+var cbHtml = ..win.clip.data("HTML Format");
 var edit = ..win.ui.ctrl.edit();
 var richedit = ..win.ui.ctrl.richedit();
 var getByEdit = function(copyText){
 	var hFocus = ..winex.getFocus(,true);
 	if(hFocus){
 		var cls = ..win.getClass(hFocus);
-		if(cls=="Edit" ){
+		if(cls=="Edit"){
 			edit.hwnd = hFocus;
 			return edit.selText,hFocus;
 		}
@@ -27,8 +29,9 @@ var getByEdit = function(copyText){
 			var ret;
 			var orig = ..win.clip.read();
 			var origBmp = ..win.clip.readBitmap();
+			var origHtml = cbHtml.read();
 			
-			..key.combine("CTRL","C");
+			..key.combine("CTRL","INSERT");
 			..thread.delay(10);
 			
 			var str = ..win.clip.read();
@@ -42,18 +45,25 @@ var getByEdit = function(copyText){
 				..win.clip.writeBitmap(origBmp,true,false);
 			}
 			
+			if(origHtml){
+				cbHtml.write(origHtml,false);
+			}
+
 			return ret;
 		}
 	}
 }
 
 if(_WINXP){
-	get = getByEdit;
+	get = function(copyText){
+		if(::GetAsyncKeyState( 1/*_VK_LBUTTON*/ ) < 0) return;
+		return getByEdit(copyText);
+	}
 	return;
 }
 
 import System.Windows.Automation.3;
-Automation = System.Windows.Automation;
+Automation = ..System.Windows.Automation["3"];
 PropertyCondition = Automation.PropertyCondition;
 AutomationElement = Automation.AutomationElement;
 var TextPatternPattern = Automation.TextPattern.Pattern;
@@ -92,7 +102,9 @@ get = function(copyText){
 			ret = ..string.join(ret,'\r\n'); 
 		} 
 		
-		..com.Release(selections);		
+		..com.Release(selections);	
+		
+		if(!#ret) return;	
 	}
 	else {
 		ret = getByEdit(copyText);
@@ -108,6 +120,6 @@ get = function(copyText){
 }
 
 /**intellisense()
-winex.selection = 用于获取当前焦点窗口文本选区
+winex.selection = 用于获取当前焦点窗口文本选区，可用于实现划词功能。
 winex.selection.get(true) = 如果鼠标左键是放开状态，获取焦点窗口选区文本。\n成功返回文本,焦点窗口句柄。\n仅适用于支持 UIA 选区接口的窗口。\n\n参数 @1 为 true 则允许使用剪贴板复制选区文本，\n在获取选区文本失败才会使用剪贴板，\n用后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
 end intellisense**/

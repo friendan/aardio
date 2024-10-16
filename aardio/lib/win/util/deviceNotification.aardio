@@ -55,11 +55,11 @@ class deviceNotification {
     				}
     				elseif( dbd.deviceType == 5/*_DBT_DEVTYP_DEVICEINTERFACE*/ ){
     					devData = ..raw.convert( pDevData,DEV_BROADCAST_DEVICEINTERFACE()); 
-    					devData.name = ..string.fromUnicode( topointer(lParam +..raw.sizeof(devData)-2),,-1 );
+    					devData.name = ..string.fromUtf16( topointer(lParam +..raw.sizeof(devData)-2),,-1 );
     				}
     				elseif( dbd.deviceType == 3/*_DBT_DEVTYP_PORT*/ ){
     					devData = ..raw.convert( pDevData,DEV_BROADCAST_PORT()); 
-    					devData.name = ..string.fromUnicode( topointer(lParam +..raw.sizeof(devData)-2),,-1 );
+    					devData.name = ..string.fromUtf16( topointer(lParam +..raw.sizeof(devData)-2),,-1 );
     				}
     				elseif( dbd.deviceType == 6/*_DBT_DEVTYP_HANDLE*/ ){
     					if( eventType == 0x8006/*_DBT_CUSTOMEVENT*/)

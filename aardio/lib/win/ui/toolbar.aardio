@@ -166,7 +166,7 @@ namespace win.ui {
 			};
 			INFO_AUTOSET_MASK = function(info){ 
 				if( info.text !== null ){
-					info.text = ..string.toUnicode(info.text);
+					info.text = ..string.toUtf16(info.text);
 					info.cchText = #info.text/2; 
 				}
 				if( info.cchText ){
@@ -195,7 +195,7 @@ namespace win.ui {
 					info.mask = mask; 
 					var idx = ::SendMessageByStruct(owner.parent.hwnd,0x43F/*_TB_GETBUTTONINFOW*/,owner.idCommand,info) ;
 					if( idx >= 0 ){
-						if( info.mask & 2/*_TBIF_TEXT*/ ) info.text = ..string.fromUnicode(info.text,,true);
+						if( info.mask & 2/*_TBIF_TEXT*/ ) info.text = ..string.fromUtf16(info.text,,true);
 						return info;
 					}
 				}

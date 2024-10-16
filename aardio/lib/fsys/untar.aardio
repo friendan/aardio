@@ -1,4 +1,4 @@
-//untar TAR格式解压
+﻿//untar TAR格式解压
 import zlib;
 import fsys;
 import fsys.file;
@@ -25,13 +25,13 @@ class untar{
 				tarFile = ..zlib.gzFile(path,"rb")
 			}
 			else {
-				tarFile = ..io.open(path,"rb")
+				tarFile = ..io.file(path,"rb")
 			}
 			if(!tarFile) return null,"打开tar文件失败";
 		}
 
-		{
-			var size = tarFile.size(1);
+		{ 
+			var size = tarFile.size();
 			if( size < 0 ) size = 0xFFFFFFFF;
 			this.blocksCount = ( size / 512 ) - 1;
 			if( this.blocksCount < 1 ) return null,"tar文件格式错误";
@@ -44,7 +44,8 @@ class untar{
 		var tarHeader = tar_header();
 		var buffer = ..raw.buffer(512);
 		
-		this.utf8 = false;
+		this.utf8 = null;
+		
 		..table.gc(this,"close");
 	};
 	nextBlock = function(){
@@ -53,7 +54,7 @@ class untar{
 			if( ! tarFile.read( tarHeader ) ){
 				return null,"读取TAR头失败";
 			}
-			
+
 			var name =  ..string.str(tarHeader.name);
 			if( !#name ){ 
 				this.complete = true;
@@ -71,13 +72,12 @@ class untar{
 			}
 			
 			tarHeader.name = name;
-			curFileName = ..fsys.joinpath(saveDir,name); 
+			curFileName = ..io.joinpath(saveDir,name); 
 			curFileSize = tonumber(tarHeader.size,8)  
 			
 			var linkflag = tarHeader.linkflag;
 			var mtime = tonumber(tarHeader.mtime,8) 
 			curFileTime.fromSystemTime( ..time(mtime) );
-			curFileTime.utc()
 
 			if( linkflag == '5'#/*LF_DIR*/ ){
 				..fsys.createDir(curFileName);  
@@ -172,7 +172,7 @@ namespace untar {
 fsys.untar = tar文件操作
 fsys.untar(.("tar文件路径",存储路径) = 参数@1可以是 *.tar, *.tar.gz, *.tgz 类型文件路径,\n参数 @1 也可以指定 fsys.stream 或 fsys.file,io.file 等文件对象,\n如果参数@1为文件路径,则参数@2为可选参数
 fsys.untar() = !fsys_untarfile.
-!fsys_untarfile.utf8 = 是否使用UTF8编码文件名\n默认值为false，表示ansi多字节编码\n设为true表示使用utf8编码,\n设为null则自动检测，因为tar格式并不支持编码声明,所以可能出现文件名乱码
+!fsys_untarfile.utf8 = tar 文件名是否使用 UTF8 编码。\n设为 false ，表示文件名使用 ANSI 多字节编码。\n设为 true 表示文件名使用 utf8 编码,\n设为 null 则自动检测。\n目前 tar 文件一般使用 UTF-8 编码文件名，使用 ANSI 编码不常见。 
 !fsys_untarfile.blocksCount = 数据块总数,\n仅供进度条使用的估算值
 !fsys_untarfile.onProgressFolder = @.onProgressFolder = function(path){
 	__/*正在创建目录*/

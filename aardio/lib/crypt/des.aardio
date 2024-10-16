@@ -14,6 +14,11 @@ class des {
     	
     	var algId;
     	var keyLen = #key;
+    	
+    	/*
+    	一些程序里使用更长的密钥，通常只要简单地截断就可以。
+    	例如 DES 算法遇到 32 字节密钥，只要 string.left(key,8) 就可以了。
+    	*/
     	if( keyLen <= 8 ){
     		if( keyLen < 8 ) key = ..raw.buffer(8,key);
     		algId = 0x6601/*_CALG_DES*/;
@@ -33,23 +38,36 @@ class des {
     	var ret,err  = this.setPlainPassword(key,algId,flags);
 		if(!ret) return null,err;
 		
+		// ECB 模式忽略向量（IV）
 		return this.setInitVector( this.initVector or '\x12\x34\x56\x78\x90\xAB\xCD\xEF' );
     }  
 }
  
 /**intellisense()
-crypt.des = DES,2DES,3DES加密算法支持库\n加密模式CBC，填充模式PKCS5，如果与其他编程语言互通要保持一致\n各编程语言兼容的DES兼容写法参考](http://bbs.aardio.com/forum.php?mod=viewthread&tid=13148) \n\n演示代码：\n\n```\nimport crypt.des; \n\nvar des = crypt.des(); \ndes.setPassword("abcd12" ) \n\n//加密\nvar sstr = des.encrypt("测试字符串");\n\n//解密\nvar str = des.decrypt(sstr);\n```
-crypt.des() = 返回DES加密容器,支持DES,2DES,3DES加密\n可选使用一个字符串参数指定密钥向量\n如果要与其他编程语言有相同加解密结果,建议不要设置该参数\n!crypy_3des.
+crypt.des = DES，2DES，3DES 加密算法支持库\n加密模式CBC，填充模式PKCS5（兼容 PKCS7 ），如果与其他编程语言互通要保持一致\n各编程语言兼容的DES兼容写法参考](http://bbs.aardio.com/forum.php?mod=viewthread&tid=13148) \n\n演示代码：\n\n```aardio\nimport crypt.des; \n\nvar des = crypt.des(); \ndes.setPassword("abcd12" ) \n\n//加密\nvar sstr = des.encrypt("测试字符串");\n\n//解密\nvar str = des.decrypt(sstr);\n```
+crypt.des() = 返回 DES 加密容器。\n支持 DES，2DES，3DES 加密（根据密钥长度自动选择）。\n可选使用一个字符串参数指定密钥向量（ECB 模式忽略向量）。\n如果要与其他编程语言有相同加解密结果,建议不要设置该参数\n!crypy_3des.
 end intellisense**/
 
 /**intellisense(!crypy_3des)
-setPassword(.("密钥",选项) = 密钥使用补0方式进行8位对齐\n密钥长度小于等于8位时使用DES加密\n密钥长度小于等于16位时使用2DES加密\n密钥长度小于等于24位时使用3DES加密,\n超过24字节使用使用MD5算法创建转换为24位密钥,\n参数@2不需要指定
-decrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-encrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+setPassword( = 设置密钥，根据密钥长度自动选择算法。\n如果遇到密钥长度不一致的情况，直接截断就可以。\n例如 DES 最长 8 字节密钥，如果遇到 32 字节密钥一般只要\n调用 string.left 取最前面 8 字节就可以。
+setPassword(.("密钥",选项) = 密钥使用补 0 方式自动对齐。\n密钥长度小于等于 8 字节时使用 DES 加密\n密钥长度小于等于 16 字节时使用 2DES 加密\n密钥长度小于等于 24 字节时使用 3DES 加密,\n超过 24 字节使用使用MD5算法创建转换为24位密钥,\n参数 @2 不需要指定
+decrypt( = 解密数据
+decrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块解密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，解密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放解密结果的缓冲区，返回值 2 为解密长度。\n需要分块解密的算法，例如 RSA 算法返回的解密结果为字符串。\n失败返回 null, 错误信息,错误代码。\n\n用法可参考 decryptFile 函数源码。
+encrypt( = 加密数据
+encrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块加密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+encrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，加密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放加密结果的缓冲区，返回值 2 为解密长度。\n需要分块解密的算法，例如 RSA 算法返回的解密结果为字符串。\n失败返回 null, 错误信息,错误代码。\n\n用法可参考 encryptFile 函数源码。
+encryptFile( = 加密文件
+encryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要加密的文件。参数 @2 指定要保存加密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+decryptFile( = 解密文件
+decryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要解密的文件。参数 @2 指定要保存解密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+buffer = 加解密时暂存输入输出数据的缓冲区。\n只能通过调用 allocBuffer 函数分配此缓冲区。\n或者由加解密函数自动分配此缓冲区。\n\n如果未分配缓冲区，或缓冲区大小不够。\n加解密时会重新调用 allocBuffer 函数分配到合适大小。 \n\n一般不应直接访问此属性。
+allocBuffer( = 分配加解密需要用到的 buffer。
+allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer。\n如果不手动分配，程序将会自动按需分配 buffer。\n参数 @2 可选，可用对象的blockSize属性指定默认块大小。
+blockSize = 加密填充的块大小，默认为 8
 setKeyParam(.(类型,数据值,选项) = 设置加密参数\n数据值可以是结构体,字符串，或 buffer 对象,\n如果数据值一个数值参数,则转换为表示32位整型数值地址的结构体指针\n成功返回true,失败请使用 ..lasterr()获取错误信息
-setKeyParamMode(_CRYPT_MODE__) = 设置加密模式\n成功返回true,失败请使用 ..lasterr()获取错误信息
+setKeyParamMode(_CRYPT_MODE_ECB) = 设置为 ECB 加密模式。\nECB 模式忽略向量（IV）。\n成功返回 true,失败请使用 ..lasterr()获取错误信息
 setKeyParamPadding(_PKCS5__) = 设置加密填充方式\n成功返回true,失败请使用 ..lasterr()获取错误信息
-setInitVector(.(字符串向量,选项) = 设置初始化向量,成功返回true,\n参数2可选
+setInitVector(.(字符串向量,选项) = 设置初始化向量，参数 @2 可选。\n成功返回true。\n\nECB 模式忽略向量（IV），不需要指定。
 hasKey() = 检测是否已设置密钥
-blockSize = 加密填充的块大小，默认为8
 end intellisense**/

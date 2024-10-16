@@ -207,7 +207,7 @@ end intellisense**/
 com.picture = IPictrue图像支持库\n在导入win.ui,win.ui.ctrl中时自动导入此库
 !ipicture.Handle = 位图句柄
 !ipicture.Type = 图片类型\n参考com.picture.type成员
-!ipicture.Save(__/*文件路径*/) = 保存位图到文件，只能保存为bmp格式\n使用 com.interface.IPicture 可保存到内存
+!ipicture.Save(__/*文件路径*/) = 保存位图到文件，只能保存为 bmp 格式\n使用 com.interface.IPicture 可保存到内存
 !ipicture.CopyHandle(.(宽度,高度) = 复制新的位图并返回位图句柄,位图类型(_IMAGE_BITMAP 或 _IMAGE_ICON)\n可选指定宽度、高度
 !ipicture.Width = 图像宽度
 !ipicture.Height = 图像高度

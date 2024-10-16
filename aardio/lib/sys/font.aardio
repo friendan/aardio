@@ -55,7 +55,7 @@ install = function(path,allUser){
 				..fsys.move(..fsys.getSpecial(0x1c/*_CSIDL_LOCAL_APPDATA*/,"Microsoft\Windows\Fonts\"+filename)
 					,sysFontPath);
 					
-				::Shell32.SHChangeNotifyW(2/*_SHCNE_CREATE*/,5/*_SHCNF_PATH*/,..string.toUnicode(sysFontPath),0);
+				::Shell32.SHChangeNotifyW(2/*_SHCNE_CREATE*/,5/*_SHCNF_PATH*/,..string.toUtf16(sysFontPath),0);
 				
 				..fsys.delete(userFontPath); 
 				ret = true;

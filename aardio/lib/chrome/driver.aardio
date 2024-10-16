@@ -14,8 +14,9 @@ namespace chrome;
 
 class driver{
 	ctor(chromePath,driverPath,installTitle){
+		
 		if(!driverPath){
-			if(!chromePath){ chromePath = ..chrome.path(); } 
+			if(!type.isString(chromePath)){ chromePath = ..chrome.path(true,chromePath); } 
 			if(!chromePath) return null;
 			
 			driverPath = ..io.exist( ..fsys.path.replaceFile(chromePath,"chromedriver.exe") );
@@ -178,6 +179,7 @@ class driver{
 	};
 	startBrowser = function(desiredCapabilities,requiredCapabilities){
 		var sessionInfo = this.createBrowser(desiredCapabilities,requiredCapabilities);
+		 
 		if(sessionInfo[["sessionId"]]){ 
 			if(sessionInfo[["status"]]!==0){
 				error(sessionInfo[["value"]][["message"]],2)
@@ -185,14 +187,21 @@ class driver{
 			
 			this.sessionInfo = sessionInfo;
 			var ses = this.clientApi.session[sessionInfo.sessionId]
-			if(ses){ 
-				ses[["sessionInfo"]] = sessionInfo; 
-				ses =  chromeSessionEx(ses);
+			if(ses){
+				ses =  chromeSessionEx(ses); 
 				ses.restClient = this.client;
-				
+			 
 				//null 值要转为 0 或 false，避免不存在的值触发元方法返回 API 对象
 				ses.hwndChrome = sessionInfo.hwndChrome || 0; 
 				ses.isHeadless = !!this.isHeadless;
+				
+				ses[["sessionInfo"]] = sessionInfo.value; 
+				ses.browserName = ses[["sessionInfo"]].browserName;
+				ses.browser = ses[["sessionInfo"]].msedge ? ses.ms : ses.goog;
+				ses.browser.name = ses[["sessionInfo"]].browserName : "";
+				ses.browser.version = ses[["sessionInfo"]].version : "";
+				ses.browser.userDataDir = ses[["sessionInfo"]].msedge ? sessionInfo.msedge[["userDataDir"]] : sessionInfo.chrome[["userDataDir"]];
+ 
 				return ses;
 			}
 		}
@@ -306,14 +315,10 @@ namespace driver{
 			)
 		};
 		cdp = function(cmd, cmd_args){
-			return owner.goog.cdp.execute(
+			return owner.browser.cdp.execute(
 				cmd=cmd;
 				params=cmd_args
 			)
-		};
-		//@Deprecated
-		doCdpCmd = function(...){
-			return owner.cdp(...);
 		};
 		doScript = function(script,...){
 			var ret =  owner.execute/*.sync*/(
@@ -601,9 +606,12 @@ namespace driver{
 		if(!chromeVersionInfo) return;
 		
 		if(chromeVersionInfo.major>=115){
-			driverVersion =  tostring(chromeVersionInfo,"%d.%d.%d.%d"); 
-		
+			driverVersion =  tostring(chromeVersionInfo,"%d.%d.%d.%d");  
 			var platform = (_WIN_64?"win64":"win32");  
+			
+			driverDir = ..io.appData("aardio/chromeDriver/" + driverVersion); 
+			driverPath = ..io.joinpath(driverDir,"/chromedriver-" + platform,"chromedriver.exe") ;  
+			if( ..io.exist(driverPath) ) return driverPath;
 			
 			driverUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
 				+ driverVersion + "/" + platform + "/chromedriver-" + platform + ".zip";; 
@@ -635,8 +643,7 @@ namespace driver{
 			..zlib.httpFile.referer = "https://registry.npmmirror.com/binary.html?path=chromedriver/" + driverVersion;
 		}
 
-		if( ..io.exist(driverPath) ) return driverPath;
-		
+		if( ..io.exist(driverPath) ) return driverPath; 
 		 
 		..zlib.httpFile.download( driverUrl
 			,installTitle : "正在下载本程序必须的组件：Chrome Driver"
@@ -733,11 +740,12 @@ Win7,XP 等旧系统建议手动安装兼容新 Chromium 内核的 Supermium 浏
 end details**/
 
 /**intellisense()
-chrome.driver = 用于调用 ChromeDriver 自动化控制 Chrome 浏览器。\n兼容  Edge（Chromium），Supermium 等相同内核浏览器。\n\n如果 chrome.exe 目录存在 chromedriver.exe 则直接使用，\n否则自动检测并下载与浏览器版本匹配的 ChromeDriver 。\n\naardio 不会对 ChromeDriver 下载地址失效、变动导致的后果承担任何责任，\n如不同意请不要使用。\n\n版本号不兼容的其他浏览器请自行指定 chromedriver.exe 路径\n[JsonWireProtocol](https://www.selenium.dev/documentation/legacy/json_wire_protocol/)
-chrome.driver( = 创建 ChromeDriver 对象
-chrome.driver(.(chrome路径,ChromeDriver路径) = 创建ChromeDriver对象,失败返回null,错误信息,\n\n如果不指定参数@1，则只能通过远程调试端口直接连接
-chrome.driver(.(chrome路径,chrome主版本) = 创建ChromeDriver对象,失败返回null,错误信息,\n如果不指定参数@1，则只能通过远程调试端口直接连接,\n参数@2必须使用一个字符串或一个数值指定Chrome的主版本号
-chrome.driver(.(chrome路径) = 创建ChromeDriver对象,失败返回null,错误信息,\n\n参数@1如果不指定Chrome.exe路径,aardio会自动获取chrome路径,\naardio会自动搜索chrome.exe同目录下的chromedriver.exe,\n如果指不到会自动获到chrome.exe的版本并自动下载对应版本的的chromedriver.exe\nn可选使用参数@3自定义下载对话框标题
+chrome.driver = 用于调用 ChromeDriver 或 EdgeDriver 自动化控制内核浏览器 。\n兼容  Chrome ，Edge ，Supermium 等 Chromium 内核浏览器。\n\naardio会自动搜索浏览器同目录下的适合的 ****driver.exe，\n如果指不到会自动获到浏览器的版本并自动下载对应版本的的 chromedriver.exe 或 edgedriver.exe。\n\naardio 不会对 ChromeDriver 下载地址失效、变动导致的后果承担任何责任，如不同意请不要使用。\n\n版本号不兼容的其他浏览器请自行指定 chromedriver.exe 路径
+chrome.driver( = 创建并返回 ChromeDriver 对象，失败返回 null，错误信息。
+chrome.driver(.(browserPath,driverPath) = 创建并返回 ChromeDriver 对象，失败返回 null，错误信息。\n\n如果不指定参数 @browserPath，则只能通过远程调试端口直接连接
+chrome.driver(.(browserPath,driverVersion) = 创建并返回 ChromeDriver 对象，失败返回 null，错误信息。\n如果不指定参数@1，则只能通过远程调试端口直接连接,\n参数 @driverVersion 必须使用一个字符串或一个数值指定 Chrome 或 Edge 的主版本号
+chrome.driver(.(browserPath) = 创建并返回 ChromeDriver 对象，失败返回 null，错误信息。\n\n参数@1如果不指定 Chrome 或 Edge 路径,aardio会自动获取浏览器路径。\naardio会自动搜索浏览器同目录下的适合的 ****driver.exe，\n如果指不到会自动获到浏览器的版本并自动下载对应版本的的 chromedriver.exe 或 edgedriver.exe。\nn可选使用参数 @3 自定义下载对话框标题
+chrome.driver(.(true) = 创建并返回 ChromeDriver 对象，失败返回 null，错误信息。\n优先获取 Chrome 路径，如果找不到则获取 Edge 路径。\n如果参数 @1 不指定路径且不为 true ，则优先获取 Edge 路径。\naardio会自动搜索浏览器同目录下的适合的 ****driver.exe，\n如果指不到会自动获到浏览器的版本并自动下载对应版本的的 chromedriver.exe 或 edgedriver.exe。\nn可选使用参数 @3 自定义下载对话框标题 
 chrome.driver() = !chromeDriver.
 chrome.driver.requirePath(__) = 参数@1使用字符串传入Chrome版本号,\n返回匹配的ChromeDriver路径\n如果未安装该版本ChromeDriver会自动下载安装\n可选使用参数@2自定义下载对话框标题
 chrome.driver.chromePath = Chrome.exe 或浏览器主程序路径
@@ -772,7 +780,7 @@ startBrowser(.(desiredCap,requiredCap) = 打开Chrome并创建会话,返回该�
 attach(.(debuggerPort,desiredCap,requiredCap) = 附加到debuggerPort指定的调试端口,返回该会话的REST API对象,\n如果创建chrome.driver的第一个参数是electron.app或chrome.app,debuggerPort参数可以不指定\n其他参数可选
 startBrowser() = !chromeDriverSes.
 attach() = !chromeDriverSes.
-startAppBrowser( = 打开Chrome并创建APP模式会话,返回该会话的REST API对象
+startAppBrowser( = 打开 Chrome 并创建 APP 模式会话,返回该会话的 REST API对象
 startAppBrowser(.(app,args,desiredCap,requiredCap) = 打开Chrome并创建APP模式会话,返回该会话的REST API对象\napp应当是一个chrome.app对象,args是包含chrome启动参数的数组\n其他参数为可选参数
 startAppBrowser(.(url,desiredCap,requiredCap) = 打开Chrome并创建APP模式会话,返回该会话的REST API对象\nurl指定要打开的网址,其他参数为可选参数
 startAppBrowser() = !chromeDriverSes.
@@ -782,6 +790,10 @@ end intellisense**/
 ? = 可输入任意资源名\n对象负责转换为资源请求URL\n!web_rest_api.
 isHeadless = 启动参数是否指定了 --headless
 sessionInfo = 浏览器会话信息
+browser.name = 浏览器名称，Edge 浏览器为 "MicrosoftEdge" 或 "chrome"
+browser.version = 浏览器版本
+browser.userDataDir = 用户数据目录
+browser = 浏览器自定义命令接口。\nEdge 浏览器为 /session/{session id}/ms ，\nChrome 浏览器为 /session/{session id}/goog 
 head = HEAD方法提交请求\n如果该函数返回非null值为成功,请使用lastResponseHeaders获取应答HTTP头\n调用时可以写 head() 或 head.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串
 get = GET方法提交请求,获取资源\n调用时可以写 get() 或 get.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n!web_rest_api.
 post = POST方法提交请求,新增或修改资源\n调用时可以写 post() 或 post.其他资源名()\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n!web_rest_api.
@@ -820,7 +832,7 @@ window.rect(__) = 前进\POST	/session/{session id}/window/rect
 window.maximize() = 最大化\nHTTP接口：POST /session/{session id}/window/maximize
 window.minimize() = 最小化\nHTTP接口：POST /session/{session id}/window/minimize
 source.get() = 获取页面源码\nHTTP接口：GET /session/{session id}/source
-cdp( = 执行CDP命令\nHTTP接口：POST /session/{session id}/goog/cdp/execute
+cdp( = 执行 CDP 命令。 \n调用成功则第一个返回值为 CDP 返回的表对象。\n调用失败则第二个返回值为错误信息。 \n注意 CDP 调用成功不等于命令执行成功，\n即使调用成功且第一个返回值为表对象， \n该返回值仍解码器能包含错误状态码与错误信息。\n返回表对象的字段含义请参考 CDP 文档。\n\nHTTP接口：POST /session/{session id}/goog|ms/cdp/execute
 doScript( = 执行脚本\nHTTP接口：POST /session/{session id}/execute/sync
 doScript(.("JS脚本",其他调用参数) = JS脚本会被放到一个匿名函数中执行,\n可添加任意个调用参数,节点对象可作为参数\n成功返回该匿名函数的返回值,\n失败返回null,以及REST API返回的响应对象
 execute.async(__) = 异步执行脚本\nHTTP接口POST /session/{session id}/execute/async

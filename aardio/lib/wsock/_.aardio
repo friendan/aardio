@@ -92,7 +92,10 @@ in_addr = class {
 	} 
 	@_meta;
 } 
-in_addr._meta = {  _tostring = function(){ return ..wsock.inet_ntoa(owner); } }  
+in_addr._meta = {  
+	_tostring = lambda() ..wsock.inet_ntoa(owner); 
+	_tonumber = lambda() owner.S_un.S_addr;
+}  
 var in_addr =  in_addr;
 
 in6_addr = class {
@@ -161,7 +164,13 @@ class sockaddr_in {
     WORD sin_port;
     struct sin_addr;
     BYTE sin_zero[8]; 
+    @_meta;
 }
+sockaddr_in._meta = {
+	_tostring = lambda() ..wsock.inet_ntoa(owner.sin_addr); 
+	_tonumber = lambda() owner.sin_addr.S_un.S_addr;	
+}
+
 var sockaddr_in = sockaddr_in;
 
 class sockaddr_in6 {
@@ -205,6 +214,10 @@ class sockaddr_in6 {
 		if( port ){ this.sin6_port = ..wsock.htons(port) }
 		this.sin_family = family;
 	}
+	@_meta;
+}
+sockaddr_in6._meta = {
+	_tostring = lambda() tostring(owner.sin6_addr);  
 }
 /*}}*/
  
@@ -216,7 +229,7 @@ sockaddrStringify = function(sockaddr,size,protocolInfo){
  
 	var buf = ..raw.buffer(bufLen.value*2) 
 	if(0==::Ws2_32.WSAAddressToStringW(sockaddr,size,protocolInfo,buf,bufLen)){
-		return ..string.fromUnicode(buf,65001,-1);
+		return ..string.fromUtf16(buf,65001,-1);
 	} 
 }
 
@@ -347,15 +360,9 @@ open() = 使用wsock库其他函数以前必须调用此函数
 close() = 与wsock.open()配对使用,\n使用wsock库以后必须调用此函数释放资源,\n如果忘记配对调用此函数,在线程结束时将自动调用
 getFreePort(.(ip,套接字类型,协议类型)  =  获取空闲服务端口，\n可选在参数中指定IP地址,其他参数不必指定\n\n分配的端口即使没有马上使用，\n系统下次分配的空闲端口仍然是递增分配下一个端口号，\n动态分配空闲端口为49152到65535之间的值，\nXP系统则为 1025到5000之间的值，\n命令行输入 netsh int ipv4 show dynamicport tcp 看动态端口范围，\n安装 Hyper-V 会导致动态起始端口变为 1024 导致常用端口冲突
 versionRequired = 支持的版本,\n用于在open函数中WSAStartup的第一个参数
-_wsadata.version = 版本
-_wsadata.highVersion = 支持的最高版本
-_wsadata.description = 描述
-_wsadata.systemStatus = 状态和配置
-_wsadata.maxSockets = 单进程可打开的最大套接字数
-_wsadata.maxUdpDg = 最大数据包大小,0为无限制
 accept(__/*套接字句柄*/) = 创建一个新的套接字来与客户套接字创建连接通道,\n如果连接成功,就返回新创建的套接字句柄
 select(.(nfds,readfds,writefds,exceptfds,tv_sec,tv_usec) = 所有参数可选,\n成功返回套接字数目,超时返回0,出错返回-1/*_SOCKET_ERROR*/
-inet_ntoa(__/*in_addr*/) = in_addr结构体或数值转换为字符串格式IP地址
+inet_ntoa(__/*in_addr*/) = in_addr 结构体或数值转换为字符串格式 IP 地址
 getIp("__/*请输入域名*/") = 解析域名,可返回一个或多个IP\n如果不指定任何参数,返回内网IP,\n\n优先取192.168.1 开头的IP,请改用 wsock.getLocalIp 函数,\n\n如果要更优先获取当前上网卡的本机IP,\n请改用 wsock.tcp.client.getLocalIp 函数
 getIpAddr(__/*请输入域名*/) = 解析域名,\n返回in_addr或in_addr结构体数组\n返回值2为AF_INET或AF_INET6
 getLocalIp() = 返回内网IP，优先取192.168.1 开头的IP,\n\n如果要更优先获取当前上网卡的本机IP,\n请改用 wsock.tcp.client.getLocalIp 函数
@@ -364,6 +371,13 @@ sockaddrStringify( = sockaddr 指针或结构体转字符串
 sockaddrStringify(.(sockaddr,size,protocolInfo) = sockaddr 转字符串。\n@sockaddr 可指定sockaddr 指针或结构体。\nsize 指定参数 @1 指向的内存长度。\n@protocolInfo 不必指定
 sockaddrParse( = 字符串转换为 sockaddr_in 或 sockaddr_in6 结构体
 sockaddrParse(.(strAddress) = 字符串转换为 sockaddr_in 或 sockaddr_in6 结构体。\n参数 @1 可指定 IPV4 或 IPV6 地址，可选包含端口号。\n可选用参数 @2 指定端口号
+_wsadata.version = 版本
+_wsadata.highVersion = 支持的最高版本
+_wsadata.description = 描述
+_wsadata.systemStatus = 状态和配置
+_wsadata.maxSockets = 单进程可打开的最大套接字数
+_wsadata.maxUdpDg = 最大数据包大小,0为无限制
+? = 其他函数请查看库源码。\n一般不需要直接使用这些库函数。\n应改用 wsock.tcp.client 或 wsock.udp.client 等库
 end intellisense**/
 
 /**intellisense()
@@ -379,14 +393,14 @@ wsock.fd_set() = !wsock_fd_set.
 !in_addr.S_un.S_un_b.s_b4 = s_b4
 !in_addr.S_un.S_un_w.s_w1 = s_w1
 !in_addr.S_un.S_un_w.s_w2 =  s_w2
-wsock.in_addr()  = !in_addr.
+wsock.in_addr()  = 创建 in_addr 结构体，表示 IPv4 地址。\n返回值可用 tostring 函数转换为字符串，\n可用 tonumber 函数转换为数值，Ipv4 实际存为 32 位整数。\n!in_addr.
 !sockaddr_in.sin_family = IPv4地址类型,\n值为_AF_INET
 !sockaddr_in.sin_port =  端口
 !sockaddr_in.sin_addr = 地址\n!in_addr.
 !sockaddr_in.sin_zero = 对齐数据
 wsock.sockaddr_in() = !sockaddr_in.
-wsock.sockaddr_in(.("主机",端口) = 返回sockaddr_in结构体,所有参数可选\n参数@1可以使用域名、IP、数值,\n如果参数@1是字符串,可在IP或域名后指定端口号\n如果参数@1传入sockaddr_in则直接返回该结构体\n参数错误返回null
-wsock.in6_addr() = IPv6地址结构\n!in6_addr.
+wsock.sockaddr_in(.("主机",端口) = 返回 sockaddr_in 结构体，所有参数可选。\n参数 @1 可以使用域名、IP、数值,\n如果参数 @1 是字符串,可在 IP 或域名后指定端口号。\n如果参数 @1 传入 sockaddr_in 则直接返回该结构体。\n参数错误返回 null 。\n\n返回结构体可用 tostring 函数转为字符串，\n也可以用 tonumber 转换为数值。
+wsock.in6_addr() = IPv6 地址结构\n!in6_addr.
 !in6_addr.u.Word = 8个16位字数组
 !in6_addr.u.Byte = 16个8位字节数组
 !sockaddr_in.sin6_family = IPv6地址类型,\n值为_AF_INET6
@@ -560,52 +574,6 @@ _FD_ACCEPT=@8/*_FD_ACCEPT*/
 _FD_CONNECT=@0x10/*_FD_CONNECT*/
 _FD_CLOSE=@0x20/*_FD_CLOSE*/
 _WSABASEERR=@0x2710/*_WSABASEERR*/
-_WSAEINTR=@0x2714/*_WSAEINTR*/
-_WSAEBADF=@0x2719/*_WSAEBADF*/
-_WSAEACCES=@0x271D/*_WSAEACCES*/
-_WSAEFAULT=@0x271E/*_WSAEFAULT*/
-_WSAEINVAL=@0x2726/*_WSAEINVAL*/
-_WSAEMFILE=@0x2728/*_WSAEMFILE*/
-_WSAEWOULDBLOCK=@0x2733/*_WSAEWOULDBLOCK*/
-_WSAEINPROGRESS=@0x2734/*_WSAEINPROGRESS*/
-_WSAEALREADY=@0x2735/*_WSAEALREADY*/
-_WSAENOTSOCK=@0x2736/*_WSAENOTSOCK*/
-_WSAEDESTADDRREQ=@0x2737/*_WSAEDESTADDRREQ*/
-_WSAEMSGSIZE=@0x2738/*_WSAEMSGSIZE*/
-_WSAEPROTOTYPE=@0x2739/*_WSAEPROTOTYPE*/
-_WSAEPROTOOPT=@0x273A/*_WSAEPROTOOPT*/
-_WSAEPROTONOSUPPORT=@0x273B/*_WSAEPROTONOSUPPORT*/
-_WSAESOCKTNOSUPPORT=@0x273C/*_WSAESOCKTNOSUPPORT*/
-_WSAEOPNOTSUPP=@0x273D/*_WSAEOPNOTSUPP*/
-_WSAEPFNOSUPPORT=@0x273E/*_WSAEPFNOSUPPORT*/
-_WSAEAFNOSUPPORT=@0x273F/*_WSAEAFNOSUPPORT*/
-_WSAEADDRINUSE=@0x2740/*_WSAEADDRINUSE*/
-_WSAEADDRNOTAVAIL=@0x2741/*_WSAEADDRNOTAVAIL*/
-_WSAENETDOWN=@0x2742/*_WSAENETDOWN*/
-_WSAENETUNREACH=@0x2743/*_WSAENETUNREACH*/
-_WSAENETRESET=@0x2744/*_WSAENETRESET*/
-_WSAECONNABORTED=@0x2745/*_WSAECONNABORTED*/
-_WSAECONNRESET=@0x2746/*_WSAECONNRESET*/
-_WSAENOBUFS=@0x2747/*_WSAENOBUFS*/
-_WSAEISCONN=@0x2748/*_WSAEISCONN*/
-_WSAENOTCONN=@0x2749/*_WSAENOTCONN*/
-_WSAESHUTDOWN=@0x274A/*_WSAESHUTDOWN*/
-_WSAETOOMANYREFS=@0x274B/*_WSAETOOMANYREFS*/
-_WSAETIMEDOUT=@0x274C/*_WSAETIMEDOUT*/
-_WSAECONNREFUSED=@0x274D/*_WSAECONNREFUSED*/
-_WSAELOOP=@0x274E/*_WSAELOOP*/
-_WSAENAMETOOLONG=@0x274F/*_WSAENAMETOOLONG*/
-_WSAEHOSTDOWN=@0x2750/*_WSAEHOSTDOWN*/
-_WSAEHOSTUNREACH=@0x2751/*_WSAEHOSTUNREACH*/
-_WSAENOTEMPTY=@0x2752/*_WSAENOTEMPTY*/
-_WSAEPROCLIM=@0x2753/*_WSAEPROCLIM*/
-_WSAEUSERS=@0x2754/*_WSAEUSERS*/
-_WSAEDQUOT=@0x2755/*_WSAEDQUOT*/
-_WSAESTALE=@0x2756/*_WSAESTALE*/
-_WSAEREMOTE=@0x2757/*_WSAEREMOTE*/
-_WSASYSNOTREADY=@0x276B/*_WSASYSNOTREADY*/
-_WSAVERNOTSUPPORTED=@0x276C/*_WSAVERNOTSUPPORTED*/
-_WSANOTINITIALISED=@0x276D/*_WSANOTINITIALISED*/
 _WSAHOST_NOT_FOUND=@0x2AF9/*_WSAHOST_NOT_FOUND*/
 _HOST_NOT_FOUND=@0x2AF9/*_HOST_NOT_FOUND*/
 _WSATRY_AGAIN=@0x2AFA/*_WSATRY_AGAIN*/

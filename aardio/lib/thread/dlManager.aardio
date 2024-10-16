@@ -1,4 +1,4 @@
-//dlManager 下载线程管理器
+﻿//dlManager 下载线程管理器
 import fsys;
 import thread.works;
 import thread.event;
@@ -20,7 +20,7 @@ class dlManager {
 				var id = args.id;
 				var hwndCommand = args.hwndCommand;
 				var savepath = args.savedir;
-				if( args.filename ) savepath =  ..fsys.joinpath( savepath,args.filename )  
+				if( args.filename ) savepath =  ..io.joinpath( savepath,args.filename )  
 	 		
 	 			var send = ..thread.command.send;
 	 			var post = ..thread.command.post;

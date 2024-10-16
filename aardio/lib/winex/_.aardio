@@ -4,7 +4,7 @@ import win;
 AttachThreadInput := ::User32.api( "AttachThreadInput", "int(INT idAttach,INT idAttachTo,int fAttach)" )  
 EnumWindows := User32.api( "EnumWindows", "int(POINTER lpEnumFunc ,int lParam )" )
 EnumChildWindows := User32.api( "EnumChildWindows", "int(int hWndParent,POINTER lpEnumFunc ,int lParam )" ) 
-isUnicode := User32.api( "IsWindowUnicode", "int(int hwnd)" )
+isUtf16 := User32.api( "IsWindowUnicode", "int(int hwnd)" )
 
 isHung = function(hwnd,timeout=500){
 	return ( ::User32.IsHungAppWindow(hwnd) ) or  
@@ -423,7 +423,7 @@ attachThread = function(idAttach,att = true){
 		return att;
 	
 	var hfore = ..win.getForeground();	
-	var ret = AttachThreadInput(idAttach, idCur, att?1:0);
+	var ret = AttachThreadInput(idCur,idAttach, att?1:0);
 	..win.setForeground(hfore);
 	
 	return ret;
@@ -482,7 +482,7 @@ getCaret = function(hwnd){
 
 say = function(str,hwnd){ 
 	hwnd = getFocus(hwnd); 
-	str = ..string.toUnicode(str);
+	str = ..string.toUtf16(str);
 	for(i=1;#str/2) {
 		::User32.PostMessageW(hwnd, 0x102/*_WM_CHAR*/, str[i], 0x0001); 
 	}   
@@ -500,7 +500,7 @@ sayAnsi = function(str,hwnd){
 
 sayIme = function(str,hwnd){
 	hwnd = getFocus(hwnd); 
-	str = ..string.toUnicode(str);
+	str = ..string.toUtf16(str);
 	for(i=1;#str/2) {
 		::User32.PostMessageW(hwnd, 0x286/*_WM_IME_CHAR*/, str[i], 0x0001); 
 	}   
@@ -531,7 +531,7 @@ sendString = function(str,hwnd){
 }
 
 setText = function(hwnd,str,timeout=500){ 
-	::SendMessageTimeout(hwnd,0xC/*_WM_SETTEXT*/, ,..string.toUnicode(str) ,0x2/*_SMTO_ABORTIFHUNG*/ ,timeout,0);
+	::SendMessageTimeout(hwnd,0xC/*_WM_SETTEXT*/, ,..string.toUtf16(str) ,0x2/*_SMTO_ABORTIFHUNG*/ ,timeout,0);
 }
 
 getText = function(hwnd,len,timeout=500){
@@ -543,7 +543,7 @@ getText = function(hwnd,len,timeout=500){
 		if(!buf) return;
 		
 		ok,len = ::SendMessageTimeout(hwnd,0xD/*_WM_GETTEXT*/,topointer(len + 1),buf,0x2/*_SMTO_ABORTIFHUNG*/,timeout,0);
-		if( ok && len ) return ..string.fromUnicode(buf,,len);  
+		if( ok && len ) return ..string.fromUtf16(buf,,len);  
 	} 
 	
 	if(!ok) return;
@@ -585,7 +585,7 @@ findSubMenu = function(hMenu,label,...){
 		var buf = ..raw.buffer(1024);
 		for(pos=0;count-1){ 
 			var len = ::User32.GetMenuString(hMenu, pos, buf, 512, 0x400/*_MF_BYPOSITION*/);
-			var target = ..string.fromUnicode(buf,,-1);
+			var target = ..string.fromUtf16(buf,,-1);
 		
 			if( not  ..string.find(label,"\&" ) )
  				target = ..string.replace(target,"\&","");
@@ -649,7 +649,7 @@ orphanWindow = function(ctrl,hwnd){
 
 /**intellisense(winex)
 isVisible(__/*窗口句柄*/) = 如果窗口可见并且不是伪装为可见的隐形状态（Cloaked）,\n返回 true,否则不可见返回 flase，隐形返回 null
-isUnicode(__/*窗口句柄*/) = 判断窗口是否Unicode窗口
+isUtf16(__/*窗口句柄*/) = 判断窗口是否Unicode窗口
 isHung( = 判断窗口是否失去响应
 isHung(.(窗口句柄,超时) = 判断窗口是否失去响应\n超时为可选参数,默认为500毫秒
 enum(onfind,parent)=@.enum( \n	function(hwnd,depth){\n		..io.print( depth/*深度*/,hwnd/*窗口*/,winex.getText(hwnd)/*标题*/ )\n		__/*此函数深度枚举指定父窗口的所有下级窗口(包括直接子窗口、间接子窗口）,\n省略父窗口则默认为桌面窗口,\n返回false停止枚举*/\n	} \n	,父窗口\n	,要查找的类名\n	,要查找的标题\n	,要查找的控件ID\n)
@@ -661,7 +661,7 @@ each("类名","查找标题",父窗口,超时毫秒) =  @for hwnd,title,threadId
 eachFindEx( = 返回一个迭代器,\n按Z序遍历所有子窗口,支持 UWP 应用窗口,\n迭代器每次遍历返回2个值：找到的子窗口句柄,父窗口句柄
 eachFindEx(.(控件类名,控件文本,父窗口) = 查找类名,查找标题都是可选参数，都不支持模式匹配语法,\n省略父窗口句柄遍历全部顶层窗口
 eachFindEx(.(控件类名,控件文本,父窗口类名,父窗口标题) = 查找类名,查找标题都是可选参数，都不支持模式匹配语法,\n省略父窗口句柄遍历全部顶层窗口
-match(.(句柄,文本,类名,ID,超时毫秒) = 指定一个窗口句柄,检测是否符合给定参数\n所有参数可选,类名与文本支持模式表达式,\n\n可选指定读取窗口文本超时毫秒数,\n超时返回 null 值，否则返回非 null 值
+match(.(句柄,文本,类名,ID,超时毫秒) = 指定一个窗口句柄,检测是否符合给定参数\n所有参数可选,类名与文本支持模式串,\n\n可选指定读取窗口文本超时毫秒数,\n超时返回 null 值，否则返回非 null 值
 find(.(类名模式串,标题模式串,进程ID,线程ID,超时毫秒)=查找顶层窗口,所有参数都是可选参数\n可选指定读取窗口文本超时毫秒数\n返回值为：句柄,线程ID,进程ID
 findMainWnd(.(类名模式串,标题模式串,进程ID,线程ID,超时毫秒) = 查找独立不属于其他窗口所有的顶层窗口所有参数都是可选参数\n可选指定读取窗口文本超时毫秒数\n返回值为：句柄,线程ID,进程ID
 waitEx( = 在指定父窗口内查找并等待子窗口,
@@ -695,9 +695,9 @@ fromClientPoint(.(窗口句柄,x坐标,y坐标) = 从指定的窗口坐标查找
 fromClientPoint(.(窗口句柄,x坐标,y坐标,_CWP_ALL) = 从指定的窗口坐标查找子窗口\n_CWP_ALL指定包含隐藏、禁用控件
 fromClientPointReal(.(窗口句柄,x坐标,y坐标) = 从指定的窗口坐标查找子窗口\n仅子窗口,非叶级窗口,穿透groupbox。 
 attach( = 绑定外部窗口所属线程到当前线程并共享输入处理机制。\n注意此函数会重置键盘状态\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
-attach(.(hwndAttach,enabled) = 绑定外部窗口所属线程到当前线程并共享输入处理机制。\n@hwndAttach 指定外部线程的目标窗口句柄\n参数 @enabled 省略或为 true 绑定线程,为 false 取消绑定。\n返回值为是否成功
-attach(.(hwndAttach,proc) = 执行参数@proc指定的回调函数,\n@hwndAttach 指定外部线程窗口句柄。\n执行回调函数时绑定外部窗口所属线程到当前线程并共享输入处理机制。\n执行完取消绑定，并返回该函数的返回值
-attachThread(__/*外部线程ID*/) = 绑定外部线程到当前线程并共享输入处理机制。\n返回值为是否成功附加。\n注意此函数会重置键盘状态。\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
+attach(.(hwndAttach,enabled) = 绑定当前线程到外部窗口所属线程并共享输入处理机制。\n@hwndAttach 指定外部线程的目标窗口句柄\n参数 @enabled 省略或为 true 绑定线程,为 false 取消绑定。\n返回值为是否成功
+attach(.(hwndAttach,proc) = 执行参数@proc指定的回调函数,\n@hwndAttach 指定外部线程窗口句柄。\n执行回调函数时绑定当前线程到外部窗口所属线程并共享输入处理机制。\n执行完取消绑定，并返回该函数的返回值
+attachThread(__/*外部线程ID*/) = 绑定当前线程到外部线程并共享输入处理机制。\n返回值为是否成功附加。\n注意此函数会重置键盘状态。\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
 attachThread(__/*外部线程ID*/,false) = 解除附加\n返回值为是否成功解除
 getFocus(__/*可选指定父窗口句柄*/)=获取输指定参数@1指定句柄的窗口输入焦点所在的控件句柄，\n不指定参数@1获取前台窗口、输入焦点所在的控件句柄。\n\n如果参数@2为 true 则取不到输入焦点时返回 null，\n否则返回叶级窗口或自身
 getCaret(__/*可选指定窗口句柄*/)=获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体，该结构体增加 hwnd 属性存放光标所在窗口句柄。\n失败返回 null\n\n不是所有窗口都支持，\nwinex.caret.get 函数会尝试以更多的方法获取输入光标

@@ -7,6 +7,18 @@ class cad{
 	ctor(...){
 		this = ... ? ..com.GetOrCreateObject(...) 
 				: ..com.GetOrCreateObject("AutoCAD.Application","GStarCAD.Application"); 
+		
+		if(!this) return;
+			
+		var loadDVB =  this.LoadDVB;	
+		this[["LoadDVB"]] = function(path){
+			loadDVB(..io.fullpath(path));
+		};
+		
+		var unloadDVB =  this.UnloadDVB;
+		this[["UnloadDVB"]] = function(path){
+			unloadDVB(..io.fullpath(path));
+		};
 	}; 
 	LoadLisp = function(lisp,args,doc){
 
@@ -81,8 +93,13 @@ class cad{
 		if(secureLoad) doc.SetVariable("SECURELOAD",..com.word(secureLoad));
 		if(cmdecho) doc.SetVariable("CMDECHO",..com.word(cmdecho));
 		return r;
-	};
+	}; 
 	NetCompiler = function(...){
+		 
+		if(tonumber( this.MajorVersion() ) >=25){
+			error("此函数不支持 AutoCAD 2025 以及之后版本，可改用 VS 编译 DLL");
+		}
+		
 		if(!..dotNet) error("请先导入 dotNet 库");
 		var compiler = ..dotNet.createCompiler(...);
 		compiler.Reference("System.dll");
@@ -149,26 +166,36 @@ class cad{
 		if(cmdecho) doc.SetVariable("CMDECHO",..com.word(cmdecho));
 		return r;
 	};
-	MajorVersion = function(){
-		if(this[["$majorVersion~~~"]]) return this[["$majorVersion~~~"]];
-		
+	VersionString = function(){
+	 
 		var version;
 		try{ version = this.Version; }
 		
 		if(!version){
 			if ( ! this.Documents.Count ) {this.Documents.Add();}
-			this.ActiveDocument.GetVariable("ACADVER")
+			version = this.ActiveDocument.GetVariable("ACADVER")
 		}
 		
 		if(type.isString(version)){
+			return version;
+		}
+	};
+	MajorVersionString = function(){
+		if(this[["$majorVersion~~~"]]) return this[["$majorVersion~~~"]];
+		
+		var version = this.VersionString(); 
+		if(version){
 			this[["$majorVersion~~~"]] = ..string.match(version,"^\d+"); 
 			return this[["$majorVersion~~~"]];
 		}
 	};
+	MajorVersion = function(){
+		return tonumber( this.MajorVersionString() );
+	};
 	GetCadInterfaceObject = function(progId){
 		if(!progId) error("请指定类名",2);
 		
-		var v = this.MajorVersion();
+		var v = this.MajorVersionString();
 		if(#v>=2) progId = progId + "." + v;
 		
 		return this.GetInterfaceObject(progId);
@@ -216,6 +243,9 @@ class cad{
 		var $ = VL.ActiveDocument.Functions;
 
 		return {
+			vl = {
+				@{ _get = lambda(k) $("vl-"+k) }; 
+			};
 			@{ 
 				_get = lambda(k) $(k); 
 				_call = function(v,...) {
@@ -230,25 +260,45 @@ class cad{
 			}
 		}
 	};
+	vbaEnabled = function(){
+		var e = false;
+		try{
+			e = !!this.VBE;
+		}
+		return e;
+	}
+	
 }
 
 cad.list = function(args,part){
-	if(!#args && args.car!==null && args.cdr!==null){
-		return cad.list({args.car,args.cdr,cons=true});
+ 
+	if(!..table.isArray(args)){ 
+		if( args.car!==null && args.cdr!==null){
+			return cad.list({args.car,args.cdr,cons=true});
+		}	 
+		
+		var assoc = {}
+		for k,v in ..table.eachName(args){ 
+			..table.push(assoc,cad.list({k,v,cons=true}));
+		}
+
+		if(#assoc){
+			assoc = ..string.join(assoc," "); 
+			return "(" + assoc + ")";			
+		} 
 	}
-	
-	var args2 = {};
-	for(i=1;#args;1){
-		var v =  args[i];
+
+	var args2 = {}; 
+	for i,v in ..table.eachIndex(args){ 
 		var t  = type(v);
 
 		if( t = "number" ){
 			v = tostring(v);
 		}
 		elseif( t = "boolean" ){
-			v = tostring(v?1:0);
+			v = tostring(v?"T":"nil");
 		} 
-		elseif( t = "table" && #v ){ 
+		elseif( t = "table" ){ 
 			v = cad.list(v);
 		}
 		elseif( t = "table" && v.car!==null && v.cdr!==null ){ 
@@ -296,9 +346,9 @@ cad.loadcode = function(c,...){
 		if(...){
 			args = {args,...}
 		}
-	
-		if( type(args) == "table" && ( #args || (args.car!==null && args.cdr!==null) ) ){   
-			args = cad.list(args,true); 
+
+		if( type(args) == "table" ){  
+			args = cad.list(args,true);
 		}
 		elseif(args!==null) {
 			args = tostring(args)
@@ -322,7 +372,7 @@ cad.sendCopyData = function(hwnd,data,args,dataType){
 		if(!data) error(err,2);
 		
 		data = ..string.crlf(data,'\r')+'\r\0';
-		data = ..string.toUnicode(data);
+		data = ..string.toUtf16(data);
 	}
 		
     return ::User32.SendMessage(hwnd,0x4A/*_WM_COPYDATA*/,0, {
@@ -335,7 +385,7 @@ cad.sendCopyData = function(hwnd,data,args,dataType){
 /**intellisense()
 com.cad() = 获取已存在的 AutoCAD 实例，或创建新的 AutoCAD 实例。\n兼容 32 位 / 64 位 AutoCAD。\n!stdComCad.
 com.cad.sendCopyData(.(hwnd,data,args,dataType) = 用 _WM_COPYDATA 向 AutoCAD 窗口发送数据。\n@hwnd 为 AutoCAD 主窗口句柄，\n@data 为 需要发送的字符串，发送命令时支持模板语法，\n@args 发送命令时，可选用这个参数指定@data 使用的模板参数，\n@dataType 省略时默认值为1，为 1 表示发送到 AutoCAD 命令窗口并执行该命令。\n发送成功返回1，否则返回0
-com.cad.list(array) = aardio 数组转换为 LISP 表代码，\n参数 @2 为 true 时首尾不添加括号\n\n如果 car,cdr 字段不为 null 且不含数组成员，\n或包含数组成员，但 cons 字段为 true，\n则返回点对，点对总是在首尾添加括号
+com.cad.list(array) = aardio 数组转换为 LISP 表代码，\n参数 @2 为 true 时首尾不添加括号\n\n如果 car,cdr 字段不为 null 且不含数组成员，\n或包含数组成员，但 cons 字段为 true，\n则返回点对，点对总是在首尾添加括号。\n其他名值对转换为关联列表。
 com.cad.loadcode(__) = 加载 aardio 模板代码返回 LISP 代码，\n可指定多个模板参数
 com.cad = AutoCAD 支持库。\n兼容 32 位 / 64 位 AutoCAD
 end intellisense**/
@@ -350,17 +400,19 @@ Documents.Open(.(fileame,readOnly,password) = 打开文件，返回文档对象�
 Documents.Open() = !stdComCadDoc.
 Documents.Add() = 文加文档，返回文档对象\n!stdComCadDoc.
 ActiveDocument = 当前活动文档，可读写属性\n!stdComCadDoc.
-LispExp(__) =  读取并执行字符串中的第一个 LISP 表达式，此函数无返回值。\n参数@1支持 aardio 模板语法，其他参数为模板参数。\n[aardio 模板语法](chm://the%20language/template_syntax.html)\naardio 模板中非数值、非布尔值一律转字符串,\n一次输出多个模板参数或数组时，字符串自动转义并加引号，多参数以空格分开。\n已知限制：\n1、此接口加载的 LISP 代码无法调用 command 命令\n2、AutoCAD 这个接口不太稳定，调用某些函数偶尔会出现
-LoadLisp( = 加载 LISP 代码\n[参数支持 aardio 模板语法](chm://the%20language/template_syntax.html)
-LoadLisp(.(lisp,args,doc) = 加载 LISP 代码，\n参数@1可以是文件、资源文件、或 LISP代码\n已加载的 lisp 代码无法卸载，\n可通过LIST赋值删除定义的函数，例如 (setq c:hello nil)\n\n支持 aardio 模板语法,模板中非数值、布尔值一律转字符串,\n一次输出多个模板参数或数组时，字符串自动转义并加引号，多参数以空格分开。\n可选用 @args 参数指定模板 owner 参数，\n可选用参数 @3 自定义执行此函数的文档对象
+LispExp(__) =  读取并执行字符串中的第一个 LISP 表达式，此函数无返回值。\n参数@1支持 aardio 模板语法，其他参数为模板参数。\n[aardio 模板语法](doc://language-reference/templating/syntax.md)\naardio 模板中非数值、非布尔值一律转字符串,\n一次输出多个模板参数或数组时，字符串自动转义并加引号，多参数以空格分开。\n已知限制：\n1、此接口加载的 LISP 代码无法调用 command 命令\n2、AutoCAD 这个接口不太稳定，调用某些函数偶尔会出现
+LoadLisp( = 加载 LISP 代码。\n参数支持[aardio 模板语法]doc://language-reference/templating/syntax.md
+LoadLisp(.(lisp,args,doc) = 加载 LISP 代码。\n参数@1可以是文件、资源文件、或 LISP 代码，\n支持 aardio 模板语法,可选用 @args 参数指定模板 owner 参数，\n可选用参数 @3 自定义执行此函数的文档对象。\n\n已加载的 LISP 代码无法卸载，可通过赋值 nil 删除定义的函数。
 LoadLispFile( = 加载 *.lsp 代码文件
 LoadLispFile(.(path,doc) = 加载 *.lsp 代码文件，\n参数@1指定 *.lsp 代码文件路径，\n可选用参数 @2 自定义执行此函数的文档对象
-SendCommand( = 同步发送 AutoCAD 命令\n[参数支持 aardio 模板语法](chm://the%20language/template_syntax.html)
+SendCommand( = 同步发送 AutoCAD 命令\n[参数支持 aardio 模板语法](doc://language-reference/templating/syntax.md)
 SendCommand(.(cmd,args,doc) = 同步发送 AutoCAD 命令，\n参数@1可以是文件、资源文件、LISP 表达式、命令，\n每句命令应以空格或回车结束,\n尾部的回车可省略\n\n支持 aardio 模板语法,模板中非数值、布尔值一律转字符串,\n一次输出多个模板参数时,字符串自动加引号,多参数自动以空格分开,\n可选用 @args 参数指定模板 owner 参数，\n可选用参数 @3 自定义执行此函数的文档对象
-PostCommand( = 异步发送 AutoCAD 命令\n[参数支持 aardio 模板语法](chm://the%20language/template_syntax.html)
+PostCommand( = 异步发送 AutoCAD 命令\n[参数支持 aardio 模板语法](doc://language-reference/templating/syntax.md)
 PostCommand(.(cmd,args,doc) = 异步发送 AutoCAD 命令，\n参数@1可以是文件、资源文件、LISP 表达式、命令，\n每句命令应以空格或回车结束,\n尾部的回车可省略\n\n支持 aardio 模板语法,模板中非数值、布尔值一律转字符串,\n一次输出多个模板参数时,字符串自动加引号,多参数自动以空格分开,\n可选用 @args 参数指定模板 owner 参数，\n可选用参数 @3 自定义执行此函数的文档对象
 GetAcadState().IsQuiescent = AutoCAD 当前是静止状态
-MajorVersion() = AutoCAD 主版本号,\n例如 AutoCAD 2022 主版本号为 24
+MajorVersionString() = AutoCAD 主版本号，字符串值。\n例如 AutoCAD 2022 主版本号为 24。
+MajorVersion() = AutoCAD 主版本号，数值。\n例如 AutoCAD 2022 主版本号为 24。
+VersionString() = AutoCAD 版本号，字符串值。\n例如 AutoCAD 2022 版本号为 "24.1s (LMS Tech)"。\n可用 fsys.version 解析与比对版本号。
 GetInterfaceObject(__)  = 使用参数指定的 ProgID 在 AutoCAD 进程内加载 COM 对象
 GetCadInterfaceObject(__) = 使用参数指定的 ProgID 在 AutoCAD 进程内加载 AutoCAD 提供的 COM 对象,\n与 GetInterfaceObject 不同的是 GetCadInterfaceObject 会在参数后自动添加当前主版本号
 GetLayerStateManager() = 获取 AutoCAD 进程内图层管理器对象
@@ -368,6 +420,10 @@ GetAcCmColor() = 获取 AutoCAD 进程内颜色管理对象
 GetSecurityParams = 获取 AutoCAD 进程内安全参数对象
 GetLispFunctions() = 获取活动文档 Visual LISP 函数列表。\n可通过调用返回对象的成员函数调用 LISP 函数。\n\n返回对象自身可作为生成 LISP 表达式的函数使用：\n参数可指定 aardio 数组或多个参数；\n也可以指定包含 car,cdr 字段的表，用于返回点对；\n参数为一个字符串时，作为 LISP 代码读取并返回表\n已知限制：\n1、此接口加载的 LISP 代码无法调用 command 命令\n2、AutoCAD 这个接口不太稳定，调用某些函数偶尔会出现\n!stdComCadLspFunctions.
 Eval(__) = 计算 VBA 表达式 
+RunMacro(__) = 运行 VBA 宏，无返回值。 \n参数 @1 指定宏路径，格式： [Filename.dvb.][ProjectName.][ModuleName.]MacroName\n这里的中括号是可选的意思。\nFilename.dvb与ProjectName要用感叹号分开，例如 "Filename.dvb!ProjectName"。\n\n如果没加载 dvb 则会自动加载，如果未指定路径则自动搜索查找文件件。\n如果未指定 ProjectName，则在加载项目中查找宏。
+LoadDVB(__) = 加载 .dvb 工程，无返回值。\n参数 @1 指定 .dvb 工程文件路径。\n\n工程中名为 AcadStartup 的宏将自动运行。  
+UnloadDVB(__) = 卸载 .dvb 工程，无返回值。\n参数 @1 指定 .dvb 工程文件路径。
+vbaEnabled() = 是否启用 VBA 。
 Quit() = 退出应用程序
 LoadARX(__) = 加载参数@1指定的 ARX 应用程序
 ListARX() =  获取已加载的 ARX 应用程序
@@ -380,6 +436,9 @@ NetCompiler("C#") = 使用当前线程默认应用程序域创建 C# 编译器�
 NetCompiler() = !dotNetCompiler.
 NetLoad( = 加载 .Net DLL。\n退出 AutoCAD 进程时自动卸载，没有卸载函数
 NetLoad(.(path,doc) = 加载 .Net DLL，\n参数@1指定 *.dll 文件路径，\n可选用参数 @2 自定义执行此函数的文档对象
+TextStyles = 文本样式集合。 
+TextStyles.Count =  文本样式总数
+TextStyles.Item(__) =  获取文本样式，参数  @1 指定索引。
 end intellisense**/
 
 /**intellisense(!stdComCadDoc)
@@ -397,7 +456,36 @@ WindowState = 文档状态，可读写。\n通过此对象的成员名字可获�
 end intellisense**/
 
 /**intellisense(!stdComCadLspFunctions)
+vl.? = 请指定需要调用的 Visual LISP 函数名（自动添加  "vl-" 前缀）。
+vl.cmdf("commandline") =  调用 vl-cmdf 函数执行命令。\n通过此接口只能调用 vl-cmdf 执行命令，调用 command  是无效的。
 ? = 请指定需要调用的 Visual LISP 函数名，\n如果函数名包含横线等，也可以使用下标操作符，例如["函数名"]
 read(__) = 读取字符串参数 @1 指定的 LISP 代码\n返回第一个表或第一个原子
 eval(__) = 计算并返回参数 @1 指定的 LISP 表达式的值
 end intellisense**/
+
+/**details(模板语法)
+com.cad.sendCopyData 函数
+以及 com.cad 对象的 LispExp,SendCommand 函数
+支持[模板语法](doc://language-reference/templating/syntax.md)
+
+LISP 模板由 com.cad.loadcode() 函数解析，
+转换规则如下：
+
+一、如果 aardio 输出非空数组或多个参数 ，
+所有参数按以下规则转换为字符串。
+
+1. 数值直接输输出，flase 转为 nil ，true 转为 T
+2. 数组或嵌套的数组参数都会转换为 LISP 表（首尾有括号）， 
+	如果 cons 字段为 true 则转换为点对（首尾有括号）。
+3. 包含 car,cdr 成员的表会转换为点对（首尾有括号）。
+	其他名值对转换为关联列表。
+4. 其他类型统一调用 tostring() 转换为字符串，
+然后按 LISP 语法进行转义，首尾加双引号。 
+
+最后将所有参数以空格分开输出到 LISP 代码（首尾不加括号）
+
+二、单个表参数为包含 car,cdr 成员的表会转换为点对（首尾有括号）。
+如果表参数为其他名值对则转换为关联列表（首尾有括号。
+
+三、其他单个参数直接转为字符串并置入 LISP 代码。
+end details**/

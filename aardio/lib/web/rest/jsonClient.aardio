@@ -70,6 +70,8 @@ namespace jsonClient {
 }
 
 /**intellisense()
-web.rest.jsonClient = REST客户端\n请求数据,返回数据都使用JSON格式
-web.rest.jsonClient() = 创建REST客户端,\n!web_restClient.
+web.rest.jsonClient = REST 客户端。\n请求数据，返回数据都使用 JSON 格式
+web.rest.jsonClient( = 创建 REST 客户端。\n请求数据，返回数据都使用 JSON 格式
+web.rest.jsonClient(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 REST 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
+web.rest.jsonClient() = !web_restClient.
 end intellisense**/

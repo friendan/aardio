@@ -44,7 +44,6 @@
     <Keyword>self</Keyword>
     <Keyword>owner</Keyword>
     <Keyword>var</Keyword>
-    <Keyword>def</Keyword>
     <Keyword>null</Keyword>
     <Keyword>and</Keyword>
     <Keyword>not</Keyword>
@@ -57,10 +56,10 @@
     <Keyword>try</Keyword>
     <Keyword>catch</Keyword>
     <Keyword>eval</Keyword>
-    <Keyword>import</Keyword>
     <Keyword>type</Keyword>
     <Keyword>assert</Keyword>
     <Keyword>assertf</Keyword>
+    <Keyword>assert2</Keyword>
     <Keyword>error</Keyword>
     <Keyword>rget</Keyword>
     <Keyword>callex</Keyword>

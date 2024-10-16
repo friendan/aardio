@@ -104,7 +104,14 @@ namespace stream{
 					}
 					return;
 				}
-					
+			
+			if(len===0){
+				var c = owner.seek();
+				var len = owner.seek("end",0);
+				owner.seek("set",c);
+				return c<len ? "" : null;  
+			}
+						
 			if( len < 0 ) len = ( owner.size() - owner.seek() ) + len + 1; 
 			
 			var buf =  ..raw.buffer(len)
@@ -257,6 +264,7 @@ fsys.stream(.("文件路径","a+") = 读写追加模式打开文件流,创建新
 fsys.stream() = !fsys_stream.
 !fsys_stream.read( = 读数据
 !fsys_stream.read(.(-1) = 参数指定读取长度,-1为读到尾部\n参数也可以指定一个结构体用于填充读取的数据,\n无参数读取一行
+!fsys_stream.read(0) = 是否未到达文件尾。\n如果已经到达文件尾返回 null，否则返回空字符串。\n注意在布尔表达式工 null 等于 false，空字符串等于 true。
 !fsys_stream.readAll() = 移到指针到文件头\n读取到文件尾返回所有数据
 !fsys_stream.readTo( = 读取直到以指定的字符串结束
 !fsys_stream.readTo(.('结束串') = 读取直到以指定的字符串结束,返回值不包含结束串,\n该函数每次仅读取一个字节,效率较低

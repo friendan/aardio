@@ -51,8 +51,8 @@ getInfo = function(bias){
 
 setInfo = function( info ){
 	info = ..table.assign( getInfo(),info); 
-	info.standardName = ..string.toUnicode(info.standardName); 
-	info.daylightName = ..string.toUnicode(info.daylightName); 
+	info.standardName = ..string.toUtf16(info.standardName); 
+	info.daylightName = ..string.toUtf16(info.daylightName); 
 	setprivilege('SeSystemtimePrivilege',true)
 	setprivilege('SeTimeZonePrivilege',true)
 	var ret = !!::Kernel32.SetTimeZoneInformation( info )

@@ -1,4 +1,4 @@
-//shortcut 快捷方式生成器
+﻿//shortcut 快捷方式生成器
 import fsys.lnk;
 import fsys.url;
 namespace fsys;
@@ -20,9 +20,9 @@ namespace shortcut {
 	__pin__ = function( param,appDir,pin ){ 
     	if( appDir ) {
     		param = ..table.mix({},param);
-    		if( param.lnk ) param.lnk = ..fsys.joinpath(appDir,param.lnk );
-    		if( param.icon ) param.icon = ..fsys.joinpath(appDir,param.icon );
-    		if( param.workDir ) param.workDir = ..fsys.joinpath(appDir,param.workDir );
+    		if( param.lnk ) param.lnk = ..io.joinpath(appDir,param.lnk );
+    		if( param.icon ) param.icon = ..io.joinpath(appDir,param.icon );
+    		if( param.workDir ) param.workDir = ..io.joinpath(appDir,param.workDir );
     	}; 
     	
     	var lnkFile = param.url  ? ..fsys.url() : ..fsys.lnk();

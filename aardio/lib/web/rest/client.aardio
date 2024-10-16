@@ -289,11 +289,15 @@ class client{
 			if(!urlTemplate) error("参数@1错误",2);
 		}
 		
+		var urlRequest = urlTemplate; 
+		urlRequest = ..string.replace(urlRequest,"/\{\s*\.\.\.\s*\}","",1);  
+		urlRequest = ..string.replace(urlRequest ,"%{}", "");
+				
 		return { 
 			__httpFlags = httpFlags;
 			__httpMethod = ..string.upper( httpMethod );
 			__urlTemplate = urlTemplate;
-			__urlReal = ..string.replace( urlTemplate ,"%{}", "");  
+			__urlReal = urlRequest;  
 			__request = this.request;
 			__encodeKey = this.encodeKey;
 			__pattern = pattern;
@@ -335,7 +339,7 @@ class client{
 		if(fileSend) fileSend.close(); 
 		
 		var err;
-		fileSend,err =  ..io.open(path,"rb");
+		fileSend,err =  ..io.file(path,"rb");
 		if(!fileSend) return null,err;
 		
 		var contentLength;
@@ -359,10 +363,10 @@ class client{
 		if(fileReceive) fileReceive.close();
 		
 		var err;
-		fileReceive,err =  ..io.open(path,"w+b");
+		fileReceive,err =  ..io.file(path,"w+b");
 		if( !fileReceive ) {
 			..io.createDir( ..io.splitpath(path).dir );
-			fileReceive,err =  ..io.open(path,"w+b");
+			fileReceive,err =  ..io.file(path,"w+b");
 			
 			if( !fileReceive ) return null,err;
 		}
@@ -534,13 +538,14 @@ namespace client {
 如果服务器设置或其他原因不接受UTF8编码的URL,请事先调用URL编码URL中的中文字即可( 也就是rest中的资源名 )
 
 如果模板变量出现在附加参数中,web.rest不处理任何编码。
-对于调用方法时的提交参数,则一律URLEncode,如果指定页面编码为UTF8,则UTF8编码后URLEncode
+对于调用方法时的提交参数,则一律URLEncode,如果指定页面编码为 UTF8 ,则UTF8编码后URLEncode
 */
 
 /**intellisense()
 web.rest.client = REST客户端
 web.rest.client() = !web_restClient.
-web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建REST客户端,所有参数可选,例：\nweb.rest.client("Mozilla/4.0", "HTTP=HTTP://proxyserver:port","localhost,127.0.0.*")\n代理参数语法请参考inet.setProxy函数说明
+web.rest.client( = 创建 REST 客户端。
+web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 REST 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
 !web_restClient.stringifyRequestParameters(提交参数表,代码页) = @.stringifyRequestParameters = function(params,codepage){
 	__/*参数是表对象时调用此函数转换为字符串\n此函数一般由库文件定义，一般调用不应修改此函数\n注意返回的文本格式应与 owner.contentType 一致\n在该函数中可获取或修改对象的 lastRequestUrl, lastRequestMethod 属性*/
 	return params;

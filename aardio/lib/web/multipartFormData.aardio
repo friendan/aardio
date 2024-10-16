@@ -74,7 +74,7 @@ class multipartFormData{
 		}
 		if( currentValue[1]=='@'# ){
 			var filePath = ..string.right(currentValue,-2);
-			currentFile = ..io.open( filePath,"rb")
+			currentFile = ..io.file( filePath,"rb")
 			if(!currentFile) return ""; 
 			
 			var mime = ..fsys.mime.fromFile(filePath); 

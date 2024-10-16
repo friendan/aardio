@@ -37,7 +37,7 @@ System.IO.FileStream[["ctor(...)"]] = function(netCtor,path,mode,...){
 	var obj,err;
 	if(type.isString(mode)){
 		if(mode=="w+"){
-			obj,err = netCtor(path,..io.exist(path)?5:2,3/*ReadWrite*/,...);
+			obj,err = netCtor(path,2,3/*ReadWrite*/,...);
 		}
 		elseif(mode=="r+"){
 			obj,err = netCtor(path,3,3/*ReadWrite*/,...);
@@ -55,11 +55,14 @@ System.IO.FileStream[["ctor(...)"]] = function(netCtor,path,mode,...){
 			obj,err = netCtor(path,6,2,...);
 		}
 		elseif(mode=="w"){
-			obj,err = netCtor(path,..io.exist(path)?5:2,2,...);
+			obj,err = netCtor(path,2,2,...);
 		}
 	}
-	
-	//并返回 .NET 对象 。  
+	else {
+		obj,err = netCtor(path,mode,...);	
+	}
+
+	//返回 .NET 对象 。  
 	return obj,err;
 } 
 
@@ -99,7 +102,7 @@ System.IO.Ports = ..dotNet.import("System.IO.Ports","System");
 System.IO = .NET System.IO 名字空间
 System.IO.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
 System.IO.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
-System.IO.FileStream  = 创建 .NET 文件流对象。\n如果参数 @1 为字符串，则自动调用 io.fullpath 转换为绝对路径。\n参数 @2 也可以用 io.open 兼容的字符串参数指定读写模式：\n "r+","w+","a+","r","w","a"\n\n此对象调用 Write 函数写数据时应当传字节数组，\n可用 raw.buffer 创建 buffer 作为参数
+System.IO.FileStream  = 创建 .NET 文件流对象。\n如果参数 @1 为字符串，则自动调用 io.fullpath 转换为绝对路径。\n参数 @2 也可以用与 io.file 兼容的字符串参数指定读写模式：\n "r+","w+","a+","r","w","a"\n\n此对象调用 Write 函数写数据时应当传字节数组，\n可用 raw.buffer 创建 buffer 作为参数
 System.IO.File = 文件操作
 System.IO.File.Create(__) = 创建文件，返回 System.IO.FileStream 对象。\n参数 @1 已自动调用 io.fullpath 转换为完整路径
 System.IO.File.CreateText(__) = 创建或打开 UTF-8 编码的文本文件。\n返回 System.IO.FileStream 对象。\n参数 @1 已自动调用 io.fullpath 转换为完整路径

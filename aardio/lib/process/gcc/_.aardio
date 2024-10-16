@@ -232,5 +232,5 @@ process.gcc() = !processGcc.
 !processGcc.popen(命令参数) = @.popen("main.c -o main.dll -shared -s -municode -m32 -O2 -static -lgcc -lstdc++")
 !processGcc.exec(命令参数) = @.exec("main.c -o main.dll -shared -s -municode -m32 -O2 -static -lgcc -lstdc++")
 !processGcc.popen() = !process_popen.
-!processGcc.? = 如果键值都是字符串：\n当键名只包含字母与数字，在 GCC 工作目录生成同名 ".c" 文件。\n如果键名已包含后缀名，则不添加".c" 后缀。\n含后缀名时请使用下标操作符赋值。\n\n在 aardio 中段注释可以赋值为字符串，首尾星号数目要相同
+!processGcc.? = 如果键值都是字符串：\n当键名只包含字母与数字，在 GCC 工作目录生成同名 ".c" 文件。\n如果键名已包含后缀名，则不添加".c" 后缀。\n含后缀名时请使用下标操作符赋值。\n\n在 aardio 中块注释可以赋值为字符串，首尾星号数目要相同
 end intellisense**/

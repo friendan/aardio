@@ -1,4 +1,4 @@
-//temp 自删进程
+﻿//temp 自删进程
 import fsys;
 import process; 
 import thread.event;
@@ -43,7 +43,7 @@ run = function(main){
 		if( evtStartTemp.conflict ) return false,"重复创建自删进程";; 
 		
 		var tmpUnisDir = ..io.tmpname();
-		tmpUnistPath = ..fsys.joinpath(tmpUnisDir,..io._exefile);
+		tmpUnistPath = ..io.joinpath(tmpUnisDir,..io._exefile);
 		..fsys.copy( ..io._exepath, tmpUnistPath ); 
 		
 		mmapStartTemp.writeTable({  

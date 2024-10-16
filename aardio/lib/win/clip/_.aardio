@@ -1,6 +1,6 @@
 namespace win.clip;
   
-readUnicode = function(){
+readUtf16 = function(){
 	if(!::User32.OpenClipboard(0)) return;
 		
 	var txt;	
@@ -18,12 +18,13 @@ readUnicode = function(){
 }
 
 read = function(){ 
-	var s = readUnicode();
-	if(s) return ..string.fromto(readUnicode(),0,65001);
+	var s = readUtf16();
+	if(s) return ..string.fromto(readUtf16(),0,65001);
 }
 
 write = function(str,rep){ 
-	str = ..string.toUnicode(str);
+	str = (str===null) ? "" : tostring(str);
+	str = ..string.toUtf16(str);
 	if(!str) return;
 	
 	if(!::User32.OpenClipboard(0)) return;
@@ -54,11 +55,20 @@ readBitmap = function(){
 	if(!::User32.OpenClipboard(0))
 		return;	 
 		
-	var hBmp = User32.GetClipboardDataP(0x2/*_CF_BITMAP*/);  
+	var hBmp = User32.GetClipboardDataP(2/*_CF_BITMAP*/);  
 	hBmp = hBmp ? ::User32.CopyImageP(hBmp,0/*_IMAGE_BITMAP*/, 0, 0, 0x40/*_LR_DEFAULTSIZE*/)
 	::User32.CloseClipboard();  
 	return hBmp;
 }
+
+test = function(f,...){
+	if(type(f)!="table"){
+		f = {f,...};
+	}
+	
+	var all = formats();
+	return ..table.some(all,lambda(v,k) ..table.find(f,v) )
+} 
 
 formats = function(){
 	if(!::User32.OpenClipboard(0)) return;	 
@@ -72,12 +82,67 @@ formats = function(){
 	return r;
 }
 
+var formatNames = {
+    [1] = "Text",
+    [2] = "Bitmap",
+    [3] = "Metafilepict",
+    [4] = "Sylk",
+    [5] = "DIF",
+    [6] = "TIFF",
+    [7] = "OEM Text",
+    [8] = "DIB",
+    [9] = "Palette",
+    [10] = "Pendata",
+    [11] = "RIFF",
+    [12] = "Wave",
+    [13] = "Unicode Text",
+    [14] = "Enhmetafile",
+    [17] = "DIBV5",
+    [0x0080] = "Owner Display",
+    [0x0081] = "DSP Text",
+    [0x0082] = "DSP Bitmap",
+    [0x0083] = "DSP Metafilepict",
+    [0x008E] = "DSP Enhmetafile",
+    [0x0200] = "Private First",
+    [0x02FF] = "Private Last",
+    [0x0300] = "GDI Object First",
+    [0x03FF] = "GDI Object Last"
+}
+
+getFormatName = function(id,friendly){ 
+    var f = {WORD str[80]}
+    if( ::User32.GetClipboardFormatName(id, f, 80) ){
+    	return f.str;
+    }
+    
+    if(friendly){
+    	return formatNames[id] || "Unknown"
+    }
+}
+
+eachFormat = function(){
+	var ids = formats();
+	var i,id;
+	return function(){
+		i,id = ..table.next(ids,i);
+		if(id) return id,getFormatName(id,true);
+	}  
+} 
+
 /**intellisense(win.clip)
-readUnicode() = 读取剪贴板UTF16编码文本
+readUtf16() = 读取剪贴板 UTF16 编码字符串
 read() = 读取剪贴板文本
-write(__) = 写入文本到剪贴板,\n可选使用参数@2指定在复制前是否清空剪贴板,默认清空,\n成功返回剪贴板数据句柄
+write(__) = 调用 tostring 转换参数 @1 为文本并写入剪贴板。\n可选使用参数 @2 指定在复制前是否清空剪贴板，默认清空。\n成功返回剪贴板数据句柄。
 writeBitmap( = 写入位图到剪贴板,\n成功返回剪贴板数据句柄
 writeBitmap(.(位图句柄,接管位图,清空剪贴板) = 写入位图到剪贴板\n\n除位图句柄以外其他参数为可选参数。\n└── gdip.bitmap 对象请调用 copyHandle 函数复制位图句柄\n└── com.picture 对象请调用 CopyHandle 函数复制位图句柄\n如果接管位图参数为 true，则由剪贴板负责释放参数指定的位图。\n└── 否则会复制位图到剪贴板，且不负责释放参数传入的位图句柄。\n└── 请谨慎处理位图释放责任。\n如清空剪贴板参数为 false（默认为 true），则保留剪贴板其他格式数据
 readBitmap() = 读取剪贴板位图句柄，\n返回的位图句柄用完要自行销毁。\n读取失败返回 null 。\n└── 请谨慎处理位图释放责任。\n\n可使用 com.picture.fromBitmap 将位图句柄转换为 com.picture 对象。\n可使用 gdip.bitmap 构造函数将位图句柄转换为 gdip.bitmap 对象
-formats() = 获取剪贴板所有可用类型,\n位置越靠前优先级越高,应优先使用,\n返回值为数组,数组元素为表示格式的数值,例如 _CF_UNICODETEXT 
+test(.(formats->->->) = 检测剪贴板是否存在参数指定的任意一个剪贴板类型。\n@formats 可指定数值数组，也可以指 定一个或多个表示剪贴板类型的数值
+formats() = 获取剪贴板所有可用类型。\n位置越靠前优先级越高，应优先使用。\n返回值为数组,数组元素为表示格式的数值,例如 _CF_UNICODETEXT 
+getFormatName( = 自剪贴板获取格式名称
+getFormatName(.(formatId,friendly) = 自剪贴板获取格式名称。\n参数 @formatId 指定剪贴板格式 ID。\n\n如果 @friendly 为 true 则预定义格式返回友好名称。\n否则仅返回 ::User32.RegisterClipboardFormat 注册的名称。\n\n请注意 win.clip.eachFormat 迭代器始终返回友好名称
+eachFormat() = @for id,name in ??.eachFormat(){
+	__/*遍历剪贴板的格式 ID，格式名称（name）\nID 小于 0x02FF (CF_PRIVATELAST) 为系统预定义的格式。\nID 自 0xC000 到 0xFFFF 为注册的自定义剪贴板格式。\n\nID 小于 0xC000 的 格式 name 返回友好名称或 "Unknown"，\n其余返回注册的格式名。*/
+}
 end intellisense**/
+
+readUnicode = readUtf16 //@Deprecated

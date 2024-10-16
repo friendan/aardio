@@ -1,4 +1,4 @@
-import fsys.path;
+﻿import fsys.path;
 namespace fsys;
 
 GetCurrentDirectory := ::Kernel32.api( "GetCurrentDirectoryW", "INT(INT len, ustring &buf)");  
@@ -87,8 +87,24 @@ searchFile = function(filename,...){
 		
 		for(i=1;#dir ){
 			path = joinpath(dir[i],filename)
-			if( ..io.exist(path ) ) return path; 
+			if( ..io.exist(path ) ) return path;  
 		} 
+
+		if(..string.indexAny(filename,"*?")){
+			for(i=1;#dir ){
+				
+            	enum( dir[i], filename,
+            		function(dir,filename,fullpath){ 
+            			if(filename) {
+            				path = fullpath; 
+            				return false;
+            			}
+            		},false
+            	);
+            	
+            	if( ..io.exist(path ) ) return path;  
+         	}			
+		}
 	} 
 	else {
 	
@@ -262,7 +278,8 @@ var function  enum_aux(dir,wildcard="*.*",proc ,enumSubdir){
 					fullpath =  joinpath(dir,filename)
 					scache[filename] = true;
 					
-					if( ( data.dwFileAttributes & 0x10/*_FILE_ATTRIBUTE_DIRECTORY*/ ) == 0 ){  
+					data.isDir = ( data.dwFileAttributes & 0x10/*_FILE_ATTRIBUTE_DIRECTORY*/ ) == 0x10;
+					if( !data.isDir ){
 						if( proc ? proc( dir,filename,fullpath,data ) === false ) {
 							FindClose(hf);
 							return false; 
@@ -378,6 +395,11 @@ isDir = function(f){
 	return (s!=-1) && ( s & 0x10/*_FILE_ATTRIBUTE_DIRECTORY*/);
 }
 
+isFile = function(f){
+	var s = attrib(f)
+	return (s!=-1) && !( s & 0x10/*_FILE_ATTRIBUTE_DIRECTORY*/);
+} 
+
 isReadonly = function(f){
 	var s = attrib(f)
 	return (s!=-1) && ( s & 1/*_FILE_ATTRIBUTE_READONLY*/);
@@ -404,7 +426,7 @@ appdata = ..io.appData; // @Deprecated
 formatSize( = 该函数参数支持math.size64支持的所有参数类型
 formatSize(.(字节长度) = 转换字节长度到适合的最大单位表示的文本,\n单位使用 bytes,KB,MB,GB等
 formatSize(.(字节长度低位,字节长度高位) = 转换字节长度到适合的最大单位( bytes,KB,MB,GB等 )\n低位用于表示4GB以下的长度,高位以4GB为最小单位表示长度
-shortpath(__/*路径*/) = 转换为短路径,\n如果文件不存在,返回空值,\n短文件名指向会因实际文件数变更,所以不能把短路径存入数据库\n\n存在特定文件目录无法获取短路径且返回包含空格的长路径的可能性\n如无必要，不建议使用或依赖此函数，正确使用 process 等可以自动\n转义路径参数中的空格
+shortpath(__/*路径*/) = 转为符合 8.3 格式短路径。\n如果文件名符合 8.3 格式且包含空格（例如目录名不超过 8 个字符），则不会去除空格。\n如果文件不存在,返回空值。\n\n短文件名指向会因实际文件数变更,所以不能把短路径存入数据库\n且并不保证会去除空格。 \n创建 process 对象或调用类似函数时，\n用数组或多参数指定启动参数可自动处理包含空格的路径。
 longpath(__/*路径*/) = 转换为完整路径,并将短文件名转换为长文件名
 joinpath(.("根目录",不定个数子路径) = 注意根目录不可以圆点字符开始\n可追加任意个子路径参数,如果子路径是绝对路径则返回子路径\n拼接时可以使用空参数,但不可全部参数为空
 getCurDir() = 获取当前目录。\n\n当前目录易被改动，导致相对路径（例如 "./res/"）位置变化。\n路径首字符用单个斜杠或反斜杆表示「应用程序根目录」的写法更可靠，\n例如：（例如 "/res/"）。\n很多组件（例如文件对话框）都可能会悄悄改变当前目录
@@ -418,25 +440,26 @@ createParentDir("__") = 创建指定路径的父目录.
 getExtensionName("__") = 返回文件后缀名,转换为小写.\n无后缀名则返回null空值
 getFileName(.(文件路径) = 返回路径的所指向的文件名(或目录名称)
 getParentDir("__") = 返回指定路径的父目录
-searchFile( = 查找文件
-searchFile(.(文件名) = 检查程序根目录、当前工作目录、系统目录\n是否包含指定文件，找到则返回文件完整路径。\n不搜寻子目录
-searchFile(.(文件名,目录,->->->) = 检查一个或多个目录下是否包含指定文件\n如果存在返回完整路径,否则返回 null。\n不搜寻子目录
+searchFile( = 查找文件。
+searchFile(.(文件名) = 检查程序根目录、当前工作目录、系统目录\n是否包含指定文件，找到则返回文件完整路径。\n不搜寻子目录，参数 @1 支持 "*","?" 等通配符。
+searchFile(.(文件名,目录,->->->) = 检查一个或多个目录下是否包含指定文件\n如果存在返回完整路径,否则返回 null。\n不搜寻子目录，参数 @1 支持 "*","?" 等通配符。
 searchFile(.(文件名,目录,true) = 在指定目录以及其子目录下搜寻指定文件，\n如果存在返回完整路径,否则返回 null。\n\n内部调用 fsys.enum 查找，参数 @1 支持 "*","?" 等通配符
 setAttributes("",_FILE_ATTRIBUTE__) = 设置文件属性
 attrib("__/*文件路径*/") = 返回文件属性,\n以_FILE_ATTRIBUTE_前缀的常量标志各属性\n注意:WIN10 新版存在设为隐藏文件后变只读的问题\n参数为空字符串、null、不存在的路径都会 返回 -1
 attrib("",_FILE_ATTRIBUTE__/*多个属性用 | 链接*/) = 移除件属性\n参数一为文件路径\n参数二可以用 | 操作符连接多个属性\n成功返回新属性,失败返回null
 attrib("",/*移除*/,_FILE_ATTRIBUTE__/*多个属性用 | 链接*/) = 添加文件属性\n参数一为文件路径\n参数三可以用 | 操作符连接多个属性\n成功返回新属性,失败返回null
-isDir("__/*路径*/")  = 路径是否目录\n调用attrib检查目标路径是否具有_FILE_ATTRIBUTE_DIRECTORY属性\n参数为空字符串或 null 返回 false\n\n包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看
+isDir("__/*路径*/")  = 参数 @1 指定的文件路径是否指向一个目录。\n调用 fsys.attrib 函数检查目标路径是否具有 _FILE_ATTRIBUTE_DIRECTORY 属性\n参数为空字符串或 null 返回 false\n\n包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看
+isFile("__/*路径*/")  = 参数 @1 指定的文件路径是否指向一个文件。。\n调用 fsys.attrib 函数检查目标路径是否存在且不具有 _FILE_ATTRIBUTE_DIRECTORY 属性\n参数为空字符串或 null 返回 false\n\n包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看
 isReadonly("__/*文件路径*/")  = 文件是否只读\n调用attrib检查文件是否具有_FILE_ATTRIBUTE_READONLY属性
 isSystem("__/*文件路径*/")  = 是否系统文件\n调用attrib检查文件是否具有_FILE_ATTRIBUTE_SYSTEM属性
 isHidden("__/*文件路径*/")  = 是否隐藏文件\n调用attrib检查文件是否具有_FILE_ATTRIBUTE_HIDDEN属性\n注意:WIN10 新版存在设为隐藏文件后变只读的问题 
-list(.("目录路径","模式匹配","通配符") = 搜索当前目录下的文件，不搜索子目录下的文件,\n返回符合条件的文件名数组,子目录数组，以及全部子目录数组。\n注意有三个返回值,数组中使用文件名为键存放对应完整路径的值。\n除参数@1以外其他参数可选，\n参数@2使用模式匹配语法匹配文件名，模式匹配会成为第三个返回值的匹配条件,\n通配符默认值是"*.*",也可以传入包含多个通配符的数组,通配符对第三个返回值无效
+list(.("目录路径","模式匹配","通配符") = 搜索当前目录下的文件，不搜索子目录下的文件,\n返回匹配条件的文件名数组、子目录数组、全部子目录数组（无论是否匹配）。\n注意有 3 个返回值,数组中使用文件名为键存放对应完整路径的值。\n除参数@1以外其他参数可选，\n参数@2使用模式匹配语法匹配文件名，模式匹配会成为第三个返回值的匹配条件,\n通配符默认值是"*.*",也可以传入包含多个通配符的数组,通配符对第三个返回值无效
 enum(目录路径,通配符,回调函数,是否处理子目录)  =  @.enum( "/遍历目录路径", "*.*",\n	function(dir,filename,fullpath,findData){ \n		if(filename){ \n           	io.print("发现文件："+filename,"完整路径："+fullpath,"当前目录完整路径"+dir)\n           	__/*可使用 return false 退出枚举文件过程*/\n		}\n		else{\n			io.print( "发现目录，目录名称（非完整路径）：" + dir )\n		}\n	} \n	,/*如果此参数为false则忽略子目录*/\n);
 enum(目录路径,通配符,回调函数,目录筛选函数) = @.enum( "/遍历目录路径", "*.*",\n	function(dir,filename,fullpath,findData){ \n		if(filename){ \n           	io.print("发现文件："+filename,"完整路径："+fullpath)/*可使用 return false退出枚举文件过程*/\n		}\n		else{\n			io.print( "发现目录：" + dir )\n		}\n	},\n	function(dirPath,dirName){\n		__/*处理每个子目录前首先调用此函数,返回false跳过该目录*/\n		return true;\n	} \n);
 enum(目录路径,通配符,,目录回调函数) = @.enum( "/遍历目录路径", "*.*",,\n	function(dirPath,dirName){\n		__/*处理每个子目录前首先调用此函数,返回false跳过该目录*/\n		return false;\n	} \n);
 idListFromPath(__/*路径*/) = 路径转换为名称ID(PIDL)\路径必须存在
 pathFromIdList(.(PIDL名称ID,是否释放PIDL) = 名称ID(PIDL)转换为路径
-getSpecial(_CSIDL__) = 获取特殊文件夹,\n也可以使用 io.getSpecial 函数实现类似功能,\n参数@1使用_CSIDL开头的常量指定特殊文件夹的 CSIDL 标识,\n省略参数@1则默认值获取桌面目录,\n可选参数2指定是否将PIDL转换为路径返回,也可以是一个用于拼接的相对路径\n参数@2指定为false,则返回原始PIDL句柄\n可选使用参数@3指定访问令牌,用于修改用户目录L\n\nfsys.knownFolder 可用于获取更多已知的特殊文件夹
+getSpecial(_CSIDL__) = 获取特殊文件夹。\n参数 @1 使用_CSIDL开头的常量指定特殊文件夹的 CSIDL 标识,\n省略参数 @1 则默认值获取桌面目录。\n可选参数 @2 指定是否将 PIDL 转换为路径返回,也可以是一个用于拼接的相对路径\n参数@2指定为false,则返回原始 PIDL 句柄。\n可选使用参数 @3 指定访问令牌，用于修改用户目录。\n\nio.getSpecial 函数的功能与此函数相同，\n但 io.getSpecial 可指定多个用于拼接的文件路径参数，并且不能返回 PIDL。\n\nfsys.knownFolder 可用于获取更多已知的特殊文件夹
 getSpecialDefault(_CSIDL__) = 获取默认用户的特殊文件夹,\n参数@1使用_CSIDL开头的常量指定特殊文件夹的 CSIDL 标识,\n参数用法同getSpecial,不同的是访问令牌默认指定为 default 用户,\n注意 VISTA 以后的系统在此目录下创建文件或目录需要管理权限
 opFlags = fsys 库函数 copy,move,delete,deleteEx,rename\n未指定 flags 参数时使用的默认值，默认为 0x614/*_FOF_NO_UI*/\n指定此值为 0 则默认显示文件操作界面与错误信息界面\n\n该选项详细说明请参考 FILEOP_FLAGS 文档\n https://docs.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructw
 opError = fsys 库函数 copy,move,delete,deleteEx,rename\n最后一次执行的错误代码，操作成功为 0。\n这个值也是系统函数 SHFileOperationW 返回的错误代码，仅供调试时参考。\n此错误代码可作为 lasterr 函数的参数获取错误信息，但并不完全准确。\n请参考： https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shfileoperationw \n\n包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看
@@ -453,20 +476,21 @@ rename( = 重命名文件或目录,\n此函数失败返回 false 时可用 fsys.
 rename(.(源路径,目标路径,FOF选项) = 重命名文件或目录,其他参数可选\n\nFOF选项为 0 或 不指定该选项但 fsys.opFlags 为 0\n则显示操作界面与错误信息 
 fromFileTime(__/*FILETIME结构体*/) = 将::FILETIME结构体转换为time对象
 replace(.(文件路径,查找串,替换串,替换次数) = 替换文件内容,\n查找串支持模式匹配,\支持所有string.replace函数支持的替换串格式,\n不指定替换次数则替换所有匹配串\n\n成功返回替换次数，否则返回 null
-gmatch(文件路径,查找串)  = @for m in fsys.gmatch( ,".__/*指定模式表达式,\n用于在参数@1指定的文件中循环全局搜索符合条件的字符串,\n有几个匹配分组迭代器返回几个值,\n注意表达式不能以^开始*/") { \n    \n}
+gmatch(文件路径,查找串)  = @for m in fsys.gmatch( ,".__/*指定模式串,\n用于在参数@1指定的文件中循环全局搜索符合条件的字符串,\n有几个匹配分组迭代器返回几个值,\n注意表达式不能以^开始*/") { \n    \n}
 fromFileTime = !time.
 WIN32_FIND_DATA = !findData.
 end intellisense**/
 
 /**intellisense(!findData)
-dwFileAttributes = 0;//文件属性
-ftCreationTime = 文件创建时间\n请调用fsys.fromFileTime()转换为time对象
-ftLastAccessTime = 文件最后一次访问时间\n请调用fsys.fromFileTime()转换为time对象
-ftLastWriteTime =  文件最后一次修改时间\n请调用fsys.fromFileTime()转换为time对象 
-nFileSizeHigh = 文件长度高32位 
-nFileSizeLow = 件长度低32位 
-cFileName = 长文件名\nUTF16编码,请调用string.fromUnicode转换
-cAlternateFileName = 8.3格式文件名\nUTF16编码,请调用string.fromUnicode转换
+dwFileAttributes = 以数值表示的文件属性
+ftCreationTime = 文件创建时间\n请调用 fsys.fromFileTime 转换为 time 对象
+ftLastAccessTime = 文件最后一次访问时间\n请调用 fsys.fromFileTime 转换为 time 对象
+ftLastWriteTime =  文件最后一次修改时间\n请调用 fsys.fromFileTime 转换为 time 对象 
+nFileSizeHigh = 文件长度高 32 位 
+nFileSizeLow = 件长度低 32 位 
+cFileName = 长文件名\nUTF16编码,请调用 string.fromUtf16 转换
+cAlternateFileName = 8.3 格式文件名\nUTF16 编码,请调用 string.fromUtf16 转换
+isDir = 是否目录，\n仅在 fsys.enum 的回调参数中有效
 end intellisense**/
 
 /**intellisense() 

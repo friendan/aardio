@@ -279,7 +279,7 @@ jreHomeFromRegistry = function(x64,version){
 		var regItem = regJre.open(ver); 
 		if( regItem ){
 			jrehome = regItem.queryValue("JavaHome"); 
-			if( ..io.exist( ..fsys.joinpath(jrehome,"bin\java.exe") ) ){
+			if( ..io.exist( ..io.joinpath(jrehome,"bin\java.exe") ) ){
 				regItem.close();
 				regJre.close();
 				return jrehome,ver;
@@ -292,7 +292,7 @@ jreHomeFromRegistry = function(x64,version){
 		var regItem = regJre.open(keyname); 
 		if( regItem ){
 			jrehome = regItem.queryValue("JavaHome"); 
-			if( ..io.exist( ..fsys.joinpath(jrehome,"bin\java.exe") ) ){
+			if( ..io.exist( ..io.joinpath(jrehome,"bin\java.exe") ) ){
 				regItem.close();
 				regJre.close(); 
 				return jrehome,keyname;
@@ -314,7 +314,7 @@ jdkHomeFromRegistry = function(x64,version){
 		var regItem = regJdk.open(ver); 
 		if( regItem ){
 			javahome = regItem.queryValue("JavaHome");
-			if( ..io.exist( ..fsys.joinpath(javahome,"bin\javac.exe") ) ){
+			if( ..io.exist( ..io.joinpath(javahome,"bin\javac.exe") ) ){
 				regItem.close();
 				regJdk.close();
 				return javahome,ver;
@@ -328,7 +328,7 @@ jdkHomeFromRegistry = function(x64,version){
 		var regItem = regJdk.open(keyname); 
 		if( regItem ){
 			javahome = regItem.queryValue("JavaHome");
-			if( ..io.exist( ..fsys.joinpath(javahome,"bin\javac.exe") ) ){
+			if( ..io.exist( ..io.joinpath(javahome,"bin\javac.exe") ) ){
 				regItem.close();
 				regJdk.close();
 				return javahome,keyname;

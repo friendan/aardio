@@ -125,7 +125,7 @@ getch = ::Msvcrt._getwch;
 	
 getche = function(){
     var c = ::Msvcrt._getwche();
-    c =  ..string.fromUnicode(..raw.str( {WORD bytes = c },true));  
+    c =  ..string.fromUtf16(..raw.str( {WORD bytes = c },true));  
 	return c;
 }
 
@@ -254,6 +254,11 @@ setCtrlHandlerThread = function(handle,add,thrdOwner){
 ..subscribe("beforeUnload",function(){
 	for(k,v in _ctrlHandlerThreads){ k();} 
 } );
+
+isOpened = function(){
+	var hwnd = getWindow();
+	return (hwnd ? ::User32.IsWindowVisible(hwnd));
+}
 
 var init;
 open = function(utf8){
@@ -422,11 +427,11 @@ getText = function(s,len){
 writeText = function(s,...){
 	var written = {INT size}; 
 	s = tostring(s);
-	if( (!..string.isUtf8(s)) && (!..string.isUnicode(s)) ){
+	if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
 		..string.setUtf(s,1);
 	}
 	
-	s = ..string.toUnicode(s); 
+	s = ..string.toUtf16(s); 
 	if( ::Kernel32.WriteConsoleB( 
 		::Kernel32.GetStdHandle(-11/*_STD_OUTPUT_HANDLE*/),
 		s,#s/2,written,null) ) {
@@ -475,11 +480,23 @@ writeBack = function( s,... ){
 	writeText( s );
 }
 
-debug = function(x,...){
+self.error = function(x,...){
 	if( _STUDIO_INVOKED ) openForWrite();
-	stderr.write( tostring(x) ,'\t');
-	if(...===null){ stderr.write('\n');return } 
-	return debug(...);
+	if( isOpened() ) setTextAttribute( color.red );
+	
+	if( _STUDIO_INVOKED ) {  
+		global.import("debug");
+		stderr.write( ..debug.traceback(,"console.error",2),'\n\t-----------------------------------------------');
+	}  
+	
+	var args = {x,...}
+	for(i,v in tab){
+		 args[i] = tostring(v);
+	} 
+	
+	var r = stderr.write('\n\t',..string.join(args,'\t'),'\n');
+	if( isOpened() ) setTextAttribute();
+	return r;
 }
 
 class CONSOLE_SCREEN_BUFFER_INFO {
@@ -491,6 +508,8 @@ class CONSOLE_SCREEN_BUFFER_INFO {
 }
 
 clearScreen = function(){
+	showLoading(false);
+	
 	var csbi = CONSOLE_SCREEN_BUFFER_INFO();
 	var hConsole = getOutputHandle(); 
 	
@@ -511,7 +530,7 @@ eraseToEndOfLine = function(){
 	
 	if(!width) return;
 		
-	var line = ..string.toUnicode(..string.repeat(width-y," ") );
+	var line = ..string.toUtf16(..string.repeat(width-y," ") );
 	::Kernel32.WriteConsoleW(getOutputHandle(),line,#line/2,{INT size},null);
 	setPos(x,y);
 }
@@ -585,6 +604,7 @@ setTextAttribute = function(fore,back){
 	return ::Kernel32.SetConsoleTextAttribute(getOutputHandle(),fore);
 } 
 
+//设整整个窗口颜色，设置局部颜色用 setTextAttribute 或 writeColorText
 setColor = function(fore,back){ 
 	execute("color " + ..string.format("%x%x",back:0, fore:0xF))	
 }
@@ -667,8 +687,7 @@ dump = function(v,...){
 	if( type(v) == "table" ) {
 		if(..com ){
 			if(v[["_dotNetObject"]]){
-				writeText("dotNet.object:",..com.DumpTypeInfo(v[["_dotNetObject"]]))
-				
+				writeText("dotNet.object:",..com.DumpTypeInfo(v[["_dotNetObject"]]))  
 			}
 			elseif( ..com.IsObject(v)){
 				if(...){
@@ -683,9 +702,13 @@ dump = function(v,...){
 				
 				writeText( ..com.DumpTypeInfo(v) )
 			}	
+			else {
+				writeText( ..table.tostring(v)) 
+			} 
 		}
-		
-		writeText( ..table.tostring(v)) 
+		else {
+			writeText( ..table.tostring(v)) 
+		} 
 	}
 	if(type(v)==="number" || ..math.isSize64(v)){
 		writeText( (..math.stringify(v) ) ) 	
@@ -708,13 +731,18 @@ dumpTable = function(t){
 	openForWrite();
 	if(type.isString(t)){
 		var s = t; t = {};
-		if(..string.isUnicode(s)){
+		if(..string.isUtf16(s)){
 			for(i=1;#s/2;1){ t[i] = s[i] } 
 		}
 		else {
 			for(i=1;#s;1){ t[i] = s[i] } 
 		} 
 	}
+	elseif(type(t)!=="table"){
+		self.error("参数不是一个 table 对象");
+		return;
+	}
+	
 	writeText( ..util.table.stringify(t,"    ") ,'\n')
 }
 
@@ -757,7 +785,11 @@ dumpJson = function(v){
 	log( ..web.json.stringify(v,true,false) );
 }
 
-close = ..io.close;
+close = function(){
+	showLoading(false);
+	..io.close();
+}
+
 stdout = ..io.stdout;
 stderr = ..io.stderr;
 stdin = ..io.stdin; 
@@ -853,7 +885,11 @@ begin
 	}  
 end;
 
+//@Deprecated
+debug = self.error;
+
 /**intellisense(console)
+isOpened() = 是否已显示控制台窗口。
 open() = 打开控制台窗口,\n如果控制台窗口已打开,该函数不进行任何操作,\n如果参数为 true 则将 console.utf8 设为true,\n请参考 console.utf8 的说明\n\n此函数重定向 msvcrt.dll 定义的 stdin,stdout,stderr 到控制台
 utf8 = 控制台是否启用UTF-8编码,\n所有线程设置必须相同,否则会导致重新打开控制台,\n如果操作系统为英文环境,控制台启用 UTF-8 可正常显示中文,\n此值为 null（默认值） 时由 aardio 自动选择编码（WIN10 以上系统默认开启 UTF-8）,\n启用这个选项在 WIN10 以下系统可能出现显示不正常的问题,\n但有一些程序，例如 Electron 主进程输出默认需要打开此选项
 setLoadingDots(.(动画字符数组,是否显示在尾部,动画间隔毫秒数) = 指定showLoading函数使用的默认动画字符数组\n除参数@1必须指定之外，其他参数可选
@@ -864,16 +900,17 @@ getText( "请输入文本:__" ) = 此函数内部调用io.getText自控制台读
 writeText(__) = 直接写入控制台，\n参数支持UTF8/UTF16/ANSI字符串，\n支持1个或多个参数，但遇到null参数会停止输出后面的参数,\n注意这个函数不会自动打开控制台，\n此函数不调用io.stdout.write,io.print等标准输出函数\n并且可以支持更多的Unicode字符
 writeColorText( = 调用 console.writeText 输出指定颜色文本,\n此函数不会自动打开控制台窗口
 writeColorText(.(文本,前景色,背景色) =  参数@2、参数@3只能使用 console.color 的成员值\n背景色可以省略
-log(__) = 调用console.writeText在控制台输出信息,支持多参数\n多个参数间使用制表符分隔，并且在最后输入一个换行,\n\n参数支持UTF8/UTF16/ANSI字符串，\n二进制或非UTF8或系统ANSI编码的字符串请使用 console.hex 函数。\n\n该函数可自动打开控制台窗口,而无需事先调用io.open();\n注意console.log与console.print指向同一函数\n如果是输出调试信息,建议大家使用console.debug函数。
+log(__) = 调用 console.writeText 在控制台输出信息，支持多参数。\n多个参数间输出时用制表符分隔，并且在最后输入一个换行。\n此函数必须先导入 console 库才能使用。\n\n参数支持 UTF8/UTF16/ANSI 字符串，\n二进制或非 UTF8 或系统 ANSI 编码的字符串请改用 console.hex 函数。\n\n该函数可自动打开控制台窗口,而无需事先调用 io.open 。\n注意 console.log 与 console.print 指向同一函数。\n如果是输出错误信息，请改用 console.error 函数。
 logPause(__) = 调用 console.log 函数输入所有参数,\n然后调用 console.pause 函数暂停
-print("__") = 调用console.writeText在控制台输出信息,支持多参数\n多个参数间使用制表符分隔，并且在最后输入一个换行,\n参数支持UTF8/UTF16/ANSI字符串，\n该函数可自动打开控制台窗口,而无需事先调用io.open();\n注意console.log与console.print指向同一函数\n如果是输出调试信息,建议大家使用console.debug函数
+print("__") = 调用console.writeText在控制台输出信息,支持多参数\n多个参数间使用制表符分隔，并且在最后输入一个换行,\n参数支持UTF8/UTF16/ANSI字符串，\n该函数可自动打开控制台窗口,而无需事先调用io.open();\n注意console.log与console.print指向同一函数\n如果是输出调试信息,建议大家使用 console.error 函数
 printf("%s__", ) = 自动打开控制台\n调用console.log函数输出格式化字符串,\n格式化语法与string.format相同
 hex(__) = 调用console.log以16进制输出字符串、或缓冲区的所有字节码,\n也可以使用 console.dumpTable 函数将字符串或buffer转换为字节码数组输出
 writeBack(__) = 控制台输出字符串并覆盖最后显示的等长字符\n如果有多个参数则调用string.format格式化后输出
 fullscreen() = 控制台窗口全屏切换
 modifyMode(.(输入输出句柄,移除模式,添加模式) = 设置控制台的显示模式\n参数用法参考 WINAPI SetConsoleMode\n参数@1如果省略则默认为标准输出句柄\n成功返回当前模式,失败返回null
-debug("__") = 使用标准错误输出流(io.stderr)输出，可以重定向，\n用法类似io.print,该函数在开发环境中会自动打开控制台\n发布后的程序不会自动打开控制台
-more(__/*分页大小*/) = 用于在循环语句中分页显示\n省略参数时则参数默认为1\n如果参数@2为true，则先清除控制台已显示的内容。
+error("__") = 使用标准错误输出流（io.stderr）输出，可以重定向，\n可指定任意个参数，参数转换为字符串以后输出。\n\n在开发环境中会自动打开控制台以红色字体输出参数，并输出当前调用栈信息。\n发布后的程序不会自动打开控制台，不会输出调用栈信息。
+more( = 等待并在按任意键以后继续，用于在控制台分页输出时等待按键。
+more(.(分页大小,是否清屏) = 略参数  @1 则参数默认为 1 。\n如果参数 @2 为true，按任意键以后清除控制台已显示的内容。
 askYesNo("按Y键继续,按N键取消") = 等待用户按Y或N键
 kbHit() = 检测键盘有没有输入
 peek() = 测试键盘有没有输入\n有则读取并返回keyEvent对象,否则返回空\n!console_kbevent.
@@ -920,9 +957,9 @@ getSize() = 返回控制台屏幕缓冲区每行可输入的字符数,\n以及�
 getPos() = 返回光标坐标
 setPos(.(列,行)= 设置光标坐标
 box(.(列,行,终止列,终止行,背景色,边框标题) = 在控制台画一个色块,边框标题可省略,\n参数@1,@2省略则自动居中\n返回列,行,终止列,终止行
-stderr = 标准错误输出\n!file.
-stdin =  标准输入\n!file.
-stdout = 标准输出\n!file.
+stderr = 标准错误输出\n!ioFile.
+stdin =  标准输入\n!ioFile.
+stdout = 标准输出\n!ioFile.
 setCtrlHandlerThread(hander,add,owner) = @.setCtrlHandlerThread( function(ctrlType){\n	__/*控制台程序退出前是否触发 @hander 参数指定的线程函数，\n@add 为 true 添加触发函数，为 false 移除，默认值为 true。\n可选用 @owner 指定线程函数的 owner 参数。\n\n使用前请先阅读多线程入门教程，了解线程函数基本规则。\n\nctrlType 为 null 表示控制台正常关闭，不可取消。\nctrlType 为 0 表示按下 Ctrl+ C。\nctrlType 为 1 表示按下 Ctrl + Break。\nctrlType 为 0 或 1 时返回 true 可阻止控制台退出\n\n在此函数内不应再使用任何控制台函数*/\n});
 end intellisense**/ 
 

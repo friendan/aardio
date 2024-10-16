@@ -5,7 +5,7 @@ import winex.mouse;
 
 namespace dotNet;
 
-//"~\codes\范例程序\2) 调用其他语言\2) dotNet\D.uwpCompiler.aardio"
+//"~/example/Languages/dotNet/Apps/uwpCompiler.aardio"
 var ocrAssembly = ..dotNet.loadFile($"~\lib\dotNet\ocr\.res\ocr.dll");
 
 class ocr{
@@ -29,6 +29,9 @@ class ocr{
 	};
 	availableLanguages = function(){
 		return this.ocrEngine.AvailableRecognizerLanguages()
+	};
+	isLanguageSupported = function(name){
+		return this.ocrEngine.IsLanguageSupported(name)
 	};
 	detectBuffer = function(buffer){
 		if(!this.language){
@@ -144,6 +147,7 @@ class ocr{
 		var ret = this.waitClient(hwnd,text,miniSimilar,timeout,hwndWait);
 		if(ret) return  ret.click(text,miniSimilar);	
 	};
+
 	close = function(){
 		this.ocrEngine = null;
 		collectgarbage("collect");
@@ -223,13 +227,14 @@ namespace ocr{
 }
 
 /**intellisense()
-dotNet.ocr = 识别屏幕或图像上文字的本地组件，\n系统自带组件，仅支持 Windows 10
+dotNet.ocr = 识别屏幕或图像上文字的本地组件，\n系统自带组件，仅支持 Windows 10。\n\n相关的库或函数： string.ocrLite, soImage 。\nsoImage 范例中提供自动生成字符与简单 OCR 的工具。
 dotNet.ocr() = 创建OCR对象\n!stdDotNetOrc.
 end intellisense**/
 
 /**intellisense(!stdDotNetOrc)
 availableLanguages() = 返回支持的语言列表,返回值为字符串数组
-language = 字符串，设置识别用到的语言
+isLanguageSupported(__) = 是否支持指定的语言，字符串参数 @1 用于指定语言。\n例如 "en-US" 指定英文， "zh-Hans-CN" 指定简体中文。
+language = 字符串，设置识别用到的语言。\n例如 "en-US" 指定英文， "zh-Hans-CN" 指定简体中文。
 wordSpace =  单词分隔符，\n不指定则自动设置英文或数值使用空格，中文不分隔
 close() = 关闭对象,\n关闭以后不应再使用此对象,\n默认在对象被回收时会自动关闭
 detectBuffer(.(buffer) = 识别文字并返回识别结果对象,\nbuffer指定图像文件的内存数据,\n支持jpg,png,bmp等常见格式

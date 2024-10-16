@@ -80,16 +80,17 @@ namespace mutex{
 	lock = function(name,proc){
 		if(!name) error("请指定互斥体名称",2);
 		var mutex = ..process.mutex(name);
-		mutex.waitOne();
-		proc();
-		mutex.release();
+		
+		if( mutex.waitOne() ){
+			proc();
+			mutex.release();	
+		}
+		
 		mutex.close();
 	}
 }
- 
- 
-/**intellisense() 
 
+/**intellisense() 
 process.mutex = 互斥体\n可用于进程间同步
 process.mutex( = 创建或打开互斥体对象,\n返回对象可传入其他线程使用。
 process.mutex(.(互斥体句柄) = 使用句柄直接打开互斥体

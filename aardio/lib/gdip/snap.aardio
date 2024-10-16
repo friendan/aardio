@@ -24,6 +24,9 @@ class snap{
 		else{
 			rc = ..win.getRect(hwnd,true);
 		}
+		
+		if(x[["_struct"]]) x,y,w,h = x.xywh();
+		
 		if(!w) w = rc.right - rc.left - x;
 		if(!h) h = rc.bottom - rc.top - y;
 		x = rc.left + x;
@@ -42,7 +45,15 @@ class snap{
 }
 
 namespace snap{
-    
+	
+	file = function(path,...){
+		var bmp = ..gdip.snap(...);
+		if(bmp){
+			bmp.save(path,80);
+			bmp.dispose();
+		}
+	}
+	
 	client = function(hwnd,x,y,w,h){
 		return ..gdip.snap(hwnd,x,y,w,h,true);
 	}  
@@ -87,11 +98,14 @@ namespace snap{
 	} 
 }
 
-/**intellisense(gdip) 
-snap(.(窗口句柄,左坐标,顶坐标,宽,高) = 自屏幕抓取窗口图象并返回 gdip.bitmap 对象,\n截图结果会包含透明部分的背景图像，\n所有参数都是可选参数
+/**intellisense(gdip)  
+snap(.(窗口句柄,rect) = 自屏幕抓取窗口图像并返回 gdip.bitmap 对象。\n截图结果会包含透明部分的背景图像。\n所有参数可选，参数 @rect 可指定 ::RECT 或 ::RECTF 结构体
+snap(.(窗口句柄,左坐标,顶坐标,宽,高) = 自屏幕抓取窗口图像并返回 gdip.bitmap 对象。\n截图结果会包含透明部分的背景图像，\n所有参数都是可选参数
 snap.client(.(窗口句柄,左坐标,顶坐标,宽,高) = 自屏幕抓取窗口客户区图像并返回 gdip.bitmap 对象,\n截图结果会包含透明部分的背景图像，\n所有参数都是可选参数
-snap.print(.(窗口句柄,左坐标,顶坐标,宽,高) = 后台抓取窗口图象并返回 gdip.bitmap 对象\n所有参数都是可选参数
+snap.print(.(窗口句柄,左坐标,顶坐标,宽,高) = 后台抓取窗口图像并返回 gdip.bitmap 对象\n所有参数都是可选参数
 snap.printClient(.(窗口句柄,左坐标,顶坐标,宽,高) = 后台抓取窗口客户区图像并返回 gdip.bitmap 对象 \n所有参数都是可选参数
+snap.file(.(图像路径,窗口句柄,rect) = 自屏幕抓取窗口图像并保存到文件。\n截图结果会包含透明部分的背景图像。\n所有参数可选，参数 @rect 可指定 ::RECT 或 ::RECTF 结构体
+snap.file(.(图像路径,窗口句柄,左坐标,顶坐标,宽,高) = 自屏幕抓取窗口图像并保存到文件。\n截图结果会包含透明部分的背景图像，\n所有参数都是可选参数
 snap() = !gdipbitmap.
 snap.client() = !gdipbitmap.
 snap.print() = !gdipbitmap.

@@ -124,19 +124,30 @@ namespace ..LOGFONT {
 	} 
 } 
 
-setFont = function(hwnd,font){ 
+setFont = function(hwnd,font,dpiScale){ 
 	var hfont = font; 
 	if( type(font) == "table" ) {
 		
 		if(! (font[["_struct"]] && font@) ){ 
 			font = ..table.assign( getFont(hwnd) : ::LOGFONT() ,font);
 		}
+		
+		if(font.point ){
+			font.stripPoint();
+			
+			var rd = getDpiScale(,hwnd);
+			if(rd!=dpiScale){ 
+				font.h = (font.h / rd);
+				if(dpiScale) font.h = font.h * dpiScale;
+			}
+		}
 			
 		hfont = font.createIndirect( ,hwnd,false);  
 	}
+	
 	if(type(hfont)==type.pointer){
-			::SendMessage(hwnd,0x30/*_WM_SETFONT*/,hfont);
-			return hfont;
+		::SendMessage(hwnd,0x30/*_WM_SETFONT*/,hfont);
+		return hfont;
 	}
 } 
 
@@ -272,7 +283,7 @@ var g,u =  ::Gdi32,::User32;
 
 getTextExtent = function(hdc,s){
 	var sz = ::SIZE();
-	s = ..string.toUnicode(s);
+	s = ..string.toUtf16(s);
 	if( g.GetTextExtentPoint32(hdc,s,#s/2,sz) ) return sz.cx,sz.cy;
 }
 
@@ -283,7 +294,7 @@ textOut = function (hdc,font,s,x,y) {
 	var of = ::SelectObject(hdc,lf);
 	if( font.color!== null ) ::SetTextColor(hdc,font.color);
 	
-	s = ..string.toUnicode(s);
+	s = ..string.toUtf16(s);
 	::TextOut(hdc,x,y,s,#s/2);
 	
 	::SelectObject(hdc,of);
@@ -296,7 +307,7 @@ drawText = function(hdc,font,s,rc,ft) {
 	var of = ::SelectObject(hdc,lf);
 	if( font.color!== null ) ::SetTextColor(hdc,font.color);
 	
-	s = ..string.toUnicode(s);
+	s = ..string.toUtf16(s);
 	::DrawText(hdc,s,#s/2,rc,ft:0);
 	
 	::SelectObject(hdc,of);
@@ -604,7 +615,7 @@ getDpi = function(hdcIn,hwnd){
 }
 
 try{
-	::Shcore = ..raw.loadDll("Shcore.dll") 
+	::Shcore := ..raw.loadDll("Shcore.dll") 
 	GetDpiForMonitor  = ::Shcore.api("GetDpiForMonitor","int(addr hmonitor,int type,INT &dpiX,INT &dpiY)" )
 	
 	if( GetDpiForMonitor ){
@@ -710,7 +721,7 @@ getIconInfo( = 获取图标信息
 getIconInfo(.(句柄) = 参数不可为空
 getIconInfo() = !gdicoinfo.
 setFont( = 设置窗口字体,返回字体句柄\n直接调用此函数必须自行管理字体生命周期
-setFont(.(窗口句柄,LOGFONT对象)  = 第二个参数是字体句柄、或LOGFONT结构体,\n使用LOGFONT参数将创建新的逻辑字体句柄并返回该句柄
+setFont(.(窗口句柄,LOGFONT对象,窗口DPI缩放比例)  = 第二个参数是字体句柄、或 LOGFONT 结构体,\n使用 LOGFONT 对象作为参数将创建新的逻辑字体句柄，函数将返回该句柄。\n参数 @3 仅在使用 point 单位时用于修正窗体口与系统 DPI 不一致的问题。
 getFont(__/*窗口句柄*/) = 返回窗口字体,LOGFONT对象\n如果窗口仍然是使用系统字体,返回空值\n不应使用此函数获取系统字体
 getSystemFont(.( _SYSTEM_FONT ) = 获取系统字体并转换为LOGFONT
 getSystemFont(.( _DEFAULT_GUI_FONT ) = 获取界面缺省字体并转换为LOGFONT

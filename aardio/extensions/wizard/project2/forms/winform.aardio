@@ -63,10 +63,20 @@ tbs.add({
     text="Java"; 
 },"\forms\winform\java.aardio")
 
+tbs.add({
+    text="ActiveX EXE"; 
+},"\forms\plus\activeX.aardio")
+
 tbs.selIndex = 1;
 
 winform.getTemplatePath = function(){
 	return tbs.selForm.getTemplatePath();
+}
+
+winform.onProjectCreated = function(projectDir,pathMain){
+    if(tbs.selForm.onProjectCreated){
+    	return tbs.selForm.onProjectCreated(projectDir,pathMain);
+    } 	
 }
 
 winform.show();

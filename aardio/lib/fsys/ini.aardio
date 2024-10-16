@@ -11,7 +11,7 @@ var getIniPath = function(path){
 	var defult = ..string.load(path)
 	
 	..fsys.createParentDir(path);
-	var file = ..io.open(path,"w+b")
+	var file = ..io.file(path,"w+b")
 	if( ! file  ) error("ini文件路径错误:" + path,3) 
 	
 	file.write(defult);
@@ -37,10 +37,10 @@ class ini{
                 return;
                 
             if(!key) {
-                return ..string.split(..string.fromUnicode(val,,len-1),'\0'); 
+                return ..string.split(..string.fromUtf16(val,,len-1),'\0'); 
             }
             else {
-                return ..string.fromUnicode(val,,len);
+                return ..string.fromUtf16(val,,len);
             }
         };
         write = function(app,key,str){ 
@@ -64,7 +64,7 @@ class ini{
             if(!len)
             	return null;
             	
-            val = ..string.fromUnicode( val,,(len-1) );
+            val = ..string.fromUtf16( val,,(len-1) );
             return ..string.split(val,'\0');
         }
         getSection = function(app){
@@ -108,7 +108,7 @@ class ini.section{
         }
         
         if(len){
-        	val = ..string.fromUnicode( val,,(len-1));
+        	val = ..string.fromUtf16( val,,(len-1));
         	var tlist  =  ..string.split(val,'\0');
         	var pos,k;
         	
@@ -135,7 +135,7 @@ class ini.section{
 				..table.push(t,'\0'); 
 				..table.push(t,'\0'); 
 				var v = ..string.join(t ); 
-				WritePrivateProfileSection( app,..string.toUnicode(v),path); 
+				WritePrivateProfileSection( app,..string.toUtf16(v),path); 
 			}
 			name = function(){
 				return app;

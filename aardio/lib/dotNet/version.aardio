@@ -68,7 +68,65 @@ getVersions = function(){
 	})  
 }
 
+v450PlusCheck= function(relase){
+	var reg = ..win.reg("HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full");
+	if(!reg) return false;
+	var r = reg.queryValue("Release");
+	reg.close();
+	
+	return (r && r>=relase);
+}
+
+v460Later = lambda() v450PlusCheck(393295);
+v461Later = lambda() v450PlusCheck(394254);
+v462Later = lambda() v450PlusCheck(394802);
+v470Later = lambda() v450PlusCheck(460798);
+v471Later = lambda() v450PlusCheck(461308);
+v472Later = lambda() v450PlusCheck(461808);
+v480Later = lambda() v450PlusCheck(528040);
+v481Later = lambda() v450PlusCheck(533320);
+
+/*****intellisense()
+dotNet.version = 检测 .NET Framework 安装版本。\n检测 CLR 加载版本可参考 System.Environment 库源代码。
+end intellisense*****/
+
 /**intellisense(dotNet.version)
 getFrameworks() = 获取安装的 .Net Framework 版本信息列表\n可选用参数@1指定注册表版本主键匹配模式串，默认为 "^v\d"
 getVersions() = 返回已安装的 .Net Framework 版本\n版本号一律规范为 vN.N 格式,例如 v2.0 v4.0 等等\n\n注意 .NET 3.5的运行时是 v2.0，.Net 4.5 的运行时是 v4.0，\nWin7 自带 .NET2.0 运行时，Win10 自带 .NET4.0 运行时。\n\naardio 可以自适应不同的版本，\n所以大多时候不需要去指定版本
+
+v450PlusCheck(__) = 是否已安装大于等于 v4.5.0 版本的 .NET Framework。\n并检查Release 版本号是否大于等于参数指定的数值。\n参数指定为 0 则只检查已安装版本是否大于等于 v4.5.0
+v460Later() = 是否已安装大于等于 v4.6.0 版本的 .NET Framework
+v461Later() = 是否已安装大于等于 v4.6.1 版本的 .NET Framework
+v462Later() = 是否已安装大于等于 v4.6.2 版本的 .NET Framework
+v470Later() = 是否已安装大于等于 v4.7.0 版本的 .NET Framework
+v471Later() = 是否已安装大于等于 v4.7.1 版本的 .NET Framework
+v472Later() = 是否已安装大于等于 v4.7.2 版本的 .NET Framework
+v480Later() = 是否已安装大于等于 v4.8.0 版本的 .NET Framework
+v481Later() =是否已安装大于等于 v4.8.1 版本的 .NET Framework
 end intellisense**/
+
+/*****intellisense()
+Win7 自带 .NET 3.5.1，支持 lambda
+Win8 自带 .NET 3.5.1 + .NET 4.5
+Win10 自带 .NET 4.6 ，.NET 4.x 支持 dynamic 对象 + 异步任务，.NET 4.5 支持 task.Run 。
+Win10 1511 自带 .NET 4.6.1
+Win10 1607 自带 .NET 4.6.2
+Win10 1709 自带 .NET 4.7.1 ，支持 ValueTuple
+Win10 1809 自带 .NET 4.7.2
+Win11 以及 Win10 1903 自带 .NET 4.8
+
+NET 虽然有很多版本，但核心运行时只有 CLR 2.0 与 CLR 4.0 的区别。
+如果使用了一些非常新的 C# 语法 —— 用 VS 编译成 DLL以后在 CLR 4.0 下运行时没有问题的。
+
+aardio 可以自动兼容 CLR 2.0 / CLR 4.0 编写的程序集。
+aardio + .NET 开发有更好的兼容性，对 .NET 版本没有严格要求，可以重用大量的 .NET 组件，
+并且可以编写出体积小、不依赖非系统 DLL 的独立 EXE 文件（也可以内存加载外部程序集）
+
+系统自带的都是 .NET Framework 。
+如果 NuGet 包里找不到 .NET Framework 的程序集，
+那么可以改用 NET Standard  2.0 的程序集。
+
+自 .NET Framework 4.5 及以上 起支持 NET Standard  1.0，
+自 .NET Framework 4.6.1 起支持 NET Standard  2.0，
+但实际上  NET Standard  2.0 推荐的最低版本是 .NET 4.7.2 。  
+end intellisense*****/

@@ -76,6 +76,7 @@ class jsonClient{
     				if( cb.end ){
     					cb.end( repData.result,repData.error )
     				}
+    				cb.done = true;
     			};
     		}
     		else {
@@ -101,13 +102,15 @@ class jsonClient{
 			owner.transaction = {};
 		};
 		this.rpc.commitTrans = function(){
-			if(! owner.sendJson(  owner.transaction ) ){
-				if(this.rpc.onError){
-					this.rpc.onError(..afterJsonStringify(owner.transaction) 
-					+ '\n发送失败,请先调用connect函数连接JSON RPC服务端');	
-				}
-				return;
-			} 
+		 	if(#owner.transaction){
+				if(! owner.sendJson(  owner.transaction ) ){
+					if(this.rpc.onError){
+						this.rpc.onError(..afterJsonStringify(owner.transaction) 
+						+ '\n发送失败,请先调用 connect 函数连接 JSON RPC 服务端');	
+					}
+					return;
+				} 
+			}
 			owner.transaction = null;
 		};
 		this.rpc.rollbackTrans = function(){
@@ -142,12 +145,15 @@ class jsonClient{
 			
 			if( owner.sendJson(data) ) return cb;
 			if(this.rpc.onError){
-				var err =  '发送失败,请先调用connect函数连接JSON RPC服务端:\n'+ ..web.json.stringify(data);
+				var err =  '发送失败,请先调用 connect 函数连接 JSON RPC 服务端:\n'+ ..web.json.stringify(data);
 				if(this.rpc.onError) this.rpc.onError(err);
 				
 				..win.setTimeout(
 					function(){
-						if( cb.end ) cb.end(,'发送失败,请先调用connect函数连接JSON RPC服务端');
+						if( cb.end ) cb.end(,{
+							code = -32603;
+							message = '发送失败,请先调用 connect 函数连接 JSON RPC 服务端'
+						});
 						this.rpc.endCallback[id] = null;
 					}
 				)
@@ -160,6 +166,7 @@ class jsonClient{
 	};
 	waitForConnected = function(hwnd,timeout){ 
 		..win.delay(1000);
+		
 		return ..win.wait( 
 			function(){
 				if( this.rpc.readyState > 1 ) return false;
@@ -222,7 +229,7 @@ rpc = WebSocket客户端对象\n此对象的成员谨慎改动\n!stdwebsocketjso
 on(method,proc) = @.on("__/*需要监听的Rpc通知事件名字*/",function(param){\n    \n})
 on("open",proc) = @.on("open",function(){\n	__/*已打开连接*/		\n}
 on("close",proc) = @.on("close",function(e){\n	__/*连接被关闭\ne.code为错误代码e.reason为错误原因*/\n})
-on("error",proc) = @.on("error",function(err,serverError){\n	__/*发生错误,err为错误信息,\n如果服务端按 jsonrpc 协议返回 error 对象,\n则 serverError 有值,包含 messge,code 字段*/\n})
+on("error",proc) = @.on("error",function(errMessage,rpcError){\n	__/*发生错误,errMessage 为错误信息。\n如果服务端按 jsonrpc 协议返回 error 对象，\n则 rpcError 有值，包含 messge，code 字段。*/\n})
 on("message",proc) = @.on("message",function(msg){\n    __/*收到服务端数据\nmsg.type为1时msg.data为文本,\n否则msg.data为字节数组（buffer类型）*/\n})
 on("fragment",proc) = @.on("fragment",function(msg){\n   __/*收到分片数据\n第一个数据包使用msg.type指明类型,参考WebSocket协议规范\n后续数据包msg.type为0,最后一个数据包msg.fin为1\n\n如果不指定这个回调函数,则自动并接分片数据后触发onMessage事件*/	\n})
 connect("ws://__") = 重新连接到WebSocket服务端\n参数指定WebSocket服务端网址，例如 "ws://localhost:7511"\n如果不指定参数,则获取上次调用此函数指定的网址参数,\n如果之前也没有指定网址则抛出异常
@@ -232,8 +239,9 @@ end intellisense**/
 ? = 远程对象名或远程方法名字,\n作为函数调用时返回一个调用对象,\n通过指定返回调用对象的 end 属性定义调用结束回调函数,例如:\nret.end=function(result,err){\n	\n}\n回调参数 result 为调用返回值,err 为错误信息,\n如果调和成功,err参数为null\n!stdWebSocketJsonClientObject.
 rpc = WebSocket客户端对象\n此对象的成员谨慎改动\n!stdwebsocketjsonClientrpc.
 end = @.end = function(result,err){
-	__/*result为远程调用返回值,err为错误对象,\n调用成功err参数为null*/
+	__/*可通过远程函数调用返回对象的 end 属性指定一个调用完成触发的回调函数。\n回调参数 result 为远程调用返回值,err 为错误对象,\n调用成功 err 参数为null*/
 }
+done = 通过远程函数调用返回对象的 done 属性判断调用是否完成。\n注意出错时则 done 可能不会设为 true，应在 rpc.onError 回调中处理这种情况。
 end intellisense**/
 
 /**intellisense(!stdwebsocketjsonClientrpc) 

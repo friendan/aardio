@@ -2,7 +2,7 @@
 namespace string;
  
 class list{ 
-    ctor(str,lineDelimiter,nameValueSeparator,quoteChar) {   
+    ctor(str,lineDelimiter,nameValueSeparator,quoteChar) {
     	this[-1] = { 
     		lineDelimiter = lineDelimiter : '\r\n';
     		nameValueSeparator = nameValueSeparator : '=';
@@ -115,15 +115,15 @@ namespace list {
 				if( !reserveData[[k]] ) push(keys,k);
 				reserveData[[k]] = trim(v);
 			}
-			
 		}
 	}	 
 	
 	_metaProperty = ..util.metaProperty( 
 		_type = "object";
+		_keys = lambda()owner[-1].keys;
 		save = function(filepath){ 
 			if(filepath) owner[-1].path  = filepath;   
-    		..string.save(owner[-1].path  ,tostring(owner) )   
+    		..string.save(owner[-1].path  ,tostring(owner) );   
     		return owner;
     	}
     	load = function(filepath){  
@@ -144,13 +144,7 @@ namespace list {
        		createList(owner,str);  
        		return owner;
     	};
-    	mixin = function(...){
-    		var cfg = owner[-1];
-    		var r = ..table.assign(owner,...);
-    		owner[-1] = cfg;
-    		return r;
-    	};
-		set = function(k,v) {   
+		set = function(k,v) {
 			k = tostring(k)
 			var keys = owner[-1].keys;
 			if( owner[[k]] === null ) ..table.push(keys,k);
@@ -158,6 +152,15 @@ namespace list {
 			owner[[k]] = v;
 			return owner ; 
 		}; 
+		remove = function(k){
+			if(!k) error("参数必须是字符串",2);
+			
+			var i = owner.find(k);
+			if(!i) return;
+			
+			..table.remove(owner[-1].keys,i)
+			owner[[k]] = null;
+		};
 		find = function(k,...){
 			var keys = owner[-1].keys;
     		for(i=1;#keys){
@@ -222,7 +225,7 @@ namespace list {
 		};
 		getConfiguration = function(){
     		return owner[-1];
-    	} 
+    	}; 
     	separator = {
     		_get = function(){
     			return owner[-1].lineDelimiter
@@ -230,7 +233,7 @@ namespace list {
     		_set = function(v){
     			owner[-1].lineDelimiter = v;
     		} 
-    	}
+    	};
     	mark = {
     		_get = function(v){
     			return owner[-1].nameValueSeparator
@@ -238,7 +241,14 @@ namespace list {
     		_set = function(v){
     			owner[-1].nameValueSeparator = v;
     		}
-    	}
+    	};
+    	assign = function(...){
+    		var cfg = owner[-1];
+    		var r = ..table.assign(owner,...);
+    		owner[-1] = cfg;
+    		return r;
+    	};
+    	mixin = function(...){ owner.assign(...) };
 	)
 }
 
@@ -249,7 +259,8 @@ string.list(.(字符串,行分隔符,键值分隔符,引用符) = 第一个参�
 !stringlist.load("__/*文件路径*/") = 加载配置文件 
 !stringlist.save("__/*文件路径*/") = 保存配置文件
 !stringlist.save() = 保存配置文件\n!stringlist.
-!stringlist.mixin = @.mixin(\n	键 = 值__;\n)
+!stringlist.assign = @.assign(\n	键 = 值__;\n)
+!stringlist.remove("__/*键名*/") = 查询并移除第一个找到的键名与键值，键名忽略大小写。\n如果只是用 string.list 对象的下标设置指定键为 null 值，并不会移除键名。
 !stringlist.find("__/*键名*/") = 查找指定键所在位置,忽略大小写\n支持使用多个能有数指定多个查找键名,此函数将逐个查找,\n找到即返回返回三个值: 位置索引,键名,键值
 !stringlist.getConfiguration() = 返回配置\n!stringlistcfg.
 !stringlistcfg.lineDelimiter = 行分隔符,默认为回车换行

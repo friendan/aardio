@@ -97,6 +97,13 @@ winform.getTemplateConfig = function(){
     } 
 }
 
+winform.onProjectCreated = function(projectDir,pathMain){
+    if(tbs.selForm.onProjectCreated){
+    	return tbs.selForm.onProjectCreated(projectDir,pathMain);
+    } 	
+}
+
+
 winform.show();
 win.loopMessage();
 return winform;

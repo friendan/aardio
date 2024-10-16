@@ -1,6 +1,7 @@
-﻿namespace zlib;
+﻿import raw.struct;
+namespace zlib;
 
-ZLIB_VERSION = "1.2.7"; 
+ZLIB_VERSION = "1.3.1"; 
 var dll = ..raw.loadDll(  ..io.exist("~/lib/zlib/.res/zlibwapi.dll") : 
 		$"~/lib/zlib/.res/zlibwapi.dll","zlibwapi.dll"  );
 _dll = dll;
@@ -37,14 +38,14 @@ uncompress = function (src,dstLen) {
 /*}}*/
 	
 /*压缩解压内存流{{*/
-var z_inflate = dll.api("inflate","int(struct &strm, int flush)");
-var z_deflate = dll.api("deflate","int(struct &strm, int flush)"); 
-var z_inflateEnd = dll.api("inflateEnd","int(struct &strm)");
-var z_deflateEnd = dll.api("deflateEnd","int(struct &strm)");
-var z_deflateInit = dll.api("deflateInit_","int(struct &strm, int level, string version, int stream_size)");
-var z_inflateInit = dll.api("inflateInit_","int(struct &strm, string version, int stream_size)");
-var z_deflateInit2 = dll.api("deflateInit2_","int(struct &strm, int  level, int  method,int windowBits, int memLevel,int strategy,string version,int stream_size)");
-var z_inflateInit2 = dll.api("inflateInit2_","int(struct &strm, int  windowBits, string version, int stream_size)");
+var z_inflate = dll.api("inflate","int(ptr strm, int flush)");
+var z_deflate = dll.api("deflate","int(ptr strm, int flush)"); 
+var z_inflateEnd = dll.api("inflateEnd","int(ptr strm)");
+var z_deflateEnd = dll.api("deflateEnd","int(ptr strm)");
+var z_deflateInit = dll.api("deflateInit_","int(ptr strm, int level, string version, int stream_size)");
+var z_inflateInit = dll.api("inflateInit_","int(ptr strm, string version, int stream_size)");
+var z_deflateInit2 = dll.api("deflateInit2_","int(ptr strm, int  level, int  method,int windowBits, int memLevel,int strategy,string version,int stream_size)");
+var z_inflateInit2 = dll.api("inflateInit2_","int(ptr strm, int  windowBits, string version, int stream_size)");
 	
 deflateInit = function(strm, level=-1/*_Z_DEFAULT_COMPRESSION*/){
 	return z_deflateInit(strm, level,ZLIB_VERSION,z_stream.sizeof)
@@ -82,11 +83,14 @@ z_stream = class{
     INT adler;
     INT reserved;
 }
-z_stream.sizeof = 56; //..raw.sizeof( z_stream() ); 
+
+
+z_stream = ..raw.struct(z_stream);
+z_stream.sizeof = 56; //z_stream().sizeof() 
 	
 class streamReader{
 	ctor( header,bufferSize = 0x4000/*16KB*/ ){
-		this = ..zlib.z_stream(bufferSize); 
+		this.pStream = ..zlib.z_stream(bufferSize); 
 		
 		{
 			var ret; 
@@ -96,56 +100,81 @@ class streamReader{
 			}
 			
 			if( header === "raw" ){
-				//Passing a negative window bits value prevents inflate from checking for gzip or zlib headers.
-				ret = ..zlib.inflateInit2( this, -15); 
+				//−8 至 −15 以绝对值指定窗口大小（以 2 为底的对数）仅包含压缩数据，没有头部和尾部，
+				ret = ..zlib.inflateInit2( this.pStream, -15); 
 			}
 			elseif( header === "zlib" ){
-				ret = ..zlib.inflateInit( this );
+				//窗口大小为默认值 15 /* 32K LZ77 window */，输入必须为 zlib 格式。
+				ret = ..zlib.inflateInit( this.pStream );
 			}
 			else{
-				ret = ..zlib.inflateInit2( this, 47/*32 + 15*/);
+				//32 + (8 至 15)：后 4 位指定窗口大小（以 2 为底的对数），兼容 zlib，gzip 格式。
+				ret = ..zlib.inflateInit2( this.pStream, 47/*32 + 15*/);
 			}
 			
-			if( ret != 0/*_Z_OK*/) return; 
+			if( ret != 0/*_Z_OK*/) return;
 		}
-	}
+	};
+	getStream = function(){
+		return this.pStream.get(); 
+	}; 
 	read = function(zdata){ 
+		 
 		var nzdata = #zdata
 		
-		if( zdata ){
-			this.next_in  = zdata; 
-			this.avail_in = nzdata; 
-		}
-
+		var stream = this.pStream.get();
+		stream.next_in = zdata;
+		stream.avail_in = nzdata;  
+		this.pStream.set(); 
+		
 		var tab = {}; 
-		var limit = this.total_in + nzdata
+		var limit = stream.total_in + nzdata
 		var flush = (!nzdata) ? 4/*_Z_FINISH*/ : 0/*_Z_NO_FLUSH*/ ;
-		while ( (this.total_in < limit) || (!nzdata) ) {
-			ret = z_inflate( this, flush )   
-			if( ret == 1/*_Z_STREAM_END*/ ){
-				if( this.avail_out < this.bufferSize ){
-					..table.push( tab, ..raw.tostring( this.buffer,1,this.bufferSize - this.avail_out ) )
-					this.avail_out = this.bufferSize;
-				}
-			 	break;
+		 
+		//动态指针
+		var ptrRet;
+		
+		while ( (stream.total_in < limit) || (!nzdata) ) {
+			 
+			ret = z_inflate( this.pStream, flush )  
+			stream = this.pStream.get();
+			  
+			var avail_ret = stream.bufferSize - stream.avail_out;
+			if(avail_ret){
+				if(!ptrRet) ptrRet = ..raw.realloc(avail_ret); 
+				ptrRet = ..raw.concat(ptrRet,stream.buffer,avail_ret,stream.bufferSize); 
+			 
+				stream.avail_out = stream.bufferSize;
+				stream.next_out = stream.buffer;  
+				this.pStream.set();
 			}
+
 			if( ret != 0/*_Z_OK*/ ) { 
-				return;
-			} 
-			if( !this.avail_out ){
-				..table.push( tab, ..raw.tostring( this.buffer,1,this.bufferSize ) );
-				this.avail_out = this.bufferSize;
-				this.next_out = this.buffer;
-			} 
+				if( ret == 1/*_Z_STREAM_END*/ ) break; 
+				
+				//释放动态指针
+				ptrRet = ..raw.realloc(0,ptrRet);  
+				return null,ret; 
+			}   
 		} 
-		if(#tab) return  ..string.join(tab);
+		 
+		var strRet;
+		var size = ..raw.sizeof(ptrRet); 
+		if(size) strRet = ..raw.tostring(ptrRet,1,size); 
+		
+		//释放动态指针
+		ptrRet = ..raw.realloc(0,ptrRet);
+
+		return  strRet;
 	}
 	close = function(){
-		if(!this.next_out)return;
+		if(!this.pStream.next_out)return;
+		
 		var data = this.read(null);
-		if( z_inflateEnd(this) != 0/*_Z_OK*/) return;
-		this.next_out = null ; 
-		this.avail_out = 0;
+		if( z_inflateEnd(this.pStream) != 0/*_Z_OK*/) return;
+		
+		this.pStream.next_out = null ; 
+		this.pStream.avail_out = 0;
 		return data;
 	} 
 };
@@ -165,9 +194,9 @@ gzUncompress = function(zdata,header,bufferSize) {
 
 class streamWriter{
 	ctor( level =  -1/*_Z_DEFAULT_COMPRESSION*/,header,bufferSize = 0x4000/*16KB*/ ){
-		this = ..zlib.z_stream(bufferSize);  
+		this.pStream = ..zlib.z_stream(bufferSize);   
 		
-		{
+		{ 
 			var ret;
 			
 			if(!header) { ;
@@ -177,51 +206,76 @@ class streamWriter{
 			if( header === "raw" ){
 				//If you would like to use zlib to inflate raw data without either zlib or gzip header, 
 				//you should use inflateInit2 instead of inflate Init, and use -1 to multiply your usual windowBits parameters
-				ret = ..zlib.deflateInit2( this, level, 8/*_Z_DEFLATED*/, -15, 8 ) 
+				ret = ..zlib.deflateInit2( this.pStream, level, 8/*_Z_DEFLATED*/, -15, 8 ) 
 			}
 			elseif( header === "zlib" ){
 				//when you using deflateInit function - which actually is deflateInit2 with windowBits=15 
-				ret = ..zlib.deflateInit( this, level)  
+				ret = ..zlib.deflateInit( this.pStream, level)  
 			}
 			else{
-				ret = ..zlib.deflateInit2( this, level, 8/*_Z_DEFLATED*/,  31/*16 + 15 */, 8 ) 
+				ret = ..zlib.deflateInit2( this.pStream, level, 8/*_Z_DEFLATED*/,  31/*16 + 15 */, 8 ) 
 			}
 		
-			if( ret != 0/*_Z_OK*/) return;
+			if( ret != 0/*_Z_OK*/) return; 
 		}
 	};
+	getStream = function(){
+		return this.pStream.get(); 
+	}; 
 	write = function(zdata){ 
-		var nzdata = #zdata
-		this.next_in  = zdata; 
-		this.avail_in = nzdata; 
+		var nzdata = #zdata;
 		
-		var tab = {}; 
-		var limit = this.total_in + nzdata
+		var stream = this.pStream.get();
+		stream.next_in = zdata;
+		stream.avail_in = nzdata;  
+		this.pStream.set(); 
+		
+		var limit = stream.total_in + nzdata
 		var flush = (!nzdata) ? 4/*_Z_FINISH*/ : 0/*_Z_NO_FLUSH*/ ;
-		while ( (this.total_in < limit) || (!nzdata) ) { 
-			ret = z_deflate( this,flush ); 
-			if( ret == 1/*_Z_STREAM_END*/ ){
-				..table.push( tab, ..raw.tostring( this.buffer,1,this.bufferSize - this.avail_out ) )
-			 	break;
+		
+		//动态指针
+		var ptrRet;
+		
+		while ( (stream.total_in < limit) || (!nzdata) ) { 
+			
+			ret = z_deflate( this.pStream,flush ); 
+			stream = this.pStream.get(); 
+			  
+			var avail_ret = stream.bufferSize - stream.avail_out;
+			if(avail_ret){
+				if(!ptrRet) ptrRet = ..raw.realloc(avail_ret); 
+				ptrRet = ..raw.concat(ptrRet,stream.buffer,avail_ret,stream.bufferSize); 
+			 
+				stream.avail_out = stream.bufferSize;
+				stream.next_out = stream.buffer;  
+				this.pStream.set();
 			}
-			if( ret != 0/*_Z_OK*/ ) {
-				return  ..string.join(tab) 
-				return;
-			} 
-			if( !this.avail_out ){
-				..table.push( tab, ..raw.tostring( this.buffer,1,this.bufferSize ) );
-				this.avail_out = this.bufferSize;
-				this.next_out = this.buffer;  
-			} 
+			
+			if( ret != 0/*_Z_OK*/ ) { 
+				if( ret == 1/*_Z_STREAM_END*/ ) break; 
+				
+				//释放动态指针
+				ptrRet = ..raw.realloc(0,ptrRet);  
+				return null,ret; 
+			}  
 		} 
-		if(#tab) return  ..string.join(tab) 
+	 
+		var strRet;
+		var size = ..raw.sizeof(ptrRet); 
+		if(size) strRet = ..raw.tostring(ptrRet,1,size); 
+		
+		//释放动态指针
+		ptrRet = ..raw.realloc(0,ptrRet);
+
+		return  strRet;
 	}
 	close = function(){
-		if(!this.next_out)return;
+		if(!this.pStream.next_out)return;
 		var data = this.write(null);
-		if( z_deflateEnd(this) != 0/*_Z_OK*/) return; 
-		this.next_out = null ; 
-		this.avail_out = 0;
+		if( z_deflateEnd(this.pStream) != 0/*_Z_OK*/) return; 
+		 
+		this.pStream.next_out = null ; 
+		this.pStream.avail_out = 0;
 		return data;
 	} 
 }   
@@ -250,7 +304,7 @@ class gzFile{
 		
 		var size = 0;
 		if( ..string.indexOf(mode,"r") ){
-			var file = ..io.open(name,"rb");
+			var file = ..io.file(name,"rb");
 			if(!file) return null,"打开文件失败";
 			file.seek("end",-8)
 			var footer = file.read( {int crc32;INT size} );
@@ -333,35 +387,34 @@ namespace gzfile{
  
 /**intellisense()
 zlib = zlib库
-zlib.ZLIB_VERSION = zlib版本
-zlib.z_stream(缓冲区大小) = z_stream 结构体
+zlib.ZLIB_VERSION = zlib 版本
+zlib.z_stream(缓冲区大小) = z_stream 结构体，raw.struct 对象。
 zlib.compressBound(.(源数据大小) = 提供源数据大小，计算压缩需要的缓冲区长度
 zlib.compress(.(源数据,压缩级别) = 源数据：需要压缩的数据(字符串类型)\n压缩级别最快为1,最大压缩为9,默认值为8\n返回压缩后的数据,第二个返回值为压缩前数据长度
-zlib.uncompress(.(源数据) = 源数据为gzip或zlib格式压缩数据
+zlib.uncompress(.(源数据) = 源数据为 gzip 或 zlib 格式压缩数据
 zlib.uncompress(.(源数据,解压后大小) = 源数据为zlib格式压缩数据\n指定解压后大小仅支持zlib格式
 zlib.gzUncompress(.(源数据,压缩头格式) = 解压缩数据\n压缩头参数可以传入"gzip","zlib","raw"三种格式,"raw"表示无压缩头,\n不指定参数时压缩头默认为"gzip"\n如果压缩头指定为"gzip",传入数据不含gzip头时直接返回传入数据,\n新版不建议再用true表示"gzip",false表示"zlib"的兼容用法
 zlib.gzCompress(.(源数据,压缩级别,压缩头格式) = 压缩gzip数据\n参数2指定压缩级别,最快速度为1,最大压缩率为9,默认为8\n压缩头参数可以传入"gzip","zlib","raw"三种格式,"raw"表示不添加压缩头,\n不指定参数时压缩头默认为"gzip"\n新版不建议再用true表示"gzip",false表示"zlib"的兼容用法\n\n返回压缩后的数据,第二个返回值为压缩前数据长度
 zlib.streamReader(.(压缩头格式,缓冲区大小) = 创建解压内存流对象,所有参数可选\n压缩头参数可以传入"gzip","zlib","raw"三种格式,"raw"表示无压缩头,\n不指定参数时压缩头默认为"gzip",\n新版不建议再用true表示"gzip",false表示"zlib"的兼容用法
 zlib.streamWriter(.(压缩级别,压缩头格式,缓冲区大小) = 创建压缩内存流对象,所有参数可选,\n压缩级别,最快速度为1,最大压缩率为9,默认为8\n压缩头参数可以传入"gzip","zlib","raw"三种格式,"raw"表示不添加压缩头,\n不指定参数时压缩头默认为"gzip"\n新版不建议再用true表示"gzip",false表示"zlib"的兼容用法
 zlib.streamReader() = !zlib_streamReader.
-!zlib_streamReader.read(字符串) = 解压并返回字符串
+!zlib_streamReader.read(字符串) = 解压并返回字符串。\n也有可能返回 null 值，直到传入参数为 null 以指定压缩完成\n才返回压缩后的字符串。\n\n失败则第 2 个返回值为错误代码。
 !zlib_streamReader.colse() = 完成压缩,返回剩余解压数据 
-!zlib_streamReader.total_in = 总输入大小\n不可修改该值
-!zlib_streamReader.total_out = 总输出大小\n不可修改该值
-!zlib_streamReader.data_type = 二进制文件为0\n文本文件为1\n不可修改该值
+!zlib_streamReader.getStream() = 返回 z_stream 结构体，不可修改返回对象。
 zlib.streamWriter() = !zlib_streamWriter.
-!zlib_streamWriter.write(字符串) = 压缩并返回压缩后的字符串\n有可能返回空字符串
+!zlib_streamWriter.getStream() = 返回 z_stream 结构体，不可修改返回对象。\n!zlib_streamStruct.
+!zlib_streamWriter.write(字符串) = 压缩并返回压缩后的字符串，\n有可能返回 null 值，直到传入参数为 null 以指定压缩完成\n才返回压缩后的字符串。\n\n失败则第 2 个返回值为错误代码。
 !zlib_streamWriter.colse() = 完成压缩,并返回剩余压缩数据 
-!zlib_streamWriter.total_in = 总输入大小\n不可修改该值
-!zlib_streamWriter.total_out = 总输出大小\n不可修改该值
-!zlib_streamWriter.data_type = 二进制文件为0\n文本文件为1\n不可修改该值 
+!zlib_streamStruct.total_in = 总输入大小，不可修改该值。
+!zlib_streamStruct.total_out = 总输出大小，不可修改该值。
+!zlib_streamStruct.data_type = 数据类型。\n二进制文件为0，文本文件为 1。\n不可修改该值
 zlib.gzFile("/路径->gz","wb") = 创建只写gzip压缩文件
 zlib.gzFile("/路径->gz","ab") = 追加到gzip压缩文件
 zlib.gzFile("/路径->gz","wb9") = 创建只写gzip压缩文件\n可选用一个数值指定压缩级别,最快速度为1,最大压缩率为9,默认为8
 zlib.gzFile("/路径->gz","rb") = 打开只读gzip压缩文件
 zlib.gzFile() = !gzFile.
 !gzFile.read(0) = 检测是否到文件尾
-!gzFile.read(-1) = 读取到文件尾,返回所有解压数据\n也可指定要读取的数据长度
+!gzFile.read(-1) = 读取到文件尾，成功返回所有解压数据。\n也可指定要读取的数据长度
 !gzFile.read({int data=1234}) = 参数可以是任意结构体\n解压并填充该结构体
 !gzFile.write(字符串) = 压缩并写入到压缩文件
 !gzFile.size() = 返回未压缩数据32位长度
@@ -402,3 +455,41 @@ _Z_DEFLATED=@8/*_Z_DEFLATED*/
 _Z_NULL=@0/*_Z_NULL*/  
 _Z_MAX_WBITS=@15/*_Z_MAX_WBITS*/
 end intellisense**/
+
+//@ENDDOCUMENT@//
+
+/*
+http://www.winimage.com/zLibDll/minizip.html 
+https://github.com/madler/zlib/tree/master/contrib/minizip
+
+unzip.c 删除  #define NOUNCRYPT 以支持密码
+  
+unzip.c 添加
+
+#include "iowin32.h"
+extern unzFile ZEXPORT unzOpen64W(const void *path) {
+	static  zlib_filefunc64_def ffunc;
+	fill_win32_filefunc64W(&ffunc);
+
+    return unzOpen2_64(path,&ffunc);
+}
+ 
+zip.c 添加
+
+#include "iowin32.h"
+extern zipFile ZEXPORT zipOpen64W(const void* pathname, int append) {
+	static zlib_filefunc64_def ffunc;
+	fill_win32_filefunc64W(&ffunc); 
+
+    return zipOpen2_64(pathname,append,NULL,&ffunc);
+}
+ 
+zlibvc.def 添加
+
+
+; aardio added:
+		zipOpen64W						        @200
+		unzOpen64W						        @201 
+
+注意 def 文件的版本号改为 2 位
+*/

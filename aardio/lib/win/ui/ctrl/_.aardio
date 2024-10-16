@@ -1,8 +1,9 @@
-import com.picture;
 import win.ui.ctrl.metaProperty;
+import win.ui.ctrl.custom;
 import win.ui.ctrl.static;
 import win.ui.ctrl.button; 
-import win.ui.ctrl.custom;
+import com.picture;
+
 namespace win.ui.ctrl;  
 
 //发布时将从下面排除未使用的控件库

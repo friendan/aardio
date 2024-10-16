@@ -4,7 +4,7 @@ namespace string;
 class stream{
 	ctor( path ){
 		if(  ..io.exist(path) ){
-			this.handle = ..io.open(path,"rb");
+			this.handle = ..io.file(path,"rb");
 			this.isfile = true;
 		}
 		else {

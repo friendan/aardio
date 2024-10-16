@@ -1,8 +1,44 @@
 ﻿import dotNet;
-dotNet.import("System")
+dotNet.import("System");
+
+dotNet.import({
+	"System.Type",
+	"System.String",
+	"System.Int16","System.Int32","System.Int64",
+	"System.UInt16","System.UInt32","System.UInt64",
+	"System.Single","System.Double","System.Decimal",
+	"System.Boolean","System.Byte","System.SByte","System.Char", 
+	"System.Array","System.Guid","System.DBNull",
+	"System.DateTime","System.DateTimeOffset","System.TimeSpan",
+	"System.Version",
+},"mscorlib")
 
 /**intellisense()
-System = .NET System 名字空间
+System = .NET 名字空间 System。\n导入 .NET 库时会自动导入此名字空间。\n默认 System.dll, mscorlib.dll 等已加载程序集下的名字空间或类可自动导入。\n也可以显式从指定程序集导入。\naardio 会首先在导入 .NET 名字空间的程序集中搜索类型。\n如果找不到会搜索其他已加载程序集。
 System.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+System.Array = .NET 数组类 System.Array 。\n在 System 或 System.Array 库导入
+System.Type = .NET 类 System.Type 。\n在 System 或 System.Type 库导入
+System.DateTime = .NET 结构体 System.DateTime 。\n在 System 或 System.DateTime 库导入
+System.TimeSpan = .NET 结构体 System.TimeSpan 。\n在 System 或 System.TimeSpan 库导入
+System.DateTimeOffset = .NET 结构体 System.DateTimeOffset 。\n在 System 库导入
+System.TimeSpan = .NET 结构体 System.TimeSpan 。\n在 System 库导入
+System.Guid = .NET 结构体 System.Guid 。\n在 System 库导入
 System.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
+System.String = .NET 基础数据类型，在 System 库导入。
+System.Int16 = .NET 基础数据类型，在 System 库导入。
+System.Int32 = .NET 基础数据类型，在 System 库导入。
+System.Int64 = .NET 基础数Int64据类型，在 System 库导入。
+System.UInt16 = .NET 基础数据类型，在 System 库导入。
+System.UInt32 = .NET 基础数据类型，在 System 库导入。
+System.UInt64 = .NET 基础数据类型，在 System 库导入。
+System.Single = .NET 基础数据类型，在 System 库导入。
+System.Double = .NET 基础数据类型，在 System 库导入。
+System.Decimal = .NET 基础数据类型，在 System 库导入。
+System.Boolean = .NET 基础数据类型，在 System 库导入。
+System.Byte = .NET 基础数据类型，在 System 库导入。
+System.SByte = .NET 基础数据类型，在 System 库导入。
+System.Char = .NET 基础数据类型，在 System 库导入。
+System.Boolean = .NET 基础数据类型，在 System 库导入。
+System.DBNull = 用于 .NET 在数据库中表示不存在的值，在 System 库导入。
+System.Version = .NET 表示版本号的类，在 System 库导入
 end intellisense**/

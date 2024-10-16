@@ -99,14 +99,14 @@ namespace version{
 	
 	var queryStringInfo = function(verInfo,translation,key){
 		var ok,pBuf,len = VerQueryValue(verInfo
-			, ..string.toUnicode( ..string.format("\StringFileInfo\%04X%04X\%s",translation.language,translation.codePage,key) )
+			, ..string.toUtf16( ..string.format("\StringFileInfo\%04X%04X\%s",translation.language,translation.codePage,key) )
 			, ,0
 			);  
-		if(ok && pBuf && len){ return ..string.str( ..string.fromUnicode(pBuf,,len) ); }	
+		if(ok && pBuf && len){ return ..string.str( ..string.fromUtf16(pBuf,,len) ); }	
 	} 
 	
 	getInfo = function(path){ 
-		path = ..string.toUnicode(path);
+		path = ..string.toUtf16(path);
 		var verSize=GetFileVersionInfoSize(path,0); 
 		var verInfo = ..raw.buffer(verSize);
 		var re = versionDll.GetFileVersionInfoW(path,0,verSize,verInfo);

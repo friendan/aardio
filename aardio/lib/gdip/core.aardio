@@ -83,6 +83,30 @@ namespace gdip{
 		float y;
 		float width;
 		float height;
+		@_meta;
+	}
+	
+	::RECTF._meta = {
+		_get = { 
+			ltrb = function(x,y,cx,cy){
+				if(x!==null){
+					owner.x = x;
+					owner.y = y;
+					owner.width = cx;
+					owner.height = cy;
+				} 
+				return owner.x,owner.y,owner.x + owner.width,owner.y + owner.height;
+			};
+			xywh = function(l,t,r,b){
+				if(l!==null){
+					owner.x = l;
+					owner.y = t;
+					owner.width = r - l;
+					owner.height = b - t;
+				}
+				return owner.x,owner.y,owner.width,owner.height; 
+			};
+		}
 	}
 	
 	class ::POINTF{
@@ -94,27 +118,7 @@ namespace gdip{
 		float y ;
 	}
 	self.POINTF = POINTF;
-	self.RECTF = RECTF;
-	
-	/**intellisense(::)
-	::RECTF(  = 浮点格式区块
-	::RECTF(.(x,y,width,height) = 浮点格式区块
-	::POINTF( = 浮点格式坐标
-	::POINTF(.(x,y) = 浮点格式坐标
-	::RECTF() = !rectf.
-	::POINTF() = !point.
-	::RECTF() = !rectf.
-	::POINTF() = !point.
-	::Gdiplus = !dllModule.
-	end intellisense**/
-	
-	/**intellisense(!rectf)
-	x = x坐标
-	y = y坐标
-	width = 宽
-	height = 高
-	end intellisense**/
-	
+	self.RECTF = RECTF;	
 }
  
 /**intellisense(gdip)
@@ -134,4 +138,29 @@ end intellisense**/
 
 /**intellisense() 
 ?::RECTF = !rectf.
+end intellisense**/
+
+/**intellisense(::)
+::RECTF(  = 浮点格式区块
+::RECTF(.(x,y,width,height) = 浮点格式区块
+::POINTF( = 浮点格式坐标
+::POINTF(.(x,y) = 浮点格式坐标
+::RECTF() = !rectf.
+::POINTF() = !point.
+::RECTF() = !rectf.
+::POINTF() = !point.
+::Gdiplus = !dllModule.
+end intellisense**/
+
+/**intellisense(!rectf)
+x = x坐标
+y = y坐标
+width = 宽
+height = 高
+ltrb( = 用于将 x,y,width,height 转换为 left,top,right.bottom 并返回
+ltrb(.(x,y,width,height) = 使用传入参数修改左、上坐标,以及宽度、高度，\n转换并返回 left,top,right,bottom 等 4 个值
+ltrb(.() = 转换结构体的位置大小并返回为 left,top,right,bottom 等 4 个值
+xywh( = 用于 将left,top,right.bottom 转换为 x,y,width,height 并返回
+xywh(.(left,top,right,bottom) = 使用参数指定的左、上、右、下位置修改结构体存储的位置。\n返回结构体的左上角坐标 x,y 以及宽度 width,高度 height 等4个值
+xywh(.() = 返回结构体的左上角坐标 x,y 以及宽度 width,高度 height 等4个值
 end intellisense**/

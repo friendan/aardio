@@ -9,11 +9,11 @@ var wb = web.form( winform,5/*_UIFLAG_DIALOG*/,,,true);
 wb.noScriptErr = true;
 
 import process;
-import process.chm;
+import ide;
 import fsys.dlg;
 wb.external = {
 	chmTemplate = function(){
-		process.chm("~\help\AARDIO.CHM","/the language/template_syntax.html");
+		ide.openDocument("doc://language-reference/templating/syntax.md")
 	};
 	openUrl = function(url){
 		process.openUrl(url);

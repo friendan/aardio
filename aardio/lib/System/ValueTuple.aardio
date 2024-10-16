@@ -22,7 +22,7 @@ self[["each"]] = function(t){
 			i = 1;
 		}
 		
-		r = cur["Item"+i];
+		r = ..table.getAttr(cur,"Item"+i);
 		if(r!==null) return i2,r;
 	}
 }

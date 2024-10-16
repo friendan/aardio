@@ -11,8 +11,8 @@ var concat = ..string.concat;
 var join = ..string.join;
 var format = ..string.format;
 var repeat = ..string.repeat;
-var fromUnicode = ..string.fromUnicode;
-var toUnicode = ..string.toUnicode;
+var fromUtf16 = ..string.fromUtf16;
+var toUtf16 = ..string.toUtf16;
 
 var scanComment = function(str,pos){ 
 	var endPos = find(str,"*/",pos+2);
@@ -188,12 +188,10 @@ var consts = {
 };  
 
 var scanConstant = function(str,pos,isKey,rootNode){ 
-	if(str[pos]==','#)
-		return null,pos;
-	  
+ 
 	var n,l = tonumber(str,,pos,'.'#);
     if(n!==null){
-        if(l>=#str || match(str,"^[\s\,\;\}\]]",pos+l) ){
+        if(l>=#str || indexAny(',;}]\t \n\r\0',str[pos+l] ) ){
         	if( (l>14) && (n>99999999999999) && (..math.floor(n) === n) ) {
         		n = ..math.size64( slice(str,pos,pos + l) );
         	}
@@ -239,7 +237,7 @@ var encode = function(v,prettyPrint,unicodeEscaped,objreferences){
     	    return v ?  ('"'+ v + '"') : "null";
     	}
     	case "number"{
-    		return  tostring(v,,'.'#);
+    		return tostring(v,,'.'#);
     	}
     	case "table" {
     		if( ( v[["year"]]!==null)  &&  ..time.istime(v) ) return tostring(v.utc(true),`"%Y-%m-%dT%H:%M:%SZ"`);
@@ -391,13 +389,13 @@ tryParse = function(s,unescape=true,inputCodepage){
 	}
 	elseif( #s%2 == 0 ){ 
 		if ( a == 0xFF  && b == 0xFE ){
-			s = ..string.fromUnicode( ..string.right(s,-3),65001 );
+			s = ..string.fromUtf16( ..string.right(s,-3),65001 );
 		}
 		elseif ( a == 0xFF  && b == 0xFE ){
 			s = ..string.fromto( ..string.right(s,-3),1201,65001 );
 		}
 		elseif( b == 0 && s[4] == 0 ) {
-			s = ..string.fromUnicode(s,65001);
+			s = ..string.fromUtf16(s,65001);
 		}
 		elseif( a == 0 && s[3] == 0 ) {
 			s = ..string.fromto( s,1201,65001 );
@@ -542,9 +540,8 @@ JSON 字符串可省略首尾引号，此时不支持JSON转义符，遇到回�
 字符串作为对象键名如果省略引号时不能包含空白字符、换行或键值分隔符。 
 
 四、注释
-1、支持 // 或 # 引导的单行注释
-2、支持包含于 /*......*/ 内的多行注释（注意这里按js规则不匹配星号数目）。
-支持 JS/aardio 语法中的单行注释（），多行注释（/*......*/ ）。
+1、支持 `//` 或 `#` 引导的单行注释
+2、支持包含于 `/*......*/` 内的块注释（注意这里按js规则不匹配首尾星号数目）。 
 
 五、数值
 数值支持16进制

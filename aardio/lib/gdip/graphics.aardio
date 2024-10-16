@@ -179,6 +179,10 @@ namespace graphics {
     		}
     		
 			return owner;
+		}
+		setClipRegion = function(region,combineMd){
+			gdip.assert2( ::Gdiplus.GdipSetClipRegion(owner[["pGraphics"]],region,combineMd : 0/*_GdipCombineModeReplace*/ ) );
+			return owner;
 		};
 		setClipRect = function(x, y,width,height,combineMd){
 			gdip.assert2( gdip.SetClipRect(owner[["pGraphics"]],x, y,width,height,combineMd : 0/*_GdipCombineModeReplace*/ ) );
@@ -219,6 +223,11 @@ namespace graphics {
 			gdip.assert2( ::Gdiplus.GdipFillPolygon(owner[["pGraphics"]], brush,{struct v[]=points},#points,fillMode) ); 
 			return owner;
 		}; 
+		drawPolygon  = function( pen,...){
+			var points = #(...) ? ... : {...}
+			gdip.assert2( ::Gdiplus.GdipDrawPolygon(owner[["pGraphics"]], pen,{struct v[]=points},#points) ); 
+			return owner;
+		};
 		drawRectangle = function( pen,x1,y1,width,height){
 			gdip.assert2( gdip.DrawRectangle(owner[["pGraphics"]], pen,x1,y1,width,height) ); 
 			return owner;
@@ -691,7 +700,8 @@ gdip.graphics.fromImage() = !gdipgraphics.
 !gdipgraphics.resetTransform() = 重置所有画布变换\n用于恢复scale,rotate,translate等画布变换效果,\n!gdipgraphics.
 !gdipgraphics.transform() = !gdipgraphics.
 !gdipgraphics.transform(.(变换模式,图像,RECT区块,x,y) = 变换画布\n变换以后必须假定画布左上角坐标为0,画布大小为图像大小,\n变换模式为字符串参数,支持 point,stretch,center,scale,含义与 plus 控件相同\n模式为"expand"时转换为"stretch",传入其他模式忽略并返回null，\n否则执行变换并返回画布对像自身,\n\n如果指定了point模式,必须同时指定x,y参数,用法与plus控件相同。\n可用 ::RECT 结构体指定 RECT 区块参数
-!gdipgraphics.setClipRect(.(左,上,宽,高,选项) = 设置一块剪辑区域，用于限制绘图范围\n选项使用_GdipCombineMode__前缀的常量指定
+!gdipgraphics.setClipRegion(.(region,combineMode) = 设置一块剪辑区域，用于限制绘图范围。\n参数 @region 指定 gdip.region 区域对象。\n参数 @combineMode 可指定为 _GdipCombineMode 前缀的常量
+!gdipgraphics.setClipRect(.(左,上,宽,高,选项) = 设置一块剪辑区域，用于限制绘图范围\n选项使用 _GdipCombineMode__ 前缀的常量指定
 !gdipgraphics.drawImage(.(图像,左,上,显示属性) = 绘图\n可使使用参数@2,参数@3指定输出坐标\n可选使用参数@4指定gdip.imageAttributes对象设置显示属性,\n注意此函数忽略原图DPI
 !gdipgraphics.drawImageWithDpi(.(图像,左,上) = 绘图\n可使使用参数@2,参数@3指定输出坐标\n注意该函数会受PNG,JPG的DPI设置影响输出大小
 !gdipgraphics.drawImageRect(.(图像,左,上,宽,高,显示属性) = 画图\n参数@2,@3,@4,@5指定目标区块,\n可选使用参数@6指定gdip.imageAttributes对象设置显示属性
@@ -713,8 +723,10 @@ gdip.graphics.fromImage() = !gdipgraphics.
 !gdipgraphics.clear(0xFFFFFFFF__) = 用指定的颜色清空画板 
 !gdipgraphics.fillPath(.(brush,path) = 填充路径  \nbrush为画刷对象,path为gdip.path路径对象
 !gdipgraphics.fillPolygon( = 画多边形
-!gdipgraphics.fillPolygon(.(brush,fillMode,->->->) = 画多边形\nbrush为画刷对象,fillMode使用_gdipFillMode前缀的常量指定,可省略\n可使用一个数组，或多个参数指定多个绘图时经过的::POINTF坐标对象
+!gdipgraphics.fillPolygon(.(brush,fillMode,->->->) = 填充多边形\nbrush 为画刷对象,fillMode使用_gdipFillMode前缀的常量指定,可省略\n可使用一个数组，或多个参数指定多个绘图时经过的 ::POINTF 坐标对象
 !gdipgraphics.fillPolygon() = !gdipgraphics.
+!gdipgraphics.drawPolygon(.(pen,->->->) = 绘制多边形\npen 为画刷对象,\n可使用一个数组，或多个参数指定多个绘图时经过的 ::POINTF 坐标对象
+!gdipgraphics.drawPolygon() = !gdipgraphics.
 !gdipgraphics.drawPath( = 画路径 
 !gdipgraphics.drawPath(.(pen,path) = 画路径\n参数 @pen 为 gdip.pen 对象，\n参数 @path 为 gdip.path 对象
 !gdipgraphics.measureString( = 计算输出文本区块

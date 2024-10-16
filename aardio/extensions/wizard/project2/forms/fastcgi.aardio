@@ -53,7 +53,10 @@ var wb = web.form( win.form(parent=winform.custom),5/*_UIFLAG_DIALOG*/,,,true);
 wb.noScriptErr = true;
 
 wb.external={
-    showWizard = lambda() winform.loadForm("~\codes\范例程序\8) Web 应用\6) FastCGI\wizard.aardio")
+    showWizard = function() {
+    	import ide;
+    	ide.openDocument("doc://guide/web-server.html")
+    }
 }
 
 wb.html = /** 
@@ -65,7 +68,7 @@ wb.html = /**
     <title>FastCGI安装配置说明</title>
 </head>
 <body style="white-space:pre;font-size:12pt;word-wrap: break-word;word-break: normal;">
-<a href="javascript:void(0)" onclick="external.showWizard()">点这里打开截图演示工具</a><br>
+<a href="javascript:void(0)" onclick="external.showWizard()">点这里查看文档</a><br>
 <pre>此程序应先生成 EXE 文件、并在 Web 服务器上注册为 FastCGI 模块才能使用，
 IIS 服务器可通过在代码中 import fastcgi.iisInstall 自动注册 FastCGI 模块。
 
@@ -161,6 +164,12 @@ tbs.beforeShowCloseButton = function(strip,rcStrip,rcCloseButton){
 
 winform.getTemplatePath = function(){
 	return io.fullpath("/template/fastcgi/") 
+}
+
+winform.onProjectCreated = function(projectDir,pathMain){
+    if(tbs.selForm.onProjectCreated){
+    	return tbs.selForm.onProjectCreated(projectDir,pathMain);
+    } 	
 }
 
 winform.show();

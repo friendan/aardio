@@ -156,4 +156,7 @@ raw.execute("windowsdefender://ExploitProtection");    # Exploit Protection
 raw.execute("windowsdefender://exclusions");           # exclusions
 raw.execute("windowsdefender://fullscan");             # Select fullscan
 raw.execute("windowsdefender://quickscan");            # Start quickscan 
+
+或：
+com.shell.findActivateApp(,"Microsoft.+\!SecHealthUI")
 end details**/

@@ -6,7 +6,9 @@ var encoding = {
 	["UNICODE"] = 1200;
 	["UTF-16LE"] = 1200; 
 	["UTF-16BE"] = 1201;
-	["utf-8"] = 65001;
+	["UTF-8-NOBOM"] = 65001;
+	["UTF-16LE-NOBOM"] = 1200; 
+	["UTF-16BE-NOBOM"] = 1201;
 	["unicode"] = 1200;
 	["unicodeFFFE"] = 1201;
 }
@@ -26,7 +28,7 @@ load = function(p,inputCp,cp=65001){
 	}
 	
 	var s;
-	var f,err = ..io.open(p,"rb");
+	var f,err = ..io.file(p,"rb");
 	if(f){  
 		var b = f.read(2) //BOM 
 		if( !b ){
@@ -87,8 +89,13 @@ load = function(p,inputCp,cp=65001){
 save = function(p,s,outputCp,cp=65001){ 
 	var f;
 	var b;
+	var nobom;
 	if( type(outputCp) == type.string ){
-		outputCp = ..string.upper(outputCp)
+		outputCp = ..string.upper(outputCp) 
+		if( ..string.endWith(outputCp,"-NOBOM") ){
+			nobom = true;
+			outputCp = ..string.left(outputCp,-7)
+		}
 		outputCp = encoding[outputCp] || ..string.encoding.getCodepage(outputCp);
 		if(!outputCp){
 			error('错误的编码,可选编码格式如下\n"UNICODE"\n"UTF-8"\n"UTF-16LE"\n"UTF-16BE"',2)
@@ -100,21 +107,21 @@ save = function(p,s,outputCp,cp=65001){
 		 if(!cp) cp = 65001;
 	}
 	
-	f,err = ..io.open(p,"w+b");
+	f,err = ..io.file(p,"w+b");
 	if(!f){
 		return null,err;
 	}
 	
 	if( outputCp == 65001 ) {
-		f.write('\xEF\xBB\xBF') 
+		if(!nobom)f.write('\xEF\xBB\xBF') 
 		s = ..string.fromto(s,cp,outputCp);
 	} 
 	elseif( outputCp == 1200 ) {
-		f.write('\xFF\xFE') 
-		s = ..string.toUnicode(s,cp);
+		if(!nobom)f.write('\xFF\xFE') 
+		s = ..string.toUtf16(s,cp);
 	}
 	elseif( outputCp == 1201 ) {
-		f.write('\xFE\xFF') 
+		if(!nobom)f.write('\xFE\xFF') 
 		s = ..string.fromto(s,cp,outputCp);
 	} 
 	else {
@@ -135,7 +142,8 @@ load(__/*文件路径*/,"utf-8") = 读取UTF-8编码文件\n并自动转换为UT
 load(__/*文件路径*/,"unicode") =  读取UNICODE（小尾序）编码文件\n并自动转换为UTF8编码,\n返回文件内容,以及读取内码
 load(__/*文件路径*/,"unicodeFFFE") =  读取UNICODE（大尾序）编码文件\n并自动转换为UTF8编码,返回文件内容,以及读取内码,\n\n注意 unicodeFFFE 的 BOM 是 '\xFE\xFF',反过来的！
 save(__/*文件路径*/,str,0) = 将参数@2指定的字符串以ANSI编码存为文件,参数@3指定输出代码页\n可选以参数@4指定输入代码页,默认为65001
-save(__/*文件路径*/,str,"utf-8") = 将参数@2指定的字符串存为UTF-8编码文件,并添加BOM编码标识\n可选以参数@4指定输入代码页,默认为65001
-save(__/*文件路径*/,str,"unicode") = 将参数@2指定的字符串存为UNICODE（小尾序）编码文件,并添加BOM编码标识\n可选以参数@4指定输入代码页,默认为65001
-save(__/*文件路径*/,str,"unicodeFFFE") = 将参数@2指定的字符串存为UNICODE（大尾序）编码文件,并添加BOM编码标识,\n注意 unicodeFFFE 的 BOM 是 '\xFE\xFF',反过来的！\n可选以参数@4指定输入代码页,默认为65001
+save(__/*文件路径*/,str,"utf-8") = 将参数@2指定的字符串存为UTF-8编码文件,并添加BOM编码标识\n可选以参数@4指定输入代码页,默认为65001。\n如果参数 @5 为 true 则禁用 BOM 头，默认为 false。
+save(__/*文件路径*/,str,"utf-8-nobom") = 将参数@2指定的字符串存为UTF-8编码文件,不添加BOM编码标识\n可选以参数@4指定输入代码页,默认为65001。\n如果参数 @5 为 true 则禁用 BOM 头，默认为 false。
+save(__/*文件路径*/,str,"unicode") = 将参数@2指定的字符串存为UNICODE（小尾序）编码文件,并添加BOM编码标识\n可选以参数@4指定输入代码页,默认为65001。\n如果参数 @5 为 true 则禁用 BOM 头，默认为 false。
+save(__/*文件路径*/,str,"unicodeFFFE") = 将参数@2指定的字符串存为UNICODE（大尾序）编码文件,并添加BOM编码标识,\n注意 unicodeFFFE 的 BOM 是 '\xFE\xFF',反过来的！\n可选以参数@4指定输入代码页,默认为65001。\n如果参数 @5 为 true 则禁用 BOM 头，默认为 false。
 end intellisense**/

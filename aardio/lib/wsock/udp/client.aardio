@@ -172,7 +172,15 @@ class client {
 }
 
 namespace client{
-    
+	
+	getLocalIp = function(host){
+		var c = ..wsock.udp.client();
+		c.connect(host || "8.8.8.8"); 
+		
+		var ip = c.getLocalIp();
+		if( ip != "0.0.0.0") return ip; 
+	}
+	 
     testBindPort = function(port,ip){
     	var s = ..wsock.udp.client();
 		var f = s.bind(ip,port ) 
@@ -181,27 +189,28 @@ namespace client{
     }  
 }
 
-
 /**intellisense()
-wsock.udp.client = udp客户端支持库
-wsock.udp.client() = 创建udp客户端\n!udp_client.
+wsock.udp.client = UDP 客户端
+wsock.udp.client() = 创建 UDP 客户端\n!udp_client.
+wsock.udp.client.getLocalIp() = 获取联网的网卡 IP，未连接网络时返回 null。\n此函数不会发送数据也不需要建立真正的连接。
 wsock.udp.client.testBindPort(.(port,ip) = 检查参数指定的端口号是否空闲\n如果不写IP，则默认设为"0.0.0.0"
-!udp_client.bind(.(IP,端口) = 绑定IP端口\n如果不指定IP则默认获取内网IP作为参数
+!udp_client.bind( = 绑定 IP 端口。
+!udp_client.bind(.(IP,端口) = 绑定 IP 端口。\n如果不指定 IP 则默认获取内网 IP 作为参数。\n\n成功返回 true，\n失败返回 null,错误信息,错误代码。\n\n同一套接字重复绑定会返回 10022（_WSAEINVAL） 错误。\n重新绑定应当重新创建套接字。\n这就好比一张车票只能上一次车。\n不能在已经上车以后再要求车站修改车票上的上车地。
 !udp_client.setBroadcast(true) = 允许广播
-!udp_client.getRemoteAddress() = 最后最后发送或接收的sockaddr_in结构体\n!sockaddr_in.
-!udp_client.getRemoteIp() = 返回最后发送或接收的IP,端口
-!udp_client.getLocalIp() = 返回本机IP,端口
-!udp_client.sendto(.(发送数据,IP或域名,端口号) = 发送数据,IP端口号为可选参数,\n成功返回true
-!udp_client.recvfrom(.(缓冲区长度,IP或域名,端口号) = 接收并返回数据,IP端口号为可选参
-!udp_client.connect(.(IP或域名,端口号) = 连接IP以及端口号\n省略参数则使用lastAddr
-!udp_client.recv(.(最大接收长度) = 调用connect以后可以使用此函数接收数据包\n如果参数不指定长度，则使用bufferSize指定的长度\n成功返回字符串,\n失败返回null,错误代码
-!udp_client.send(.(数据,长度) = 调用connect以后可以使用此函数接收数据包发送数据包
-!udp_client.close() = 关闭udp客户端\n如果未显式调用此函数\n在对象析构时,将会自动调用.
+!udp_client.getRemoteAddress() = 最后最后发送或接收的 sockaddr_in 结构体\n!sockaddr_in.
+!udp_client.getRemoteIp() = 返回最后发送或接收的 IP ,端口
+!udp_client.getLocalIp() = 返回本机 IP，端口。
+!udp_client.sendto(.(发送数据,IP或域名,端口号) = 发送数据，IP 端口号为可选参数,\n成功返回 true
+!udp_client.recvfrom(.(缓冲区长度,IP或域名,端口号) = 接收并返回数据，IP 端口号为可选参数
+!udp_client.connect(.(IP或域名,端口号) = 连接指定的目标 IP 以及端口号。\n省略参数则使用此对象上次使用的目标地址。
+!udp_client.recv(.(最大接收长度) = 调用 connect 以后可以使用此函数接收数据包。\n如果参数不指定长度，则使用 bufferSize 指定的长度\n成功返回字符串,\n失败返回null,错误代码
+!udp_client.send(.(数据,长度) = 调用 connect 以后可以使用此函数接收数据包发送数据包
+!udp_client.close() = 关闭 UDP 客户端。\n如果未显式调用此函数，在对象析构时,将会自动调用。\n\n已关闭的套接字不能再使用。\n就好比用过的车票不能重复用，什么地方都有规则和限制。
 !udp_client.setTimeouts(.(发送超时,接收超时) = 设置超时,以亳秒为单位(1秒为1000毫秒)
-!udp_client.setopt(_SO__) = 设置选项\n参数@1使用_SO_前缀的常量指定选项,参数@2使用结构体、数值、布尔值都可以\n可选用参数@3指定设置层次，默认为SOL_SOCKET\n成功返回true
-!udp_client.getopt(_SO__) = 获取选项\n参数@1使用_SO_前缀的常量指定选项,参数@2使用结构体指定值\n如果不指定参数@2,则获取一个32位整型数值,\n可选用参数@3指定设置层次，默认为SOL_SOCKET\n成功返回读取的结构体
-!udp_client.joinGroup(.(广播组IP地址,网络接口IP) = 加入广播组\n参数@2可省略
-!udp_client.leaveGroup(.(广播组IP地址,网络接口IP) = 退出广播组\n参数@2可省略
+!udp_client.setopt(_SO__) = 设置选项\n参数 @1 使用_SO_前缀的常量指定选项,参数 @2 使用结构体、数值、布尔值都可以\n可选用参数@3指定设置层次，默认为SOL_SOCKET\n成功返回true
+!udp_client.getopt(_SO__) = 获取选项\n参数 @1 使用_SO_前缀的常量指定选项,参数 @2 使用结构体指定值\n如果不指定参数 @2 ,则获取一个32位整型数值,\n可选用参数@3指定设置层次，默认为SOL_SOCKET\n成功返回读取的结构体
+!udp_client.joinGroup(.(广播组IP地址,网络接口IP) = 加入广播组\n参数 @2 可省略
+!udp_client.leaveGroup(.(广播组IP地址,网络接口IP) = 退出广播组\n参数 @2 可省略
 !udp_client.setMulticastLoopback(true) = 是否启用多播回送
 !udp_client.setMulticastInterface(__) = 设置组播网卡IP，不指定参数自动取网卡IP
 !udp_client.setMulticastTtl(__) = 设置组播报文的数据包的TTL

@@ -20,7 +20,7 @@ char = function(hwnd,chr){
 }
 
 send = function(hwnd,str){
-	str = ..string.toUnicode(str);
+	str = ..string.toUtf16(str);
 	for(i=1;#str/2;1){
 		char(hwnd,str[i] );
 	}  

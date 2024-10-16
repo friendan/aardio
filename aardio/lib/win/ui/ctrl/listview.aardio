@@ -75,7 +75,7 @@ namespace listview{
 	lvItemCheckMask = function(item){
 		if( (item.mask & 1/*_LVIF_TEXT*/) && (item.text) ) {
 			if( item.text != _LPSTR_TEXTCALLBACK) 
-				item.text = ..string.fromUnicode(item.text,,-1);
+				item.text = ..string.fromUtf16(item.text,,-1);
 		}
 		else 
 			item.text = null;
@@ -107,7 +107,7 @@ namespace listview{
 			var tt = type( item.text );
 			if( tt!="pointer" ) {
 				if(  tt != "buffer" )
-					item.text = ..string.toUnicode( (tostring(item.text)) );
+					item.text = ..string.toUtf16( (tostring(item.text)) );
 				
 				item.cchTextMax = #item.text/2;
 			}
@@ -139,7 +139,7 @@ namespace listview{
 		if( item.text === null ) return item;
 		var tt = type( item.text );
 		if( ( tt!="pointer" )  && ( tt != "buffer" ) ) {
-			item.text = ..string.toUnicode( tostring(item.text) );
+			item.text = ..string.toUtf16( tostring(item.text) );
 		}
 		return item;
 	};
@@ -148,7 +148,7 @@ namespace listview{
 	lvColumnUpdateMask = function(col){ 
 		var tt = type( col.text );
 		if( tt == "string" || tt == "buffer" ){
-			if( tt == "string" ) col.text = ..string.toUnicode(tostring(col.text));
+			if( tt == "string" ) col.text = ..string.toUtf16(tostring(col.text));
 			col.cchTextMax = #col.text/2;
 		}
 		if( col.cchTextMax ){
@@ -468,6 +468,10 @@ namespace listview{
 		delColumn = function (idx) {
 			return ::SendMessageInt(owner.hwnd, 0x101C/*_LVM_DELETECOLUMN*/, idx - 1, 0);
 		};
+		setColumnWidth = function(w,i,...){
+			owner.setColumn( {cx = w} ,i ); 
+			if(...) return owner.setColumnWidth( w,... ); 
+		};
 		setColumnText = function (idx, text) {
 			return owner.setColumn( {text = tostring(text)} ,idx ); 
 		};
@@ -475,7 +479,7 @@ namespace listview{
 			var col = owner.getColumn({
 				cchTextMax = max : 100;
 			},idx);
-			if( col[["text"]] ) return ..string.fromUnicode( col[["text"]],,-1 );
+			if( col[["text"]] ) return ..string.fromUtf16( col[["text"]],,-1 );
 		};
 		getColumnImage = function (idx) {
     		var col = owner.getColumn({mask=1/*_LVCF_FMT*/ | 0x10/*_LVCF_IMAGE*/},idx) 
@@ -517,7 +521,6 @@ namespace listview{
 			var c = owner.columnCount; 
 			if(!ind){ ind = owner.filledParentIndex : c }
 		
-			//::SendMessageInt(owner.hwnd,0x101E/*_LVM_SETCOLUMNWIDTH*/,owner.filledParentIndex-1,width:-2/*_LVSCW_AUTOSIZE_USEHEADER*/);
 			var rc = owner.clientRect;
 			var width = rc.right - rc.left;
 			
@@ -628,14 +631,14 @@ namespace listview{
 					item.iSubItem = i-1;
 					var len = ::SendMessageByStruct(owner.hwnd, 0x1073/*_LVM_GETITEMTEXT*/,row-1, item); 
 					if( len && ( item.text != _LPSTR_TEXTCALLBACK)  ){
-						ret[i] = ..string.fromUnicode(item.text,,len); 
+						ret[i] = ..string.fromUtf16(item.text,,len); 
 					} 
 				}
 				return ret;	
 			}
 			
 			var len = ::SendMessageByStruct(owner.hwnd, 0x1073/*_LVM_GETITEMTEXT*/, row-1, item); 
-			if( len && ( item.text != _LPSTR_TEXTCALLBACK)  ) return ..string.fromUnicode( item.text,,len);
+			if( len && ( item.text != _LPSTR_TEXTCALLBACK)  ) return ..string.fromUtf16( item.text,,len);
 			return "";
 		};
 		replaceItems = function(t){
@@ -645,7 +648,7 @@ namespace listview{
 			item.stateMask = 0xF000/*_LVIS_STATEIMAGEMASK*/; 
 			item.mask = 1/*_LVIF_TEXT*/;
 			
-			toUnicode = ..string.toUnicode;
+			toUtf16 = ..string.toUtf16;
 			var hwnd = owner.hwnd;
 			
 			for(r=1;count ){
@@ -654,14 +657,14 @@ namespace listview{
 				item.mask = 1/*_LVIF_TEXT*/;
 				for (c = 1; #row) {
 					item.iSubItem = c - 1;
-					item.text = toUnicode( tostring(row[c]) );
+					item.text = toUtf16( tostring(row[c]) );
 					::SendMessageByStruct( hwnd, 0x1074/*_LVM_SETITEMTEXT*/, r-1, item);
 				}
 			}
 			
 			for(r=count+1;#t ){
 				var row = t[r];
-				item.text = toUnicode( tostring(row[1]) );
+				item.text = toUtf16( tostring(row[1]) );
 				item.iItem = r - 1;
 				item.iSubItem = 0;
 				::SendMessageByStruct( hwnd, 0x104D/*_LVM_INSERTITEM*/, 0, item);
@@ -669,7 +672,7 @@ namespace listview{
 				item.mask = 1/*_LVIF_TEXT*/;
 				for (c = 2; #row) {
 					item.iSubItem = c - 1;
-					item.text = toUnicode( tostring(row[c]) );
+					item.text = toUtf16( tostring(row[c]) );
 					::SendMessageByStruct( hwnd, 0x1074/*_LVM_SETITEMTEXT*/, r-1, item);
 				}
 			}
@@ -685,7 +688,7 @@ namespace listview{
 			_get = function(){
 				var upk = ..table.unpack;
 				var push = ..table.push;
-				var fromUnicode = ..string.fromUnicode;
+				var fromUtf16 = ..string.fromUtf16;
 				
 				var item = LVITEM();
 				item.mask = 1/*_LVIF_TEXT*/; 
@@ -700,7 +703,7 @@ namespace listview{
 						item.iSubItem = i-1;
 						var len = ::SendMessageByStruct(owner.hwnd, 0x1073/*_LVM_GETITEMTEXT*/, r-1, item); 
 						if( len && ( item.text != _LPSTR_TEXTCALLBACK)  ){
-							row[i] = fromUnicode( item.text,,len); 
+							row[i] = fromUtf16( item.text,,len); 
 						} 
 					}
 					push(t,row) ; 
@@ -723,24 +726,123 @@ namespace listview{
 				owner.replaceItems(t);
 			} 	
 		};
+		getTable = function(fields){ 
+			
+			var upk = ..table.unpack;
+			var push = ..table.push;
+			var fromUtf16 = ..string.fromUtf16;
+			
+			var item = LVITEM();
+			item.mask = 1/*_LVIF_TEXT*/; 
+			item.text = ..raw.buffer(0x208/*_MAX_PATH_U16*/);
+			item.cchTextMax = 0x208/2;
+			
+			var t = {};
+			var columnCnt = owner.columnCount; 
+			
+			if(fields){
+				if(type(fields)==="table"){
+					t.fields = ..table.assign({},fields); 
+				}
+				else{
+					fields = {};
+					var columns = {}
+					for(i=1;columnCnt) {
+						..table.push(columns,owner.getColumnText(i) );
+						..table.push(fields,i);  
+					}
+					push(t,columns); 	
+				}			
+			}
+			
+			if(!fields){
+				fields = {}; 
+				for(i=1;columnCnt) { 
+					..table.push(fields,i);  
+				}
+			}
+
+			for(r=1;owner.count ){ 
+				var row = {}
+				for(i=1;columnCnt) {
+					item.iSubItem = i-1;
+					var len = ::SendMessageByStruct(owner.hwnd, 0x1073/*_LVM_GETITEMTEXT*/, r-1, item); 
+					if( len && ( item.text != _LPSTR_TEXTCALLBACK)  ){
+						row[fields[i]] = fromUtf16( item.text,,len); 
+					} 
+				}
+				push(t,row) ; 
+			} 
+			
+			return t;
+		};
 		setTable = function(t){
+			if(!t) return owner.clear();
+			
 			var row;
+			var startIndex = t.startIndex;
+			if(startIndex===null) startIndex = t@[["_startIndex"]];
+			
+			var length = t.length;
+			if(length===null) length = ..table.len(t);
+			
 			var fields = t.fields;
-			if( owner.columnCount == 0){ owner.setColumns(fields); };
+
+			owner.dataTableType = "table";
+			
+			var columnCount = owner.columnCount;
+			var columns = fields;
+			if(!fields){
+				if(#t && !..table.isArray(t[1])){
+					fields = ..table.keys(t[1]);
+					if(!columnCount) owner.setColumns(fields);
+				}
+				else{
+					startIndex = 2;
+					owner.dataTableType = "array";
+					
+					fields = {}
+					for(i=1;#t[1];1) { 
+						..table.push(fields,i);  
+					}
+					 
+					if(!columnCount){
+						owner.setColumns(t[1]);
+						if(startIndex===null) startIndex = 2;
+					}
+				}
+			}
+			elseif(type(fields[1]) =="number"){
+				if(!columnCount){
+				
+					var columns = {}
+					for(i=1;#fields;1) { 
+						..table.push(columns,t[1][fields[i]]);  
+					}
+					
+					owner.setColumns(columns); 
+					if(startIndex===null) startIndex = 2;
+				}
+			} 
+			elseif(!columnCount){
+				owner.setColumns(fields);
+			}
+			
+			if(startIndex===null) startIndex = 1; 
 			
 			owner.clear();
 			
 			var item = LVITEM(); 	
 			item.stateMask = 0xF000/*_LVIS_STATEIMAGEMASK*/; 
 			item.mask = 1/*_LVIF_TEXT*/;
-			toUnicode = ..string.toUnicode;
+			toUtf16 = ..string.toUtf16;
 			
 			var itemText;
-			for(r=1;#t ){
+			for(r=startIndex;length ){
 				var row = t[r];
 				var col = row[ fields[1] ];
-				item.text = col !== null ? toUnicode( tostring(col) ) : "";
-				item.iItem = r - 1; 
+				item.text = col !== null ? toUtf16( tostring(col) ) : "";
+				item.iItem = r - startIndex; 
 				item.iSubItem = 0; 
 				::SendMessageByStruct(owner.hwnd, 0x104D/*_LVM_INSERTITEM*/, 0, item);
 				
@@ -748,8 +850,8 @@ namespace listview{
 				for (c = 2; #fields) {
 					item.iSubItem = c - 1;
 					itemText = row[ fields[c] ];
-					item.text = itemText!==null ? toUnicode( tostring(itemText) ) : "";
-					::SendMessageByStruct(owner.hwnd, 0x1074/*_LVM_SETITEMTEXT*/, r-1, item);
+					item.text = itemText!==null ? toUtf16( tostring(itemText) ) : "";
+					::SendMessageByStruct(owner.hwnd, 0x1074/*_LVM_SETITEMTEXT*/, r-startIndex, item);
 				}
 			} 
 		};
@@ -765,16 +867,22 @@ namespace listview{
 			if !(fields && #fields) return;
 			if( widths ){
 				if(widths[#widths]===null) widths[#widths]=-1;
-				for(i=1;#fields;1) owner.insertColumn(fields[i],widths[i]:-1,,alignments[[i]]);
+				for(i=1;#fields;1) {
+					owner.insertColumn(fields[i],widths[i]:-1,,alignments[[i]]);
+				}
 				return;
 			}
 			
 			var str = ..string.join(fields);
 			var rc = owner.clientRect;
 			var width = rc.right - rc.left;
+			if(owner.dpiScaleX) width = width / owner.dpiScaleX;
 			var col = width/ #str;
+		
+			for(i=1;#fields-1;1){
+				owner.insertColumn(fields[i],col*#fields[i],,alignments[[i]]);
+			}
 			
-			for(i=1;#fields-1;1) owner.insertColumn(fields[i],col*#fields[i],,alignments[[i]]);
 			owner.insertColumn(fields[#fields],-1,,alignments[[#fields]]);
 		};
 		checked = {
@@ -923,7 +1031,7 @@ namespace listview{
 			with nm.item {
 				if( mask & 1/*_LVIF_TEXT*/ ){
 					if( text!==null && __pszText__ && cchTextMax && __pszText__ != text ){
-						text = ..string.toUnicode(tostring(text));
+						text = ..string.toUtf16(tostring(text));
 						::CopyMemory(__pszText__,text,..math.min(cchTextMax * 2 ,#text));
 					}
 					iItem--;
@@ -1174,6 +1282,7 @@ namespace listview{
 !listview.insertColumn(.(列名,列宽,位置,样式) = 第一个参数可以是标题字符串,图像索引,\n或者指定LVCOLUMN结构体成员的table对象,\n\n其他参数都是可选参数,\n样式使用_LVCFMT_前缀的常量指定,\n例如_LVCFMT_LEFT为文本左对齐,注意第一列只能左对齐,\n不指定样式则默认左对齐,\n如果列宽为-1,则自动调用fillParent(ind)函数填充剩余空间
 !listview.setColumnText(.(位置,文本) = 设置指定列文本
 !listview.getColumnText(__) = 取指定列文本
+!listview.setColumnWidth(.(列宽,列序号,->->->) = 设置列宽，可指定一个或多个列序号。\n这里不能指定宽度为  -1 。
 !listview.delColumn(__) = 删除指定列
 !listview.columnCount = 列总数
 !listview.clear() = 清空所有项
@@ -1229,7 +1338,9 @@ namespace listview{
 !listview.items = 返回或设置包含所有列表项的数组\n数组的每个项表示一行，每行也必须是包含列文本的数组\n返回数组有一个可选字段 checked 包含了所有勾选的行
 !listview.setColumns(.(columns,widths,alignments) = 参数@1用一个字符串数组指定要显示的列\n如果参数@1为空则清空所有列,\n可选在 @widths 参数用一个数组指定各列宽度,\n可选在 @alignments 参数用一个数组指定各列对齐选项,\n各列可用参数与 insertColumn 函数相同
 !listview.setColumns(.(column1,column2,->->->) = 参数用不定个数的字符串指定要显示的列\n如果参数@1为空则清空所有列
-!listview.setTable(__) = 用listview控件显示数据表\n此函数会自动清空控件之前的所有项,\n如果没有创建任何列,则自动创建列\n如果要重新创建列,请先调用clear(true)清空原来的列,\n\n数据表应当包含行组成的数组,\n每行的数据列必须是由列名和列值组成的键值对\n数据表应使用fields包含需要显示的列名称数组\n可以通过fields控制要显的列、以及要显示的顺序\n\n使用sqlite,access,sqlServer等数据库对象提供的getTable函数可获取符合此规格的数据表
+!listview.setTable( = 用 listview 控件显示数据表（包含名值对的对象或数组组成的数组）。\n此函数会自动清空控件之前的所有项。\n如果没有创建任何列，则自动创建标题列。\n如果要重新创建列，请先调用 clear 函数并指定参数为 true 以清空原来的列。
+!listview.setTable(.(dataTable) =  参数 @dataTable 指定要加载的数据表。\n数据表应当包含行组成的数组。\n数据行可以是数组，也可以是名值，值用 tostring 转为文本显示。\n可选通过数据表的 fields 字段指定要显示的索引数组（键名或索引数值）。\n\n如果视图控件的标题列为空，则用显示键名（或数组值）创建标题列。\n如果数据行为数组，第一行填充到标题列以后，默认从第二行加载数据。\n\n可用 startIndex 属性或元属性自定义要加载的起始行。\n可用 length 属性自定义要加载的行数，默认加载所有行。\n\nsqlite,access,sqlServer 等数据库对象，\n提供的 getTable 函数可获取通过 fields 字段指定列名数组的数据表。
+!listview.getTable(__) = 返回数据表。\n如果参数 @1 指定列名数组（被复制为返回表的 fields 字段），\n则返回的每行数据都是名值对，否则返回的每行数据都是文本数组。\n\n如果参数 @1 为 true，则返回的文本数组第一行为列标题文本数组。
 !listview.checked = 返回已勾选复选框的行索引数组,\n此数组内的行索引按实际显示的前后排序,\n需要先启用复选框支持
 !listview.checkbox = 是否在每个项目前显示复选框\n注意虚表不存在实际的项也不支持设置项目复选框
 !listview.modifyStyle(.(remove,add,swpFlags) = 修改窗口样式,所有参数都是可选参数,\n@remove 用数值指定要移除的样式,可使用 _WS_ 前缀的常量\n@add 用数值指定要添加的样式,可使用 _WS_ 前缀的常量\n@swpFlags 可选用数值指定调整窗口选项,可使用 _SWP_ 前缀的常量\n如果指定了 @swpFlag ,则使用该参数调用::SetWindowPos\n细节请参考 win.modifyStyle 函数源码 
@@ -1256,7 +1367,7 @@ namespace listview{
 !listview.getHeader() = 返回列标题窗口句柄
 !listview.fillParent(.(列序号) = 使指定列自适应父窗口宽度,\n如果不指定列默认调整最后一列,\n用户调整窗口大小时会自动调用此函数调整自适应列
 !listview.threadCallable() = 开启此控件的跨线程调用功能
-!listview.orphanWindow(.(transparent,hwndBuddy) = 创建悬浮窗口,\n悬浮窗口仍然显示在原来的位置,\n悬浮窗口如影随形的跟随父窗口移动或改变大小,控件原来的固定边距等参数仍然有效\n此控件不建议指定参数
+!listview.orphanWindow(.(transparent,hwndBuddy,borderless) = 创建悬浮窗口。\n悬浮窗口是模仿子窗口外观效果的独立窗口，父窗口可自动调整子窗口到设定位置。\n可选参数 @transparent 为 true 则转换为分层透明窗口。\n可选利用 @hwndBuddy 参数指定外部进程窗口句柄的并附加在内部控件上以实现相同的效果。\n伙伴窗口总是会保持在悬浮窗口前面，并保持相同的大小、位置。\n可重复调用此函数更换伙伴窗口，旧的伙伴窗口必须自行关闭。\n可选指定 @borderless 参数 为 true 以移除 @hwndBuddy  的窗口边框。
 !listview.each(起始索引,选项) = @for itemIndex in ??.each(){
 	__/*遍历所有项*/
 }

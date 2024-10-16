@@ -15,6 +15,10 @@ class rsa{
 		
 		this.allocBuffer(128);
 	};
+	importPemKeyFile = function(path){
+		var p = ..string.load(path);
+		return this.importPemKey(p);
+	};
 	importPemKey = function(pem){
 		var h = ..string.match(pem,"<@-----BEGIN@>\s+(.+?)<@-----@>");		
 		if(h=="PUBLIC KEY"){
@@ -28,7 +32,7 @@ class rsa{
 		}
 		elseif(h=="PRIVATE KEY"){
 			if this.importPrivateKeyPkcs8FromPem(pem) return h;
-		}
+		} 
 	};	
 	getKeySpec = function(){
 		return this.getKeyAlgId() == 0x2400/*_CALG_RSA_SIGN*/? 2/*_AT_SIGNATURE*/ : 1/*_AT_KEYEXCHANGE*/;
@@ -129,12 +133,28 @@ class rsa{
 		return t; 
 	};
 	encrypt = function(str,final,hHash,flags=0){ 
+		  
 		var t = this.encryptToArray(str,final,hHash,flags); 
-		if(#t) return ..string.join(t);
+		if(#t) {
+			var out = ..string.join(t);
+			if(type(final)=="number"){
+				return out,#out;
+			}
+			
+			return out;
+		}
 	};
 	decrypt = function(str,final,hHash,flags=0){
 		var t = this.decryptToArray(str,final,hHash,flags);
-		if(#t) return ..string.join(t);
+		
+		if(#t) {
+			var out = ..string.join(t);
+			if(type(final)=="number"){
+				return out,#out;
+			}
+			
+			return out;
+		}
 	};
 	encryptReverse = function(str,flags){
 		var t = this.encryptToArray(str,true,hHash,flags);
@@ -176,23 +196,24 @@ crypt.rsa() = 创建RSA加密容器,不建议指定参数,\n!cryptrsa.
 end intellisense**/
 
 /**intellisense(!cryptrsa)
-importPemKey(__) = 参数@1使用字符串指定PEM格式密钥\n如果导入成功返回PEM格式头
-exportPublicKeyX509(__) = 导出 X509 PKCS#8 格式公钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置,\n返回值为buffer类型
-exportPublicKeyX509ToPem(__) = 导出 PEM/X509 PKCS#8 格式公钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置,\n返回值为string类型
-importPublicKeyX509(__) = 导入 X509 PKCS#8 格式公钥,\n参数@1为string或buffer类型公钥数据
-importPublicKeyX509FromPem(__) = 导入 PEM/X509 PKCS#8 格式公钥,\n参数@1为string或buffer类型公钥数据
+importPemKey(__) = 参数 @1 使用字符串指定 PEM 格式密钥。\n如果导入成功返回 PEM 格式头
+importPemKeyFile(__) = 参数 @1 使用字符串指定 PEM 格式密钥文件。\n如果导入成功返回 PEM 格式头
+exportPublicKeyX509(__) = 导出通用的 SPKI（Subject Public Key Info）格式公钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置,\n返回值为buffer类型
+exportPublicKeyX509ToPem(__) = 导出通用的 SPKI（Subject Public Key Info）格式公钥（PEM）,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置,\n返回值为string类型
+importPublicKeyX509(__) = 导入通用的 SPKI（Subject Public Key Info）格式公钥,\n参数@1为string或buffer类型公钥数据
+importPublicKeyX509FromPem(__) = 导入通用的 SPKI（Subject Public Key Info）格式公钥（PEM）,\n参数@1为string或buffer类型公钥数据
 exportPublicKeyPkcs1Raw() = 导出 PKCS#1 格式公钥,\n返回值为buffer类型
-exportPublicKeyPkcs1RawToPem() = 导出 PEM/PKCS#1 格式公钥,\n返回值为string类型
+exportPublicKeyPkcs1RawToPem() = 导出 PKCS#1 格式公钥（PEM）,\n返回值为string类型
 importPublicKeyPkcs1Raw(__) = 导入 PKCS#1 格式公钥,\n参数@1为string或buffer类型私钥
-importPublicKeyPkcs1RawFromPem(__) = 导入 PEM/PKCS#1 格式公钥,\n参数@1为string或buffer类型私钥 
+importPublicKeyPkcs1RawFromPem(__) = 导入 PKCS#1 格式公钥（PEM）,\n参数@1为string或buffer类型私钥 
 exportPrivateKeyPkcs1Raw() = 导出 PKCS#1 格式私钥,\n返回值为buffer类型
-exportPrivateKeyPkcs1RawToPem() = 导出 PEM/PKCS#1 格式私钥,\n返回值为string类型
+exportPrivateKeyPkcs1RawToPem() = 导出 PKCS#1 格式私钥（PEM）,\n返回值为string类型
 importPrivateKeyPkcs1Raw(__) = 导入 PKCS#1 格式私钥,\n参数@1为string或buffer类型私钥
-importPrivateKeyPkcs1RawFromPem(__) = 导入 PEM/PKCS#1 格式私钥,\n参数@1为string或buffer类型私钥 
-exportPrivateKeyPkcs8() = 导出 PKCS#8 格式私钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置
-exportPrivateKeyPkcs8ToPem() = 导出 PEM/PKCS#8 格式私钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置
-importPrivateKeyPkcs8(__) = 导入 PKCS#8 格式私钥,\n参数@1为string或buffer类型私钥
-importPrivateKeyPkcs8FromPem(__) = 导入 PEM/PKCS#8 格式私钥,\n参数@1为string或buffer类型私钥
+importPrivateKeyPkcs1RawFromPem(__) = 导入 PKCS#1 格式私钥（PEM）,\n参数@1为string或buffer类型私钥 
+exportPrivateKeyPkcs8() = 导出通用的 PKCS#8 格式私钥,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置
+exportPrivateKeyPkcs8ToPem() = 导出通用的 PKCS#8 格式私钥（PEM）,\n可选用参数@1指定密钥类型为 _AT_SIGNATURE 或 _AT_KEYEXCHANGE,\n建议不指定参数自动获取默认设置
+importPrivateKeyPkcs8(__) = 导入通用的 PKCS#8 格式私钥,\n参数@1为string或buffer类型私钥
+importPrivateKeyPkcs8FromPem(__) = 导入通用的 PKCS#8 格式私钥（PEM）,\n参数@1为string或buffer类型私钥
 createHash() = !crypt_hash.
 createHashByKey() = !crypt_hash.
 createHashByKey(.(算法ID) = 使用当前密钥创建哈希
@@ -233,10 +254,20 @@ decryptToArray( = RSA解密,并返回字符串数组,\n解密模式为 RSA/ECB/P
 decryptToArray(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 encryptToArray( = RSA加密,并返回字符串数组,\n加密模式为 RSA/ECB/PKCS1Padding\n与C#、Java等互通建议改用encryptReverse
 encryptToArray(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-decrypt( = RSA解密\n解密模式为 RSA/ECB/PKCS1Padding\n与C#、Java等互通建议改用decryptReverse
-decrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-encrypt( = RSA加密\n加密模式为 RSA/ECB/PKCS1Padding\n与C#、Java等互通建议改用encryptReverse
-encrypt(.(字符串,是否已输入全部数据,哈希对象,选项) = 除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decrypt( = RSA解密。解密模式为 RSA/ECB/PKCS1Padding。\n与其他解密结果字节序相反的编程语言互通可改用 decryptReverse 函数。
+decrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块解密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+decrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，解密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放解密结果的字符串，返回值 2 为返回字符串的长度。\n失败返回 null, 错误信息,错误代码。
+encrypt( = 加密数据
+encrypt( = RSA加密\n加密模式为 RSA/ECB/PKCS1Padding\n与与其他有k密结果字节序相反的编程语言互通可改用 encryptReverse 函数。
+encrypt(.(输入数据,是否已输入全部数据,哈希对象,选项) = 参数 @1 指定字符串或 buffer。\n除第一个参数以外，其他参数都是可选参数。\n分块加密时，参数 @2 必须为 flase 且参数 @1 的长度必须是块大小的倍数。\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
+encrypt(.(输入缓冲区,输入数据大小,哈希对象,选项) = 参数 @1 指定 buffer 或字符串。\n如果参数 @2 指定的数值小于缓冲区据总长度，加密结束。\n可使用 -1 表示解密结束，且输入数据大小等于缓冲区大小。\n其他参数可忽略不用管。\n\n成功返回存放加密结果的字符串，返回值 2 为返回字符串的长度。\n失败返回 null, 错误信息,错误代码。
+encryptFile( = 加密文件
+encryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要加密的文件。参数 @2 指定要保存加密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+decryptFile( = 解密文件
+decryptFile(.(输入文件,输出文件,缓冲区大小,进度回调函数,哈希对象,选项) = 参数 @1 指定要解密的文件。参数 @2 指定要保存解密结果的文件。\n文件参数都可以指定文件路径、文件对象（兼容 io.file,fsys.file,fsys.stream）。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n可选指定进度回调函数，回调参数 @1,@2 分别为输入文件总长度、已读取长度。\n其他调用参数（哈希对象，选项）一般不必指定。\n\n函数执行成功返回 true，失败返回 null,错误信息。
+allocBuffer( = 分配加解密需要用到的 buffer。
+allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer。\n如果不手动分配，程序将会自动按需分配 buffer。\n参数 @2 可选，可用对象的blockSize属性指定默认块大小。
+blockSize = 加密填充的块大小
 decryptReverse( = RSA解密，反转字节序,\n解密模式为 RSA/ECB/PKCS1Padding
 decryptReverse(.(字符串,选项) = 选项为可选参数\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 encryptReverse( = RSA加密，反转字节序,\n加密模式为 RSA/ECB/PKCS1Padding
@@ -245,8 +276,10 @@ decryptOaep(.(字符串,是否已输入全部数据,哈希对象) = RSA 解密�
 encryptOaep(.(字符串,是否已输入全部数据,哈希对象,选项) = RSA 加密。\n填充模式为 PKCS#1 OAEP，其他与 encrypt 函数相同。\n除第一个参数以外,其他参数都是可选参数\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 decryptOaepReverse(.(字符串) = RSA 解密，反转字节序。\n填充模式为 PKCS#1 OAEP，其他与 decryptReverse 函数相同。\n成功返回解密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
 encryptOaepReverse(.(字符串) = RSA加密，反转字节序。\n填充模式为 PKCS#1 OAEP，其他与 encryptReverse 函数相同。\n成功返回加密文本,失败返回空,\n可使用..lasterr()函数获取错误信息
-allocBuffer(.(大小,块大小) = 分配加解密需要用到的 buffer,\n如果不手动分配,程序将会自动按需分配 buffer \n参数2可选,可使用对象的blockSize属性指定默认块大小
-blockSize = 加密填充的块大小
+encryptFile( = 加密文件
+encryptFile(.(加密源文件路径,输出文件路径,缓冲区大小,哈希对象,选项) = 参数 @1 指定要加密的文件路径。\n参数 @2 指定要保存加密结果的文件路径。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐\n其他参数一般不必指定。
+decryptFile( = 解密文件
+decryptFile(.(加密源文件路径,输出文件路径,缓冲区大小,哈希对象,选项) = 参数 @1 指定要解密的文件路径。\n参数 @2 指定要保存解密结果的文件路径。\n可选用参数 @3 指定分块加密的字节长度，默认为 1MB。\n指定字节长度时会自动调整到对齐块大小，参数不需要考虑对齐。\n其他参数一般不必指定。
 sign(.(keySpec,flags) = 返回签名\n可选用 @keySpec 参数中指定密钥类型,\n@flags 不必指定
 verifySignature(.(sign,flags) = 验证签名,\n参数@1为签名字符串,其他参数可选\n验证签名以前必须首先导入公钥,并创建哈希
 signToBase64(.(keySpec,flags) = 签名并反转字节序,进行 Base64 编码后返回,\n可选用 @keySpec 参数中指定密钥类型,\n@flags 参数不必指定

@@ -1,11 +1,11 @@
 //ide扩展库
+import win;
 import inet.http;
-import sevenZip.lzma.httpFile;
 import process.mutex;
 import web.json;
-import win;
 import win.ui.ctrl.edit;
 import winex;
+import string.args;
 
 namespace ide{
     
@@ -86,7 +86,8 @@ namespace ide{
 			mutex.wait(); {
 			
 				if( ..string.endWith( downloadUrl,".tar.lzma",true) ){
-					var ok =..sevenZip.lzma.httpFile.download(downloadUrl,"aardio- 下载 "+libName+" 扩展库","~/download/lib/" , ,downloadLibName + ".tar.lzma");
+					import sevenZip.lzma.httpFile;
+					var ok = sevenZip.lzma.httpFile.download(downloadUrl,"aardio- 下载 "+libName+" 扩展库","~/download/lib/" , ,downloadLibName + ".tar.lzma");
 					if(ok){
 						if(downloadVersion && ..io.libpath(libName)) {
 							var libVers = getExtLibs();
@@ -113,6 +114,10 @@ namespace ide{
 						..win.msgboxTimeout("库 " + libName ++ msg,"aardio"); 
 					}
 				} 
+				else {
+					..raw.execute(downloadUrl);
+				}
+				
 			} mutex.release();
 			
 			if(..io.libpath(libName) ){	
@@ -201,6 +206,29 @@ namespace ide{
 			}
 		}
 	}; 
+	
+	createProcess = function(path,code,op,cmdLine,...){
+			if(path && code && type(code) == "table"){
+				code = "table.assign(global,"+..table.tostring(code)+");loadcodex(`" + ..io.fullpath(path) + "`);";
+			}
+			
+			var appDir,appIcon; 
+			if(!path || isInProject(path)){
+				appDir = getProjectDir()
+				appIcon = getProjectIcon();	
+			}  
+			
+			var hwnd;
+			if(cmdLine){
+				if(type(cmdLine)==="number"){
+					 hwnd = cmdLine;
+					 cmdLine = ...? ..string.args.join(...) : null;
+				}
+				else cmdLine = ..string.args.join(cmdLine,...);
+			} 
+			
+			return createProcessEx(appDir,appIcon,path,code,op,hwnd,cmdLine);
+		}
 
 	if( _STUDIO_INVOKED != "process" ){
 		processGroup = function(name){
@@ -210,15 +238,15 @@ namespace ide{
 		getPublisDir = function(){
 			var dir = getProjectProperty("publishDir")
 			if( dir[1] == '\\'# || dir[1] == '/'# ){
-				dir = ..fsys.joinpath( getProjectDir(),dir )
+				dir = ..io.joinpath( getProjectDir(),dir )
 			}
 			return dir;
 		}; 
 		getPublishObjPath = function(){
-			return ..fsys.joinpath( getPublisDir(), getProjectProperty("name") + ".obj" ) ;
+			return ..io.joinpath( getPublisDir(), getProjectProperty("name") + ".obj" ) ;
 		};
 		getPublishPath = function(){
-			return ..fsys.joinpath( getPublisDir(), getProjectProperty("output")) ;
+			return ..io.joinpath( getPublisDir(), getProjectProperty("output")) ;
 		}; 
 		getPublishName = function(){
 			return getProjectProperty("output");
@@ -230,14 +258,14 @@ namespace ide{
 			var hView,path = getActiveViewHwnd();
 			if(hView) return path;
 		}; 
-		
-		__createProcess__ = createProcess;
-		createProcess = function(path,code,op){
-			if(path && code && type(code) == "table"){
-				code = "table.assign(global,"+..table.tostring(code)+");loadcodex(`" + ..io.fullpath(path) + "`);";
-			}
-			
-			return __createProcess__(path,code,op);
+		var openDocument = openDocument;
+		self.openDocument =  function(path,...){
+			if(..string.endWith(path,".md",true) || ..string.startWith(path,"doc://",true) ){
+				return createProcess("~\doc\index.aardio",{____search_doc__path=path},,getMainHwnd());
+			}  
+			else {
+				return openDocument(path,...);
+			} 
 		}
 	}
 	else {
@@ -272,7 +300,6 @@ namespace ide{
 			"getProjectDir";
 			"getProjectPath";
 			"setConfig";
-			"pluginViewShow";
 			"saveAll";
 			"save";
 			"insertCode";
@@ -292,40 +319,70 @@ namespace ide{
 			"getActiveViewHwnd";
 			"getControlParam";
 			"setControlParam";
-			"getConfig";
 			"setConfig";
-			"redrawActiveCodeEditor";
-			"showStatus"} ){
+			"redrawCodeEditor"; 
+			"createThread";
+			"pluginViewCreate";
+			"loadPrivateFont";
+			"getProjectIcon";
+			"isInProject";
+			"showStatus"; 
+			"killOnExit"} ){
 			self[name] =  function(...){ 
 				return ..ide.command.dispatchIdeCommand(name,...) 
 			};
 		}
-			
-		for(k,name in { 
-			"pluginViewCreate";
-			"createProcess";
-			"createThread"; 
-			"loadPrivateFont";
-			} ){ 
-			self[name] =  function(path,...){ 
-				return ..ide.command.dispatchIdeCommand(name,path ? ..io.fullpath(path),...)
-			};
-		} 
-		
-		openDocument =  function(path,...){ 
-			if(..string.endWith(path,".aproj",true) ){
-				..ide.command.post("dispatchIdeCommand","openDocument",path ? ..io.fullpath(path),...);
-				..thread.delay(500);
+	 
+		openDocument =  function(path,...){   
+			if(..string.endWith(path,".aproj",true) ){ 
+				..ide.command.post("dispatchIdeCommand","openDocument",path ? ..io.fullpath(path),... );
+				..thread.delay(500); 
 			}
+			elseif(..string.endWith(path,".md",true) || ..string.startWith(path,"doc://",true)){ 
+				return createProcess("~\doc\index.aardio",{____search_doc__path=path},,getMainHwnd());
+			}  
 			else {
 				return ..ide.command.dispatchIdeCommand("openDocument",path ? ..io.fullpath(path),...)
 			} 
-		} 
+		}   
 	}  
 
-	libDocument = function(lib){
-		return createProcess("~\tools\2.doc.aardio",{____search_libdoc__key=lib});
+	libMan = function(lib){ 
+		var path = ..io.libpath(lib)
+		if(path) path = ..string.replace(path,"\.aardio$",".md");
+		else path = "~\lib\" + lib + "\_.md";
+		path = ..io.fullpath(path);
+		 
+		return createProcess("~\doc\index.aardio",{____search_doc__path=path},,getMainHwnd());
 	} 
+	
+	show = function(hwnd,sw){
+		hwnd = hwnd[["hwnd"]] || hwnd; 
+		..win.setOwner(hwnd,getMainHwnd()); 
+		..win.show(hwnd,sw);
+	}
+
+	/* 
+	- 不得修改下面的代码。
+	- 禁止利用 aardio.exe 运行来源不明的第三方代码。
+	- 如果 aardio 检测到下面的代码被修改，一切后果自负！！！
+
+	- 修改 init.aardio 会导致所有 IDE 接口与插件失效。
+	- aardio 后续版本将移除  init.aardio 触发器。
+	
+	- 修改 init.aardio 是不必要的，所有 IDE 接口都是跨进程通信。
+	- 修改 init.aardio 是多余的，aardio 可以完美支持进程外插件。
+	- 一个漂亮的浮动工具条更好用，自由度也更大。
+	*/
+	/*
+	var init = ..string.load("~\extensions\trigger\init.aardio") 
+	if(!init || (..string.crc32(init)!=-1662808427) ){
+		..io.remove("~\extensions\trigger\init.aardio");
+		::User32.PostQuitMessage(0);
+		::User32.PostQuitMessage(0);
+		return;
+	}
+	*/
 }
 
 /**intellisense(ide)
@@ -338,8 +395,14 @@ mdiActivate(.(句柄) = 激活窗口
 mdiActivate(.("标题","类名") = 激活窗口
 switchDesignView() = 切换当前窗体设计视图;
 run() = 运行当前视图源码;
-createThread("__") = 运行指定aardio文件,\n参数指定aardio文件路径
-createProcess(.(代码文件路径,代码,动词) = 在IDE中创建进程启动参数@1或参数@2指定的代码。\n如果参数@1指定了代码文件路径，参数@2也可以用一个表（table）参数指定全局变量或常量。\n动词可以是open,runas等\n返回进程ID
+createThread("__") = 运行指定 aardio 文件。\n参数指定 aardio 文件路径。\n为避免影响开发环境主进程，尽量不要使用这个函数。\n更好的选择是改用 ide.createProcess 函数。
+createProcess( = 创建运行 aardio 代码的新进程。
+createProcess(.(代码文件路径,代码,动词,命令行参数->->->) = 在IDE中创建进程启动参数 @1 或参数 @2 指定的代码。\n动词参数可省略，可选值例如 open,runas 等。\n\n可选指定一个或多个命令行参数（字符串或表）。\n命令行参数使用  string.args.join 合并。\n代码中用 _ARGV 接收解析后的参数。\n返回进程 ID
+createProcess(.(代码文件路径,代码,动词,父窗口句柄,命令行参数->->->) = 在IDE中创建进程启动参数 @1 或参数 @2 指定的代码。\n动词参数可省略，可选值例如 open,runas 等。\n参数 @4 指定父窗口或父窗口句柄，在运行代码中用 ... 参数接收窗口句柄。\n\n可选指定一个或多个命令行参数（字符串或表）。\n命令行参数使用  string.args.join 合并。\n代码中用 _ARGV 接收解析后的参数。\n返回进程 ID
+createProcess(.(代码文件路径,全局变量表,动词,命令行参数->->->) = 在IDE中创建进程启动参数 @1 指定的代码文件。\n参数@2用一个表（table）参数指定全局变量或常量。\n动词参数可省略，可选值例如 open,runas 等。\n\n可选指定一个或多个命令行参数（字符串或表）。\n命令行参数使用  string.args.join 合并。\n代码中用 _ARGV 接收解析后的参数。\n返回进程 ID
+getProjectIcon() = 返回工程图标路径。
+isInProject(__) = 检查参数 @1 指定的路径是否当前打开工程内的路径。\n如果参数不是字符串则直接返回 null ，否则返回布尔值。
+createProcessEx(.(应用根目录,应用图标路径,代码文件路径,代码,动词,父窗口句柄,命令行参数) = 创建进程。\n可自定义应用根目录，应用图标路径。命令行参数只能是单个字符串。\n其他参数用法与 ide.createProcess 相同。
 compile() = 编译当前视图源码;
 publish() = 编译当前工程生成exe文件
 newProject() = 打开新建工程向导
@@ -353,9 +416,9 @@ refreshUserLib() = 刷新当前工程用户库节点,\n并更新用户库智能�
 refreshStdLib() = 刷新标准库视图,\n并更新标准库智能提示数据
 processList() = IDE启动的调试进程列表
 openCode(__/*aardio代码*/) = 新建文档窗口并写入aardio代码\n参数指定aardio代码
-openDocument("/__/*输入文件路径*/") = 打开 *.aardio 文件或 *.aproj 工程文件。\n\n如果打开单个源码文件,此函数会等待操作完成。\n如果打开工程文件,此函数会立即返回并发送异步命令,\n发送后立即关闭发送线程可能导致异步命令发送失败,\n工程打开后会调用 ide.command 的 onProjectOpened 事件。
 newDocument() = 在编辑器中新建 aardio 源码,可选在参数中指定源代码
-insertCode(__) = 在当前代码编辑器光标位置插入代码,\n支持智能提示模板语法,自动插入新行,自动缩进,\n并将双下划线转换为光标位置,其后的段注释显示为汽泡提示。\n成功返回true
+openDocument("/__/*输入文件路径*/") = 打开 *.aardio 源文件、*.aproj 工程文件、*.md 文档。\n\n如果打开单个源码文件,此函数会等待操作完成。\n如果打开工程文件,此函数会立即返回并发送异步命令。\n发送后立即关闭发送线程可能导致异步命令发送失败。\n工程打开后会调用 ide.command 的 onProjectOpened 事件。\n如果用于打开 *.md 文件，则在文档浏览器中显示 Markdown 格式文档，\n支持 doc:// 协议的 URL ，例如： doc://language-reference/datatype/table/_.md
+insertCode(__) = 在当前代码编辑器光标位置插入代码,\n支持智能提示模板语法,自动插入新行,自动缩进,\n并将双下划线转换为光标位置,其后的块注释显示为汽泡提示。\n成功返回true
 save() = 保存当前文档
 saveAll() = 保存所有文档,并保存工程文件
 getActiveViewHwnd() = 获取活动视图句柄\n其父窗口为MDI子窗口,子窗口为编辑器窗口\n在IDE进程内运行时第二个返回值为当前文档路径
@@ -363,8 +426,6 @@ getActiveDocPath() = 获取活动文档路径,\n如果文档未保存为文件,�
 getMainHwnd() = 获取IDE顶层主窗口句柄
 getConfig("__/*属性名*/") = 返回IDE配置文件 ("/Config/USE.CFG") 指定字段值,\n返回值为字符串,失败返回空字符串
 setConfig("__/*属性名*/","") = 修改IDE配置文件 ("/Config/USE.CFG") 指定字段值,\n参数必须都是字符串
-pluginViewCreate("__/*aardio文件*/") = 创建视图插件,\n参数指定aardio文件路径
-pluginViewShow(.(winform) = 显示视图插件,\n请用此函数替换winform.show(),\n窗体样式必须设为"child"样式
 getVersion() = @major,minor,build = ide.getVersion();
 getPublisDir() = 返回发布目录
 getPublishName() = 返回生成文件名
@@ -380,7 +441,7 @@ newForm() = 在编辑器中新建新建窗体设计器,可选在参数中指定�
 getActiveForm() = 返回当前的文档窗口是否窗体设计器
 getActiveCode() = 如果当前打开的是源码或窗体设计器,返回正在编辑的源代码,\n失败返回null
 setActiveCode(__) = 如果当前打开的是源码或窗体设计器,重新设置正在编辑的源代码,\n此函数会覆盖正在编辑的源码，且无法撤消，请谨慎使用,\n成功返回true,失败或当前编辑的不是源码文档或窗体设计器返回false
-redrawActiveCodeEditor() = 重新读入配色与字体设置,\n重绘当前代码编辑器窗口,\n成功返回true
+redrawCodeEditor() = 重新读入配色与字体设置,\n重绘代码编辑器窗口,\n成功返回 true
 switchActiveForm（true) = 用于切换窗体设计器的视图,\n参数为true时切换到设计器视图,参数为false切换到源码视图,\n成功返回true
 setSelectedControl(__) = 在窗体设计器中选中指定名称的控件,\n并取消选中其他控件,\n成功返回true
 getSelectedControl() = 返回当前窗体设计器选中的控件名称,失败返回null
@@ -388,11 +449,14 @@ setControlParam(.(控件名,参数表) = 更新控件参数,成功返回true，�
 getControlParam(.(控件名) = 获取控件参数,\n参数中的font属性作为::LOGFONT的参数才能转换为字体对象
 loadPrivateFont(.("字体路径") = 在开发环境中加载字体文件,\n使窗体设计器中的控件可以显示该字体
 showStatus(.(消息,进度) = 在IDE状态栏显示削息和进度\n参数@1使用字符串指定消息,\n参数@2使用数值指定进度\n所有参数可选\n不指定进度时重置进度为初始状态
-libDocument(__) = 打开库函数文档，并搜索参数 @1 指定的关键字
+libMan(__) = 打开库参考手册，并搜索参数 @1 指定的关键字
+killOnExit(__) = IDE 进程退出时自动关闭参数 @1 指定进程 ID 的进程
+show( = 在 IDE 窗口的前面显示参数 @1 指定的窗口。\n此函数在显示前临时设置窗口的所有者窗口（owner window）为 IDE 主窗口，\n在显示窗口后再将所有者窗口设为空。
+show(.(hwnd,flags) = 在 IDE 窗口的前面显示参数 @1 指定的窗口。\n参数 @1 指定窗口对象或窗口句柄。\n参数 @2 可选指定调用 win.show 的第 2 个选项参数，可使用 _SW 前缀常量。
 end intellisense**/
 
 /**intellisense()
-ide = aardio开发环境扩展支持库,仅适用于编写开发环境插件,\n需要使用import ide;语句导入才能使用,\n\nimport ide作为程序第一个import语句时，插件在IDE进程内以线程模式运行,\n否则插件在IDE进程外以独立进程模式运行，请优先使用独立进程模式
+ide = aardio 开发环境扩展支持库,仅适用于编写开发环境插件,\n需要使用 import ide 语句导入才能使用,\n\nimport ide作为程序第一个import语句时，插件在IDE进程内以线程模式运行,\n否则插件在IDE进程外以独立进程模式运行，请优先使用独立进程模式
 _IDE_ID_BUILD_COMPILE=@0x8315/*_IDE_ID_BUILD_COMPILE*/
 _IDE_ID_BUILD_PUBLISH=@0x8317/*_IDE_ID_BUILD_PUBLISH*/
 _IDE_ID_DESIGN_SWITCHTO=@0x831A/*_IDE_ID_DESIGN_SWITCHTO*/

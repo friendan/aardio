@@ -43,13 +43,16 @@ namespace raw {
 		install = function () { 
 			var jmpOpCodeLen = 5;
 			var threadCmpOpCodeLen = 20;
-			this.addrProtect = prcsHook.protect(tonumber(this.pTargetFunction), 0x40/*_PAGE_EXECUTE_READWRITE*/, jmpOpCodeLen * 2);
-			if (!this.addrProtect ) { 
+			var addrTargetFunction = tonumber(this.pTargetFunction );
+			
+			var addrProtect = prcsHook.protect(addrTargetFunction, 0x40/*_PAGE_EXECUTE_READWRITE*/, jmpOpCodeLen * 2);
+			if (!addrProtect) { 
 				error("修改内存属性失败!", 2);
 			}
 			 
-			var restoreOpCode = prcsHook.readString(tonumber(this.pTargetFunction),jmpOpCodeLen * 2);
+			var restoreOpCode = prcsHook.readString(addrTargetFunction,jmpOpCodeLen * 2);
 			this.restoreOpCodeSize,restoreOpCode = getHookSize(  restoreOpCode,jmpOpCodeLen ); 
+			prcsHook.protect(addrTargetFunction,addrProtect, jmpOpCodeLen * 2);
 			
 			var addrTargetFunction = tonumber(this.pTargetFunction );
 			this.addrTrampoline = prcsHook.malloc( this.restoreOpCodeSize + jmpOpCodeLen,0x40/*_PAGE_EXECUTE_READWRITE*/) 
@@ -73,24 +76,31 @@ namespace raw {
 				int jmpAddr = addrTargetFunction + this.restoreOpCodeSize - (this.addrTrampoline + this.restoreOpCodeSize + jmpOpCodeLen )
 			} )
 			
+			this.callApi = ..raw.main.api(topointer(this.addrTrampoline), this.apiProto );
+			
+			var addrProtect = prcsHook.protect(addrTargetFunction, 0x40/*_PAGE_EXECUTE_READWRITE*/,jmpOpCodeLen);
+ 
 			prcsHook.write( addrTargetFunction, '\xE9'/*JMP*/, {
 				int jmpAddr = this.addrThreadCheck - (addrTargetFunction + jmpOpCodeLen)
 			} )
-			 
-			this.callApi = ..raw.main.api(topointer(this.addrTrampoline), this.apiProto );
+			
+			prcsHook.protect(addrTargetFunction,addrProtect, jmpOpCodeLen);
 			return this; 
 		}
-		unInstall = function () {  
-			if (! ( this.pTargetFunction && this.addrProtect ) ) {
+		unInstall = function () {   
+			if (! this.addrTrampoline ) { 
 				return;
 			}
-			
+		
+			var addrProtect = prcsHook.protect(tonumber(this.pTargetFunction), 0x40/*_PAGE_EXECUTE_READWRITE*/,this.restoreOpCodeSize);
 			prcsHook.writeString(tonumber(this.pTargetFunction),topointer(this.addrTrampoline) ,this.restoreOpCodeSize );
-			prcsHook.protect(tonumber(this.pTargetFunction),this.addrProtect, this.restoreOpCodeSize);
-			this.pTargetFunction = null; 
-			
+			prcsHook.protect(tonumber(this.pTargetFunction),addrProtect, this.restoreOpCodeSize);
+		
 			prcsHook.mfree( this.addrTrampoline ); 
 			prcsHook.mfree(this.addrThreadCheck);
+			
+			this.addrTrampoline = null;
+			this.addrThreadCheck = null;
 		}
 	}	
 }

@@ -32,10 +32,11 @@ namespace htmlClient{
     patch = http.patch;
 }
 
- 
 /**intellisense()
-web.rest.htmlClient = REST 客户端\n普通表单请求,返回数据为 string.html 文档对象。\n\n简单读取并解析网页 HTML \n也可以直接使用 string.html.getUrl 函数
-web.rest.htmlClient() = 创建 REST 客户端,\n!web_restClient.
+web.rest.htmlClient = REST 客户端。\n请求数据，返回数据都使用 string.html 文档对象
+web.rest.htmlClient( = 创建 REST 客户端。\n请求数据，返回数据都使用 string.html 文档对象
+web.rest.htmlClient(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 REST 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
+web.rest.htmlClient() = !web_restClient.
 end intellisense**/
 
 /**intellisense(web.rest.htmlClient)

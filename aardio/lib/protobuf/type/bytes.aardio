@@ -22,7 +22,7 @@ class bytes{
 		}
 		
 		str ++= this.encodeVarUint64( # this.value ); 
-		str ++= this.value;
+		str ++= tostring(this.value); 
 		return str;
 	}
 }

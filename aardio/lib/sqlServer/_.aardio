@@ -85,9 +85,10 @@ class sqlServer {
 	}; 
 	exec = function(sql,...){ 
 		if( ... )sql = format(sql,...); 
-		var ret,err = call(this.connection.Execute,this.connection,sql ); 
-		if(!ret) error(err,2);
-		return ret;
+		var ret,result,recordsAffected = call(this.connection.Execute,this.connection,sql,0,1 | 0x80/*_adCmdText | adExecuteNoRecords*/);
+		if(!ret) error(result,2);  
+		 
+		return recordsAffected;
 	}; 
 	openRecordSet = function(sql,cursorType,lockType,...){
 		var rs = ..com.CreateObject("ADODB.RecordSet"); 
@@ -202,7 +203,7 @@ class sqlServer {
 			
 			select(t) {
 				case "string" {
-					if(..string.isUnicode(value)){
+					if(..string.isUtf16(value)){
 						adType = 203/*adLongVarWChar*/
 						adSize = #value/2;	
 					}
@@ -532,8 +533,8 @@ getTable(.("select * from [表名]",其他格式化参数) = 返回查询结果�
 getRows() = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值,\n也可以使用 数据.字段名[列号] 获取对应的值\n\n返回数组的元表中使用recordCount记录了总行数,\n结果集为空也会返回空数组,可使用 @.recordCount判断记录集的行数\n元表中的fields字段则是记录了所有字段名的数组.\n\n所有值后面的占位空白没有去除\n可使用getTable函数获取处理过空白占位符的数据,\n或参考该函数源码自行处理尾部空白
 stepQuery(.("select * from [表名]",其他格式化参数) = 返回查询结果集第一行的数据,由键值对列组成,\n\n格式化规则请参考 sqlServer.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
 rowCount() = 返回上次执行增、删、改、查等SQL影响的记录行数
-openRecordSet(.(sql,游标类型,锁定方法,其他格式化SQL参数) = 打开记录集,游标类型如下:\n0:默认值,启动一个只能向前移动的游标\n1:打开键集类型游标,允许任意移动，并且允许更改记录集\n2:打开动态类型游标,许所有操作，其他用户对记录集的添加、删除、更改在此记录集中\n3:打开静态类型游标\n\n锁定方法如下：\n1:默认值,不能改变数据\n2:悲观锁,编辑时立即锁定数据源的记录\n3:乐观锁,只在调用Update 方法时才锁定记\n4: 乐观批更新
-exec(.(sql,其他格式化SQL参数) =  执条SQL语句\n格式化参数规则请参考 sqlServer.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
+openRecordSet(.(sql,游标类型,锁定方法,其他格式化SQL参数) = 打开记录集,游标类型如下:\n0:默认值,启动一个只能向前移动的游标\n1:打开键集类型游标,允许任意移动，并且允许更改记录集\n2:打开动态类型游标,许所有操作，其他用户对记录集的添加、删除、更改在此记录集中\n3:打开原生类型游标\n\n锁定方法如下：\n1:默认值,不能改变数据\n2:悲观锁,编辑时立即锁定数据源的记录\n3:乐观锁,只在调用Update 方法时才锁定记\n4: 乐观批更新
+exec(.(sql,其他格式化SQL参数) =  执行 SQL 语句\n格式化参数规则请参考 sqlServer.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化。\n\n执行失败抛出异常。\n执行成功返回受影响的记录行数
 createCommand(.(sql,其他格式化SQL参数) = 创建命令对象\n格式化规则请参考 sqlServer.format 函数说明,\n格式化参数可以是一个表参数,用于替换SQL中占位符指定的参数,\nSQL语句用中@前缀标明命名参数使用表参数中的名值对格式化,\nSQL语句中的?或??占位符使用表参数中的数组值格式化
 existsTable(.("表名") = 判断数据库中是否存在指定表
 existsProcedure(.("存储过程名") = 判断数据库中是否存在指定存储过程
@@ -570,7 +571,7 @@ bof = 是否已经到记录集开始，没有更多数据了
 recordCount = 获取记录总数,\n如果该值为-1，请修改为静态方式打开记录集
 move(.(numRecords,start) = 移动游标位置,\n注意第一条记录游标位置为0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始
 getRows( = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值
-getRows(.(rows,start,fields) = 查询并返回包含结果数据的数组,所有参数可选,\nrows 指定获取行数，默认为-1，即获取所有剩下的行,0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始\n@ields 可选用一个字符串、或字符串数组指定要获取的列,\n也可用数值，或数值数组指定要获取的列
+getRows(.(rows,start,fields) = 查询并返回包含结果数据的数组,所有参数可选,\nrows 指定获取行数，默认为-1，即获取所有剩下的行,0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始\n@ields 可选用一个字符串、或字符串数组指定要获取的列,\n也可用数值，或数值数组指定要获取的列 
 end intellisense**/
 
 /**intellisense(!sqlServer_cmd)

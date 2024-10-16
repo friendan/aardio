@@ -22,7 +22,7 @@ class tar {
 			tarFile = ..zlib.gzFile(tarPath,"wb")
 		}
 		else {
-			tarFile = ..io.open(tarPath,"w+b",0x10)
+			tarFile = ..io.file(tarPath,"w+b",0x10)
 		}
 		
 		if(!tarFile) return null,"创建tar文件失败";
@@ -30,6 +30,8 @@ class tar {
 		var tarHeader = tar_header();
 		var buffer = ..raw.buffer(512);
 		var zeroBuffer = ..raw.buffer(512,0);
+		
+		this.utf8 = true;
 		
 		..table.gc(this,"close");
 	};
@@ -50,9 +52,9 @@ class tar {
 		
 		tarHeader.linkflag = '0'#; 
 		var size = file.size(1);
-		tarHeader.size = ..string.format('% 11o ',( file.size(1) )  );
-		tarHeader.mtime = ..string.format('% 10o \0',tonumber( file.getFileTime().write.toSystemTime().local() ) ); 
-		tarHeader.mode =  ..string.format('% 6o \0',0100777);
+		tarHeader.size = ..string.format('%011o\0',( file.size(1) )  );
+		tarHeader.mtime = ..string.format('%011o\0',tonumber( file.getFileTime().write.toSystemTime() ) ); 
+		tarHeader.mode =  '0100777\0';//..string.format('%07o\0',8#0100777);
 		
 		tarHeader.chksum = checksum(tarHeader);
 		tarFile.write(tarHeader);
@@ -85,10 +87,10 @@ class tar {
 		tarHeader.name = this.utf8 ? name : ..string.fromto(name,65001,0);
 		
 		tarHeader.linkflag = '5'#;
-		tarHeader.size = ..string.format('% 11o ',0); 
-		tarHeader.mode =  ..string.format('% 6o \0',040777); 
+		tarHeader.size = ..string.format('%011o\0',0); 
+		tarHeader.mode =  '0040777\0';//..string.format('%07o\0',8#040777); 
 		var file = ..fsys.file(path,,,,0x2000000/*_FILE_FLAG_BACKUP_SEMANTICS*/);
-		tarHeader.mtime = ..string.format('% 10o \0',tonumber( file.getFileTime().write.toSystemTime().local() ) ); 
+		tarHeader.mtime = ..string.format('%011o\0',tonumber( file.getFileTime().write.toSystemTime().local() ) ); 
 		file.close();
 		  
 		tarHeader.chksum = checksum(tarHeader);
@@ -130,20 +132,20 @@ namespace tar {
 	
 		byte name[100];
 		byte mode[8];
-		byte uid[8] = '     \x30 \0';
-		byte gid[8] = '     \x30 \0';
+		byte uid[8] = '0000000\0';
+		byte gid[8] = '0000000\0'; 
 		byte size[12];
 		byte mtime[12];
 		byte chksum[8];
 		byte linkflag;
 		byte linkname[100];
-		byte magic[8];
+		byte magic[8] = 'ustar\x0000';//后 2 位为 version
 		byte uname[32];
 		byte gname[32];
 		byte devmajor[8];
 		byte devminor[8];
 		byte prefix[155];
-		byte data[12]
+		byte data[12] //对齐作用
 	}
 	
 	var __nchkshum_fileds = { byte chksum[8]={};byte linkflag = 1 }
@@ -156,7 +158,7 @@ namespace tar {
 				} 
 			} 
 		} 
-		return ..string.format('% 6o \0', chksum  )
+		return ..string.format('%06o\0 ', chksum  )
 	}
 }
 
@@ -164,7 +166,7 @@ namespace tar {
 fsys.tar = tar文件打包
 fsys.tar(.("tar文件路径","打包根目录") = 参数一可以是tar文件或tar.gz文件路径,\n如果省略根目录参数,打包首个文件则取其父目录为根目录
 fsys.tar() = !fsys_tarfile.
-!fsys_tarfile.utf8 = 是否使用UTF8编码文件名
+!fsys_tarfile.utf8 = 是否使用 UTF8 编码文件名。\n默认启用 UTF8 编码，建议保持默认值。
 !fsys_tarfile.pack(.(目录路径,文件通配符,是否添加该目录名字) = 打包目录下的所有文件
 !fsys_tarfile.addFile(.("文件路径") = 添加文件,\n必须是指定根目录下的文件
 !fsys_tarfile.addFolder(.("文件路径") = 添加文件,\n必须是指定根目录下的子目录

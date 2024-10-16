@@ -1,5 +1,4 @@
 ﻿//http 消息格式
-
 import web;
 import web.json;
 
@@ -92,8 +91,8 @@ http.parse = function(respData){
 }
 
 /*****intellisense()
-inet.http = 用于构建类 HTTP 请求消息，并解析类 HTTP 应答消息
-inet.http( = 构建类 HTTP 请求消息
-inet.http(.(header,body) = header 可以是指定请求头名值对的表，\n也可以是任何 web.joinHeaders 兼容的表或数组。\nbody 可以是任何数据。\n如果 body 是一个表则转换为 JSON ，\n如果未指定请求头  Content-Type，\n则同时修改其值为 "application/json; charset=utf-8"\n\n可选在第一个参数前面添加一个字符串参数以加在 HTTP 请求头之前。\n如果有更多参数，则不转换 JSON 且全部转为字符串拼接。\n拼接分隔符为 '\r\n'，header 与 body 间则为 '\r\n\r\n'
-inet.http.parse() = 按 HTTP 协议兼容规则解析响应消息。\n参数支持字符串或 buffer。\nHTTP 头解析为表对象，头名字转为小写。\nbody 作为第二个返回值。\n如果 header 与 body 间只用了单个 '\r\n' 分隔。\n则最后一行转换为 body 返回
+string.http = 用于构建类 HTTP 请求消息，并解析类 HTTP 应答消息。\n目前应用于 web.edgeTextToSpeech 库。
+string.http( = 构建类 HTTP 请求消息
+string.http(.(header,body) = header 可以是指定请求头名值对的表，\n也可以是任何 web.joinHeaders 兼容的表或数组。\nbody 可以是任何数据。\n如果 body 是一个表则转换为 JSON ，\n如果未指定请求头  Content-Type，\n则同时修改其值为 "application/json; charset=utf-8"\n\n可选在第一个参数前面添加一个字符串参数以加在 HTTP 请求头之前。\n如果有更多参数，则不转换 JSON 且全部转为字符串拼接。\n拼接分隔符为 '\r\n'，header 与 body 间则为 '\r\n\r\n'
+string.http.parse() = 按 HTTP 协议兼容规则解析响应消息。\n参数支持字符串或 buffer。\nHTTP 头解析为表对象，头名字转为小写。\nbody 作为第二个返回值。\n如果 header 与 body 间只用了单个 '\r\n' 分隔。\n则最后一行转换为 body 返回
 end intellisense*****/

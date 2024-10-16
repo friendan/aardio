@@ -79,13 +79,13 @@ find = function(p){
 				if(!v.InstallDate){
 					var buf = ..raw.buffer(16);
 					if(0==::Msi.MsiGetProductInfoW(v.ProductCode,"InstallDate",buf,{INT size=9})){
-						v.InstallDate = ..string.fromUnicode(buf,,8); 
+						v.InstallDate = ..string.fromUtf16(buf,,8); 
 					} 
 				}	
 				
 				var buf = ..raw.buffer(0x208/*_MAX_PATH_U16*/);
 				if(0==::Msi.MsiGetProductInfoW(v.ProductCode,"InstallLocation",buf,{INT size=0x103})){
-					v.InstallLocation = ..string.fromUnicode(buf,,-1); 
+					v.InstallLocation = ..string.fromUtf16(buf,,-1); 
 				}  
 			}
 			else{

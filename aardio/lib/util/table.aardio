@@ -38,10 +38,8 @@ stringfyValue = function(v,keys,objreferences,prettyPrintLevel,prettyPrintIndent
 			if(es) return "'" + es + "'"; 
 			return '"' ++ v ++ '"';
 		}
-		case "number"{
-			var n,f = ..math.modf(v)
-			if(f){ return ..string.trimright( ..string.format("%f",v),"0"); }
-			return tostring(v);
+		case "number"{ 
+			return ..math.stringify(v);
 		} 
 		case "boolean"{
 			return tostring(v);
@@ -66,43 +64,74 @@ stringifyTable = function(t,keys,prettyPrintLevel,prettyPrintIndent,objreference
 		return "{}";
 	}
 	
-	var LFCR = "";
+	var CRLF = "";
 	var curIndent = "";
 	if( prettyPrintLevel !== null ){
 		if(prettyPrintLevel>=0){
 			prettyPrintLevel++;
-			LFCR = '\r\n';
+			CRLF = '\r\n';
 			curIndent = strRepeat(prettyPrintLevel,prettyPrintIndent);	
 		} 
 	}
 	else {
-		LFCR = '\r\n';
+		CRLF = '\r\n';
 		prettyPrintLevel = -1;
 	}
 
- 	var s = { "{";LFCR };
+ 	var s = { "{";CRLF };
 	for k,v in eachName(t, ,keys ? mixin({},keys) ){
 		if( ! ( math(k,"^[\a_]\w*$")  || math(k,"^:+\w*$") ) ){
 			var es = escape(k);
 			k = es ? "['" + es + "']" : '["' + k + '"]'
 		}
 		v = stringfyValue(v,keys,objreferences,prettyPrintLevel,prettyPrintIndent);
-		if(v){  push( s,curIndent,k,"=",v,";",LFCR); }
-	}
-	
-	for(i=1;#t;1){ 
-		push( s,curIndent,stringfyValue(t[i],keys,objreferences,prettyPrintLevel,prettyPrintIndent),";",LFCR);
+		if(v){  push( s,curIndent,k,"=",v,";",CRLF); }
 	}
 	
 	if( s[#s-1] == ";" ) pop(s,2);
 	
+	var singleLine = 1;  
+	for(i=1;..table.len(t);1){ 
+		if(type(t[i])=="table") {
+			singleLine = 0;
+			break;
+		}
+	}
+
+	if(singleLine){
+		if(#s==2) {
+			pop(s,1);
+			singleLine = 2;
+		}
+		else {
+			push(s,curIndent);
+		}
+		
+		for(i=1;..table.len(t);1){ 
+			push( s,stringfyValue(t[i],keys,objreferences,prettyPrintLevel,prettyPrintIndent),";");
+		} 
+		
+		if( s[#s] == ";" ) pop(s,1);
+	}
+	else{
+		for(i=1;..table.len(t);1){ 
+			push( s,curIndent,stringfyValue(t[i],keys,objreferences,prettyPrintLevel,prettyPrintIndent),";",CRLF);
+		}
+		
+		if( s[#s-1] == ";" ) pop(s,2);
+	}
+	 
 	if(prettyPrintLevel > 0 ){
 		prettyPrintLevel--;
 		curIndent = strRepeat(prettyPrintLevel,prettyPrintIndent);
 	}
 	
-	
-	push( s,LFCR,curIndent,"}");
+	if(singleLine<2){
+		push( s,CRLF,curIndent,"}");
+	}
+	else {
+		push( s,"}");
+	}
 	
 	return join(s);
 }

@@ -43,6 +43,7 @@
 			<file name="winform.jpg" path="forms\images\winform.jpg" comment="forms\images\winform.jpg"/>
 		</folder>
 		<folder name="plus" path="forms\plus" comment="forms\plus" local="false" embed="false" ignored="false">
+			<file name="activeX.aardio" path="forms\plus\activeX.aardio" comment="forms\plus\activeX.aardio"/>
 			<file name="bat.aardio" path="forms\plus\bat.aardio" comment="forms\plus\bat.aardio"/>
 			<file name="first.aardio" path="forms\plus\first.aardio" comment="forms\plus\first.aardio"/>
 			<file name="icon.aardio" path="forms\plus\icon.aardio" comment="forms\plus\icon.aardio"/>

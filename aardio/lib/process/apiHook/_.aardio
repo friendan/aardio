@@ -83,17 +83,19 @@ namespace process {
 				return;
 			} 
 			
-			this.process.suspend();
-			var restoreCode = this.process.readString(hookInfo.addrTrampoline ,hookInfo.restoreOpCodeSize)
-			this.process.writeString(hookInfo.addrTargetFunction,restoreCode);
-			
-			this.process.protect( hookInfo.addrTargetFunction, hookInfo.addrProtect, hookInfo.restoreOpCodeSize );
-			this.process.mfree(hookInfo.addrTrampoline);
-			
-			if(hookInfo.hModule)this.freeLibrary(hookInfo.hModule);
-			if(hookInfo.hHookModule)this.freeLibrary(hookInfo.hHookModule);
-			
-			this.process.resume();
+			if(this.process.stillActive()){
+				this.process.suspend();
+				var restoreCode = this.process.readString(hookInfo.addrTrampoline ,hookInfo.restoreOpCodeSize)
+				this.process.writeString(hookInfo.addrTargetFunction,restoreCode);
+				
+				this.process.protect( hookInfo.addrTargetFunction, hookInfo.addrProtect, hookInfo.restoreOpCodeSize );
+				this.process.mfree(hookInfo.addrTrampoline);
+				
+				if(hookInfo.hModule)this.freeLibrary(hookInfo.hModule);
+				if(hookInfo.hHookModule)this.freeLibrary(hookInfo.hHookModule);
+				
+				this.process.resume();				
+			}
 			
 			this._hookfunc[hookInfo.addrTargetFunction]  = null;
 		};

@@ -42,7 +42,7 @@ class log{
 		var args = {...};
 		
 		if( this.mutex.waitOne() ){
-			var file = ..io.open(this.path,"a+t");
+			var file = ..io.file(this.path,"a+t");
 			
 			for(i=1;#args;1){
 				file.write( ..string.crlf(args[i]),'\t');
@@ -61,7 +61,7 @@ class log{
 		var args = {...};
 		
 		if( this.mutex.waitOne() ){
-			var file = ..io.open(this.path,"a+t");
+			var file = ..io.file(this.path,"a+t");
 			
 			for(i=1;#args;1){ 
 				if( type(args[i]) == type.table ) file.write( ..util.table.stringify(args[i],#args==1),'\t')
@@ -78,7 +78,7 @@ class log{
 		var args = {...};
 		
 		if( this.mutex.waitOne() ){
-			var file = ..io.open(this.path,"a+t");
+			var file = ..io.file(this.path,"a+t");
 			
 			for(i=1;#args;1){ 
 				if( type(args[i]) == type.table ) file.write( ..web.json.stringify(args[i],#args==1),'\t')

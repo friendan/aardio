@@ -586,8 +586,8 @@ msgbox = function(str,title,timeout,style,sid){
     if(sid===null) return;
     
     if( type(str) == type.table) str = ..table.tostring(str);
-    str = ..string.toUnicode(tostring(str));
-    title = ..string.toUnicode(tostring(title : self.serviceName : "service" ) );
+    str = ..string.toUtf16(tostring(str));
+    title = ..string.toUtf16(tostring(title : self.serviceName : "service" ) );
     
     var resp = {int v}
 	if( ::Wtsapi32.WTSSendMessageW(0,sid,

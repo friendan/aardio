@@ -98,7 +98,8 @@ namespace scrollbar{
 !scrollbar.line = 行高
 !scrollbar.updateWheelLines() = 返回系统设置的鼠标滚轮滚动行数,\n并更新 wheelLines 的值
 !scrollbar.wheelLines = 鼠标滚轮滚动行数,默认值为 3\n调用 updateWheelLines 函数可获取系统设置并更新该值
-!scrollbar.setRange(1,100) = 设置滚动条范围
+!scrollbar.setRange( = 设置滚动条范围
+!scrollbar.setRange(.(min,max,page,redraw) = 设置滚动条范围，参数：\n@min 为滚动条范围最小值,\n@max 为滚动条范围最大值,\n@page为分页大小,\n@redraw 是否刷新。 
 !scrollbar.getRange() = 返回 4 个数值\n分别为 min,max,page,current,\nmin 为滚动条范围最小值,\nmax 为滚动条范围最大值,\npage为分页大小,\ncurrent 为滚动条当前位置 
 !scrollbar.enable( _ESB___ ) = 激活一个或两个滚动条箭头或是使其失效
 !scrollbar.hwnd = 控件句柄
@@ -139,6 +140,10 @@ namespace scrollbar{
 !scrollbar.setInfo() = @.setInfo(\n    fMask = fMask;\n    min = min;\n    max = max;\n    page = page;\n    pos = pos;\n    trackPos = trackPos;\n)
 !scrollbar.sendMessage(.(msg,wParam,lParam) = 发送窗口消息\n此函数用法请参考 ::User32.SendMessage
 !scrollbar.postMessage(.(msg,wParam,lParam) = 投递窗口消息到消息队列中\n此函数用法请参考 ::User32.PostMessage
+!scrollbar.adjust = @.adjust = function( cx,cy,wParam ) {	
+	_/*窗口改变大小时触发此函数*/
+};
+
 ?win.ui.ctrl.scrollbar  =!scrollbar.
 win.ui.ctrl.scrollbar() = 滚动条控件\n!scrollbar.
 end intellisense***/

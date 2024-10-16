@@ -20,8 +20,8 @@ class splitter{
        
     onCreate =function(){
     	var x0,y0,
-    	    ,c1x,c1y,c1w,c1h,
-    	    ,c2x,c2y,c2w,c2h,
+    	    ,c1w,c1h,
+    	    ,c2w,c2h,
     	    ,spx,spy,spw,sph,
     	    ,oldPos,move,
     	    ,dragging,leftButtonDown;
@@ -92,10 +92,14 @@ class splitter{
 					} 
 					..win.setCapture(hwnd);
 					
+					var ltControl = this.ltControl[1] || this.ltControl;
+					var rbControl = this.rbControl[1] || this.rbControl;
+					
 					leftButtonDown = true;
 					x0,y0 =..win.getMessagePos(lParam);
-					c1x,c1y,c1w,c1h = this.ltControl.getPos();
-					c2x,c2y,c2w,c2h = this.rbControl.getPos();
+					_,_,c1w,c1h = ltControl.getPos();
+					_,_,c2w,c2h = rbControl.getPos();
+					
 					spx,spy,spw,sph = this.getPos();
 					oldPos = 0;
 					if(hDc)::ReleaseDC(this.parent.hwnd,hDc);  
@@ -131,18 +135,63 @@ class splitter{
 						
 						if(dragging){
 							if( !this.horz ){
-								this.ltControl.setPos(c1x,c1y,c1w-move,c1h);
-								this.rbControl.setPos(c2x-move,c2y,c2w+move,c2h);
+							 	if(this.ltControl[1]){
+							 		for(k,ctrl in this.ltControl){
+							 			var x,y,cx,cy = ctrl.getPos();
+										ctrl.setPos(x,y,cx-move,cy);
+							 		}
+							 	}
+							 	else{
+							 		var x,y,cx,cy = this.ltControl.getPos();
+									this.ltControl.setPos(x,y,cx-move,cy);
+								}
+								
+								if(this.rbControl[1]){
+									for(k,ctrl in this.rbControl){
+							 			var x,y,cx,cy = ctrl.getPos();
+										ctrl.setPos(x-move,y,cx+move,cy);
+							 		}
+								}
+								else {
+									var x,y,cx,cy = this.rbControl.getPos();
+									this.rbControl.setPos(x-move,y,cx+move,cy);
+								}
+								
+								
 								this.setPos(spx-move,spy);
 							}
 							else {
-								this.ltControl.setPos(c1x,c1y,c1w,c1h-move);
-								this.rbControl.setPos(c2x,c2y-move,c2w,c2h+move);
+								
+								if(this.ltControl[1]){
+							 		for(k,ctrl in this.ltControl){
+							 			var x,y,cx,cy = ctrl.getPos();
+										ctrl.setPos(x,y,cx,cy-move);
+							 		}
+							 	}
+							 	else {
+							 		var x,y,cx,cy = this.ltControl.getPos();
+									this.ltControl.setPos(x,y,cx,cy-move);
+							 	}
+							 	 
+								if(this.rbControl[1]){
+									for(k,ctrl in this.rbControl){
+							 			var x,y,cx,cy = ctrl.getPos();
+										ctrl.setPos(x,y-move,cx,cy+move);
+							 		}
+								}
+								else {
+									var x,y,cx,cy = this.rbControl.getPos()
+									this.rbControl.setPos(x,y-move,cx,cy+move);	
+								}
+								
 								this.setPos(spx,spy-move);							
 							}
 							
 							dragging = false;
 							
+							if(this.onSplitterMoved){
+								this.onSplitterMoved(this.getRect().ltrb());
+							}
 							this.redraw();
 						}
 					}
@@ -162,17 +211,39 @@ class splitter{
     };
    	_preadjust = function(){
    		if( !(this.ltControl && this.rbControl) )return;
-   		var ltX,ltY,ltCx,ltCy = this.ltControl.getPos();
-   		var rbX,rbY,rbCx,rbCy = this.rbControl.getPos();
+   		
+   		var ltControl = this.ltControl[1] || this.ltControl;
+		var rbControl = this.rbControl[1] || this.rbControl;
+					
+   		var ltX,ltY,ltCx,ltCy = ltControl.getPos();
+   		var rbX,rbY,rbCx,rbCy = rbControl.getPos();
    		var x,y,cx,cy = this.getPos(); 
    	 
    		if( this.horz ){
-   			..win.setPos(owner.hwnd , x,ltY+ltCy);
-   			..win.setPos(this.rbControl.hwnd,rbX , ltY + ltCy + cy,rbCx,rbY + rbCy - (ltY + ltCy + cy) ); 
+   			owner.setPos(x,ltY+ltCy);
+   			
+   			if(this.rbControl[1]){
+				for(k,ctrl in this.rbControl){
+					var rbX,rbY,rbCx,rbCy = ctrl.getPos();
+					ctrl.setPos(rbX , ltY + ltCy + cy,rbCx,rbY + rbCy - (ltY + ltCy + cy) ); 	
+				} 
+   			}
+   			else {
+   				this.rbControl.setPos(rbX , ltY + ltCy + cy,rbCx,rbY + rbCy - (ltY + ltCy + cy) ); 	
+   			} 
    		}
    		else{
-   			..win.setPos(owner.hwnd ,ltX + ltCx ,y);
-   			..win.setPos(this.rbControl.hwnd,ltX + ltCx + cx , rbY, rbX + rbCx - (ltX + ltCx + cx),rbCy );
+   			owner.setPos(ltX + ltCx ,y);
+   			
+   			if(this.rbControl[1]){
+   				for(k,ctrl in this.rbControl){
+					var rbX,rbY,rbCx,rbCy = ctrl.getPos();
+					ctrl.setPos(ltX + ltCx + cx , rbY, rbX + rbCx - (ltX + ltCx + cx),rbCy );	
+				} 
+   			}
+   			else {
+   				this.rbControl.setPos(ltX + ltCx + cx , rbY, rbX + rbCx - (ltX + ltCx + cx),rbCy );
+   			} 
    		}  
    	};
 	@_metaProperty;
@@ -180,8 +251,11 @@ class splitter{
 
 splitter._metaProperty = metaProperty(  
 	split =function(ctrl1,ctrl2 ){ 
+		var c1 = ctrl1[1] || ctrl1;
+		var c2 = ctrl2[1] || ctrl2;
+		
     	if( owner.horz ){
-    		if( ctrl1.top < ctrl2.top ){
+    		if( c1.top < c2.top ){
     			owner[["ltControl"]] = ctrl1;
     			owner[["rbControl"]] = ctrl2;  
     		}
@@ -192,7 +266,7 @@ splitter._metaProperty = metaProperty(
     	}
     	else {
     		
-    		if( ctrl1.left < ctrl2.left ){
+    		if( c1.left < c2.left ){
     			owner[["ltControl"]] = ctrl1;
     			owner[["rbControl"]] = ctrl2;  
     		}
@@ -209,10 +283,32 @@ splitter._metaProperty = metaProperty(
 
 //感谢: 琴鸣 贡献最初的源码
 
+/**details(用法说明)
+
+要点：
+
+1. 使用控件的 split 函数拆分多个控件。
+	
+	例如:
+	
+		winform.splitter1.split( winform.edit1,winform.edit2 )  
+	
+	参数也可以是控件数组，每个控件数组必须包含位于拆分条同一侧的控件。
+	
+	例如:
+	
+		winform.splitter1.split( winform.edit1,{ winform.edit2,winform.edit3} )  
+	
+2. 在调整窗口大小时，拆分条会负责让被拆分的控件吸附在自己的两侧。
+
+	但是被拆分控件以及拆分条本身的其他固定边距属性、自适应大小属性应当自行根据需要设置。
+
+end details**/
+
 /**intellisense()
-!splitter.ltControl = 左边或上边的控件\n!static.
-!splitter.rbControl = 右边或下边的控件\n!static.
-!splitter.split(.(前面的控件,后面的控件) = 指定需要拆分的控件,\n被折分的控件可在控件属性中指定是否支持自动调整大小。\n\n拆分条每侧只能放一个控件,更多控件可放入子窗口并通过 custom 控件容器即可。\n\nlistbox 反复改变高度会因为自动适应项目行高而越来越小,\n要用拆分条改变 listbox 高度时最好也放入 custom 容器
+!splitter.ltControl = 拆分条左边或上边的控件。\n可以是控件对象，也可以是包含控件的数组。\n只能调用 split 函数修改此属性。\n!static.
+!splitter.rbControl = 拆分条右边或下边的控件。\n可以是控件对象，也可以是包含控件的数组。\n只能调用 split 函数修改此属性。\n!static.
+!splitter.split(.(前面的控件,后面的控件) = 指定需要拆分的控件。\n参数可以是控件对象，也可以是包含控件对象的数组。\n同一数组中的控件必须位于拆分条的同一侧。\n被折分的控件可在控件属性中指定是否支持自动调整大小。\n\n也可以将更多控件可放入子窗口并以 custom 控件作为容器加载，然后再拆分。\n\nlistbox 反复改变高度会因为自动适应项目行高而越来越小,\n要用拆分条改变 listbox 高度时最好也放入 custom 容器
 !splitter.horz = 是否水平拆分条
 !splitter.ltMin = 前面的控件最小尺寸
 !splitter.rbMin = 后面的控件最小尺寸
@@ -255,7 +351,10 @@ splitter._metaProperty = metaProperty(
 !splitter.getPos() = 返回相对坐标,宽,高\nx,y,cx,cy=win.getPos(hwnd)
 !splitter.sendMessage(.(msg,wParam,lParam) = 发送窗口消息\n此函数用法请参考 ::User32.SendMessage
 !splitter.postMessage(.(msg,wParam,lParam) = 投递窗口消息到消息队列中\n此函数用法请参考 ::User32.PostMessage
-?win.ui.ctrl.static  =!splitter.
+!splitter.onSplitterMoved = @.onSplitterMoved = function(l,t,r,b){
+	__/*拆分条已被拖拽移动到新位置，l,r,r,b 分别为左上右下坐标*/
+}
+?win.ui.ctrl.static = !splitter.
 win.ui.ctrl.splitter() = 拆分条控件\n!splitter.
 win.ui.ctrl.splitter = 拆分条控件支持库
 end intellisense**/

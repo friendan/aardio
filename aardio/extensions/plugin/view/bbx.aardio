@@ -1,20 +1,26 @@
 import win.ui;
 /*DSG{{*/
-var winform = ..win.form(text="百宝箱......";left=0;top=0;right=599;bottom=399;border="none";exmode="none";mode="child";parent=...;scroll=1)
-winform.add()
-/*}}*/
+mainForm = win.form(text="插件示例  ";left=0;top=0;right=599;bottom=399;border="none";exmode="none";mode="child";parent=...;scroll=1)
+mainForm.add()
+/*}}*/ 
 
-import ide; 
-import web.form;  
-var wb = web.form( winform, 0x4/*_UIFLAG_NO3DBORDER*/ | 0x200000/*_UIFLAG_NO3DOUTERBORDER*/, , ,true/*securityTrusted*/ );
- 
+//创建浏览器控件
+import web.view 
+var wb = web.view(mainForm);
+
+/*
+插件的主窗口必须指定为全局变量名 mainForm 。
+插件窗口是子窗口，子窗口关闭一般不会结束消息循环，但全局变量 mainForm 除外。
+*/
+mainForm.show();
+
 wb.external={
 	edit = function(){
 		ide.openDocument( "\bbx.aardio" ) 
 	} 
 }
  
-var html = /**
+wb.html = /**
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
@@ -40,13 +46,10 @@ a:hover {text-decoration : underline; color : #F16F31; }
 </head>
 <body>
 	<div >  本功能正在开发中,敬请关注!<br /><br />
-		<a href="javascript:void(0);" onclick="javascript:external.edit()">点这里编辑此插件源码</a>
+		<a href="javascript:void(0);" onclick="javascript:aardio.edit()">点这里编辑此插件源码</a>
 	</div>
 </body>
 </html>
 **/ 
-wb.write( html )
-wb.wait(""); 
 
-ide.pluginViewShow(winform)  
 win.loopMessage();

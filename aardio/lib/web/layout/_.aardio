@@ -1,4 +1,4 @@
-import fsys;
+﻿import fsys;
 import win.ui;
 import fsys.codepage; 
 import util.metaProperty;
@@ -86,10 +86,10 @@ namespace layout {
 	 
  	var ctrlClasses = ..win.ui.ctrl; 
  	var getAttributeByName = element.GetAttributeByName;
- 	var fromUnicode = ..string.fromUnicode;
+ 	var fromUtf16 = ..string.fromUtf16;
  	var loadText = ..fsys.codepage.load;
  	var loadBinary = ..string.loadBuffer;
- 	var joinpath = ..fsys.joinpath
+ 	var joinpath = ..io.joinpath
  	var match = ..string.match;
  	var replace = ..string.replace;
  	var indexOf = ..string.indexOf;
@@ -120,7 +120,7 @@ namespace layout {
 		[ 0xB01/*_HLN_LOAD_DATA*/ ]  = function(this,message, wParam, lParam, vParam,notifyCode){
 			var nmld = NMHL_LOAD_DATA();  
 			raw_convert(lParam, nmld);
-			var uri = fromUnicode(nmld.uri,,true);  
+			var uri = fromUtf16(nmld.uri,,true);  
 			if( nmld.dataType == 0/*_HLRT_DATA_HTML*/ && this.readyState != 'loading' ) { 
 				this.readyState = 'loading'  
 				this.locationUrl = uri; 
@@ -177,14 +177,14 @@ namespace layout {
 			var re,cType = getAttributeByName(nmld.helement,"cls")
 			if( !cType ) return 0;
 			
-			cType = fromUnicode(cType,,true)  
+			cType = fromUtf16(cType,,true)  
 			if( !ctrlClasses[cType] )
 				return 0;
 
 			var tParam = { bottom=1;right=1;left=0;top=0;cls=cType;text="";autoResize=false};
 			var re,dt = getAttributeByName(nmld.helement,"data-table")
 			if( dt ){
-				dt = fromUnicode(dt,,true) 
+				dt = fromUtf16(dt,,true) 
 				..table.assign(tParam,eval(dt) );
 			}
 			var ctrl = this._form.addCtrl( { tParam } )[1]; 
@@ -210,7 +210,7 @@ namespace layout {
 				if( type(handler) == "table" ){
 					var re,cId = getAttributeByName(nmld.helement,"id") 
 					if( re==0/*_HLDOM_OK*/ ? cId){
-						var f = handler[ fromUnicode(cId,,true) ];
+						var f = handler[ fromUtf16(cId,,true) ];
 						if(f) invoke(f,handler,ltEle,ctrl);
 					}
 				}
@@ -315,7 +315,7 @@ namespace layout {
 					data,err = ..string.loadcode(filename,charset);
 					..request = r;
 					
-					if(#data) data = ..string.toUnicode(data);
+					if(#data) data = ..string.toUtf16(data);
 					else error(err,2)
 				} 
 				else {
@@ -352,14 +352,14 @@ namespace layout {
 			var data,err  = ..string.loadcode(data,...);
 			if( err ) error( 'HTML不是开始于正确的HTML标记,或者aardio模板语法错误:\n' + err,2);
 			
-			data = ..string.toUnicode(data);
+			data = ..string.toUtf16(data);
 			return LoadHtmlEx( owner.hwnd, data, #data,"/" );
 		};
 		write = function (data, baseUrl="/") {
 			var data,err  = ..string.loadcode(data);
 			if( err ) error( 'HTML不是开始于正确的HTML标记,或者aardio模板语法错误:\n' + err,2);
 			
-			data = ..string.toUnicode(data);
+			data = ..string.toUtf16(data);
 			return LoadHtmlEx( owner.hwnd, data, #data,baseUrl );
 		};
 		createEle = createEle;
@@ -446,7 +446,7 @@ namespace layout {
 			if( type(func) != type.function) error("请指定回调函数参数",2)
 			var callBack = ..raw.tostdcall(
 				function(u,t,i,s){
-		 			return false !== func( fromUnicode(u,,true),t,i,s); 
+		 			return false !== func( fromUtf16(u,,true),t,i,s); 
 				} ,"bool(pointer resUri,string resType,pointer imgData,pointer imgSize)");
 			::HTMLayout.HTMLayoutEnumResources(owner.hwnd,callBack);
 		};

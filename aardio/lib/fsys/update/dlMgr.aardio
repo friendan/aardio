@@ -1,4 +1,4 @@
-//dlMgr 下载更新文件
+﻿//dlMgr 下载更新文件
 import web.json;
 import thread.command;
 import fsys.version;
@@ -90,7 +90,7 @@ class dlMgr{
 				return;
 			}
 
-			var updateInfo = ..string.load( ..fsys.joinpath(saveDir,"update-info") );
+			var updateInfo = ..string.load( ..io.joinpath(saveDir,"update-info") );
 			if(updateInfo){
 				updateInfo = ..web.json.tryParse(updateInfo);
 				if(updateInfo){
@@ -98,7 +98,7 @@ class dlMgr{
 					if( latestVersion && latestVersion.valid() && (appVersion < latestVersion) ){
 					
 						if(..fsys.path.cmp(updateInfo.appDir,appDir) === 0 ){
-							var updater = ..fsys.joinpath(saveDir,"files",updateInfo.updater);
+							var updater = ..io.joinpath(saveDir,"files",updateInfo.updater);
 							if(..io.exist(updater)){
             					var prcs,err = ..process( updater,{
                 					"/update";
@@ -161,7 +161,7 @@ namespace dlMgr{
 		saveDir = saveDir ? ..fsys.createDir(saveDir);
 		if( !saveDir ) return null,"创建升级文件下载目录失败";
 		
-		var saveFilesDir = ..fsys.joinpath(saveDir,"files");
+		var saveFilesDir = ..io.joinpath(saveDir,"files");
 		..fsys.createDir(saveFilesDir);
 		
 		var uagent = ..string.format("Mozilla/5.0 (Windows %d.%d.%d) App/%s"
@@ -194,8 +194,8 @@ namespace dlMgr{
 		var http = ..inet.http();
 		http.flags  = 0x4000000/*_INTERNET_FLAG_DONT_CACHE*/ | 0x100/*_INTERNET_FLAG_PRAGMA_NOCACHE*/ | 0x80000000/*_INTERNET_FLAG_RELOAD*/;
 		
-		var checksumLzmaPath =  ..fsys.joinpath(saveDir,"checksum.lzma") ; 
-		var file = ..io.open( checksumLzmaPath,"w+b" )
+		var checksumLzmaPath =  ..io.joinpath(saveDir,"checksum.lzma") ; 
+		var file = ..io.file( checksumLzmaPath,"w+b" )
 		http.onReceive = function(str,size,contentLength){
 			file.write(str);
 		}
@@ -209,7 +209,7 @@ namespace dlMgr{
 		http.close();
 		file.close();
 		
-		var checksumPath =  ..fsys.joinpath(saveDir,"checksum") ; 
+		var checksumPath =  ..io.joinpath(saveDir,"checksum") ; 
 		if( ! ..sevenZip.lzma.decodeFile(checksumLzmaPath,checksumPath) ){ 
 			return null,"解压校验文件失败",checksumLzmaPath;
 		}
@@ -227,12 +227,12 @@ namespace dlMgr{
 		var file,localPath,crc32,uncompressedSize,size,path; 
 		var count = 0; 
 		
-		var fileFolder = ..io.open(..fsys.joinpath(saveDir,"folders"),"w+b");
+		var fileFolder = ..io.file(..io.joinpath(saveDir,"folders"),"w+b");
 		for line in ..io.lines(checksumPath) { 
 			crc32,uncompressedSize,size,path = ..string.match(line,"(.+?)\|(.+?)\|(.+?)\|(.+)"); 
 			crc32 = tonumber(crc32)
 			size = tonumber(size)
-			localPath = ..fsys.joinpath(appDir,path);
+			localPath = ..io.joinpath(appDir,path);
 			
 			count++;
 			if( sendIdle(1000,hCmd,"onChecksum",count,totalFiles) === false ) { fileFolder.close(); return true; };
@@ -241,13 +241,13 @@ namespace dlMgr{
 				continue;
 			}
 				
-			file = ..io.open(localPath,"rbS")
+			file = ..io.file(localPath,"rbS")
 			if( file ){
 				uncompressedSize = tonumber(uncompressedSize)
 				if( file.size(1) == uncompressedSize ){ 
 					if(  ( ..string.crc32( file.read(-1) ) == tonumber(crc32) ) || !uncompressedSize ){
 						file.close(); 
-						..fsys.delete(  ..fsys.joinpath(saveFilesDir,path) );
+						..fsys.delete(  ..io.joinpath(saveFilesDir,path) );
 						continue
 					} 
 				}
@@ -270,7 +270,7 @@ namespace dlMgr{
 		
 		for(i=1;#updateFiles;1){
 			var path = updateFiles[i];
-			var localPath = ..fsys.joinpath(saveFilesDir,path ++ updateInfo.format );
+			var localPath = ..io.joinpath(saveFilesDir,path ++ updateInfo.format );
 			var downloadUrl = ..inet.url.append(updateInfo.url,"files",..string.hex(path,"%","!.-_~*()\/")  ++ updateInfo.format )
 			var remoteFile = ..inet.httpFile(downloadUrl , localPath ) 
 			
@@ -315,7 +315,7 @@ namespace dlMgr{
 		send(hCmd,"onUnCompressBegin",#updateFiles)
 		for(i=1;#updateFiles;1){
 			var path = updateFiles[i];
-			var localPath = ..fsys.joinpath(saveDir,"files",path);
+			var localPath = ..io.joinpath(saveDir,"files",path);
 			var ok,err =  ..sevenZip.lzma.decodeFile( localPath ++ updateInfo.format ,localPath );
 			if( !ok ){ 
 				return null,..string.concat( "解压错更新文件遇到错误 ",err), path;
@@ -323,7 +323,7 @@ namespace dlMgr{
 			if( send(hCmd,"onUnCompress",i,path) === false ) return true;
 		}
 
-		var file = ..io.open(..fsys.joinpath(saveDir,"update-files"),"w+b");
+		var file = ..io.file(..io.joinpath(saveDir,"update-files"),"w+b");
 		for(i=1;#updateFiles;1){
 			file.write(updateFiles[i],'\r\n')
 		}
@@ -333,16 +333,16 @@ namespace dlMgr{
 			updateInfo.updater = ..io._exefile;
 		}
 		
-		var updater = ..fsys.joinpath(saveDir,"files",updateInfo.updater);
+		var updater = ..io.joinpath(saveDir,"files",updateInfo.updater);
 		if( !..io.exist(updater) ){ 
-			..fsys.copy( ..fsys.joinpath(appDir,updateInfo.updater) ,updater);
+			..fsys.copy( ..io.joinpath(appDir,updateInfo.updater) ,updater);
 			
 			if( !..io.exist(updater) ){
 				return null,"未找到更新程序",updateInfo.updater;
 			}
 		}
 		
-		var infoPath = ..fsys.joinpath(saveDir,"update-info");
+		var infoPath = ..io.joinpath(saveDir,"update-info");
 		updateInfo.updateStatus = "pending";
 		updateInfo.appDir = ..io.fullpath(appDir);
 		updateInfo.main = ..io.fullpath(..io.joinpath(appDir,updateInfo.main));
