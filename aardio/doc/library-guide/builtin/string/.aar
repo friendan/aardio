@@ -1,0 +1,11 @@
+string 库=string.md
+读写文件=file.md
+格式化字符串=format.md
+文本解析=parsing.md
+模式匹配函数=matching.md
+模式语法=patterns.md
+随机字符串=rand.md
+查找字符串=search.md
+拆分合并=part.md
+中文分词分句=segmentation.md
+

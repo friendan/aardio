@@ -1,0 +1,9 @@
+﻿回调 aardio=dotNet.ps.aardio
+InvokeMember=InvokeMember.aardio
+进度条=onWriteProgress.aardio
+JSON =dotNet.json.aardio
+共享应用域 =AppDomain.aardio
+管道调用=process.popen.ps.aardio
+运行 ps1 文件=process.popen.ps1.aardio
+ps1 权限=executionpolicy.aardio
+反编译 Cmdlet=decompiler.aardio

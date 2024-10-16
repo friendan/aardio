@@ -1,0 +1,4 @@
+创建对象=CreateObject.aardio
+响应事件=Connect.aardio
+嵌入控件=CreateEmbedEx.aardio
+查看对象=DumpTypeInfo.aardio

@@ -1,0 +1,6 @@
+切换版本=version.aardio
+调用 PHP 函数=rpc.aardio
+PHP 回调 aardio=rpc.callback.aardio
+CGI 调用=cgi.aardio
+event-stream=sse.aardio
+嵌入虚拟机=EmbedVM

@@ -1,0 +1,9 @@
+﻿网络管理=Manage
+wsock=wsock
+inet=inet
+protobuf=protobuf
+zeromq=zeromq
+上传下载=Transfer
+smtp=smtp
+curl=curl
+adb=adb

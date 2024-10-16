@@ -1,0 +1,4 @@
+发送字符串=sendString.aardio
+用剪贴板发送文本=sendByCb.aardio
+获取选区文本=selection.aardio
+光标位置=caret.aardio

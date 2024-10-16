@@ -1,0 +1,5 @@
+简单解析=parse.aardio
+格式化=format.aardio
+HTML 转文本=html2txt.aardio
+HTML 转 Markdown=html2md.aardio
+MSHTML=mshtml.aardio

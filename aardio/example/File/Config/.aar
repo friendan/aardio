@@ -1,0 +1,4 @@
+fsys.config=fsys.config.aardio
+fsys.table=fsys.table.aardio
+ini 文件=ini.aardio
+字符串列表=stringlist.aardio

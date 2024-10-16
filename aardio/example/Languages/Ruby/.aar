@@ -1,0 +1,5 @@
+﻿调用 Ruby 函数=startRpc.aardio
+Ruby/CGI服务器=cgi.aardio
+执行Ruby代码=exec.aardio
+交互解释器=irb.aardio
+执行Rake命令=rake.aardio

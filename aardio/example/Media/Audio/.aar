@@ -1,0 +1,11 @@
+﻿播放声音=audio.aardio
+bass=bass.aardio
+录音（NAudio）=dotNet.audio.aardio
+切换输出设备=dotNet.audioDevice.aardio
+fsys.media=fsys.media.aardio
+ID3 标签=ID3.aardio
+LRC 歌词解析=lrc.aardio
+合成并输出音乐=midiOut.aardio
+获取声卡=soundDevice.aardio
+SAPI 文本转语音=tts.aardio
+音量调节=volume.aardio

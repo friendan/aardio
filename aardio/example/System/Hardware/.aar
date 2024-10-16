@@ -1,0 +1,6 @@
+显示器 DDC/CI=ddcci.aardio
+RUNAS//禁用设备=devcon.aardio
+硬件信息=device.aardio
+自动检测U盘=deviceNotification.aardio
+电源管理关屏=monitorPower.aardio
+PID,VID=usb.pid.vid.aardio

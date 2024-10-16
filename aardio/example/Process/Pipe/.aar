@@ -1,0 +1,5 @@
+入门=start.aardio
+回显 / 异步回显=logResponse.aardio
+模式匹配=expect.aardio
+分行模式匹配=lines.aardio
+发送Ctrl+C=ctrlEvent.aardio

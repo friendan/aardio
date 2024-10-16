@@ -1,0 +1,17 @@
+//入门
+import console.int;  
+import py2;
+ 
+//导入 Python 模块
+var math = py2.import("math");
+
+//调用 Python 函数，  
+var num = math.floor(22.3);
+
+//在控制台输出数值。 
+console.log(num);
+
+/*
+请参考 Python 数据类型转换规则: 
+doc://library-guide/ext/python/conversion.html
+*/

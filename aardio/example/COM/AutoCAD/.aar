@@ -1,0 +1,9 @@
+﻿入门=introduction.aardio
+加载 LISP 代码=command.aardio
+窗口命令+模板语法=sendCopyData.aardio
+LISP 调用 aardio=startExe.aardio
+调用 LISP 函数=vla.aardio
+进程内对象=GetInterfaceObject.aardio
+读写系统变量=variable.aardio
+.NET 接口=netload.aardio
+对象数组=dispArray.aardio

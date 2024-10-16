@@ -1,0 +1,15 @@
+external 接口=external.aardio
+script 接口=script.aardio
+调用 JS 函数=callJs.aardio
+JS 调用本地函数 =xcall.aardio
+触发 JS 事件=fireJsEvent.aardio
+JS 触发本地事件=dispatchEvent.aardio
+嵌入原生控件=addCtrl.aardio
+模板语法=template.aardio
+Preact=reactor.aardio
+无边框窗口=frameless.aardio
+自定义 behavior=exchange.aardio
+Chart.js=Chart.js
+Canvas=canvas.aardio
+ANSI 终端=terminal.aardio
+jQuery=jQuery.aardio

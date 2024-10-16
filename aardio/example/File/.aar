@@ -1,0 +1,16 @@
+﻿配置文件=Config
+压缩解压=Compression
+7Zip=7Zip
+asar打包解包=asar
+串口=SerialPort
+监视文件=Monitor
+文件时间=FileTime
+读写文件=IO
+文件对话框=Dialog
+批量操作=Batch
+torrent 文件=torrent
+快捷方式=Shortcut
+命名管道=NamedPipe
+特殊路径=SpecialPath
+存储设备=Storage
+文件权限=Permissions

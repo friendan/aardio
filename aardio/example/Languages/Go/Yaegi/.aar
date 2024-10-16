@@ -1,0 +1,4 @@
+Go 语言脚本=yaegi.aardio
+第三方模块=yaegi.use.aardio
+提取符号表=yaegi.Symbols.aardio
+aardio 回调函数=jsonCall.aardio

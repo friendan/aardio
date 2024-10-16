@@ -1,0 +1,12 @@
+入门=start.aardio
+必读：参数转义=joinArguments.aardio
+管道=Pipe
+自动扫雷=mem.aardio
+搜索程序路径=fsys.lnk.aardio
+等待主窗口=waitMainWindow.aardio
+内存与模块搜索=util.aardio
+WoW64 重定向=wow64.aardio
+登录、创建进程=logon.aardio
+进程堆信息=heap.aardio
+运行 DLL=rundll.aardio
+效率模式=setInfo.aardio

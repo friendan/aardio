@@ -1,0 +1,8 @@
+Cab 打包压缩=CabQuicker.aardio
+gzip 读写=gzfile.aardio
+gzip 解压网页=gzip.aardio
+tar.gz 压缩解压=tar.gz.aardio
+tar.lzma 打包压缩=tar.lzma.aardio
+RAR 解压=unrar.aardio
+zip 解压=unzip.aardio
+zip 压缩=zip.aardio

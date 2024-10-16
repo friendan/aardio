@@ -1,0 +1,8 @@
+﻿入门=reg.aardio
+WoW64 重定向=wow64.aardio
+快速定位=lastkey.aardio
+右键打开命令行=openCmdHere.aardio
+右键打开 VSCode=openCodeHere.aardio
+清除远程桌面连接记录=rdp.aardio
+RUNAS//Win11右键菜单切换=win11Menu.aardio
+系统搜索路径=appPath.aardio

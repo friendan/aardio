@@ -1,0 +1,4 @@
+搜索类名=meta_class.aardio
+监视进程=SWbemSink.aardio
+获取系统信息=SysInfo.aardio
+RUNAS//系统账号管理=UserAccount.aardio

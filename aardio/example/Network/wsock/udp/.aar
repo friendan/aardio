@@ -1,0 +1,4 @@
+UDP 广播=broadcast.aardio
+SSDP 发现设备=ssdp.aardio
+单播=Unicast
+组播=Multicast

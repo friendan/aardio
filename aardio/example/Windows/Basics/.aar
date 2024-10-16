@@ -1,0 +1,13 @@
+﻿绘图基础=start.aardio
+创建窗口隐藏参数=win.form.aardio
+动态创建控件=win.form.add.aardio
+消息回调=wndproc..aardio
+响应控件命令=command.aardio
+响应控件通知=notify.aardio
+无边框窗口=frameless.aardio
+orphanWindow=orphanWindow.aardio
+预处理通知消息=prenotify.aardio
+高分屏自适应=dpiScaling.aardio
+自适应缩放事件=adjust.aardio
+分层透明窗口=layered.aardio
+控件重叠=overlapping.aardio

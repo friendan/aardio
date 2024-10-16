@@ -1,0 +1,8 @@
+﻿web.rest 接口=rest
+web.view 网页组件=view
+web.form 网页控件=form 
+web.layout 界面库=layout
+web.nativeMessaging=nativeMessaging
+
+
+

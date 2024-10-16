@@ -1,0 +1,133 @@
+//高级选项卡 win.ui.tabs
+import fonts.fontAwesome;
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="使用高级选项";right=1040;bottom=642;bgcolor=16777215;border="none")
+mainForm.add(
+caption={cls="bkplus";text="选项卡演示";left=35;top=12;right=160;bottom=30;color=15780518;dl=1;dt=1;font=LOGFONT(h=-16);z=5};
+logo={cls="bkplus";text='\uF0AD';left=6;top=9;right=35;bottom=34;color=15780518;dl=1;dt=1;font=LOGFONT(h=-18;name='FontAwesome');z=4};
+tabPanel={cls="custom";left=0;top=40;right=1040;bottom=643;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1};
+tabPlus1={cls="plus";text="测试1";left=166;top=5;right=294;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF00A';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=3};
+tabPlus2={cls="plus";text="测试2";left=294;top=5;right=422;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF11C ';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=6};
+titleBar={cls="bkplus";left=0;top=0;right=1042;bottom=41;bgcolor=14977280;dl=1;dr=1;dt=1;z=2}
+)
+/*}}*/
+
+//导入"高级选项卡（ tab plus control ）"
+import win.ui.tabs;
+
+/*
+相关文档: doc://library-guide/std/win/ui/tabs/_.md
+
+创建"高级选项卡"步骤：
+
+- 在窗体上添加两个 plus 控件 mainForm.tabPlus1, mainForm.tabPlus2 
+  这些 plus 控件显示在选项卡头部（ header ）位置，并且用于确定选项卡的外观与排列方向。
+	
+- 在窗体上添加一个 custom 控件 mainForm.tabPanel 作为页面容器，
+  用于在选项卡的客户区（ client area ）加载子窗口以显示不同的页面内容。
+
+然后调用下面的代码创建 win.ui.tabs 控件。
+*/
+var tabs = win.ui.tabs(mainForm.tabPlus1,mainForm.tabPlus2);
+
+//可选清除  mainForm.tabPlus1,mainForm.tabPlus2，这些选项卡获取的默认样式与排列方向与间距已经保存。
+tabs.clear();
+
+//指定选项卡右侧预留的空白边距（用于显示下拉菜单，以及其他需要放置的控件）
+tabs.margin = 150;
+
+//指定所有选项卡按钮的交互样式，用法与 plus 控件相同
+tabs.skin({
+	foreground={
+		active=0xFFFFFFFF;
+		default=0x00FFFFFF;
+		hover=0x38FFFFFF
+	};
+	color={
+		default=0xFFFFFFFF; 
+	};
+	checked={
+		foreground={default=0xFFFFFFFF;}; 
+		color={default=0xFF42A875;};
+	}
+})
+//控件样式参数建议写到用户库里，改为 tabs.skin( styles.tabs ) 会更好。
+
+//添加更多选项卡，参数可指定创建选项卡控件的属性(作为创建 plus 控件的表参数)
+var tabIndex1 = tabs.add({
+	text="标签页1";
+	iconText='\uF0AD';
+	hasCloseButton = true;
+})
+
+//继续添加选项卡, 一般不用取返回值，这是给 AI 看的。
+var tabIndex2 = tabs.add({
+	text="标签页2";
+	iconText='\uF0AD';
+	hasCloseButton = true;
+})
+
+ //在创建窗体并设为第一个标签页，page1 是一个 win.form 对象。
+var formPage1 = tabs.loadForm(tabIndex1);//参数 1 指加载到索引为 tabIndex1 的标签页。
+
+/*
+//可自参数指定的窗体代码文件加载子窗口到标签页容器，第一个参数指定选项卡索引（省略则为 #tabs.forms + 1） 
+tabs.loadForm(tabIndex1,"\dlg\first.aardio" );  
+tabs.loadForm(tabIndex2,"\dlg\hotkey.aardio" );   
+*/
+ 
+// 在第一个标签页上添加按钮，用法与 winform.add 相同。
+formPage1.add({
+   button1 = { 
+   		cls="button";
+    	text="按钮2";
+    	left=20;top=20;right=120;bottom=50;
+    	
+    	}
+	}
+)
+
+formPage1.button1.oncommand = function(){
+	formPage1.msgbox("hello")
+}
+
+//切换选项卡触发下面的事件
+tabs.onSelchange = function(index,tabItem,form){
+	
+}
+
+/*
+//选项卡调整位置会触发下面的函数
+tabs.adjust = function(){
+	var x,y,cx,cy = owner.getPos(); //获取选项卡的x,y 坐标,cx为宽度,cy 为高度
+}
+*/
+
+//设置当前选项卡
+tabs.selIndex = 1; 
+
+//也可以用下面的代码自定义关闭按钮的外观样式
+tabs.closeButton.skin(
+    background = {
+        hover = 0xFFe35c51;
+        active = 0xFF8f241b;
+        default = 0x99FFCC66;
+    }
+    color = {
+        hover = 0xFFFFFFFF;
+        active = 0xFFEEEEEE;
+        default = 0xCCFFFFFF;
+    }
+)
+
+//可以自定义关闭按钮在选项卡上的显示位
+tabs.beforeShowCloseButton = function(tab,rcTab,rcCloseButton,dpiScaleX){ 
+    return rcTab.right - 10 * dpiScaleX, rcTab.top -2* dpiScaleX;
+}
+
+import win.ui.simpleWindow;
+win.ui.simpleWindow( mainForm );
+
+mainForm.show();
+win.loopMessage(); 

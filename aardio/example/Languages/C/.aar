@@ -1,0 +1,9 @@
+﻿快速入门=start.aardio
+生成 DLL =dll.aardio
+aardio 调用 C=getCdecl.aardio
+C 调用 aardio=setCdecl.aardio
+原生数组=array.aardio
+弹性数组 =flexible_array.aardio
+结构化参数表=raw.cdeclParameter.aardio
+静态内存结构体=raw.struct.aardio
+main 函数=run_main.aardio

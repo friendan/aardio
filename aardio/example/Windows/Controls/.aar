@@ -1,0 +1,11 @@
+﻿日历时间=calendar.aardio
+编辑listbox=editListbox.aardio
+按钮嵌按钮=innerButton.aardio
+IP地址控件=ipAddress.aardio
+按钮附注=linkbutton.aardio
+单选按钮=radio.aardio
+滚动条/滑尺控件=scroll.aardio
+窗口滚动条=scrollWindow.aardio
+拆分控件=splitter.aardio
+超链接控件=syslink.aardio
+自定义控件=CustomControls.aardio

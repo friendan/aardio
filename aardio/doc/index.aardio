@@ -1,0 +1,806 @@
+import win.ui;
+import win.ui.atom;
+import win.ui.explorer;
+import fonts.fontAwesome;
+import web.form;
+import wsock.tcp.simpleHttpServer;
+/*DSG{{*/
+var winform = win.form(text="aardio 文档";right=903;bottom=569;bgcolor=16382457;exmode="none";mode="popup")
+winform.add(
+bk2={cls="bk";left=-17;top=-5;right=924;bottom=36;bgcolor=16579578;dl=1;dr=1;dt=1;z=1};
+bk3={cls="bk";left=3;top=30;right=267;bottom=31;bgcolor=15461355;dl=1;dt=1;forecolor=11842740;z=2};
+btnAiSearch={cls="plus";text="问 AI";left=342;top=3;right=410;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);hide=1;iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome');padding={left=8}};iconText='\uF007';notify=1;textPadding={left=25};z=10};
+btnBack={cls="plus";text='\uF060';left=785;top=8;right=812;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=8};
+btnForward={cls="plus";text='\uF061';left=826;top=8;right=853;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=9};
+btnSearch={cls="plus";text="搜索";left=274;top=3;right=335;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF002';notify=1;textPadding={left=25};z=4};
+btnWebDoc={cls="plus";text='\uF268';left=868;top=8;right=895;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=11};
+custom={cls="custom";text="自定义控件";left=231;top=39;right=908;bottom=567;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=6};
+editKeyWord={cls="edit";left=3;top=8;right=267;bottom=30;align="right";bgcolor=16579578;color=3355443;dl=1;dt=1;z=5};
+editUrl={cls="edit";left=408;top=9;right=765;bottom=36;align="right";bgcolor=16579578;color=3355443;dl=1;dr=1;dt=1;z=7};
+treeview={cls="treeview";left=3;top=47;right=228;bottom=567;asel=false;bgcolor=16579578;db=1;dl=1;dt=1;z=3}
+)
+/*}}*/
+
+var atom,hwnd = winform.atom("0B839EBF-903D-4818-9C70-CCBE1A8ABEEA.doc");
+if(!atom){
+	if(!____search_doc__path){
+		win.quitMessage();	
+		return;		
+	} 
+}
+
+var explorer = win.ui.explorer( winform.treeview );//自动检测顶部的 combobox 并转换为驱动器下拉列表
+explorer.dirFirst = false;
+
+var wb = web.form(winform.custom);
+wsock.tcp.simpleHttpServer.documentRoot = "~/doc"
+var startUrl = wsock.tcp.simpleHttpServer.startUrl(function(response,request){
+	if( string.endWith(request.path,".md") 
+		|| string.endWith(request.path,".html") 
+		|| string.startWith(request.path,"/example/") ){
+		response.loadcode("/template.aardio");
+	}
+	else {
+		response.loadcode(request.path);
+	}
+});
+
+import string.list;
+var langList  = string.list();
+langList.load("~\config\lang\lib.txt");
+explorer.translatePath = function(dirPath,files,dirs){
+	if(fsys.path.ischild("~/lib",dirPath)){
+		var itemPath = ..fsys.path.relative(dirPath,"~/lib",false)
+		if(itemPath==".")itemPath="";
+		
+		if( files && dirs){
+		 	
+			var newFiles = {}
+			for(i=1;#files;1){ 
+	 			var name = files[i];
+	 			var path = files[name];
+	 			
+	 			if(name == "_.aardio"){
+	 				newFiles[i] = "默认库";
+					newFiles["默认库"] = path;  
+					continue;
+	 			}
+	 			
+	 			var newName = name;
+	 			var file = io.file(path,"rt");
+	 			if(file){
+	 				var line = file.read(); 
+	 				if(line){
+	 					line = string.removeBom(line);//清除所有 aardio 文件 bom 后去掉这句
+	 					newName = string.match(line,"^//(\N+\S)") || name;
+	 				}
+	 				
+	 				file.close();
+	 			}
+	 		 	
+				newFiles[i] = newName;
+				newFiles[newName] = path;  
+			} 
+			
+	 		var newDirs = {}
+	 		for(i=1;#dirs;1){ 
+	 			var name = dirs[i];
+	 			var path = dirs[name];
+	 			
+				var newName = langList[itemPath ++ name]  : name;
+				newDirs[i] = newName;
+				newDirs[newName] = path;  
+			} 
+			
+			return newFiles,newDirs;
+		} 
+		
+		return files,dirs;	
+	}
+
+	var str = ..string.load(dirPath + "\.aar");
+	if(!str) return files,dirs;
+	
+	var files1 = {};
+	var dirs1 = {};
+	
+	var push = ..table.push;
+	for(k,v,f in string.each(str,"(.+)\=(.+?)(<.md>?)$") ){
+		v = string.trim(v);
+		
+		if(#f){
+			push(files1,k);
+			files1[k] = v[1]!='~'#?..io.joinpath(dirPath,v+".md"):v+".md";
+		}
+		else {
+			push(dirs1,k);
+			dirs1[k] = v[1]!='~'#?..io.joinpath(dirPath,v):v;	
+		} 
+	}
+	  
+	return files1,dirs1;
+	
+	if( files && dirs){
+		 
+		var newFiles = {}
+		for(i=1;#files;1){ 
+	 		var name = files[i];
+	 		var path = files[name];
+	 		
+			var newName = map[name]  : name;
+			newFiles[i] = newName;
+			newFiles[newName] = path;  
+		} 
+		
+	 	var newDirs = {}
+	 	for(i=1;#dirs;1){ 
+	 		var name = dirs[i];
+	 		var path = dirs[name];
+	 		
+			var newName = map[name]  : name;
+			newDirs[i] = newName;
+			newDirs[newName] = path;  
+		} 
+		
+		return newFiles,newDirs;
+	} 
+}
+
+import string.markdown;
+var markdown = string.markdown()
+
+explorer.onClick = function(filePath,hItem ){
+    if( !fsys.isDir( filePath ) ) {
+        if(fsys.path.ischild("~/lib/",filePath)){
+            
+        	var path = fsys.path.relative(filePath,"~/lib/");
+        	path = fsys.path.replaceExt(path,".html");
+        	path = io.joinpath("library-reference",path);
+        	
+        	var url =  wsock.tcp.simpleHttpServer.startUrl(path);
+        	wb.go(url);
+        	return;
+        }
+        
+        var path = fsys.path.relative(filePath,"/"); 
+        path = fsys.path.replaceExt(path,".html");
+        
+        var url =  wsock.tcp.simpleHttpServer.startUrl(path) 
+        wb.go(url);
+    } 
+}
+
+import ide;
+import process;
+import win.ui.menu;
+import fsys.remove;
+import win.clip;
+import win.clip.file;
+explorer.onRightClick = function(filePath,hItem,x,y){
+    var hItem,tvht = winform.treeview.hitTest(x,y,true);
+    var menu = win.ui.popmenu(winform)
+    
+    var isDir = fsys.isDir(filePath);
+    if(!isDir){
+        
+        if(string.endWith(filePath,".aardio",true)){ 
+    		menu.add("打开源代码 ",
+        		function(){
+            		ide.openDocument(filePath);
+            		win.setForeground(ide.getMainHwnd()); 
+            		winform.show(6/*_SW_MINIMIZE*/);
+        		}
+    		)
+    	}
+    	
+    	menu.add();  
+    	
+    	menu.add("浏览文件...",
+        	function(){
+            	process.exploreSelect(filePath); 
+        	}
+    	)
+    	
+    	menu.add("用外部编辑器打开 ...",
+        	function(){ 
+        	    var path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(!path) io.rename("~\extensions\trigger\editDefault.aardio","~\extensions\trigger\edit.aardio");
+        	    path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(path){
+        	    	loadcodex(path,filePath);
+        	    }
+            	else {
+            		import fsys.openWith;
+            		fsys.openWith(filePath);
+            	} 
+        	}
+    	)
+    	
+      	menu.add("复制 markdown（用于 AI 对话）",
+        	function(){ 
+        	    	
+        			if(fsys.path.ischild("~/lib/",filePath)){
+            			
+            			import ide.doc.libraryMd;
+            			var md = ide.doc.libraryMd(filePath)
+        				win.clip.write(md) 
+        			}
+        			elseif(string.endWith(filePath,".md",true)){
+        				var md = string.load(filePath);
+        				win.clip.write(md)
+        			}
+        			
+        	}
+    	)
+    	  	
+    	menu.add("复制文件到 ...",
+        	function(){
+            	win.clip.file.write(filePath,"copy"); 
+        	}
+    	)
+    	
+    	menu.add(); 	
+    } 
+    else{	
+    	menu.add("浏览目录...",
+        	function(){
+            	process.exploreSelect(filePath); 
+        	}
+    	)
+    	
+    	menu.add("用外部编辑器打开 ...",
+        	function(){ 
+        	    var path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(!path) io.rename("~\extensions\trigger\editDefault.aardio","~\extensions\trigger\edit.aardio");
+        	    path = io.exist("~\extensions\trigger\edit.aardio")
+        	    if(path){
+        	    	loadcodex(path,filePath);
+        	    }
+            	else {
+            		import fsys.openWith;
+            		fsys.openWith(filePath);
+            	} 
+        	}
+    	)
+    	
+    	menu.add("复制目录到 ...",
+        	function(){
+            	win.clip.file.write(filePath,"copy"); 
+        	}
+    	)
+    	
+    	menu.add();  
+	}
+   
+    if(isDir){
+    	menu.add();
+    	
+    	menu.add("同步本地目录",
+        	function(){ 
+        	    if(!winform.treeview.isExpandedOnce(hItem)){
+        	        winform.treeview.setSelected(hItem); 
+        	    	winform.treeview.expand(hItem); 
+        	    }
+        	    else {
+        	    	explorer.reloadFile(filePath,hItem);
+            		winform.treeview.setSelected(hItem); 
+        	    } 
+        	}
+    	)    	
+    }
+
+    menu.popup(x,y,true);   
+}
+
+wb.preTranslateAccelerator = function(msg){ 
+	accelerator.translate(msg);
+}
+
+wb.translate = function( url ){
+	if(..string.startWith(url,"doc://",true)){
+		url = wsock.tcp.simpleHttpServer.startUrl(string.right(url,-6));   
+	} 
+	
+	return url;
+}
+
+wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
+ 
+	if( ..string.startWith(url,"javascript:",true) ) return;
+
+	if(..string.startWith(url,"http://127.0.0.1:",true)){ 
+		return url, Flags, TargetFrameName, PostData, Headers,false;
+	} 
+	 
+ 	process.execute(url);
+	return url, Flags, TargetFrameName, PostData, Headers,true;
+}
+
+
+//打开指定目录
+explorer.loadFile("/",{"*.md","*.aardio"});
+
+import inet.url;
+winform.btnSearch.oncommand = function(id,event){
+	  
+	var keyWord = winform.editKeyWord.text;
+	if(!#keyWord){
+		winform.editKeyWord.showWarningTip("请输入要搜索的关键词");
+		return;
+	}
+	
+	if(::GetKeyState(0x11/*_VK_CTRL*/) & 0x8000 ){
+		var url = "https://www.aardio.com/zh-cn/doc/";
+		var kw = winform.editKeyWord.text;
+		if(#kw){
+			url = inet.url.appendExtraInfo(url,{
+				q = kw;
+			})
+		} 
+		
+		import process;
+		process.openUrl(url);
+		return ; 
+	}
+	
+	var err;
+	try{
+		string.find("",keyWord)
+	}
+	catch(e){
+		err = e;
+	}
+	 
+	if(err){
+		err = string.match(err,"\{Error\}\:(.+)") : err;
+		winform.editKeyWord.showErrorTip("模式匹配语法错误",err);
+		winform.btnAiSearch.hide = false;
+		winform.btnAiSearch.webSelectedText = `string.find("`+keyWord+`") //函数报模式匹配语法错误:` + err;
+		return;
+	}
+	
+	..thread.set("doc://search-results.html","正在搜索文档、库、范例，请稍候 ……");
+	var url = wsock.tcp.simpleHttpServer.startUrl("/search-results.md"); 
+	wb.go(url); 
+	  
+	winform.btnSearch.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250';text=''}
+	win.ui.waitCursor(true)
+	thread.delay(500);
+	  
+	var searchResultMd = ""
+	 
+	fsys.enum( "~/doc", "*.md",
+		function(dir,filename,fullpath,findData){ 
+			if(filename){ 
+	           	var text = string.load(fullpath);
+	            var i,j = string.find(text,keyWord)
+	           	if( i ){
+	           	    var startChr = string.len(text,1,i-1);
+	           	    startChr = math.max(1,startChr-10);
+	           	    var preview = string.slice(text,startChr,startChr+200,true);
+	           	    
+	           	    var filename = fsys.getFileName(fullpath);
+	           	    var docPath = ..fsys.path.relative(fullpath,"~/doc",false); 
+	           	    var url = string.replace(docPath,"\\","/");
+	           	    url = string.left(url,-4) + ".html"
+	           	    
+	           	    if( string.endWith(docPath,"_.md") ) { 
+                		docPath = string.left(docPath,-6); 
+            		}
+            		
+            		if( string.endWith(docPath,".md") ) { 
+                		docPath = string.left(docPath,-4); 
+            		}
+            		
+            		docPath = ..string.replace(docPath,"[\\]","/") ;
+            		
+            		var str = ..string.load(fsys.path.replaceFile(fullpath,".aar"));
+     				if(#str){
+     					for(title in string.each(str,"(.+)\=<@"+filename+"@>$") ){
+							docPath = docPath + " " + title
+							break;
+						} 	
+     				} 
+     				
+     				
+     				searchResultMd = searchResultMd ++ "### 文档: [" + docPath + ']('+url+')\n'
+     					+ '\n```\n' + string.replace(preview,"```","&#96;&#96;&#96;") + '\n```\n\n';
+     					 
+	           	}
+			} 
+		},
+		function(dirPath,dirName){
+			if(dirName=="README") return false; 
+			return true;
+		}
+	);
+	
+	import string.markdown;
+	var markdown = string.markdown(); 
+	..thread.set("doc://search-results.html",searchResultMd); 
+	if(url == wb.location){
+		wb.body.innerHTML = markdown.render(searchResultMd);
+		thread.delay(100);		
+	} 
+	
+	var text = string.load("~\config\intellisense\kernel.txt");
+	var i,j = string.find(text,keyWord+ "\s*=")
+		||string.find(text,keyWord+ "\(")
+		||string.find(text,keyWord)
+	if(i){
+	    
+	    var startChr = string.len(text,1,i-1);
+	    startChr = math.max(1,startChr-10);
+	    var preview = string.slice(text,startChr,startChr+200,true);
+	    
+	    var libPath = "global 全局表与内置库";
+	    var url = "/library-reference/builtin/_.html" 
+	    
+	    var libName = string.match(keyWord,"^\s*\.*(\w+)"); 
+	    if(libName){
+	        var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1 };
+	    	if(builtin[libName]){
+	    	    libPath = libName + " 内置库";
+	    		url = "/library-reference/"+libName+"/_.html" 
+	    	}	
+	    }
+	     
+	    searchResultMd = searchResultMd ++ "### 库参考: [" + libPath + ']('+url+')\n'
+     		+ '\n```\n' + string.replace(preview,"```","&#96;&#96;&#96;") + '\n```\n\n'; 
+	}
+	
+	var libPath,libMember;
+	if(io.libpath(keyWord)){
+		libPath = keyWord;
+	}
+	else {
+		var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1 };
+		var libPath1,libMember1 = string.match(keyWord,"^\s*\.*(.+)\.(\w+)!\W"); 
+		if(libPath1 && io.libpath(libPath1) ||builtin[libPath1]){
+			libPath = libPath1;
+			libMember = libMember1;
+		} 	
+	} 
+	
+	if(libPath){
+		var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1 };
+	    
+	    import ide.doc.libraryMd;
+	    var text = tostring( ide.doc.libraryMd(libPath) );
+	 
+	 	if(text){
+	    	var i,j = string.find(text,keyWord+ "\s*=")
+				||string.find(text,keyWord+ "\(")
+				||string.find(text,keyWord)
+			
+			if(!i && libMember){
+				i,j = string.find(text,libMember+ "\s*=")
+					||string.find(text,libMember+ "\(")
+					||string.find(text,libMember)
+			}
+	    	
+	    	if(!i ){
+				i,j = string.find(text,libPath+ "\s*=")
+					||string.find(text,libPath+ "\(")
+					||string.find(text,libPath)
+			}
+			
+			if(i){
+	    		
+	    		var startChr = string.len(text,1,i-1);
+	    		startChr = math.max(1,startChr-10);
+	    		var preview = string.slice(text,startChr,startChr+200,true);
+	    			
+	    		var libTitle;
+	    		var url; 
+	    		
+	    		if(builtin[libPath]){
+	    			libTitle = libPath + " 内置库";
+	    			url = "/library-reference/"+libPath+"/_.html" 	
+	    		}
+	    		else {
+	    			libTitle = libPath + " 库";
+	    			
+	    			var libFilePath = io.libpath(libPath);
+	    			libFilePath = ..fsys.path.relative(libFilePath,"~/lib",false);
+	           	    url = io.joinpath("/library-reference",fsys.path.replaceExt(libFilePath,".html"));
+	           	    url = string.replace(url,"\\","/");
+	    		} 
+	    			
+	    		searchResultMd = searchResultMd ++ "### 库参考: [" + libTitle + ']('+url+')\n'
+     				+ '\n```\n' + string.replace(preview,"```","&#96;&#96;&#96;") + '\n```\n\n'; 
+			} 	 		
+	 	} 
+	}
+	
+	fsys.enum( "~/lib", "*.aardio",
+		function(dir,filename,fullpath,findData){ 
+			if(filename){ 
+	           	var text = string.load(fullpath);
+	           	text = string.removeBom(text);//清除所有 aardio 文件 bom 后去掉这句
+	           
+	            var i,j = string.find(text,keyWord)
+	           	if(i){
+	           	    
+	           	    var startChr = string.len(text,1,i-1);
+	           	    startChr = math.max(1,startChr-10);
+	           	    var preview = string.slice(text,startChr,startChr+200,true);
+	           	    
+	           	    var libPath = ..fsys.path.relative(fullpath,"~/lib",false);
+	           	    var url = io.joinpath("/library-reference",fsys.path.replaceExt(libPath,".html"));
+	           	    var url = string.replace(url,"\\","/");
+	           	    
+	           	    if( string.endWith(libPath,"_.aardio") ) { 
+                		libPath = string.left(libPath,-10); 
+            		}
+            		
+            		if( string.endWith(libPath,".aardio") ) { 
+                		libPath = string.left(libPath,-8); 
+            		}
+            		
+            		libPath = ..string.replace(libPath,"[/\\]",".") ;
+	           	    var title = string.match(text,"^//\S+\s+(\N+\S)");
+	           	    if(#title){
+	           	    	libPath = libPath + " " + title;
+	           	    }
+	           	     
+	           	    searchResultMd = searchResultMd ++ "### 库参考: [" + libPath + ']('+url+')\n'
+     					+ '\n```\n' + string.replace(preview,"```","&#96;&#96;&#96;") + '\n```\n\n'; 
+	           	}
+			} 
+		}, 
+	);
+	
+	import string.markdown;
+	var markdown = string.markdown(); 
+	..thread.set("doc://search-results.html",searchResultMd); 
+	if(url == wb.location){
+		wb.body.innerHTML = markdown.render(searchResultMd);
+		thread.delay(100);		
+	} 
+	
+	fsys.enum( "~/example", "*.aardio",
+		function(dir,filename,fullpath,findData){ 
+			if(filename){ 
+	           	var text = string.load(fullpath);
+	           	text = string.removeBom(text);//清除所有 aardio 文件 bom 后去掉这句
+	 			
+	            var i,j = string.find(text,keyWord)
+	           	if(i){
+	           	    
+	           	    var startChr = string.len(text,1,i-1);
+	           	    startChr = math.max(1,startChr-10);
+	           	    var preview = string.slice(text,startChr,startChr+200,true);
+	           	    
+	           	    var path = fsys.path.relative(fullpath,"~/") 
+	           	    path = string.replace(path,"\\","/");
+	           	    
+	           	    searchResultMd = searchResultMd ++ "### 范例: [" + path + ']('+path+')\n'
+     					+ '\n```\n' + string.replace(preview,"```","&#96;&#96;&#96;") + '\n```\n\n';
+	           	     
+	           	}
+			} 
+		}, 
+	);
+	
+	import string.markdown;
+	var markdown = string.markdown(); 
+	..thread.set("doc://search-results.html",searchResultMd); 
+	if(url == wb.location){
+		wb.refresh3();	
+	} 
+	
+	winform.btnSearch.disabledText = null; 
+	win.ui.waitCursor(false);
+}
+
+winform.editKeyWord.onOk = function(){ 
+	winform.btnSearch.oncommand();
+	return true; 	
+}
+
+winform.btnSearch.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.btnAiSearch.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+import inet.url;
+wb.DocumentComplete = function(pDisp,url) {
+	if( pDisp == wb.application ){ 
+		
+		winform.editUrl.text = string.replace(url,"^http\://[^/]+/","doc://");
+		
+		var hash = string.match(url,"\#.+")
+		if(hash) return;
+		
+		var keyWord = winform.editKeyWord.text;
+		if(!#keyWord) return;
+		 
+		var rng = wb.body.createTextRange(); 
+		if (rng.findText(keyWord)==true) { 
+    		rng.select(); 
+    		rng.scrollIntoView(); 
+		}   
+	}
+} 
+
+//自动启用禁用 前进、后退等按钮
+wb.CommandStateChange=function(cmd,enable) { 
+    select(cmd) { 
+        case 0x2/*_CSC_NAVIGATEBACK*/ { 
+           winform.btnBack.disabled = !enable
+        }
+        case 0x1/*_CSC_NAVIGATEFORWARD*/ { 
+            winform.btnForward.disabled = !enable
+        }    
+    }
+}  
+
+wb.external = {
+	onSelectedText = function(text){ 
+		winform.btnAiSearch.hide = !text;
+		winform.btnAiSearch.webSelectedText = text;
+	}
+	
+}
+
+import process;
+winform.btnAiSearch.oncommand = function(id,event){
+	if(!#winform.btnAiSearch.webSelectedText){
+		return;
+	}
+	
+	var url = inet.url.appendExtraInfo("https://www.aardio.com/zh-cn/doc/?",{
+		q = winform.btnAiSearch.webSelectedText ;
+	})
+	 
+	process.openUrl(url,"","open",5/*_SW_SHOW*/,"~/",hwnd,wait,waitTimeout,ide.getMainHwnd() )
+}
+
+winform.editKeyWord.setCueBannerText("按回车键输入搜索词，支持模式匹配语法");
+
+//wb.noScriptErr = true;
+
+var url;
+import inet.url;
+if(____search_doc__path){
+	if(string.startWith(____search_doc__path,"doc://")){
+		var tUrl = inet.url.split(____search_doc__path)
+		if(#tUrl.extraInfo){
+			var param = inet.url.splitParameters(tUrl.extraInfo)
+			if(param[["q"]]){
+				winform.editKeyWord.text = param[["q"]]; 
+			}
+		}
+		
+		url =  wsock.tcp.simpleHttpServer.startUrl( string.right(____search_doc__path,-7) )
+	}
+	else {
+		var path2 = fsys.path.relative(____search_doc__path,"~\doc\");
+		if(#path2){
+			url =  wsock.tcp.simpleHttpServer.startUrl(path2) 
+		}
+		else {
+			path2 = fsys.path.relative(____search_doc__path,"~\lib\");
+			if(#path2){
+				path2 = "\library-reference" + path2;
+				url =  wsock.tcp.simpleHttpServer.startUrl(path2) 
+			}
+		} 
+	} 
+}
+else {
+	url =  wsock.tcp.simpleHttpServer.startUrl("/main.md") 
+}
+
+
+wb.go(url);
+
+import inet.url;
+winform.btnWebDoc.oncommand = function(id,event){
+	var url = winform.editUrl.text;
+ 
+	var path = string.match(url,"doc\://(.+)");
+	if( path  
+		&& path!="main.md" 
+		&& path!="search-results.md"
+		&& path!="main.html"
+		&& path!="search-results.html"){
+			
+		var hash = string.match(path,"\#.+")
+		var kw = winform.editKeyWord.text;
+		if(#kw && !#hash){
+			hash = "#:~:text=" + inet.url.encode(kw);
+		}   
+		
+		path = fsys.path.replaceExt(path,".html");
+		path = string.replace(path,"\\","/");
+		
+		if(hash){
+			path = path ++ hash;
+			url  = "https://www.aardio.com/zh-cn/doc/" + path;
+		}
+		else {
+			url  = "https://www.aardio.com/zh-cn/doc/?q=" + inet.url.encode(path);
+		} 
+	}
+	else {
+		url = "https://www.aardio.com/zh-cn/doc/";
+		var kw = winform.editKeyWord.text;
+		if(#kw){
+			url = inet.url.appendExtraInfo(url,{
+				q = kw;
+			})
+		} 
+	} 
+	
+	import process;
+	process.openUrl(url);
+}
+
+ide.show(winform,3/*_SW_MAXIMIZE*/); 
+winform.setTimeout( function(){
+	win.setOwner(winform.hwnd,0)
+},1000)
+
+winform.onOk = function(){
+    winform.editKeyWord.setFocus();
+}
+
+fullscreen =function(id,event,shift){  
+	winform.fullscreen()
+} 
+ 
+import win.ui.accelerator;
+var accelerator = win.ui.accelerator( {
+	{ vkey = 0x7A/*_VK_F11*/;  oncommand = fullscreen }  
+	{ vkey = 0x1B/*_VK_ESC*/; oncommand = function(){  if( winform.restoreFullScreen ) fullscreen() } }
+},winform);
+
+winform.btnBack.oncommand = function(id,event){
+	wb.goBack();
+}
+
+winform.btnForward.oncommand = function(id,event){
+	wb.goForward();	
+}
+
+winform.btnWebDoc.skin(
+    color = { 
+        hover = 0xFFFF0000;
+        active = 0xFF00FF00;  
+        disabled = 0xFFCCCCCC;
+    } 
+)
+ 
+
+winform.btnForward.skin(
+    color = { 
+        hover = 0xFFFF0000;
+        active = 0xFF00FF00;  
+        disabled = 0xFF999999;
+    } 
+)
+ 
+winform.btnBack.skin(
+    color = { 
+        hover = 0xFFFF0000;
+        active = 0xFF00FF00;  
+        disabled = 0xFF999999;
+    } 
+)
+
+win.loopMessage();

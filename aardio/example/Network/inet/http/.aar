@@ -1,0 +1,10 @@
+入门=start.aardio
+发送 JSON=json.aardio
+返回值=result.aardio
+分步请求=send.aardio
+多线程=thread.aardio
+事件回调=event.aardio
+错误码检测 =status.aardio
+请求头 =reqHeaders.aardio
+认证登录=auth.aardio
+TLS/HTTPS=tls.aardio

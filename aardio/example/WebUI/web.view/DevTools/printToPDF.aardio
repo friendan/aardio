@@ -1,0 +1,67 @@
+//网页转 PDF
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="请在打开网页，请稍候 ……";right=759;bottom=469;bgcolor=16777215)
+winform.add()
+/*}}*/
+
+import web.view;
+var wb = web.view(winform); 
+winform.show();
+
+var pdfFile = "/test.pdf"
+var mdFile = /*
+# 说明
+
+- 这个字符串可以写 *.md 文件路径
+- 也可以直接写 Markdown 内容
+- 这是一个 Markdown 快速转 PDF 范例。
+- 这是一个 网页 快速转 PDF 范例。
+*/
+
+import string.markdown;
+var markdown = string.markdown();
+
+var html;
+if(io.exist(mdFile)){
+	html = markdown.renderFile(mdFile);
+}
+else {
+	html = markdown.render(mdFile);	
+}
+
+var html = `
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" https://cdn.bootcdn.net/ajax/libs/github-markdown-css/5.6.1/github-markdown-dark.min.css">
+    <script></script>
+</head>
+<body>
+` +  html + `
+</body>
+</html>
+`
+
+//大文件自内存加载会比较快。
+string.save("/pdf.html",html )
+wb.go("/pdf.html");
+
+winform.text = "正在导出 PDF，大文件会比较慢，请耐心等待！"
+wb.waitDoc();
+ 
+//调用 DevTools 方法，并等待返回结果，失败返回 null
+var result  = wb.cdp("Page.printToPDF");
+
+if(result[["data"]]){
+	import crypt;
+	var bin = crypt.decodeBin(result[["data"]]); 
+    string.save(pdfFile,bin);
+    
+    winform.text = "已导出 PDF，路径已复制到剪贴板。" 
+    wb.go(pdfFile);
+} 
+ 
+
+win.loopMessage();

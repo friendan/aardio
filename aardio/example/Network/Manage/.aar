@@ -1,0 +1,10 @@
+﻿断网检测=isAlive.aardio
+网卡设备=sys.networkCards.aardio
+网络连接=inet.adapter.aardio
+RUNAS//启用禁用网卡=wmi.network.aardio
+RUNAS//设置网络连接=wmi.adapter.aardio
+RUNAS//网卡切换=connections.aardio
+RUNAS//无线连接=wlanEnumInterfaces.aardio
+端口映射管理=sys.upnp.nat.aardio
+RUNAS//防火墙=firewall.aardio
+端口状态=netstat.aardio

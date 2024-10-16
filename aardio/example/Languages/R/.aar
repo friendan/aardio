@@ -1,0 +1,6 @@
+调用 R 函数=startRpc.aardio
+执行 R 代码=exec.aardio
+JSON=json.aardio
+窗口绘图=draw.aardio
+Web 交互界面=shiny.aardio
+嵌入模板=loadcode.aardio

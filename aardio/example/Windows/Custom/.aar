@@ -1,0 +1,4 @@
+﻿定义控件类=cls.aardio
+加载外部子窗口=cls.path.aardio
+子窗体容器=container.aardio
+扩展控件=extension.aardio

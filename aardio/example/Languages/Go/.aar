@@ -1,0 +1,15 @@
+入门=go.aardio
+RPC=RPC
+字符串=string.aardio
+模块=Module
+切片=slice.aardio
+COM 接口=COM Interface
+JSON 自动同步=jsonParam.aardio
+Yaegi=Yaegi
+结构体 =struct.aardio
+回调=callback.aardio
+aardio.Call=aardio.Call.aardio
+aardio.CallPtr=aardio.CallPtr.aardio
+aardio.CallJson=aardio.CallJson.aardio
+应用=Apps
+进程参数=flag.aardio

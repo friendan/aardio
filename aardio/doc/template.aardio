@@ -1,0 +1,105 @@
+<?
+import string.markdown;
+var markdown = string.markdown();
+
+var htmlTitle,htmlBody;
+if(string.endWith(request.path,".html",true)){
+	request.path = string.left(request.path,-6) + ".md"
+}
+
+if(string.endWith(request.path,".md",true)){
+	if(request.path == "/search-results.md"){
+		var md = thread.get("doc://search-results.html") : "搜索结果为空！";
+		
+		htmlTitle = string.match(md,"\n\s*\#\s+(\N+)") ||  string.match(md,"\n\s*\#\#\s+(\N+)") || "aardio 文档" ;
+		htmlBody = markdown.render(md);
+	}
+	elseif( string.startWith(request.path,"/library-reference/") ){
+		var libPath = string.replace(request.path,"^/library-reference/","~/lib/");
+		libPath = fsys.path.replaceExt(libPath,".aardio");
+		
+		import ide.doc.libraryMd; 
+		var md = ide.doc.libraryMd(libPath);
+		if(!md){
+			htmlBody = "找不到文件：" + request.path;
+		}
+		else {
+			md = tostring( md );	
+			
+			htmlTitle = string.match(md,"!\N\s*\#\s+(\N+)") ||  string.match(md,"!\N\s*\#\#\s+(\N+)") || request.htmlTitle || "aardio 文档" ;
+			htmlBody = markdown.render(md); 		
+		} 
+	}
+	elseif( string.startWith(request.path,"/example/") ){ 
+		request.path = string.left(request.path,-4) + ".aardio" 
+		htmlTitle = "范例"
+		var code = string.load("~"+request.path ); 
+		if(code){
+			code = ..string.replace(code,"```","&#96;&#96;&#96;");
+			htmlBody = markdown.render('```\n'+code+'\n```'); 
+		}
+	}
+	else {
+		var md = string.load(request.path);
+		//doc://library-guide/builtin/io/io.file.html
+		if(!md){
+			htmlBody = "找不到文件：" + request.path;
+		}
+		else{
+			htmlTitle = string.match(md,"\n\s*\#\s+(\N+)") ||  string.match(md,"\n\s*\#\#\s+(\N+)") || "aardio 文档" ;
+			htmlBody = markdown.render(md);
+		}
+	}  
+} 
+elseif( string.startWith(request.path,"/example/") ){ 
+	htmlTitle = "范例"
+	var code = string.load("~"+request.path ); 
+	if(code){ 
+		htmlBody = markdown.render('``````aardio\n'+code+'\n``````'); 
+	}
+}
+
+if(htmlBody){
+	htmlBody = string.replace(htmlBody,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>aardio 编程语言文档 - <?=htmlTitle?></title>
+<script>
+!function(e,t){"function"==typeof define&&define.amd?define(t):"object"==typeof exports?module.exports=t():t()}(0,function(){var o="details",i="summary";(function(){var e=document.createElement(o);if(!("open"in e))return!1;e.innerHTML="<"+i+">a</"+i+">b",document.body.appendChild(e);var t=e.offsetHeight;e.open=!0;var n=t!=e.offsetHeight;return document.body.removeChild(e),n})()||(document.documentElement.className+=" no-details",window.addEventListener("click",function(e){if("summary"===e.target.nodeName.toLowerCase()){var t=e.target.parentNode;if(!t)return;t.getAttribute("open")?(t.open=!1,t.removeAttribute("open")):(t.open=!0,t.setAttribute("open","open"))}}),function(e,t){if(document.getElementById(e))return;var n=document.createElement("style");n.id=e,n.innerHTML=t,document.getElementsByTagName("head")[0].appendChild(n)}("details-polyfill-style","html.no-details "+o+":not([open]) > :not("+i+") { display: none; }\nhtml.no-details "+o+" > "+i+':before { content: "▶"; display: inline-block; font-size: .8em; width: 1.5em; }\nhtml.no-details '+o+"[open] > "+i+':before { content: "▼"; }'))});
+</script>
+
+<script>
+document.onmouseup = document.onkeyup = document.onselectionchange = function() {
+    var selectedText = getSelectedText();
+    if (selectedText) {
+        external.onSelectedText(selectedText);
+    }
+    else {
+    	external.onSelectedText()
+    }
+    
+};
+
+function getSelectedText() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    return text;
+}
+ 
+</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<?=htmlBody?>
+<script src="/index.js"></script>
+</body>
+</html>	 

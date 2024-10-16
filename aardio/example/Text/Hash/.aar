@@ -1,0 +1,12 @@
+加解密文件=file.aardio
+RSA 加密解密=rsa.aardio
+RSA 签名=rsa-sign.aardio
+文件哈希工具=hashfile.aardio
+MD5,SHA-1=hash.aardio
+sha-256=sha-256.aardio
+HMAC-SHA=hmac-sha.aardio
+Base64=base64.aardio
+aes=aes.aardio
+des=des.aardio
+RC4=rc4.aardio
+XXTEA=xxtea.aardio

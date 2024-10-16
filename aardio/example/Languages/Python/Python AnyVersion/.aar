@@ -1,0 +1,7 @@
+﻿入门=start.aardio
+异步回显=logResponse.aardio
+安装模块=pip.aardio
+切换版本=version.aardio
+指定启动参数=argv.aardio
+JSON-RPC=json-rpc.aardio
+JSON-RPC( HTTP )=jsonrpc-http.aardio

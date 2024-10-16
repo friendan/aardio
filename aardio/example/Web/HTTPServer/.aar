@@ -1,0 +1,7 @@
+﻿最简多线程服务端=simpleHttpServer.startUrl.aardio
+设置多线程服务端=simpleHttpServer.startUrl.app.aardio
+多线程服务器 / 控制台=simpleHttpServer.aardio
+单线程异步服务器=asynHttpServer.start.aardio
+虚拟文件路径=asynHttpServer.table.aardio
+扫码传文件=asynHttpServer.file.aardio
+下载文件=response.loadcode.aardio

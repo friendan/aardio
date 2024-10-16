@@ -1,0 +1,4 @@
+﻿遍历文件=fsys.enum.aardio
+遍历文件+界面=fsys.enum.ui.aardio
+批量重命名=rename.aardio
+替换文本=batch.aardio

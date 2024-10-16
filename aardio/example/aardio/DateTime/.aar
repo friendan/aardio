@@ -1,0 +1,6 @@
+入门=time.aardio
+OLE时间对象=time.ole.aardio
+高精度计时=performanceCount.aardio
+液晶计时器=clock.aardio
+计划任务=win.taskScheduler.aardio
+时间戳=timestamp.aardio

@@ -1,0 +1,12 @@
+﻿入门=01.intro.aardio
+编译 Java 代码=02.compile.aardio
+调用 Java 对象=03.javacall.aardio
+Java 调用 aardio=04.aardiocall.aardio
+JVM/JRE/JDK=05.version.aardio
+运行 jar=06.popenProcess.aardio
+函数签名=07.signature.aardio
+Java 乱码问题=08.encoding.aardio
+精简 Java6 运行时=09.v6.aardio
+打包 Java 程序=11.ffdec.aardio
+提问前必读=20.more.aardio
+java=java

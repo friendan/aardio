@@ -1,0 +1,3 @@
+打印=print.aardio
+打印图像=printImage.aardio
+查找打印机=Win32_Printer.aardio

@@ -1,0 +1,2 @@
+查询系统日志 =NTLogEvent.aardio
+查询自定义日志=EventLogReader.aardio

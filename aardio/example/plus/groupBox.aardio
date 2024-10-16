@@ -1,0 +1,14 @@
+//组合框效果
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="plus 控件 - 实现组合框";right=748;bottom=257)
+winform.add(
+plusGroupBox={cls="plus";left=39;top=44;right=720;bottom=210;align="left";border={color=-16744448;radius=8;width=1};db=1;dl=1;dr=1;dt=1;font=LOGFONT(h=-14);notify=1;textPadding={left=16};valign="top";z=1};
+plusGroupTitle={cls="plus";text="用 plus 控件制作组合框的步骤";left=57;top=31;right=242;bottom=57;dl=1;dt=1;z=2};
+static={cls="static";text='1. 拖放一个 plus 控件作为组合框，指定边框大小与颜色、圆角大小。\r\n\r\n2. 拖放一个 plus 控件作为组合框标题，『剪切背景』属性保持默认值为 true。\r\n\r\n3. 为了让标题跟随组合框，请将两个控件设为在相同方向固定边距，可直接点击窗体右键菜单『九宫格缩放布局』。';left=67;top=81;right=714;bottom=185;db=1;dl=1;dr=1;dt=1;transparent=1;z=3};
+static2={cls="static";text='要点：\r\n\r\n1. 当 plus 控件设置『剪切背景』属性为 true 时，\r\n就可以穿透它后面的控件并将窗口背景作为它自己的默认背景。\r\n利用这个特性就可以让显示组合框标题的 plus 控件透明显示窗口背景（也就是在组合框标题的位置不显示组合框的边框）。\r\n\r\n2. 两个控件要设置在相同方向固定边框，\r\n这样就可以保证在缩放调整窗口大小时，两个控件固定在相同位置。\r\n\r\n3. 两个控件都保持『事件回调』属性为 false（ 这是默认值 ）。\r\n也就是显示为静态控件，不响应事件（避免因为鼠标点击改变显示顺序）。';left=67;top=279;right=744;bottom=471;db=1;dl=1;dr=1;dt=1;transparent=1;z=4}
+)
+/*}}*/
+
+winform.show();
+win.loopMessage();

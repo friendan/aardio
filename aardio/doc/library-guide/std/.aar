@@ -1,0 +1,10 @@
+﻿win 窗口界面=win
+winex 外部窗口操作=winex
+console 控制台=console
+web 应用=web
+inet 网络应用=inet
+process 进程操作=process
+fsys 文件操作=fsys
+crypt 加密算法=crypt
+dotNet 框架=dotNet
+golang 语言=golang

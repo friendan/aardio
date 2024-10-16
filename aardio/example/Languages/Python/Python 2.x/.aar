@@ -1,0 +1,16 @@
+﻿入门=start.aardio
+执行 Python 代码=hmac-sha1.aardio
+导入模块 =import.aardio
+安装模块=import.ext.aardio
+调用 aardio 对象  =export-ctor.aardio
+导出 aardio 模块=export.aardio
+命名参数=requests.aardio
+eval 示例=compile-eval.aardio
+HTTP 服务器=exec.aardio
+捕获标准输出=catchOutErr.aardio
+实现 Python.exe=run.aardio
+后台线程=thread.aardio
+数值=number.aardio
+字符串=str.aardio
+md5示例=md5.aardio
+文本编码=encoding.aardio

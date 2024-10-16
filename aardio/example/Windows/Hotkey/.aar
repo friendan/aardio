@@ -1,0 +1,5 @@
+窗口快捷键=accelerator.aardio
+系统热键=hotkey.aardio
+ESC、Enter=isDialogMessage.aardio
+超级热键=key.hotkey.aardio
+自定义快捷键=translateAccelerator.aardio

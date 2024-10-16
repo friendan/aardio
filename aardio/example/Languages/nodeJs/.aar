@@ -1,0 +1,8 @@
+调用 JS 函数=startRpc.aardio
+startEnviron=start.aardio
+JS 调用 aardio=external.aardio
+JSON-RPC-HTTP=jsonRpc.aardio
+JSON-RPC-WS=WebSocketRpc.aardio
+调用包 UglifyJS =package.aardio
+安装并调用命令=cmd.aardio
+调用 asar=asar.aardio

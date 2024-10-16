@@ -1,0 +1,7 @@
+浏览网页=go.aardio
+创建应用=electron.aardio
+使用远程调试接口=remoteDebugging.aardio
+主进程通信=main.js.aardio
+electron嵌入多个窗口=multiWindow.aardio
+模拟自动化=webview.aardio
+res=res

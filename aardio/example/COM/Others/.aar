@@ -1,0 +1,8 @@
+嵌入Office文档=DsoFramer.aardio
+shell 外壳=Shell.aardio
+MapWinGIS=MapWinGIS.aardio
+调用SpInprocRecognizer=spRecognizer.aardio
+FSO=FSO.aardio
+模拟按键=Keypress.aardio
+下载网页=Download.aardio
+扫描仪=WIA.aardio

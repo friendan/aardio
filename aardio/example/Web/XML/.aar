@@ -1,0 +1,4 @@
+简单 XML 解析=string.xml.aardio
+SOAP WebService=web.soapClient.aardio
+/XPath: System.Xml=System.Xml.aardio
+MSXML 读写=msxml.aardio

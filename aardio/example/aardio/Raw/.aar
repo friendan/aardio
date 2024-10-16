@@ -1,0 +1,6 @@
+﻿结构体=struct.aardio
+动态指针=dynamicPointer.aardio
+字符串生成器=string.builder.aardio
+结构体二级指针=raw.argsPointer.aardio
+静态内存结构体=raw.struct.aardio
+API 钩子=raw.apiHook.aardio

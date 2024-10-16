@@ -1,0 +1,10 @@
+checklist=checklist.aardio
+CSV 导入导出=csv.aardio
+自绘=customdraw.aardio
+简单数据视图 =edit.aardio
+响应事件=listview.aardio
+编辑列表项=listViewEdit.aardio
+原地更新数据=replaceItems.aardio
+数据表=setTable.aardio
+RUNAS//UWP本机隔离=uwpExemption.aardio
+虚表=vlistview.aardio

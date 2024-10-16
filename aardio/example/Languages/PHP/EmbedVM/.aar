@@ -1,0 +1,5 @@
+﻿嵌入式调用=embed.aardio
+重置解释器 =embed.reset.aardio
+语法比较=embed.exec.aardio
+解析 PHP 文件=embed.dofile.aardio
+调用 aardio=embedaardio.aardio

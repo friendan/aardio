@@ -1,0 +1,3 @@
+﻿内置库=builtin
+标准库、扩展库=~/lib/
+界面库=~/lib/win/ui

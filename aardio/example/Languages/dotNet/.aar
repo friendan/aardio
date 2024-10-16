@@ -1,0 +1,17 @@
+﻿入门=Start.aardio
+委托回调=Delegate
+导入名字空间=System.aardio
+控件窗口=Control
+加载 DLL=loadFile.aardio
+进阶=Advanced
+内存加载 DLL=reference.aardio
+编译 / 类型检测=Compile.aardio
+引用 .NET 值=ref.aardio
+下标 Item[]=Item.aardio
+自动泛型 / ValueTuple =ValueTuple.aardio
+构建泛型 / 异步=Generic.aardio
+应用=Apps
+enum=Enum.aardio
+数组=Array.aardio
+Color=Color.aardio
+必读=more.aardio

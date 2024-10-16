@@ -1,0 +1,7 @@
+﻿批处理+aardio=batch.aardio
+批量执行CMD命令=cmd.aardio
+命令行窗口化=cmd2Gui.aardio
+命令行管道=popen.aardio
+环境变量=env.aardio
+发送Ctrl+C=ctrlEvent.aardio
+批处理与aardio对比=Bat aardio对比

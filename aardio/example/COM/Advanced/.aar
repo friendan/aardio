@@ -1,0 +1,8 @@
+﻿类型转换规则=DataType.aardio
+COM 常量=Constants.aardio
+COM 迭代器=com.each.aardio
+修改集合值=Collection.aardio
+带参数属性=property.aardio
+输出与引用参数=ByRef.aardio
+事件输出参数=EventParamByRef.aardio
+ROT 运行对象表=ROT.aardio
