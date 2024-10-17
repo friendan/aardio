@@ -13,7 +13,7 @@ namespace rmmseg
     {
         if (!ispunct(c))
             return 0;
-        for(int i=0; i < sizeof(disallowed_punct); i++)
+        for(int i=0; i < sizeof(disallowed_punct) / sizeof(disallowed_punct[0]); i++)
         {
             if (c == disallowed_punct[i])
                 return 0;

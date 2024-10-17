@@ -88,20 +88,27 @@ namespace tuple {
 			owner[k] = v;
 		};  
 		__get = function(k,ownerCall){ 
-			if( type(k) != type.number ) {
+			var t = type(k);
+			if( t==="string" && (ownerCall!==null) ){
 				return owner.getAttr(k); 
-			}
-			
-			var item = pyTuple_GetItem(owner.pyObject,k);
-			if(item){
-				..py2.IncRef(item);//特例 borrow reference
-				return ..py2.object(  item,true ) ;
 			} 
+			
+			if( t == "number" ) {
+				var item = pyTuple_GetItem(owner.pyObject,k);
+				if(item){
+					..py2.IncRef(item);//特例 borrow reference
+					return ..py2.object(  item,true ) ;
+				} 
+			}
 		} 
-		__set = function(k,v){
-			if( type(k) != type.number ) {
+		__set = function(k,v,ownerAttr){
+			var t = type(k);
+			if( t==="string" && ownerAttr ){
+				owner.setAttr(k,v);
 				return;
 			}
+			
+			if( t != "number" ) return ;
 			
 			if(v!==null) {
 				if( type(v) == "pointer" ){
@@ -140,17 +147,17 @@ py2.tuple(.(aardio数组) = 创建新的元数组,\n如果数组成员中包含p
 !py2Tuple.parseValue() = 转换为aardio数组
 !py2Tuple.type() = 返回类型名字
 !py2Tuple.has("__/*属性名*/") = 是否存在指定的属性
-!py2Tuple.getAttr("__/*属性名*/") = 读属性成员,也可以用成员操作符获取\n属性值为 py2.object 对象
-!py2Tuple.setAttr("__/*属性名*/",) = 写属性成员的值,也可以用成员操作符赋值
-!py2Tuple.getAttr() = !p3yObject.
-!py2Tuple.getItem(__/*索引*/) = 返回指定项,类似在python中使用下标操作符取值
-!py2Tuple.setItem(__/*索引*/，) = 修改指定项,类似在python中使用下标操作符赋值
-!py2Tuple.getItem() = !p3yObject.
+!py2Tuple.getAttr("__/*属性名*/") = 读属性值，也可以用成员操作符获取。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py2Tuple.setAttr("__/*属性名*/",) = 写属性成员的值，也可以用成员操作符赋值。
+!py2Tuple.getAttr() = !py2Object.
+!py2Tuple.getItem(__/*索引*/) = 返回指定索引的项，也可以用索引下标操作符 [] 取值。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py2Tuple.setItem(__/*索引*/，) = 修改指定索引的项，也可以用索引下标操作符 [] 赋值。
+!py2Tuple.getItem() = !py2Object.
 !py2Tuple.toString() = 转换为 aardio 字符串\n也可以直接将对象作为参数传入 tostring 函数转换为字符串
 !py2Tuple.toTuple() = 转换为 Python 元组\n!py2Tuple.
 !py2Tuple.toList() = 转换为 Python 列表\n!py2List.
 !py2Tuple.checkList() = 检测是否列表
-!py2Tuple.each() = @for( item in ??.each() ){\n	__/*创建迭代器用于遍历所有的项,返回一个值*/\n}\n!p3yObject.
+!py2Tuple.each() = @for( item in ??.each() ){\n	__/*创建迭代器用于遍历所有的项,返回一个值*/\n}\n!py2Object.
 !py2Tuple.? = !py2Object.
 py2.tuple() = !py2Tuple.
 end intellisense**/

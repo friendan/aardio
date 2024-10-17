@@ -5,8 +5,8 @@ namespace baidu;
 
 class speech {
     
-    ctor(http){
-        this = http : ..web.rest.jsonLiteClient()
+    ctor(...){
+        this = ..web.rest.jsonLiteClient(...)
         this.apiKey = apiKey;
         this.secretKey = secretKey;
 
@@ -19,6 +19,13 @@ class speech {
 			}  
 		}
 		
+		this.beforeStringifyRequestParameters = function(params,codepage){
+			if( (type(params.per) == type.string) && (null ===tonumber(params.per) ) ){
+    			params.per = voiceId[params.per]
+    		}
+			return params; 
+		}
+		
 		this.aue = 3;//mp3
     };
     setAuth = function(apiKey,secretKey){ 
@@ -27,7 +34,7 @@ class speech {
             	grant_type = "client_credentials";
             	client_id = apiKey;
             	client_secret =  ..string.trim( secretKey );
-        	});  
+        	});   
         
         	if(!result[["access_token"]]) return null,"认证失败";
         	
@@ -57,23 +64,12 @@ class speech {
         	return true;
         }
     };
-    text2audio = function(param){ 
-    	param = ..table.mix(param,this.extraParameters);
-    	if( (type(param.per) == type.string) && (null ===tonumber(param.per) ) ){
-    		param.per = voiceId[param.per]
-    	}
-    	
-    	var url = "http://tsn.baidu.com/text2audio?" + ..inet.url.stringifyParameters(param);
-    	if( this.head(url) ){
-    		if( ..string.startWith(this._http.responseContentType,"audio") ){
-    			return url;
-    		}
-    	}
-    	
-    	var ret = this.get(url);
-    	if(type(ret) == type.table ){
-    		return null,ret[["err_msg"]]
-    	}
+    text2audio = function(params){ 
+       return this.post("http://tsn.baidu.com/text2audio",params) 
+    }
+    text2audioUrl = function(params){  
+    	params = this.beforeStringifyRequestParameters( ..table.assign(params,this.extraParameters) )
+    	return ..inet.url.appendExtraInfo("http://tsn.baidu.com/text2audio",params);
     };
 }
 

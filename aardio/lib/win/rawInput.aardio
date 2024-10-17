@@ -33,7 +33,7 @@ var RAWKEYBOARD = RAWKEYBOARD;
 RAWHID = class {
     INT sizeHid; 
     INT count; 
-    BYTE rawData[1];
+    struct rawData[] = { {BYTE hid[]= {length = 1 }}, length = 1 };
 }
 var RAWHID = RAWHID;
 
@@ -47,7 +47,7 @@ var RAWINPUTHEADER = RAWINPUTHEADER;
 
 RAWINPUT = class {
     struct header = RAWINPUTHEADER();
-    union data={
+    union data ={
         struct mouse = RAWMOUSE();
         struct keyboard = RAWKEYBOARD();
         struct hid = RAWHID();
@@ -67,7 +67,7 @@ register = function(winform,usagePage,usage,flags){
     ::User32.RegisterRawInputDevices(rid, 1, ..raw.sizeof(rid));  
 }
   
-var rawInput = RAWINPUT();  
+
 
 getData = function(lparam){ 
     
@@ -81,14 +81,24 @@ getData = function(lparam){
     if(ret != size )
         return; //出错了
     
+    var rawInput = RAWINPUT();  
     ..raw.convert(pdata,rawInput); 
+    
+    if(rawInput.header.dwType == 2){
+        var hid = rawData.data.hid;
+    	hid.rawData.length =  hid.count;
+    	hid.rawData[1].hid = { length = hid.sizeHid};
+    	..raw.convert(pdata,rawInput); 
+    }
     return rawInput  
-}
+}  
 
-
-/**intellisense(win.rawInput)
-register(__/*窗口对象或句柄*/) = 注册原始输入钩子窗口
-getData(lparam) = 返回原始输入钩子数据\n!rawInputData.
+ 
+/**intellisense()
+win.rawInput = 原始输入（RAW INPUT）钩子。\n相比 key.hook，RAW INPUT 支持的输入设备更多一些，例如游戏手柄，触摸屏........等等。\n[参考文档](https://learn.microsoft.com/en-us/windows/win32/inputdev/about-raw-input?redirectedfrom=MSDN)
+win.rawInput.register(__/*窗口对象或句柄*/) = 注册原始输入（RAW INPUT）钩子窗口。
+win.rawInput.getData(lparam) = 返回原始输入钩子数据。
+win.rawInput.getData() = !rawInputData.
 end intellisense**/
 
 /**intellisense()
@@ -103,10 +113,10 @@ end intellisense**/
 !rawInputKeyboard.vKey = 虚拟键码
 !rawInputKeyboard.message = 消息
 !rawInputKeyboard.extraInformation = 附加信息 
-!rawInputHid.sizeHid = 字节大小
-!rawInputHid.count = 输入计数
-!rawInputHid.rawData.? = 输入数据
-!rawInputHeader.dwType = @.dwType = _RIM_TYPE__ ;
+!rawInputHid.sizeHid = 每个 HID 输入的字节大小，指定 rawData 数组元素的数组大小
+!rawInputHid.count =  HID 输入总数，指定 rawData 数组的大小
+!rawInputHid.rawData.? = 输入原始数据。\n这是一个字节数组的数组。\nu单个字节数组的大小与 sizeHid 属性一致。\n所有字节数组的总数也就是 rawData 的数组长度与 count 属性一致。
+!rawInputHeader.dwType = 0 为鼠标，1 为键盘，3 为游戏手柄或其他输入设备
 !rawInputHeader.size = 字节大小
 !rawInputHeader.device = 设备句柄
 !rawInputHeader.param = WM_INPUT 消息 wParam 参数值

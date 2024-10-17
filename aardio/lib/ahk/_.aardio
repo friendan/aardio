@@ -5,20 +5,18 @@ namespace ahk;
 /*
 官方提供的 AutoHotkey.dll 有时会莫名其妙地崩溃。
 之前只要调用 AHK 函数 reload 就崩溃，查了一下是 AHK 在释放了指针以后忘记将变量设备为 null ，
-在 reload 重启以后又因为判断语句错误使用了已释放的指针导致崩溃。
+在 reload 重启以后又因为判断语句错误使用了已释放的指针导致崩溃（指向已释放的内存）。
 
-这个补丁我已经提交给官方，但作者似乎无法理解释放的指针要设为 null，
-所以官方提供的 AutoHotkey.dll 仍然有这个问题。
+这个补丁我已经提交给官方，
+但作者并未合并，所以官方提供的 AutoHotkey.dll 仍然有这个问题。
+之后又发现 AHK 还有其他导致崩溃的问题，实在没有精力去管也管不了。
 
-之后又发现 AHK 还有其他导致崩溃的问题，这里要说明一下：
-aardio 支持十几种语言，各种类型的都有，像 AHK 这么不稳定的我从来没见过。
-这些问题经过查证这些并不是 aardio 的锅。
-
-此扩展库提供的 AutoHotkey.dll 已修复 reload 崩溃的问题。
-但我们不再处理类似问题。
+这里要说明一下：
+aardio 支持十几种语言，各种类型的都有，
+但类似 AHK 这样不稳定的不多见，经过实际查证并不是 aardio 的锅。
 
 纯 aardio 代码实现热键的一些方法：
-1、标准库 key.hotkey 实现的超级热键。
+1、标准库 key.hotkey 实现的超级热键（参考 ImTip ）。
 2、使用标准库 key.hook, mouse.hook 可创建键盘、鼠标钩子。
 3、使用标准库 win.ui.accelerator 可实现窗口快捷键。
 4、使用 winform.reghotkey 可创建系统热键。
@@ -89,8 +87,10 @@ addScript = function(script,aReplace){
 	dll.addScriptW(script,!!aReplace)  
 } 
 
-getGlobal = function(k,getVar){
-	return dll.ahkgetvarP(k,getVar===null?true:!!getVar)
+getGlobal = function(k,getVarPtr){
+	var p = dll.ahkgetvarP(k,!!getVarPtr)
+	if(!getVarPtr && p)  return ..string.fromUtf16(p,,-1); 
+	return p;
 }
 
 setGlobal = function(k,v){
@@ -113,7 +113,7 @@ sendCall = function(func, param1 = "", param2 = "", param3 = "", param4 = "", pa
 	)
 		
 	if(p){
-		return ..string.fromUnicode(p,,-1); 
+		return ..string.fromUtf16(p,,-1); 
 	}
 }
 
@@ -164,7 +164,7 @@ self.import = function(libPath){
 	var path = "/AutoHotkey/Lib/" + libPath + ".ahk"
 	var code = ..string.load(path);
 	if(!code){
-		error(`未找到该文件 "` + path + `"`,2)		
+		error(`找不到文件："` + ..io.fullpath(path) + `"`,2)		
 	}
 	
 	..string.save( ..io.getSpecial(0x5 /*_CSIDL_MYDOCUMENTS*/,path) ,code);
@@ -237,10 +237,10 @@ sendCall(.("函数名__",) = 运行指定的函数\n可选添加一到十个参�
 postCall(.("函数名__",) = 运行指定的函数\n可选添加一到十个参数,返回文本值\n该函数立即返回不会等待函数执行完成\n0为成功,-1为找不到函数
 jsonCall(.("函数名__",) = 运行指定的函数\n使用JSON传递参数并返回值，\n在 AHK 中必须使用 #include <aardio>加载 aardio,json 模块
 setGlobal() = 对 AHK 中的全局变量赋值,\n运行 AHK 脚本线程后才能调用此函数
-setGlobal(.("变量名","值") = 对 AHK 中的全局变量赋值,\n返回0表示成功,返回-1表示找不到变量,\n注意应当在 AHK 中先用 global name := value 声明全局变量,\n运行 AHK 脚本线程后才能调用此函数
+setGlobal(.("变量名","字符串值") = 对 AHK 中的全局变量赋值。\n参数 @2 自动调用 tostring 转为字符串。\n返回0表示成功,返回-1表示找不到变量,\n注意应当在 AHK 中先用 global name := value 声明全局变量,\n运行 AHK 脚本线程后才能调用此函数
 getGlobal( = 返回 AHK 中全局变量的值或指针,\n注意应当在 AHK 中先用 global name := value 声明全局变量,\n运行 AHK 脚本线程后才能调用此函数
-getGlobal(.("变量名") = 返回 AHK 中全局变量的指针
-getGlobal(.("变量名",false) = 返回 AHK 中全局变量的值
+getGlobal(.("变量名",true) = 返回 AHK 中全局变量的指针
+getGlobal(.("变量名") = 返回 AHK 中全局变量的字符串值。\n数值可可自动转为字符串。
 findFunc(.("函数名__") = 查找函数,返回函数指针
 pause("On") = 暂停
 pause("Off") = 取消暂停

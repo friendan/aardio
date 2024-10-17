@@ -2,12 +2,33 @@ import access;
 import com.lite;
 import util.metaProperty;
 
-class reportX{
+class reportX {
     ctor(winform){  
+        winform.enableDpiScaling("init") 
+
         var ocx = ..com.lite(_reportOcxPath)
-        ocx.createEmbed(winform,"{A5DA6E97-1D4C-4708-B705-84A45716B4DD}") 
+        ocx.createEmbed(winform,"{A5DA6E97-1D4C-4708-B705-84A45716B4DD}");
+        
         this = winform._embedObject;
         this._ocx = ocx;
+        
+        {
+        	var x,y = winform.dpiScale(1,1);
+        	var rpx = this._object;
+        	
+        	rpx.PoleHeight = rpx.PoleHeight * y;
+			rpx.CellHeight = rpx.CellHeight * y;
+			rpx.CellWidth = rpx.CellWidth * x;
+			   
+			 
+			winform.afterDpiChanged = function(scaleX,scaleY,origScaleX,origScaleY){
+				rpx.PoleHeight = rpx.PoleHeight / origScaleY * scaleY;
+				rpx.CellHeight = rpx.CellHeight / origScaleX * scaleY;
+				rpx.CellWidth = rpx.CellWidth / origScaleX * scaleX;
+			} 
+			
+			rpx.NewReport(rpx.DisplayColCount,rpx.DisplayRowCount)
+        }
     }; 
     newReport = function(aColCount,aRowCount){
         return this._object.NewReport(aColCount,aRowCount);
@@ -190,10 +211,7 @@ class reportX{
 }
   
 namespace reportX{
-    _reportOcxPath = ..fsys.getSpecial( 0x1c /*_CSIDL_LOCAL_APPDATA*/  ,"aardio/std/ReportX.ocx");
-    if(!..io.exist(_reportOcxPath)){
-        ..string.save(_reportOcxPath,$"~\lib\reportX\.dll\ReportX.ocx" ) 
-    }
+    _reportOcxPath = ..io.appData("aardio/std/ReportX.ocx",$"~\lib\reportX\.dll\ReportX.ocx");
     
     _metaProperty = ..util.metaProperty(
     
@@ -312,6 +330,14 @@ reportX() = !reportX.
 !reportX.importExcelOle(.(文件路径,仅导入文本,列1,行1,列2,行2) = 导入excel表格，\n指定行列参数可省略
 !reportX.exportExcel(.(文件路径,按显示值输出) = 导出excel表格,xls格式
 !reportX.lockUpdate = @.lockUpdate( function(){ \n	__/*暂停刷新并执行这里的代码*/\n	}\n)
+!reportX.PoleHeight = 标题列高度，创建报表控件时会根据屏幕 DPI 自动调整。
+!reportX.CellHeight = 单元格默认高度，创建报表控件时会根据屏幕 DPI 自动调整。
+!reportX.CellWidth = 单元格默认宽度，创建报表控件时会根据屏幕 DPI 自动调整。
+!reportX.DisplayColCount = 显示列数，只读。可通过 newReport 函数修改。
+!reportX.DisplayRowCount = 显示行数，只读。可通过 newReport 函数修改。
+!reportX.SetColWidth( = 设置列宽度
+!reportX.SetColWidth(.(列号,宽度) = 设置列宽度
+!reportX.GetColBestWidth(.(列号) = 获取最佳宽度
 !reportX.OnBeginPrintDoc = @.OnBeginPrintDoc = function(printer,title,titleChange){ 
     __/*开始打印时执行，参数说明
 printer：打印机句柄

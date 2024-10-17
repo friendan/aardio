@@ -1,21 +1,54 @@
 ﻿import dotNet;
-import dotNet.appDomain;
 
-namespace dotNet;
+namespace dotNet; 
 
-var assembly = dotNet.load("Newtonsoft.Json",$"~\lib\dotNet\json\.res\Newtonsoft.Json.dll")
-json = assembly.import("Newtonsoft.Json").JsonConvert;
+//已自动创建 Newtonsoft.Json 全局名字空间
+var assembly = ..dotNet.load("Newtonsoft.Json",$"~\lib\dotNet\json\.res\Newtonsoft.Json.dll")
+json = assembly.import("Newtonsoft.Json");
 
-appDomain.jsonStringify = function(v,pretty){
+json[["SerializeObject"]] = json.JsonConvert.SerializeObject;
+json[["DeserializeObject"]] = json.JsonConvert.DeserializeObject;
+
+assembly.appDomain.jsonStringify = function(v,pretty){
 	return json.SerializeObject(v,pretty?1:0)
 }
 
+json[["DeserializeDataTable"]] = function(json){
+	return json.DeserializeObject(json,..System.Data.DataTable);
+}
+
 /**intellisense(dotNet)
-json = 导入此扩展库,\n则所有被封装的 .Net 对象自动支持 web.json.stringify 函数,\ndotNet.createArrayList 返回的原生 .Net 对象除外\n\n此扩展自动注册内存程序集 Newtonsoft.Json.dll\n自动创建 Newtonsoft.Json 名字空间
+json = 指向 .NET 名字空间 Newtonsoft.Json。\n\n导入此扩展库，则所有 aardio 导入的 .NET 对象（dotNet.object）\n自动支持 web.json.stringify 函数。\ndotNet.createArrayList 返回的原生 .NET 对象除外\n\n此扩展自动注册内存程序集 Newtonsoft.Json.dll\n自动创建 Newtonsoft.Json 名字空间
 json.SerializeObject(__) = 将参数指定的 .Net 对象转为 JSON\n如果参数@2指定为1，则添加缩进格式
-json.DeserializeObject(__) = 将参数指定的 JSON 转为 .Net 对象
+json.DeserializeObject(__) = 将参数指定的 JSON 转为 .Net 对象。\n参数 @1 指定 JSON，参数 @2 指定 .NET 类型。\n参数 @2 可直指定 dotNet.import 导入的类，例如 System.Data.DataTable。\n或调用 .NET 对象的 GetType 函数获取类型
+json.Linq.JObject= JSON 对象。\n提供了一种灵活、高效的方式来处理 JSON 数据，允许开发者解析、查询、修改和生成 JSON
 end intellisense**/
 
+/*****intellisense()
+Newtonsoft.Json = dotNet.json
+end intellisense*****/
+
+/*****intellisense(dotNet.json.Linq.JObject)
+Parse(__) = 解析字符串参数 @1 指定的 JSON。
+Parse() = !NewtonsoftLinqJObject.
+end intellisense*****/
+
+/*****intellisense(NewtonsoftLinqJObject)
+SelectToken(__) = 用字符串参数 @1 指定的 JSON Path 查询 JSON。\n返回值为 JToken 对象，可用 tostring 函数转换为 JSON 
+SelectToken() = !NewtonsoftLinqJToken.
+end intellisense*****/
+
+/*****intellisense(!NewtonsoftLinqJToken)
+SelectToken(__) = 用字符串参数 @1 指定的 JSON Path 查询 JSON。\n返回值为 JToken 对象，可用 tostring 函数转换为 JSON 
+SelectToken() = !NewtonsoftLinqJToken.
+end intellisense*****/
+
+
+
 /**details(说明)
-此扩展库基于开源的 Newtonsoft.Json： https://github.com/JamesNK/Newtonsoft.Json
+此扩展库基于开源的 Newtonsoft.Json： 
+https://github.com/JamesNK/Newtonsoft.Json
+
+JObject 用法：
+https://www.newtonsoft.com/json/help/html/t_newtonsoft_json_linq_jobject.htm
 end details**/

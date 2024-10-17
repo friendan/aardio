@@ -29,6 +29,23 @@ class channel{
 			this._messageOnly.close();
 		}
 	};
+ 
+	lock = function(lock){
+		return !!::Bass.BASS_ChannelLock(this.channelHandle,lock);
+	};
+	
+	push = function(buffer,length,lock) {
+		if(length===null){
+			length = #buffer;
+		}
+		
+		if( this.channelHandle ){ 
+			if(lock)::Bass.BASS_ChannelLock(this.channelHandle,true);
+			var ret = ::Bass.BASS_StreamPutData(this.channelHandle,buffer,length); 
+			if(lock)::Bass.BASS_ChannelLock(this.channelHandle,false);
+			return ret;
+		}
+	}; 
 	
 	play = function(restart){
 		return ::Bass.BASS_ChannelPlay( this.channelHandle,!!restart)
@@ -275,8 +292,18 @@ namespace channel{
     BASS_ChannelSetAttribute = ::Bass.api("BASS_ChannelSetAttribute","bool(PTR handle,int attrib,float value)");
     BASS_ChannelSlideAttribute = ::Bass.api("BASS_ChannelSlideAttribute","bool(PTR handle,int attrib,float value,INT time)");
     BASS_StreamCreateFile = ::Bass.api("BASS_StreamCreateFileW","ptr(bool,ptr,LONG,LONG,INT)")
-    BASS_StreamCreateURL = ::Bass.api("BASS_StreamCreateURL","ptr(ustring path,INT offset,INT flags,ptr proc,ptr user)") 
- 
+    BASS_StreamCreateURL = ::Bass.api("BASS_StreamCreateURL","ptr(ustring path,INT offset,INT flags,ptr proc,ptr user)")  
+    BASS_StreamCreate = ::Bass.api("BASS_StreamCreate","ptr(INT freq,INT chans,INT flags,ptr proc,ptr user)") 
+    
+ 	create = function(freq=192000,chans=1,flags) {
+ 	 
+    	var stream = BASS_StreamCreate(freq,chans,flags||0,topointer(-1/*_STREAMPROC_PUSH*/) );
+    	if(stream){
+    		var channel =  ..bass.channel(stream); 
+			return channel;
+    	}	
+ 	}  
+  
 	open = function(path,flags) {
     	if(flags===null){
     		flags = 0x40000/*_BASS_STREAM_AUTOFREE*/ | 0x80/*_BASS_SAMPLE_FX*/
@@ -290,7 +317,7 @@ namespace channel{
 		elseif( #path<= 0x410/*_MAX_PATH_U8*/  ) {
 			
 			if(..io.exist(path)){
-				stream = BASS_StreamCreateFile( false,..string.toUnicode(..io.fullpath(path)),
+				stream = BASS_StreamCreateFile( false,..string.toUtf16(..io.fullpath(path)),
 					0,0,(flags:0)|0x80000000/*_BASS_UNICODE*/)
 					
 				if(stream)return ..bass.channel(stream);
@@ -311,7 +338,7 @@ namespace channel{
 			stream = BASS_StreamCreateFile( true,path,0,#path,flags )
 			if(stream){
 				var channel =  ..bass.channel(stream);
-				channel.gcBuffer = buf;
+				channel.gcBuffer = path;
 				return channel;
 			}	
 		}
@@ -323,13 +350,18 @@ namespace channel{
 
 /**intellisense()
 bass.channel() = !stdbasschannel.
-bass.channel.open( = 成功返回bass.channe对象,\n失败返回null,错误信息
+bass.channel.open( = 打开音频。\n成功返回 bass.channe 对象,\n失败返回 null,错误信息
 bass.channel.open(.(path,flags) = 打开音频,\n参数@1可以指定本地文件路径、资源文件路径、网址、内存数据,\n可选使用参数@2指定选项\n详细用法请参考bass文档
 bass.channel.open() = !stdbasschannel.
+bass.channel.create( = 创建音频推送流。\n成功返回 bass.channe 对象,\n失败返回null,错误信息
+bass.channel.create(.(freq,chans,flags) = 创建音频推送流。\n参数@freq 指定采样率，@chans 指定通道数，@flags 指定选项。\n可选使用参数@2指定选项\n详细用法请参考bass文档
+bass.channel.create() = !stdbasschannel.
 end intellisense**/
 
 /**intellisense(!stdbasschannel)
 free() = 释放对象\n音频对象不会自动释放,\n必须在不再使用该音频时手动调用些函数释放对象
+push( = 如果是用 bass.channel.create 创建的推送流\n可用此函数推送数据
+push(.(buffer,length) = buffer 为字符串或 buffer 对象。\nlength 指定推送长度，如果不指定 length 则自动取参数 @1 长度。\n如果参数 @1 为内存指针，则必须指定 length 参数
 play() = 播放音频
 pause() = 暂停播放
 stop() = 停止播放	

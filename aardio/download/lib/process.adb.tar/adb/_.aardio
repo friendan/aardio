@@ -100,15 +100,18 @@ namespace adb{
 	 
 	push = function(local,remote,...){
 		if(!remote) remote = "/mnt/sdcard/";
+		//大文件无法显示进度,adb 就这样，没其他办法
 		var adb = ..process.adb("push",..io.localpath(local)||local,remote,... );
-		adb.logResponse( logger || print );
+		adb.logger = logger;
+		adb.logResponse();
 		adb.close(); 
-	}
+	} 
 	
-	pull = function(remote,local,...){ 
+	pull = function(remote,local,...){  
+		//大文件无法显示进度,adb 就这样，没其他办法
 		var adb = ..process.adb("pull",remote,..io.localpath(local)||local,... );
-		
-		adb.logResponse( logger || print ); 
+		adb.logger = logger;
+		adb.logResponse();
 		adb.close(); 
 	}
 	
@@ -122,8 +125,10 @@ namespace adb{
 	}
 	
 	install = function(local,...){ 
+		//大文件无法显示进度,adb 就这样，没其他办法
 		var adb = ..process.adb("install",..io.fullpath(local),... );
-		adb.logResponse( logger || print );
+		adb.logger = logger;
+		adb.logResponse();
 		adb.close(); 
 	}
 	
@@ -167,7 +172,8 @@ namespace adb{
 	
 	uninstall = function(app,...){ 
 		var adb = ..process.adb("uninstall",app,... ) 
-		adb.logResponse( logger || print ) 
+		adb.logger = logger;
+		adb.logResponse(); 
 		adb.close(); 
 	} 
 	
@@ -302,11 +308,23 @@ namespace adb{
 	disconnect = function(){
 		return get("disconnect");
 	}
+	
+	lastAddress = function(addr){
+		if(addr){
+			..string.save("aardio/process/adb/$$.ADDR",addr);
+			return addr;
+		}
+		
+		addr = ..string.load( ..io.appData("aardio/process/adb/$$.ADDR") );
+		if(#addr){
+			return addr;
+		}
+	} 
 	 
 	connect = function(addr,changeSerialNo){
 		if( !addr ){
-			addr = ..string.load( ..io.appData("aardio/process/adb/$$.ADDR") );
-			if(!addr) return null,"参数 @1 必须指定连接地址";
+			addr = lastAddress();
+			if(!#addr) return null,"参数 @1 必须指定连接地址";
 		}
 		
 		var r,e = ..process.adb("connect",addr).readAll(); 
@@ -325,7 +343,7 @@ namespace adb{
 	}
 	
 	isConnected = function(){
-		return "device" getState();
+		return "device" == getState();
 	}
 	
 	tcpip = function(port,save){
@@ -340,7 +358,7 @@ namespace adb{
 			if(!addr && ip) addr = ip + ":" + port;
 			
 			if(save){
-				..string.save(..io.appData("aardio/process/adb/$$.ADDR"),addr)
+				lastAddress(addr)
 			}
 			return addr; 
 		}
@@ -353,296 +371,332 @@ namespace adb{
 		
 		return ..string.match(out,"inet\s*(\d+\.\d+\.\d+\.\d+)/\d+");
 	}
-
-	key = λ(code) shellGet("input keyevent "+code); 
+ 
+	getScreen = function(){
+		var out,err = shellGet("wm size");
+		if(!out)return null,err;
+		 
+		var cx,cy = ..string.match(out,"Physical\s*size\D+(\d+)x(\d+)");
+		return tonumber(cx),tonumber(cy);
+	}
+	
+	getMaxPos = function(){
+		var out,err = shellGet("getevent -il");
+		if(!out)return null,err;
+		 
+		var x = ..string.match(out,"ABS_MT_POSITION_X\s*\:\N+?max\s+(\d+)");
+		var y = ..string.match(out,"ABS_MT_POSITION_Y\s*\:\N+?max\s+(\d+)");
+		return tonumber(x),tonumber(y);
+	} 
+	
+	/*
+	https://source.android.com/docs/core/interaction/input/getevent?hl=zh-cn
+	-t  显示每个事件的时间戳
+	-l 以更具可读性的方式显示事件，显示事件名称和值。
+	-n 不显示设备信息，只显示事件数据。
+	-c [COUNT] 读取指定数量的事件后停止。
+	-q 安静模式，只显示事件数据，不显示其他信息。
+	一个短横线后可写多个短参数
+	*/
+	getEvent = function(...){ 
+		return shell(`getevent`,...);    
+	} 
+	
+	input = λ(...) shellGet("input",...); 
+	tap = λ(x,y) shellGet("input","tap",x,y); 
+	swipe = λ(x1,y1,x2,y2,duration) shellGet("input","swipe",x1,y1,x2,y2,duration);
+	
+	sendString = λ(text) shellGet("input","text",text); 
+	key = λ(code,longPress) shellGet("input","keyevent",longPress?"--longpress":"",code); 
+	sendevent = λ(...) shellGet("sendevent",...); 
 	
 	/*intellisense(process.adb)*/ 
-	keyUnknown = λ() key(0);
-	keySoftLeft = λ() key(1);
-	keySoftRight = λ() key(2);
-	keyHome = λ() key(3);
-	keyBack = λ() key(4);
-	keyCall = λ() key(5);
-	keyEndcall = λ() key(6);
-	key0 = λ() key(7);
-	key1 = λ() key(8);
-	key2 = λ() key(9);
-	key3 = λ() key(10);
-	key4 = λ() key(11);
-	key5 = λ() key(12);
-	key6 = λ() key(13);
-	key7 = λ() key(14);
-	key8 = λ() key(15);
-	key9 = λ() key(16);
-	keyStar = λ() key(17);
-	keyPound = λ() key(18);
-	keyDpadUp = λ() key(19);
-	keyDpadDown = λ() key(20);
-	keyDpadLeft = λ() key(21);
-	keyDpadRight = λ() key(22);
-	keyDpadCenter = λ() key(23);
-	keyVolumeUp = λ() key(24);
-	keyVolumeDown = λ() key(25);
-	keyPower = λ() key(26);
-	keyCamera = λ() key(27);
-	keyClear = λ() key(28);
-	keyA = λ() key(29);
-	keyB = λ() key(30);
-	keyC = λ() key(31);
-	keyD = λ() key(32);
-	keyE = λ() key(33);
-	keyF = λ() key(34);
-	keyG = λ() key(35);
-	keyH = λ() key(36);
-	keyI = λ() key(37);
-	keyJ = λ() key(38);
-	keyK = λ() key(39);
-	keyL = λ() key(40);
-	keyM = λ() key(41);
-	keyN = λ() key(42);
-	keyO = λ() key(43);
-	keyP = λ() key(44);
-	keyQ = λ() key(45);
-	keyR = λ() key(46);
-	keyS = λ() key(47);
-	keyT = λ() key(48);
-	keyU = λ() key(49);
-	keyV = λ() key(50);
-	keyW = λ() key(51);
-	keyX = λ() key(52);
-	keyY = λ() key(53);
-	keyZ = λ() key(54);
-	keyComma = λ() key(55);
-	keyPeriod = λ() key(56);
-	keyAltLeft = λ() key(57);
-	keyAltRight = λ() key(58);
-	keyShiftLeft = λ() key(59);
-	keyShiftRight = λ() key(60);
-	keyTab = λ() key(61);
-	keySpace = λ() key(62);
-	keySym = λ() key(63);
-	keyExplorer = λ() key(64);
-	keyEnvelope = λ() key(65);
-	keyEnter = λ() key(66);
-	keyDel = λ() key(67);
-	keyGrave = λ() key(68);
-	keyMinus = λ() key(69);
-	keyEquals = λ() key(70);
-	keyLeftBracket = λ() key(71);
-	keyRightBracket = λ() key(72);
-	keyBackslash = λ() key(73);
-	keySemicolon = λ() key(74);
-	keyApostrophe = λ() key(75);
-	keySlash = λ() key(76);
-	keyAt = λ() key(77);
-	keyNum = λ() key(78);
-	keyHeadsethook = λ() key(79);
-	keyFocus = λ() key(80);
-	keyPlus = λ() key(81);
-	keyMenu = λ() key(82);
-	keyNotification = λ() key(83);
-	keySearch = λ() key(84);
-	keyMediaPlayPause = λ() key(85);
-	keyMediaStop = λ() key(86);
-	keyMediaNext = λ() key(87);
-	keyMediaPrevious = λ() key(88);
-	keyMediaRewind = λ() key(89);
-	keyMediaFastForward = λ() key(90);
-	keyMute = λ() key(91);
-	keyPageUp = λ() key(92);
-	keyPageDown = λ() key(93);
-	keyPictsymbols = λ() key(94);
-	keySwitchCharset = λ() key(95);
-	keyButtonA = λ() key(96);
-	keyButtonB = λ() key(97);
-	keyButtonC = λ() key(98);
-	keyButtonX = λ() key(99);
-	keyButtonY = λ() key(100);
-	keyButtonZ = λ() key(101);
-	keyButtonL1 = λ() key(102);
-	keyButtonR1 = λ() key(103);
-	keyButtonL2 = λ() key(104);
-	keyButtonR2 = λ() key(105);
-	keyButtonThumbl = λ() key(106);
-	keyButtonThumbr = λ() key(107);
-	keyButtonStart = λ() key(108);
-	keyButtonSelect = λ() key(109);
-	keyButtonMode = λ() key(110);
-	keyEscape = λ() key(111);
-	keyForwardDel = λ() key(112);
-	keyCtrlLeft = λ() key(113);
-	keyCtrlRight = λ() key(114);
-	keyCapsLock = λ() key(115);
-	keyScrollLock = λ() key(116);
-	keyMetaLeft = λ() key(117);
-	keyMetaRight = λ() key(118);
-	keyFunction = λ() key(119);
-	keySysrq = λ() key(120);
-	keyBreak = λ() key(121);
-	keyMoveHome = λ() key(122);
-	keyMoveEnd = λ() key(123);
-	keyInsert = λ() key(124);
-	keyForward = λ() key(125);
-	keyMediaPlay = λ() key(126);
-	keyMediaPause = λ() key(127);
-	keyMediaClose = λ() key(128);
-	keyMediaEject = λ() key(129);
-	keyMediaRecord = λ() key(130);
-	keyF1 = λ() key(131);
-	keyF2 = λ() key(132);
-	keyF3 = λ() key(133);
-	keyF4 = λ() key(134);
-	keyF5 = λ() key(135);
-	keyF6 = λ() key(136);
-	keyF7 = λ() key(137);
-	keyF8 = λ() key(138);
-	keyF9 = λ() key(139);
-	keyF10 = λ() key(140);
-	keyF11 = λ() key(141);
-	keyF12 = λ() key(142);
-	keyNumLock = λ() key(143);
-	keyNumpad0 = λ() key(144);
-	keyNumpad1 = λ() key(145);
-	keyNumpad2 = λ() key(146);
-	keyNumpad3 = λ() key(147);
-	keyNumpad4 = λ() key(148);
-	keyNumpad5 = λ() key(149);
-	keyNumpad6 = λ() key(150);
-	keyNumpad7 = λ() key(151);
-	keyNumpad8 = λ() key(152);
-	keyNumpad9 = λ() key(153);
-	keyNumpadDivide = λ() key(154);
-	keyNumpadMultiply = λ() key(155);
-	keyNumpadSubtract = λ() key(156);
-	keyNumpadAdd = λ() key(157);
-	keyNumpadDot = λ() key(158);
-	keyNumpadComma = λ() key(159);
-	keyNumpadEnter = λ() key(160);
-	keyNumpadEquals = λ() key(161);
-	keyNumpadLeftParen = λ() key(162);
-	keyNumpadRightParen = λ() key(163);
-	keyVolumeMute = λ() key(164);
-	keyInfo = λ() key(165);
-	keyChannelUp = λ() key(166);
-	keyChannelDown = λ() key(167);
-	keyZoomIn = λ() key(168);
-	keyZoomOut = λ() key(169);
-	keyTv = λ() key(170);
-	keyWindow = λ() key(171);
-	keyGuide = λ() key(172);
-	keyDvr = λ() key(173);
-	keyBookmark = λ() key(174);
-	keyCaptions = λ() key(175);
-	keySettings = λ() key(176);
-	keyTvPower = λ() key(177);
-	keyTvInput = λ() key(178);
-	keyStbPower = λ() key(179);
-	keyStbInput = λ() key(180);
-	keyAvrPower = λ() key(181);
-	keyAvrInput = λ() key(182);
-	keyProgRed = λ() key(183);
-	keyProgGreen = λ() key(184);
-	keyProgYellow = λ() key(185);
-	keyProgBlue = λ() key(186);
-	keyAppSwitch = λ() key(187);
-	keyButton1 = λ() key(188);
-	keyButton2 = λ() key(189);
-	keyButton3 = λ() key(190);
-	keyButton4 = λ() key(191);
-	keyButton5 = λ() key(192);
-	keyButton6 = λ() key(193);
-	keyButton7 = λ() key(194);
-	keyButton8 = λ() key(195);
-	keyButton9 = λ() key(196);
-	keyButton10 = λ() key(197);
-	keyButton11 = λ() key(198);
-	keyButton12 = λ() key(199);
-	keyButton13 = λ() key(200);
-	keyButton14 = λ() key(201);
-	keyButton15 = λ() key(202);
-	keyButton16 = λ() key(203);
-	keyLanguageSwitch = λ() key(204);
-	keyMannerMode = λ() key(205);
-	key3dMode = λ() key(206);
-	keyContacts = λ() key(207);
-	keyCalendar = λ() key(208);
-	keyMusic = λ() key(209);
-	keyCalculator = λ() key(210);
-	keyZenkakuHankaku = λ() key(211);
-	keyEisu = λ() key(212);
-	keyMuhenkan = λ() key(213);
-	keyHenkan = λ() key(214);
-	keyKatakanaHiragana = λ() key(215);
-	keyYen = λ() key(216);
-	keyRo = λ() key(217);
-	keyKana = λ() key(218);
-	keyAssist = λ() key(219);
-	keyBrightnessDown = λ() key(220);
-	keyBrightnessUp = λ() key(221);
-	keyMediaAudioTrack = λ() key(222);
-	keySleep = λ() key(223);
-	keyWakeup = λ() key(224);
-	keyPairing = λ() key(225);
-	keyMediaTopMenu = λ() key(226);
-	key11 = λ() key(227);
-	key12 = λ() key(228);
-	keyLastChannel = λ() key(229);
-	keyTvDataService = λ() key(230);
-	keyVoiceAssist = λ() key(231);
-	keyTvRadioService = λ() key(232);
-	keyTvTeletext = λ() key(233);
-	keyTvNumberEntry = λ() key(234);
-	keyTvTerrestrialAnalog = λ() key(235);
-	keyTvTerrestrialDigital = λ() key(236);
-	keyTvSatellite = λ() key(237);
-	keyTvSatelliteBs = λ() key(238);
-	keyTvSatelliteCs = λ() key(239);
-	keyTvSatelliteService = λ() key(240);
-	keyTvNetwork = λ() key(241);
-	keyTvAntennaCable = λ() key(242);
-	keyTvInputHdmi1 = λ() key(243);
-	keyTvInputHdmi2 = λ() key(244);
-	keyTvInputHdmi3 = λ() key(245);
-	keyTvInputHdmi4 = λ() key(246);
-	keyTvInputComposite1 = λ() key(247);
-	keyTvInputComposite2 = λ() key(248);
-	keyTvInputComponent1 = λ() key(249);
-	keyTvInputComponent2 = λ() key(250);
-	keyTvInputVga1 = λ() key(251);
-	keyTvAudioDescription = λ() key(252);
-	keyTvAudioDescriptionMixUp = λ() key(253);
-	keyTvAudioDescriptionMixDown = λ() key(254);
-	keyTvZoomMode = λ() key(255);
-	keyTvContentsMenu = λ() key(256);
-	keyTvMediaContextMenu = λ() key(257);
-	keyTvTimerProgramming = λ() key(258);
-	keyHelp = λ() key(259);
-	keyNavigatePrevious = λ() key(260);
-	keyNavigateNext = λ() key(261);
-	keyNavigateIn = λ() key(262);
-	keyNavigateOut = λ() key(263);
-	keyStemPrimary = λ() key(264);
-	keyStem1 = λ() key(265);
-	keyStem2 = λ() key(266);
-	keyStem3 = λ() key(267);
-	keyDpadUpLeft = λ() key(268);
-	keyDpadDownLeft = λ() key(269);
-	keyDpadUpRight = λ() key(270);
-	keyDpadDownRight = λ() key(271);
-	keyMediaSkipForward = λ() key(272);
-	keyMediaSkipBackward = λ() key(273);
-	keyMediaStepForward = λ() key(274);
-	keyMediaStepBackward = λ() key(275);
-	keySoftSleep = λ() key(276);
-	keyCut = λ() key(277);
-	keyCopy = λ() key(278);
-	keyPaste = λ() key(279);
-	keySystemNavigationUp = λ() key(280);
-	keySystemNavigationDown = λ() key(281);
-	keySystemNavigationLeft = λ() key(282);
-	keySystemNavigationRight = λ() key(283);
-	keyAllApps = λ() key(284);
-	keyRefresh = λ() key(285);
+	keyUnknown = λ(l) key(0,l);
+	keySoftLeft = λ(l) key(1,l);
+	keySoftRight = λ(l) key(2,l);
+	keyHome = λ(l) key(3,l);
+	keyBack = λ(l) key(4,l);
+	keyCall = λ(l) key(5,l);
+	keyEndcall = λ(l) key(6,l);
+	key0 = λ(l) key(7,l);
+	key1 = λ(l) key(8,l);
+	key2 = λ(l) key(9,l);
+	key3 = λ(l) key(10,l);
+	key4 = λ(l) key(11,l);
+	key5 = λ(l) key(12,l);
+	key6 = λ(l) key(13,l);
+	key7 = λ(l) key(14,l);
+	key8 = λ(l) key(15,l);
+	key9 = λ(l) key(16,l);
+	keyStar = λ(l) key(17,l);
+	keyPound = λ(l) key(18,l);
+	keyDpadUp = λ(l) key(19,l);
+	keyDpadDown = λ(l) key(20,l);
+	keyDpadLeft = λ(l) key(21,l);
+	keyDpadRight = λ(l) key(22,l);
+	keyDpadCenter = λ(l) key(23,l);
+	keyVolumeUp = λ(l) key(24,l);
+	keyVolumeDown = λ(l) key(25,l);
+	keyPower = λ(l) key(26,l);
+	keyCamera = λ(l) key(27,l);
+	keyClear = λ(l) key(28,l);
+	keyA = λ(l) key(29,l);
+	keyB = λ(l) key(30,l);
+	keyC = λ(l) key(31,l);
+	keyD = λ(l) key(32,l);
+	keyE = λ(l) key(33,l);
+	keyF = λ(l) key(34,l);
+	keyG = λ(l) key(35,l);
+	keyH = λ(l) key(36,l);
+	keyI = λ(l) key(37,l);
+	keyJ = λ(l) key(38,l);
+	keyK = λ(l) key(39,l);
+	keyL = λ(l) key(40,l);
+	keyM = λ(l) key(41,l);
+	keyN = λ(l) key(42,l);
+	keyO = λ(l) key(43,l);
+	keyP = λ(l) key(44,l);
+	keyQ = λ(l) key(45,l);
+	keyR = λ(l) key(46,l);
+	keyS = λ(l) key(47,l);
+	keyT = λ(l) key(48,l);
+	keyU = λ(l) key(49,l);
+	keyV = λ(l) key(50,l);
+	keyW = λ(l) key(51,l);
+	keyX = λ(l) key(52,l);
+	keyY = λ(l) key(53,l);
+	keyZ = λ(l) key(54,l);
+	keyComma = λ(l) key(55,l);
+	keyPeriod = λ(l) key(56,l);
+	keyAltLeft = λ(l) key(57,l);
+	keyAltRight = λ(l) key(58,l);
+	keyShiftLeft = λ(l) key(59,l);
+	keyShiftRight = λ(l) key(60,l);
+	keyTab = λ(l) key(61,l);
+	keySpace = λ(l) key(62,l);
+	keySym = λ(l) key(63,l);
+	keyExplorer = λ(l) key(64,l);
+	keyEnvelope = λ(l) key(65,l);
+	keyEnter = λ(l) key(66,l);
+	keyDel = λ(l) key(67,l);
+	keyGrave = λ(l) key(68,l);
+	keyMinus = λ(l) key(69,l);
+	keyEquals = λ(l) key(70,l);
+	keyLeftBracket = λ(l) key(71,l);
+	keyRightBracket = λ(l) key(72,l);
+	keyBackslash = λ(l) key(73,l);
+	keySemicolon = λ(l) key(74,l);
+	keyApostrophe = λ(l) key(75,l);
+	keySlash = λ(l) key(76,l);
+	keyAt = λ(l) key(77,l);
+	keyNum = λ(l) key(78,l);
+	keyHeadsethook = λ(l) key(79,l);
+	keyFocus = λ(l) key(80,l);
+	keyPlus = λ(l) key(81,l);
+	keyMenu = λ(l) key(82,l);
+	keyNotification = λ(l) key(83,l);
+	keySearch = λ(l) key(84,l);
+	keyMediaPlayPause = λ(l) key(85,l);
+	keyMediaStop = λ(l) key(86,l);
+	keyMediaNext = λ(l) key(87,l);
+	keyMediaPrevious = λ(l) key(88,l);
+	keyMediaRewind = λ(l) key(89,l);
+	keyMediaFastForward = λ(l) key(90,l);
+	keyMute = λ(l) key(91,l);
+	keyPageUp = λ(l) key(92,l);
+	keyPageDown = λ(l) key(93,l);
+	keyPictsymbols = λ(l) key(94,l);
+	keySwitchCharset = λ(l) key(95,l);
+	keyButtonA = λ(l) key(96,l);
+	keyButtonB = λ(l) key(97,l);
+	keyButtonC = λ(l) key(98,l);
+	keyButtonX = λ(l) key(99,l);
+	keyButtonY = λ(l) key(100,l);
+	keyButtonZ = λ(l) key(101,l);
+	keyButtonL1 = λ(l) key(102,l);
+	keyButtonR1 = λ(l) key(103,l);
+	keyButtonL2 = λ(l) key(104,l);
+	keyButtonR2 = λ(l) key(105,l);
+	keyButtonThumbl = λ(l) key(106,l);
+	keyButtonThumbr = λ(l) key(107,l);
+	keyButtonStart = λ(l) key(108,l);
+	keyButtonSelect = λ(l) key(109,l);
+	keyButtonMode = λ(l) key(110,l);
+	keyEscape = λ(l) key(111,l);
+	keyForwardDel = λ(l) key(112,l);
+	keyCtrlLeft = λ(l) key(113,l);
+	keyCtrlRight = λ(l) key(114,l);
+	keyCapsLock = λ(l) key(115,l);
+	keyScrollLock = λ(l) key(116,l);
+	keyMetaLeft = λ(l) key(117,l);
+	keyMetaRight = λ(l) key(118,l);
+	keyFunction = λ(l) key(119,l);
+	keySysrq = λ(l) key(120,l);
+	keyBreak = λ(l) key(121,l);
+	keyMoveHome = λ(l) key(122,l);
+	keyMoveEnd = λ(l) key(123,l);
+	keyInsert = λ(l) key(124,l);
+	keyForward = λ(l) key(125,l);
+	keyMediaPlay = λ(l) key(126,l);
+	keyMediaPause = λ(l) key(127,l);
+	keyMediaClose = λ(l) key(128,l);
+	keyMediaEject = λ(l) key(129,l);
+	keyMediaRecord = λ(l) key(130,l);
+	keyF1 = λ(l) key(131,l);
+	keyF2 = λ(l) key(132,l);
+	keyF3 = λ(l) key(133,l);
+	keyF4 = λ(l) key(134,l);
+	keyF5 = λ(l) key(135,l);
+	keyF6 = λ(l) key(136,l);
+	keyF7 = λ(l) key(137,l);
+	keyF8 = λ(l) key(138,l);
+	keyF9 = λ(l) key(139,l);
+	keyF10 = λ(l) key(140,l);
+	keyF11 = λ(l) key(141,l);
+	keyF12 = λ(l) key(142,l);
+	keyNumLock = λ(l) key(143,l);
+	keyNumpad0 = λ(l) key(144,l);
+	keyNumpad1 = λ(l) key(145,l);
+	keyNumpad2 = λ(l) key(146,l);
+	keyNumpad3 = λ(l) key(147,l);
+	keyNumpad4 = λ(l) key(148,l);
+	keyNumpad5 = λ(l) key(149,l);
+	keyNumpad6 = λ(l) key(150,l);
+	keyNumpad7 = λ(l) key(151,l);
+	keyNumpad8 = λ(l) key(152,l);
+	keyNumpad9 = λ(l) key(153,l);
+	keyNumpadDivide = λ(l) key(154,l);
+	keyNumpadMultiply = λ(l) key(155,l);
+	keyNumpadSubtract = λ(l) key(156,l);
+	keyNumpadAdd = λ(l) key(157,l);
+	keyNumpadDot = λ(l) key(158,l);
+	keyNumpadComma = λ(l) key(159,l);
+	keyNumpadEnter = λ(l) key(160,l);
+	keyNumpadEquals = λ(l) key(161,l);
+	keyNumpadLeftParen = λ(l) key(162,l);
+	keyNumpadRightParen = λ(l) key(163,l);
+	keyVolumeMute = λ(l) key(164,l);
+	keyInfo = λ(l) key(165,l);
+	keyChannelUp = λ(l) key(166,l);
+	keyChannelDown = λ(l) key(167,l);
+	keyZoomIn = λ(l) key(168,l);
+	keyZoomOut = λ(l) key(169,l);
+	keyTv = λ(l) key(170,l);
+	keyWindow = λ(l) key(171,l);
+	keyGuide = λ(l) key(172,l);
+	keyDvr = λ(l) key(173,l);
+	keyBookmark = λ(l) key(174,l);
+	keyCaptions = λ(l) key(175,l);
+	keySettings = λ(l) key(176,l);
+	keyTvPower = λ(l) key(177,l);
+	keyTvInput = λ(l) key(178,l);
+	keyStbPower = λ(l) key(179,l);
+	keyStbInput = λ(l) key(180,l);
+	keyAvrPower = λ(l) key(181,l);
+	keyAvrInput = λ(l) key(182,l);
+	keyProgRed = λ(l) key(183,l);
+	keyProgGreen = λ(l) key(184,l);
+	keyProgYellow = λ(l) key(185,l);
+	keyProgBlue = λ(l) key(186,l);
+	keyAppSwitch = λ(l) key(187,l);
+	keyButton1 = λ(l) key(188,l);
+	keyButton2 = λ(l) key(189,l);
+	keyButton3 = λ(l) key(190,l);
+	keyButton4 = λ(l) key(191,l);
+	keyButton5 = λ(l) key(192,l);
+	keyButton6 = λ(l) key(193,l);
+	keyButton7 = λ(l) key(194,l);
+	keyButton8 = λ(l) key(195,l);
+	keyButton9 = λ(l) key(196,l);
+	keyButton10 = λ(l) key(197,l);
+	keyButton11 = λ(l) key(198,l);
+	keyButton12 = λ(l) key(199,l);
+	keyButton13 = λ(l) key(200,l);
+	keyButton14 = λ(l) key(201,l);
+	keyButton15 = λ(l) key(202,l);
+	keyButton16 = λ(l) key(203,l);
+	keyLanguageSwitch = λ(l) key(204,l);
+	keyMannerMode = λ(l) key(205,l);
+	key3dMode = λ(l) key(206,l);
+	keyContacts = λ(l) key(207,l);
+	keyCalendar = λ(l) key(208,l);
+	keyMusic = λ(l) key(209,l);
+	keyCalculator = λ(l) key(210,l);
+	keyZenkakuHankaku = λ(l) key(211,l);
+	keyEisu = λ(l) key(212,l);
+	keyMuhenkan = λ(l) key(213,l);
+	keyHenkan = λ(l) key(214,l);
+	keyKatakanaHiragana = λ(l) key(215,l);
+	keyYen = λ(l) key(216,l);
+	keyRo = λ(l) key(217,l);
+	keyKana = λ(l) key(218,l);
+	keyAssist = λ(l) key(219,l);
+	keyBrightnessDown = λ(l) key(220,l);
+	keyBrightnessUp = λ(l) key(221,l);
+	keyMediaAudioTrack = λ(l) key(222,l);
+	keySleep = λ(l) key(223,l);
+	keyWakeup = λ(l) key(224,l);
+	keyPairing = λ(l) key(225,l);
+	keyMediaTopMenu = λ(l) key(226,l);
+	key11 = λ(l) key(227,l);
+	key12 = λ(l) key(228,l);
+	keyLastChannel = λ(l) key(229,l);
+	keyTvDataService = λ(l) key(230,l);
+	keyVoiceAssist = λ(l) key(231,l);
+	keyTvRadioService = λ(l) key(232,l);
+	keyTvTeletext = λ(l) key(233,l);
+	keyTvNumberEntry = λ(l) key(234,l);
+	keyTvTerrestrialAnalog = λ(l) key(235,l);
+	keyTvTerrestrialDigital = λ(l) key(236,l);
+	keyTvSatellite = λ(l) key(237,l);
+	keyTvSatelliteBs = λ(l) key(238,l);
+	keyTvSatelliteCs = λ(l) key(239,l);
+	keyTvSatelliteService = λ(l) key(240,l);
+	keyTvNetwork = λ(l) key(241,l);
+	keyTvAntennaCable = λ(l) key(242,l);
+	keyTvInputHdmi1 = λ(l) key(243,l);
+	keyTvInputHdmi2 = λ(l) key(244,l);
+	keyTvInputHdmi3 = λ(l) key(245,l);
+	keyTvInputHdmi4 = λ(l) key(246,l);
+	keyTvInputComposite1 = λ(l) key(247,l);
+	keyTvInputComposite2 = λ(l) key(248,l);
+	keyTvInputComponent1 = λ(l) key(249,l);
+	keyTvInputComponent2 = λ(l) key(250,l);
+	keyTvInputVga1 = λ(l) key(251,l);
+	keyTvAudioDescription = λ(l) key(252,l);
+	keyTvAudioDescriptionMixUp = λ(l) key(253,l);
+	keyTvAudioDescriptionMixDown = λ(l) key(254,l);
+	keyTvZoomMode = λ(l) key(255,l);
+	keyTvContentsMenu = λ(l) key(256,l);
+	keyTvMediaContextMenu = λ(l) key(257,l);
+	keyTvTimerProgramming = λ(l) key(258,l);
+	keyHelp = λ(l) key(259,l);
+	keyNavigatePrevious = λ(l) key(260,l);
+	keyNavigateNext = λ(l) key(261,l);
+	keyNavigateIn = λ(l) key(262,l);
+	keyNavigateOut = λ(l) key(263,l);
+	keyStemPrimary = λ(l) key(264,l);
+	keyStem1 = λ(l) key(265,l);
+	keyStem2 = λ(l) key(266,l);
+	keyStem3 = λ(l) key(267,l);
+	keyDpadUpLeft = λ(l) key(268,l);
+	keyDpadDownLeft = λ(l) key(269,l);
+	keyDpadUpRight = λ(l) key(270,l);
+	keyDpadDownRight = λ(l) key(271,l);
+	keyMediaSkipForward = λ(l) key(272,l);
+	keyMediaSkipBackward = λ(l) key(273,l);
+	keyMediaStepForward = λ(l) key(274,l);
+	keyMediaStepBackward = λ(l) key(275,l);
+	keySoftSleep = λ(l) key(276,l);
+	keyCut = λ(l) key(277,l);
+	keyCopy = λ(l) key(278,l);
+	keyPaste = λ(l) key(279,l);
+	keySystemNavigationUp = λ(l) key(280,l);
+	keySystemNavigationDown = λ(l) key(281,l);
+	keySystemNavigationLeft = λ(l) key(282,l);
+	keySystemNavigationRight = λ(l) key(283,l);
+	keyAllApps = λ(l) key(284,l);
+	keyRefresh = λ(l) key(285,l);
 	/*end intellisense*/
 	
 	getProp = function(name){
@@ -761,4 +815,14 @@ key(__) = 模拟手机按键。\n需要在手机开发者设置中打开模拟�
 getProp( = 获取属性。\n成功返回字符串类型的属性值，\n失败返回 null, 错误信息
 getProp(.("ro->build->version->release") = @.getProp("ro.build.version.release")__/*返回 android 系统版本，\n成功返回一个字符串类型的数值*/
 listPackages() = 列出所有应用。\n可选指定一个或多个字符串参数，\n"-s" 参数指定只返回系统应用，"-3"参数限定返回第三方应用。\n成功返回一个数组，不指定"-f","-i"参数时数组元素为包名。
+getScreen() = 返回设备宽度与高度，有 2 个返回值。
+getMaxPos() = 返回最大 x 坐标与最大 y 坐标。\n用于调用 getEvent 函数时转换输出的事件坐标值
+getEvent() = 监听输入事件。\n可指定一个或多个参数，添加 "-l" 以文本代替数值显示事件类型与名称。\n返回值为 process.popen 对象。\n调用返回对象的 lines 函数可以遍历所有回显行并匹配需要的值。\n调用返回对象的 ctrlEvent(0) 函数可退出监听进程。 \n回显事件格式：设备 事件类型 事件名 事件值\n!process_popen.
+input() = 发送输入事件，用法请 tap,swip 等函数源码与 adb 文档。
+sendevent(__) = 发送输入事件，参数示例：\n"sendevent /dev/input/event3 3 57 0"
+tap(.(x,y) = 发送触模事件，参数 x,y 指定坐标
+swipe(.(x1,y1,x2,y2,duration) = 从 x1,y1 坐标滑动到 x2,y2 坐标。\n可选用 duration 指定持续时间，以毫秒为单位。\n原地滑动发送长按事件
+sendString(.(text) = 发送输入文本事件，text 指定要输入的字符串
+key(.(code,longPress) = 发送按键事件。\ncode 可以为数值或文本键名。\n用法请参考 adb 文件。\n或改用 key 前缀的其他函数。\n参数 @2 为 true 时表示长按
+lastAddress() = 无参数返回当前系统账号最后连接的手机 IP 地址与端口。\n参数 @1 指定字符串则修改最后自动连接地址与端口，\n传入空字符串清除保存的连接地址。\n\n一般不要修改此地址，应由 process.adb 自动维护。
 end intellisense**/

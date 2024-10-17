@@ -3,7 +3,7 @@ import raw.jsonCall;
 
 namespace golang.mdns;
  
-var dll = ..raw.loadDll($"~\lib\golang\mdns\.go\mdns.dll",,"cdecl");
+var dll = ..raw.loadDll($"~\lib\golang\mdns\.go\mdns.dll","golang.mdns.dll","cdecl");
 
 $ = ..web.json.stringify;
  
@@ -108,12 +108,9 @@ getInterfaces = function(){
 	return interfaces,err;
 }
 
-/*
-Go DLL 需要至少调用 1 个 导出API ，避免 DLL 未初始化直接退出导致的问题
-*/
-..table.gc(self,function(){
-	dll.StopService();
-}) 
+..subscribe("beforeUnload",function(){
+	dll.StopService(); 
+} ); 
 
 /**intellisense(golang.mdns)
 scan() = 扫描 mDNS 服务，\n查询成功返回服务信息数组，\n失败返回 null，错误信息
@@ -126,3 +123,7 @@ startService( = 创建 mDNS 服务
 startService(.(param) = @.startService( \n	instance = "实例名";\n	service = "服务名__/*指定要启动的 mDNS 服务名*/";\n	domain = "域名，建议省略，默认为 local.";\n	host = "主机名，建议省略";\n	ips = {"IP地址"};\n	port = 端口;\n	txt = {"文本"}\n)
 stopService() = 停止 mDNS 服务
 end intellisense**/
+
+/*****intellisense()
+golang.mdns = 一定要在主线程导入一次，且主线程不能退出太快。\nGo 编写的 DLL 仅在工作线程中加载可能会导致程序异常退出
+end intellisense*****/

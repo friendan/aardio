@@ -84,11 +84,13 @@ aardio_setGlobal(name,value){
 	addScript = function(script,waitExecute){  
 		dll.addScriptW(script,waitexecute,this.id)  
 	}; 
-	getGlobal = function(k,getVar){
-		return dll.ahkgetvarP(k,getVar===null?true:!!getVar)
+	getGlobal = function(k,getVarPtr){
+		var p = dll.ahkgetvarP(k,!!getVarPtr,this.id)
+		if(!getVarPtr && p)  return ..string.fromUtf16(p,,-1); 
+		return p;
 	}; 
 	setGlobal = function(k,v){
-		//return dll.ahkassign(k,tostring(v),this.id);//这函数有问题，下面打补丁
+		//return dll.ahkassign(k,tostring(v),this.id);//这函数有问题会导致崩溃，下面打补丁
 		this.sendCall("aardio_setGlobal",k,..web.json.stringify({v}));
 	}; 
 	postCall = function(func, param1 = "", param2 = "", param3 = "", param4 = "", param5 = "", param6 = "", param7 = "", param8 = "", param9 = "", param10){
@@ -106,7 +108,7 @@ aardio_setGlobal(name,value){
 		)
 			
 		if(p){
-			return ..string.fromUnicode(p,,-1); 
+			return ..string.fromUtf16(p,,-1); 
 		}
 	};
 	jsonCall = function(func,param){
@@ -230,9 +232,9 @@ postCall(.("函数名__",) = 运行指定的函数\n可选添加一到十个参�
 jsonCall(.("函数名__",) = 运行指定的函数\n使用JSON传递参数并返回值
 setGlobal() = 对 AHK 中的全局变量赋值,\n运行 AHK 脚本线程后才能调用此函数
 setGlobal(.("变量名","值") = 对 AHK 中的全局变量赋值，\n参数 @2 允许所有 JSON 兼容的类型，\n注意应当在 AHK 中先用 global name := value 声明全局变量
-getGlobal( = 返回 AHK 中全局变量的值或指针,\n注意应当在 AHK 中先用 global name := value 声明全局变量
-getGlobal(.("变量名",false) = 返回 AHK 中的全局变量，这函数有点问题建议不要使用
-getGlobal(.("变量名") = 返回 AHK 中全局变量的指针
+getGlobal( = 返回 AHK 中全局变量的值或指针,\n注意应当在 AHK 中先用 global name := value 声明全局变量,\n运行 AHK 脚本线程后才能调用此函数
+getGlobal(.("变量名",true) = 返回 AHK 中全局变量的指针
+getGlobal(.("变量名") = 返回 AHK 中全局变量的字符串值。\n数值可可自动转为字符串。
 findFunc(.("函数名__") = 查找函数,返回函数指针
 pause("On") = 暂停
 pause("Off") = 取消暂停

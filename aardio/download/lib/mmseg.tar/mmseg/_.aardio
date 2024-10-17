@@ -9,9 +9,36 @@
 			this.algor = null;
 		}
 	}
+	
+	list = function(str){
+		var words = {}
+		var attrs ={}
+		for word,attr in this.each(str){
+			..table.push(words,word);
+			attrs[word] =attr; 
+		} 
+		
+		return words,attr;
+	}
+	
+	text = function(str,sep){
+		var arr = this.list(str);
+		return ..string.join(arr,sep || " ")
+	}
+	
+	hasWord = function(word){
+		var words = list(word);
+		return (#words==1);
+	}
 
 	each = function(str) {
-		if (this.algor) dll.mmseg_algor_destroy(this.algor);
+		if (this.algor) {
+			dll.mmseg_algor_destroy(this.algor);
+			this.algor = null;
+		}
+		if(#str==0){
+			error("出错了")
+		}
 		
 		var token = {
 			ptr text;
@@ -20,12 +47,26 @@
 			byte attr;
 		};
 		
+		if(!#str){
+			return function(){
+				
+			} 
+		}
+		
 		var algor = dll.mmseg_algor_create(str, #str);
+		if(!algor){
+			error("内存错误！")
+		}
+		
 		this.algor = algor;
 		
+		var $tostring =  ..raw.tostring;
 		return function() {
+			//创建闭包引用避免 str 被释放，token.text 实际上仍然是指向 str 指向的内存指针 + token.offset 。
+			var str = str;
+			
 			dll.mmseg_next_token(algor,token);
-			if (token.length) return ..raw.tostring(token.text, 1, token.length),token.attr;
+			if (token.length) return $tostring(token.text, 1, token.length),token.attr;
 			else this.destroy();
 		},this.destroy;
 	}
@@ -47,9 +88,12 @@ namespace mmseg{
 		dll.mmseg_dic_add(word,..string.len(word),freq);
 	}
 	
-	each = function(str){
-		return ..mmseg().each(str);
-	}
+	var $mmseg = ..mmseg();
+	
+	each = $mmseg.each;
+	list = $mmseg.list;
+	text = $mmseg.text;
+	hasWord = $mmseg.hasWord; 
 	
 	//如果不要这些默认词库,直接删除下面的文件不影响运行
 	loadChars("~/lib/mmseg/.res/data/chars.dic");
@@ -60,12 +104,19 @@ namespace mmseg{
 	loadWords("~/lib/mmseg/.res/data/words/words-sogou.dic");
 }
 
+/**details(必读)
+词库一定要自己除重！任何时候不要添加重复的词！！！
+end details**/
+
 /**intellisense()
-mmseg = MMSEG 分词组件
+mmseg = MMSEG 分词组件。\nMMSEG 分词的结果会包含一些对检索无意义的词元。\n例如停用词、包含标点符号的特殊文本，文件路径等等。\n可用 string.stopwords.is 检查并移除停用词。\n\n检索与词频统计可使用标准库 string.tfIdf 。
 mmseg.loadChars(__) = 加载字典文件,参数为路径
 mmseg.loadWords(__) = 加载词典文件,参数为路径\n注意词典文件不需要指定词长，一行一个词就可以，文件尾必须有换行，\n可选在词后面加一个空格以及一个标点指定 attr 值\n词的 attr 默认值是 '@'#，字或标点 attr 为 0
-mmseg.addWord(.(词,词频) = 添加到词库，\n注意仅单字词需要指定词频
-mmseg.eachWord(str) = @for word,attr in mmseg.each(__/*输入字符串，迭代变量 word 为拆分词，attr 为拆分词属性，\nattr 默认值是 '@'#，字或标点 attr 为 0*/){
+mmseg.addWord(.(词,词频) = 添加到词库，\n注意仅单字词需要指定词频。\n任何时候都不要添加重复的词！！！
+mmseg.each(str) = @for word,attr in mmseg.each(__/*输入字符串，迭代变量 word 为拆分词，attr 为拆分词属性，\nattr 默认值是 '@'#，汉字或标点 attr 为 0，\n英文字符 attr 为 'e'#。*/){
 	
 }
+mmseg.list(__/*文本*/) = 分词并返回包含分词结果的数组，\n第 2 个返回值为一个字典表，键为词，值为对应的 attr 数值。\nattr 默认值是 '@'#，汉字或标点 attr 为 0，\n英文字符 attr 为 'e'#。
+mmseg.text(.(str,space) = 分词并返回文本，使用空格将词分开。\n可选用 space 参数自定义分隔符。
+mmseg.hasWord(__/*多字词*/) = 检测词典中是否已包含参数 @1 指定的词。
 end intellisense**/

@@ -1,11 +1,22 @@
-﻿
+﻿//model 链式操作
 namespace sqlite;
 	
 class model{
 	ctor( conn ){
-		this.conn = conn;
+		this.conn = conn; 
 	};
-	table = function(s){ 
+	clone = function(){
+		var m = ..sqlite.model(this.conn);
+
+		for(k,v in this){
+			if(type(v)!="function"){
+				m[k] = v;
+			}
+		}
+		 
+		return m;
+	};
+	table = function(s){  
 		this.sqlTable = s;
 		return this;
 	};
@@ -17,7 +28,7 @@ class model{
 		elseif(!s) {
 			s = "*";
 		} 
-		
+		 
 		this.sqlFields = s;
 		return this;
 	}; 
@@ -28,8 +39,9 @@ class model{
 			s = ..string.join(s,",") 
 		} 
 		
-		this.sqlPrimaryKeys = s;
-		return this;
+		var m = this.clone(); 
+		m.sqlPrimaryKeys = s;
+		return m;
 	}; 
 	create = function(name){
 		if( this.sqlFields == "*" || !#this.sqlFields )
@@ -37,143 +49,220 @@ class model{
 			
 		if( type(this.sqlTable) != type.string )
 			error("请先调用table函数指定表名",2);
-				
-		this.sql = ..string.format("CREATE TABLE IF NOT EXISTS `%s`(%s",this.sqlTable,this.sqlFields );
+			
+		var m = this.clone(); 	
+		m.sql = ..string.format("CREATE TABLE IF NOT EXISTS `%s`(%s",m.sqlTable,m.sqlFields );
 		
-		if( this.sqlPrimaryKeys ){
-			this.sql = this.sql + ",PRIMARY KEY(" + this.sqlPrimaryKeys + ")"	
+		if( m.sqlPrimaryKeys ){
+			m.sql = m.sql + ",PRIMARY KEY(" + m.sqlPrimaryKeys + ")"	
 		}
 		
-		this.sql = this.sql +")"
-		return this;
+		m.sql = m.sql +")"
+		return m;
 	};
 	where = function(s){
-		if(type(s) === type.table ){
-			var w = {}
-			for(k,v in s){
-				..table.push(w,k ++ formatValue(v));
-			}
-			s = ..string.join(w," AND ");
-		} 
+		if(type(s) === type.table ) s = ..sqlite.escapeId(s); 
+		if(type(s)!="string") error("参数错误");
 		
-		this.sqlWhere = s;
-		return this;
+		var m = this.clone();
+		
+		if(m.sql){
+			m.sql ++=" WHERE " + s;
+		} 
+		else {
+			m.sqlWhere = s;
+		}  
+		return m;
 	};
 	["and"] = function(s){
-		if(type(s) === type.table ){
-			var w = {}
-			for(k,v in s){
-				..table.push(w,k ++ formatValue(v));
-			}
-			s = ..string.join(w," AND ");
-		} 
+		if(type(s) === type.table ) s = ..sqlite.escapeId(s); 
+		if(type(s)!="string") error("参数错误");
 		
-		this.sqlWhere = this.sqlWhere + " AND " + s;	
+		var m = this.clone();
+		
+		if(m.sql){ 
+			m.sql =  m.sql +  " AND " + s;
+		} 
+		else {
+			m.sqlWhere =  m.sqlWhere +  " AND " + s;
+		}  
+		return m;
 	};
 	["or"] = function(s){
-		if(type(s) === type.table ){
-			var w = {}
-			for(k,v in s){
-				..table.push(w,k ++ formatValue(v));
-			}
-			s = ..string.join(w," OR ");
-		} 
+		if(type(s) === type.table ) s = ..sqlite.escapeId(s); 
+		if(type(s)!="string") error("参数错误");
 		
-		this.sqlWhere = this.sqlWhere + " OR " + s;	
-		return this;
+		var m = this.clone();
+		
+		if(m.sql){ 
+			m.sql =  m.sql + " OR (" + s + ")";;
+		} 
+		else {
+			m.sqlWhere =  m.sqlWhere + " OR (" + s + ")";;
+		}  
+		return m; 
 	};
 	orderBy = function(s,...){
 		if(...) s = {s;...}
-		if( type(s) == type.table ){
-			s = ..table.map(s,lambda(v) "`"+ v + "`")
-			s = ..string.join(s,",") 
+		if(type(s) === type.table ){ 
+			s = ..sqlite.escapeId(s);
 		}  
-		this.sqlOrderBy = "ORDER BY " + s;
-		return this;
+		
+		var m = this.clone();  
+		if(m.sql){ 
+			m.sql =  m.sql + "ORDER BY " + s;;
+		} 
+		else {
+			m.sqlOrderBy = "ORDER BY " + s;
+		} 
+		 
+		return m;
 	}; 
 	asc = function(){
-		if(this.sqlOrderBy) this.sqlOrderBy = this.sqlOrderBy + "asc";
-		return this;
+		var m = this.clone(); 
+		
+		if(m.sql){ 
+			m.sql =  m.sql + " " + "asc";
+		} 
+		else {
+			m.sqlOrderBy = m.sqlOrderBy + "asc";
+		} 
+		
+		return m;
 	};
 	desc = function(){
-		if(this.sqlOrderBy) this.sqlOrderBy = this.sqlOrderBy + "desc";
-		return this;
+		var m = this.clone(); 
+		
+		if(m.sql){ 
+			m.sql =  m.sql + " " + "desc";
+		} 
+		else {
+			m.sqlOrderBy = m.sqlOrderBy + "desc";
+		} 
+
+		return m;
 	};
 	limit = function(limit,offset){
-		this.sqlLimit = ..string.format("LIMIT %d OFFSET %d",limit:1,offset:0);
-		return this;
+		var m = this.clone(); 
+		var limit = ..string.format("LIMIT %d OFFSET %d",limit:1,offset:0);
+		if(m.sql){ 
+			m.sql =  m.sql + " " + limit;
+		} 
+		else {
+			m.sqlLimit = limit;
+		} 
+		 
+		return m;
 	};
 	["select"] = function(){ 
 		if( type(this.sqlTable) != type.string ) error("请先调用table函数指定表名",2);
-        if(!this.sqlFields) this.sqlFields = " * "; 
+		
+		var m = this.clone(); 
+        if(!m.sqlFields) m.sqlFields = " * "; 
                          
-        this.sql = "SELECT " + this.sqlFields + " FROM `"+ this.sqlTable + "` ";
+        m.sql = "SELECT " + m.sqlFields + " FROM `"+ m.sqlTable + "` ";
         if(this.sqlWhere){
-        	this.sql ++=" WHERE " + this.sqlWhere;
+        	m.sql ++=" WHERE " + m.sqlWhere;
         }
         
         if(this.sqlOrderBy){
-        	this.sql ++=" " + this.sqlOrderBy;
+        	m.sql ++=" " + m.sqlOrderBy;
         }
         
         if(this.sqlLimit){
-        	this.sql ++=" " + this.sqlLimit;
+        	m.sql ++=" " + m.sqlLimit;
         }
 
-        return this;
+        return m;
      };
-     insert = function(s){
-        if( type(this.sqlTable) != type.string ) error("请先调用table函数指定表名",2);
+     update = function(s){
+        if( type(this.sqlTable) != type.string ) error("请先调用 table 函数指定表名",2);
+		if( type(s)!="table ")   error("请指定参数表",2);
+		
+		var m = this.clone(); 
+		m.sql = "UPDATE `"+ m.sqlTable + "` SET ?";
+		m.sql = format(m.sql, { s } );
+		
+		if(m.sqlWhere){
+        	m.sql ++=" WHERE " + m.sqlWhere;
+        } 
+		return m;
+    };
+    delete = function(){
+		if( type(this.sqlTable) != type.string ) error("请先调用table函数指定表名",2);
+       
+       	var m = this.clone();            
+        m.sql = "DELETE FROM `"+ m.sqlTable + "` ";
+        if(m.sqlWhere){
+        	m.sql ++=" WHERE " + m.sqlWhere;
+        } 
+        return m; 
+    };
+    insert = function(s){
+        if( type(this.sqlTable) != type.string ) error("请先调用 table 函数指定表名",2);
 			
-     	if(!this.sqlFields) this.getFiledsNames();
-		if(!this.sqlFields) error("请先调用fields函数指定字段",2);
-		var v = ..string.replace(this.sqlFields,"[^\s\p]+","@\1");
+		var m = this.clone(); 
+     	if(!m.sqlFields) m.getFiledsNames();
+		if(!m.sqlFields) error("请先调用 fields 函数指定字段",2);
+		var v = ..string.replace(m.sqlFields,"[^\s\p]+","@\1");
 			
-		this.sql = "INSERT INTO `"+ this.sqlTable + "`(" + this.sqlFields + ") VALUES(" + v + ")";
-		if(s) this.sql = formatSqlParameters(this.sql,s);
-		return this;
+		m.sql = "INSERT INTO `"+ m.sqlTable + "`(" + m.sqlFields + ") VALUES(" + v + ")";
+		if(s) m.sql = format(m.sql,s);
+		return m;
      };
      getFiledsNames = function(){
-        if( type(this.sqlTable) != type.string ) error("请先调用table函数指定表名",2);
-		var cmd = this.conn.prepare("SELECT * FROM ["+ this.sqlTable +"] ") 
+        if( type(this.sqlTable) != type.string ) error("请先调用 table 函数指定表名",2);
+         
+		var cmd = this.conn.prepare("SELECT * FROM ["+ this.sqlTable +"] LIMIT 0") 
 		var fileds = cmd.getColumns();
 		cmd.finalize();
+		
 		if(fileds) this.fileds(fileds);
 		return fileds;
 	 };
      exec = function(...){
-     	if(!this.sql) error("用法错误，未生成SQL",2);
+     	if(!this.sql) error("用法错误，未生成 SQL",2);
      	return this.conn.exec(this.sql,...);
      };
      prepare = function(...){
-     	if(!this.sql) error("用法错误，未生成SQL",2);
+     	if(!this.sql) error("用法错误，未生成 SQL",2);
      	return this.conn.prepare(this.sql,...);
      };
      each = function(...){
-        this.select();
-     	if(!this.sql) error("用法错误，未生成SQL",2);
-     	return this.conn.each(this.sql,...);
+        var m = this.select();
+     	if(!m.sql) error("用法错误，未生成 SQL",2);
+     	return m.conn.each(m.sql,...);
      };
      enum = function(...){
-        this.select();
-     	if(!this.sql) error("用法错误，未生成SQL",2);
-     	return this.conn.enum(this.sql,...);
+        var m = this.select();
+     	if(!m.sql) error("用法错误，未生成 SQL",2);
+     	return m.conn.enum(m.sql,...);
      };
      stepQuery = function(...){
-        this.select();
-     	if(!this.sql) error("用法错误，未生成SQL",2);
-     	return this.conn.stepQuery(this.sql,...);
+        var m = this.select();
+     	if(!m.sql) error("用法错误，未生成 SQL",2);
+     	return m.conn.stepQuery(m.sql,...);
      };
      getTable = function(...){
-        this.select();
-     	if(!this.sql) error("用法错误，未生成SQL",2);
-     	return this.conn.getTable(this.sql,...);
+        var m = this.select();
+     	if(!m.sql) error("用法错误，未生成 SQL",2);
+     	return m.conn.getTable(m.sql,...);
      };
+     @_meta;
 }
 
 namespace model{
+	
+	_meta = {
+		_tostring = function(){
+			return  owner.sql; 
+		};
+		_json = function(){
+			return  owner.sql; 	
+		};
+	}
     
-    formatValue = function(v){ 
+    escape = function(v){
 		var t  = type(v);	
 		if( t = "string" ){
 			return "'" +  ..string.replace(v,"'","''") + "'";
@@ -182,47 +271,79 @@ namespace model{
 			return v ? "1" : "0";
 		}
 		elseif( t = "number" ){
-			return tostring(v);
+			return tostring(v,,'.'#);
 		}
-		elseif( ( t = "table" ) ) {
-			if(..time.istime(v) ){
+		elseif( t = "table" ) {
+			if(..time.istime(v)){
 				var f = v.format;
 				v.format = "%Y-%m-%d %H:%M:%S";
 				var ret  = "'" +  tostring(v) + "'";
 				v.format = f;
-				return ret;	
+				return ret;
 			}
-			
-			if( v.cls ){
+			elseif(#v){
+				var ret = {}
+				for(i=1;#v;1){
+					..table.push(ret,escape(v[i],true)); 
+				}
+				ret = ..string.join(ret,",");
+				if(nested) ret = "(" + ret + ")";
+				return ret;
+			} 
+			elseif( v@[["_toSqlString"]] ){
+				return invoke(v@[["_toSqlString"]],v,'sqlite')
+			}
+			elseif( v.cls && v.className ){
 				if( v.checked !== null ) v = v.checked ? "1" : "0";
-				else v = formatValue( v.text );
+				else v = escape( v.text );
 					
 				return v;
 			} 
-			return ..string.replace(tostring(v),"\p","");
+			else {
+				var ret = {}
+				for(k,vv in v){
+					..table.push(ret,escapeId(k) + " = " + escape(vv));
+				} 
+				return ..string.join(ret,",");
+			}
+		}
+		elseif( t=='buffer'){
+			return ..string.concat("X'",..string.hex(v,""), "'");
 		} 
-		return ..string.replace(tostring(v),"\p",""); 	
+		return ..string.replace(tostring(v),"\p",""); 
     }
     
-	formatSqlParameters = function(sql,...) {
-	
+	format = function(sql,...) {
 		if( type( ... ) == "table" ){
 			var param = ...;
-			return ..string.replace(sql,"\@(<:+>|<\w+>[^\s\p]*)", lambda(name) formatValue(param[name]) ); 
-		} 
-		
+			if(#param){
+				var i = 0;
+				sql = (..string.replace(sql,"\?\?*",
+					function(name) {
+						i++;
+						if( name == "?" ) return escape(param[i]);
+						else return escapeId(param[i])
+					}
+				));	
+			}
+			
+			return (..string.replace(sql,"\@(<:+>|<\w+>[^\s\p]*)",
+					lambda(name) escape(param[name])
+			));
+		}
 		return ..string.format(sql,...);
 	}
 }
 
 /**intellisense()
-sqlite.model = SQL连贯操作,\n随手写的仅作为玩具,不建议在产品中使用,不提供技术支持
-sqlite.model(__) = 参数中请指定sqlite连接对象
+sqlite.model = SQL 连贯操作（链式操作）。\n一般不建议使用这种方式。
+sqlite.model(__) = 参数中请指定 sqlite 连接对象
 sqlite.model() = !sqliteModel.
 end intellisense**/
 
 /**intellisense(!sqliteModel)
-sql = 生成的SQL语句
+clone() = 复制对象\n!sqliteModel.
+sql = 字符串属性，存放生成的 SQL 语句。\n或者把对象传入 tostring 也可以返回此属性。
 table(__) = 指定表名
 fields(__) = 指定字段名,可以是多个参数,也可以是一个数组,\n参数也可以是用逗号分隔字段名的字符串
 primary(__) = 指定主键字段名,可以是多个参数,也可以是一个数组,\n参数也可以是用逗号分隔字段名的字符串
@@ -231,15 +352,18 @@ asc() = 查询结果升序排列\n!sqliteModel.
 desc() = 查询结果降序排列\n!sqliteModel.
 limit( = 限制反回的查询记录数
 limit(.(limit,offset) = 参数@1限定返回的记录数,可选用参数@2指定开始位置
-create(__) = 生成创建表的SQL
-where(__) = 指定查询条件,\n参数可以是字符串,也可以是指定一个或多个键值对的表\n多个键值对为AND条件
-and(__) = 指定AND查询条件,\n参数可以是字符串,也可以是指定一个或多个键值对的表
-or(__) = 指定AND查询条件,\n参数可以是字符串,也可以是指定一个或多个键值对的表
-create(__) = 生成查询表的SQL
-insert(__) = 生成插入表的SQL\n参数中可以用一个表指定要插入的值\n参数如果是一个窗体对象,自动获取同名控件中的值作为对应的插入值
+create(__) = 生成创建表的 SQL
+where(__) = 指定查询条件,\n参数必须是指定一个或多个键值对的表（以 AND 组合条件）
+and(__) = 指定 AND 查询条件,\n参数必须是指定一个或多个键值对的表（以 AND 组合条件）
+or(__) = 指定 OR 查询条件,\n参数必须是指定一个或多个键值对的表（表内字段仍以 AND 组合条件）
+create() = 生成查询表的 SQL
+delete() = 生成查询表的 SQL
+update(__) = 生成更新表的 SQL。\n参数必须是指定一个或多个键值对的表
+insert(__) = 生成插入表的 SQL
+insert(__) = 生成插入表的 SQL\n参数中可以用一个表指定要插入的值\n参数如果是一个窗体对象,自动获取同名控件中的值作为对应的插入值
 getFiledsNames() = 返回表的字段名数组
-exec() = 执行sql语句,\n如果指定多个参数则调用string.format格式化参数一生成sql语句,\n如果参数@1是table对象,则格式化所有@前缀的命名参数并生成SQL语句\n出错则抛出异常.
-prepare() = 编译SQL预处理命令,\n1、如果参数@1为table对象将参数@1转换为WHERE条件语句\n2、否则调用string.format格式化sql语句\n可选参数@1:指定查询条件(table对象或字符串),\n可选增加任意个附加sql参数
+exec() = 执行sql语句,\n如果指定多个参数则调用 string.format 格式化参数一生成 SQL 语句,\n如果参数 @1 是 table 对象,则格式化所有 @前缀的命名参数并生成 SQL 语句\n出错则抛出异常.
+prepare() = 编译SQL预处理命令,\n1. 如果参数@1为table对象将参数@1转换为WHERE条件语句\n2. 否则调用 string.format 格式化sql语句\n可选参数 @1 指定查询条件（table对象或字符串）,\n可选增加任意个附加 SQL 参数
 prepare() = !sqlite_stmt.
 each = @for 字段名,字段名2 in ??.each() {
 	io.print( 字段名,字段名2 )
@@ -247,6 +371,8 @@ each = @for 字段名,字段名2 in ??.each() {
 enum(sql) = @.enum( function(tname,tvalue){\n		for(i=1;#tname;1){ \n			io.print(tname[i],tvalue[i])\n		}\n		 \n	}\n)
 getTable() = !sqliteModel.
 stepQuery() = 查询并返回首行数据,失败返回null,状态码.\n如果sql中包含"@"字符,即可使用参数@1指定的table对象自动绑定命名参数
+update() = !sqliteModel.
+delete() = !sqliteModel.
 table() = !sqliteModel.
 fields() = !sqliteModel.
 primary() = !sqliteModel.

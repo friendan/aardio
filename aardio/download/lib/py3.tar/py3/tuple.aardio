@@ -1,4 +1,4 @@
-//tuple 元组
+﻿//tuple 元组
 import util.metaProperty;
 namespace py3;
 	
@@ -87,20 +87,27 @@ namespace tuple {
 			owner[k] = v;
 		};  
 		__get = function(k,ownerCall){ 
-			if( type(k) != type.number ) {
+			var t = type(k);
+			if( t==="string" && (ownerCall!==null) ){
 				return owner.getAttr(k); 
-			}
-			
-			var item = pyTuple_GetItem(owner.pyObject,k);
-			if(item){
-				..py3.IncRef(item);//特例 borrow reference
-				return ..py3.object(  item,true ) ;
 			} 
+			
+			if( t == "number" ) {
+				var item = pyTuple_GetItem(owner.pyObject,k);
+				if(item){
+					..py3.IncRef(item);//特例 borrow reference
+					return ..py3.object(  item,true ) ;
+				} 
+			}
 		} 
-		__set = function(k,v){
-			if( type(k) != type.number ) {
+		__set = function(k,v,ownerAttr){
+			var t = type(k);
+			if( t==="string" && ownerAttr ){
+				owner.setAttr(k,v);
 				return;
 			}
+			
+			if( t != "number" ) return ;
 			
 			if(v!==null) {
 				if( type(v) == "pointer" ){
@@ -110,7 +117,7 @@ namespace tuple {
 				else{
 					pyTuple_SetItem(owner.pyObject,k,..py3.object(v).stealPtr() ); 
 				} 
-			} 
+			}  
 		}
 		len = function(){
 			return pyTuple_Size(owner.pyObject);
@@ -139,17 +146,17 @@ py3.tuple(.(aardio数组) = 创建新的元数组,\n如果数组成员中包含 
 !py3Tuple.parseValue() = 转换为aardio数组
 !py3Tuple.type() = 返回类型名字
 !py3Tuple.has("__/*属性名*/") = 是否存在指定的属性
-!py3Tuple.getAttr("__/*属性名*/") = 读属性成员,也可以用成员操作符获取\n属性值为 py3.object 对象
-!py3Tuple.setAttr("__/*属性名*/",) = 写属性成员的值,也可以用成员操作符赋值
-!py3Tuple.getAttr() = !p3yObject.
-!py3Tuple.getItem(__/*索引*/) = 返回指定项,类似在python中使用下标操作符取值
-!py3Tuple.setItem(__/*索引*/，) = 修改指定项,类似在python中使用下标操作符赋值
-!py3Tuple.getItem() = !p3yObject.
+!py3Tuple.getAttr("__/*属性名*/") = 读属性值，也可以用成员操作符获取。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Tuple.setAttr("__/*属性名*/",) = 写属性成员的值，也可以用成员操作符赋值。
+!py3Tuple.getAttr() = !py3Object.
+!py3Tuple.getItem(__/*索引*/) = 返回指定索引的项，也可以用索引下标操作符 [] 取值。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Tuple.setItem(__/*索引*/，) = 修改指定索引的项，也可以用索引下标操作符 [] 赋值。
+!py3Tuple.getItem() = !py3Object.
 !py3Tuple.toString() = 转换为 aardio 字符串\n也可以直接将对象作为参数传入 tostring 函数转换为字符串
 !py3Tuple.toTuple() = 转换为 Python 元组\n!py3Tuple.
 !py3Tuple.toList() = 转换为 Python 列表\n!py3List.
 !py3Tuple.checkList() = 检测是否列表
-!py3Tuple.each() = @for( item in ??.each() ){\n	__/*创建迭代器用于遍历所有的项,返回一个值*/\n}\n!p3yObject.
+!py3Tuple.each() = @for( item in ??.each() ){\n	__/*创建迭代器用于遍历所有的项,返回一个值*/\n}\n!py3Object.
 !py3Tuple.? = !py3Object.
 py3.tuple() = !py3Tuple.
 end intellisense**/

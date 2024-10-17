@@ -217,7 +217,7 @@ namespace decoder2{
 		pointer extractSetOperationResult;
 	};
 
-	fromUnicode = ..string.fromUnicode;
+	fromUnicode = ..string.fromUtf16;
 }
 
 /*

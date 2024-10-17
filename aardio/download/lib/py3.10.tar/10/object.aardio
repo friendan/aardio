@@ -145,15 +145,7 @@ namespace object {
 					return tostring( owner.toBool() );
 					
 				if(  ( flags &(1<< 29)) ||  ( flags &(1<< 25))  ||  ( flags &(1<< 26)) ){  
-					var v = ..py3.json.dumps(owner); 
-					if(v){
-						var result;
-						var ok,s = PyArg_ParseByString(v.pyObject,"s");
-						if( ok && s ) result = ..raw.str(s); 
-						v.release();
-						
-						return result;
-					}
+					return ..py3.json.dumps(owner); 
 				}
 				
 				if( owner.pyObject == None )
@@ -175,14 +167,20 @@ namespace object {
 			var r = PyArg_ParseBySize64(owner.pyObject,"K",v);
 			if( r ) { return v }  
 		};
-		parseValue = function(){ 
+		parseValue = function(baseType){ 
 			var t = ::Python3.PyObject_TypeP(owner);
 			if( t ){ 
 				var flags = ::Python3.PyType_GetFlags(t);
 				..py3.DecRef(t);
 				
-				if((t == PyFloat_Type) || ( flags & (1<< 24) ))
+				if((t == PyFloat_Type) )
 					return owner.toNumber();
+					
+				if ( flags & (1<< 24/*Py_TPFLAGS_LONG_SUBCLASS */) ){
+					if( !baseType || ::Python3._PyLong_NumBits( owner.pyObject )<=53 ){
+						return owner.toNumber();
+					}
+				}
 					
 				if ( flags &(1<< 28)){
 					var r,s = PyArg_ParseByString(owner.pyObject,"s");
@@ -196,15 +194,17 @@ namespace object {
 				if ( t == PyBool_Type)
 					return owner.toBool();
 					
-				if(  ( flags &(1<< 29)) ||  ( flags &(1<< 25))  ||  ( flags &(1<< 26)) ){  
-					var result;
-					var v = ..py3.json.dumps(owner); 
-					if(v){
-						var ok,s = PyArg_ParseByString(v.pyObject,"s");
-						if( ok && s ) result = ..web.json.parse( ..raw.str(s) ); 
-						v.release();
+				if(!baseType){
+					if(  ( flags &(1<< 29)) ||  ( flags &(1<< 25))  ||  ( flags &(1<< 26)) ){  
+						var result;
+						var v = ..py3.json.dumps.invokeObject(null,owner); 
+						if(v){
+							var ok,s = PyArg_ParseByString(v.pyObject,"s");
+							if( ok && s ) result = ..web.json.parse( ..raw.str(s) ); 
+							v.release();
+						}
+						return result;
 					}
-					return result;
 				}
 				
 				if( owner.pyObject != None )
@@ -303,8 +303,8 @@ namespace object {
 		has = function(k){
 			return PyObject_HasAttrString( owner.pyObject,k);
 		}; 
-		getAttr = function(k){
-			if( owner.has(k) ){
+		getAttr = function(k,noCheck){
+			if( noCheck || owner.has(k) ){
 				return ..py3.object( PyObject_GetAttrString(owner.pyObject,k),true )
 			}
 		};
@@ -313,10 +313,32 @@ namespace object {
 		}; 
 		__get = function(k,ownerCall){
 			var t = type(k);
-			if(t==="string" && k!=="_struct"){ 
-				if( owner.has(k) ) return ..py3.object( PyObject_GetAttrString(owner.pyObject,k),true);
+			
+			//非下标索引操作符，且键为字符串
+			if( ownerCall !== null && t==="string"  ){
+				
+				if(k[1] === '$'#){
+					k = ..string.right(k,-2);
+					if(!owner.has(k)) return;
+					
+					var pyObj = ..py3.object( PyObject_GetAttrString(owner.pyObject,k),true);
+					if(pyObj){ 
+						return function(...){
+							return pyObj.invoke(...);
+						} 
+					}
+					return;
+				}
+				
+				//Python 读取不存在的属性会抛异常，元方法里最后不要抛异常
+				if(owner.has(k)){
+					return ..py3.object( PyObject_GetAttrString(owner.pyObject,k),true);
+				}
 			}
-			elseif(t==="number") {
+			
+			//键为数值，无论是否使用下标索引操作符
+			if(t==="number") {
+				
 				if(owner[["$____pyItems____"]]) return owner[["$____pyItems____"]][k]; 
  
 				var flags = owner.getTypeFlags();
@@ -329,13 +351,19 @@ namespace object {
 					return owner[["$____pyItems____"]][k]; 
 				} 
 			}
+			
+			return owner.getItem(k);
 		};
-		__set = function(k,v){
+		__set = function(k,v,ownerAttr){
 			var t = type(k);
-			if(t==="string"){
+			
+			//非下标索引操作符，且键为字符串
+			if( ownerAttr && t==="string"){ 
 				PyObject_SetAttrString(owner.pyObject,k,..py3.object(v) ); 
+				return;
 			}
-			elseif(t==="number") {
+			
+			if(t==="number") {
 				if(owner[["$____pyItems____"]]) {
 					owner[["$____pyItems____"]][k] = v; 
 					return;
@@ -351,11 +379,13 @@ namespace object {
 					owner[["$____pyItems____"]][k] = v;
 				} 
 			}
+			
+			owner.setItem(k,v);
 		}; 
 		getItem = function(k){ 
 			var item = ::Python3.PyObject_GetItemP(owner.pyObject,..py3.object(k)) ;
 			if(item){
-				return ..py3.object(  item,true ) ;
+				return ..py3.object(  item,true ).parseValue(true); ;
 			} 
 		};
 		setItem = function(k,v){
@@ -373,7 +403,7 @@ namespace object {
 			return function(){
 				item = ::Python3.PyIter_NextP(it);
 				if( item !== null){
-					return ..py3.object(item,true)
+					return ..py3.object(item,true).parseValue(true)
 				}
 			} 
 		};
@@ -383,10 +413,13 @@ namespace object {
 		getFuncDesc = function(){
 			return PyEval_GetFuncDesc(owner.pyObject );	
 		};
-		invoke = function(kwargs,...){
+		invokeObject = function(kwargs,...){
 			var args;
-			if(type(kwargs)==="table" && !kwargs@ && !kwargs.pyObject) {
-				args = ..py3.tuple(kwargs);
+			if(kwargs===null){
+				args = ..py3.tuple( {...} );	
+			}
+			elseif(type(kwargs)==="table" && !kwargs@ && !kwargs.pyObject) {
+				args = ..py3.tuple((...!==null )? {...} : kwargs);
 				kwargs = ..py3.dict(kwargs);
 			}
 			else {
@@ -399,15 +432,18 @@ namespace object {
 		callObject = function( args ){
 			return ..py3.object(PyObject_CallObject( owner.pyObject,args),true );
 		};
+		invoke = function(kwargs,...){
+			 return owner.invokeObject(kwargs,...).parseValue(true);
+		};
 		call = function( ... ){
 			var args = ... ? {...};
 			if( #args ) args = ..py3.tuple( args );
-			return ..py3.object(PyObject_CallObject( owner.pyObject,args),true );
+			return ..py3.object(PyObject_CallObject( owner.pyObject,args),true ).parseValue(true);
 		};
 		_call = function(...){
 		 	var args = ... ? {...};
 			if( #args ) args = ..py3.tuple( args ); 
-			return ..py3.object(PyObject_CallObject( owner.pyObject,args),true );
+			return ..py3.object(PyObject_CallObject( owner.pyObject,args),true ).parseValue(true);
 		};
 		_eq = function(b) {
 			if(owner.checkNumber()) return tonumber(owner) == tonumber(b);
@@ -475,11 +511,7 @@ namespace object {
 		};
 		_unm = function(b) {
 			if(owner.checkNumber()){
-				if(!b[["pyObject"]]) b = ..py3.object(b);
-				if(b[["pyObject"]]){
-					var c = ::Python3.PyNumber_NegativeP(owner,b)
-					if(c) return ..py3.object(c,true);	
-				}
+				return ..py3.object(::Python3.PyNumber_NegativeP(owner),true); 
 			}
 		};
 		_type = "py3.object";
@@ -487,13 +519,19 @@ namespace object {
 	
 	with _metaProperty{
 		_tostring = toString;
-		_json = parseValue;
+		_json = lambda() owner.parseValue();//需要丢弃其他参数
 	}
 	
 	PyObject_HasAttrString = ::Python3.api("PyObject_HasAttrString","bool(PyObject o,str attr_name)")
 	PyObject_GetAttrString = ::Python3.api("PyObject_GetAttrString","pyObject(PyObject o,str attr_name)")   
 	PyObject_SetAttrString = ::Python3.api("PyObject_SetAttrString","int(PyObject o,str attr_name,pyObject v)")
 	PyObject_CallObject = ::Python3.api("PyObject_CallObject","pyObject(PyObject pfunc,pyObject pargs)") 
+	
+	/*
+	避免 PY_SSIZE_T_CLEAN 警告
+	#define PyArg_Parse   _PyArg_Parse_SizeT 
+	#define Py_BuildValue _Py_BuildValue_SizeT
+	*/
 	Py_BuildValueByNumber = ::Python3.api("_Py_BuildValue_SizeT","pyObject(str format,double)") 
 	Py_BuildValueByString = ::Python3.api("_Py_BuildValue_SizeT","pyObject(str format,string,int)")
 	PyArg_ParseByNumber = ::Python3.api("_PyArg_Parse_SizeT","int(PyObject args,str format,double &)")  
@@ -541,7 +579,7 @@ py3.object() = !py3Object.
 end intellisense**/
 
 /**intellisense(!py3Object) 
-? = !py3Object.
+? = 输入 Python 对象属性或函数名称。\n如果首字符为 $ ，则返回支持命名参数的函数对象。\n也就是说 pyObject.$fun 等价于 pyObject.fun.invoke。\n!py3Object.
 stealPtr() =  接管此对象的指针并盗用一次引用计数\n原对象的内部指针被清空,并不再负责释放引用计数\n steal references
 toBool() = 解析为 aardio 布尔值
 toBytes() = 解析为 aardio 字节数组
@@ -551,24 +589,29 @@ toStr() = Python 对象转换为 Python 字符串对象,\n相当于调用 Python
 toTuple() = 如果 Python 对象是一个 tuple,\n返回绑定相同 Python 对象的 py3.tuple 对象,\n添加引用计数,对象销毁时负责释放引用计数,\n否则将传入对象作为 Python 内置函数 tuple 的参数并返回 py3.tuple 对象,\n失败返回null\n!py3Tuple.
 toList() = 如果 Python 对象是一个 list,\n返回绑定相同 Python 对象的 py3.list 对象,\n添加引用计数,对象销毁时负责释放引用计数,\n否则将传入对象作为 Python 内置函数 list 的参数并返回 py3.list 对象,\n失败返回null\n!py3List.
 toDict() = 如果 Python 对象是一个 dict,\n返回绑定相同 Python 对象的 py3.dict 对象,\n添加引用计数,对象销毁时负责释放引用计数,\n否则将传入对象作为 Python 内置函数 dict 的参数并返回 py3.dict 对象,\n失败返回null\n!py3Dict.
-parseValue() = 检测Python对象的类型，并自动返回对应的aardio类型对象\n基础的数值字符串布尔值转换为同类型,\ndict,list,tuple等等使用json格式转换为aardio类型的表
+parseValue() = 检测 Python 对象的类型，并自动返回对应的aardio类型对象。\n基础的数值字符串布尔值转换为同类型，整数值即使大于 53 位仍转为浮点数。\ndict, list, tuple 等等使用json格式转换为 aardio 类型的表
+parseValue(true) = 检测P ython 对象的类型，\n基础类型返回对应的 aardio 类型对象，其他对象返回自身。\n基础类型指：数值、布尔值、字符串、字节数组。\n数值仅转换浮点数值，以及不大于 53位（bit）的整数值。\n字节数组指 Python 中的 bytes，aardio 中的 buffer 对象。\n所有 Python 返回的对象自动调用此函数转换基础类型。
 size64() = 获取64位无符号长整数\n返回 math.size64 对象
 has("__/*属性名*/") = 是否存在指定的属性
-getAttr("__/*属性名*/") = 读属性成员,也可以用成员操作符获取\n属性值为py3.object对象
-setAttr("__/*属性名*/",) = 写属性成员的值,也可以用成员操作符赋值
+getAttr("__/*属性名*/") = 读属性值，也可以用成员操作符获取。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象。\n指定可选参数 @2 为 true 则不检查属性是否存在。
+setAttr("__/*属性名*/",) = 写属性成员的值，也可以用成员操作符赋值。
 getAttr() = !py3Object.
-getItem(__/*索引*/) = 返回指定项,类似在python中使用下标操作符取值
-setItem(__/*索引*/，) = 修改指定项,类似在python中使用下标操作符赋值
+getItem(__/*索引*/) = 返回指定索引的项，也可以用索引下标操作符 [] 取值。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+setItem(__/*索引*/，) = 修改指定索引的项，也可以用索引下标操作符 [] 赋值。
 each() = @for( pyItem in ??.each() ){\n	__/*创建迭代器用于遍历所有的项,返回一个值*/\n}\n!py3Object.
-callObject(.( py->tuple对象 ) = 该对象为函数对象时支持此方法\n参数为tuple元数组对象\n返回值为 py3.object对象,可使用 tostring 或 tonumber 等函数转换为aardio类型
-call(__/*不定个数参数*/) = 该对象为函数对象时支持此方法，\n也可以不写call直接像普通函数那样用 ( )操作 符来调用\n参数为不定个数的字符串或数值\n返回值为 py3.object对象,可使用 tostring 或 tonumber 等函数转换为aardio类型
-callObject() = !py3Object.
-call() = !py3Object.
-invoke( =  该对象为 Python 函数对象时支持使用此方法调用 Python 函数,\n与通过 call 方法调用不同的是 invoke 支持传递命名参数,\n调用成功返回值为 py.object对象
-invoke(.(kwarg=value,arg1->->->) = 如果参数@1是未指定元表的纯表对象,且没有 pyObject 成员,\n则将该表中的名值对作为调用时的命名参数,\n该表中的数组成员作为调用时的匿名参数,\n注意名值对参数应当且只能写在最前面,所有参数请用逗号分隔,\n\n如果参数@1不符合前述规则,\n则与 call 调用相同的方式将所有参数作为调用时的匿名参数
-invoke() = !py3Object.
-getFuncDesc() = 获取函数原型
-getFuncName() = 获取函数名
+callObject(.( py3->tuple对象 ) = 该对象为 Python 函数对象时支持使用此方法调用 Python 函数,\n参数为tuple元数组对象\n返回值为 py3.object对象,可使用 tostring 或 tonumber 等函数转换为aardio类型
+call(__/*不定个数参数*/) = 该对象为 Python 函数对象时支持使用此方法调用 Python 函数,\n也可以不写 call 函数，直接作为普通函数调用。\n参数为不定个数的字符串、数值、布尔值等。\n\n如果函数调用成功，\n返回值除数值、布尔值、字符串、字节数组以外的值\n在 aardio 中存为 py.object 对象
+callObject() = !pyObject.
+call() = !pyObject.
+invokeObject( =  该对象为 Python 函数对象时支持使用此方法调用 Python 函数,\n与通过 call 方法调用不同的是 invokeObject 支持传递命名参数，\n调用成功返回值为 py3.object 对象。\ninvoke 函数调用 invokeObject 函数并会转换基础类型的值为纯 aardio 值。
+invokeObject(.(kwarg=value,arg1->->->) = 如果参数@1是未指定元表的纯表对象,且没有 pyObject 成员，\n则将该表中的名值对作为调用时的命名参数，\n该表中的数组成员作为调用时的匿名参数，\n注意名值对参数应当且只能写在最前面，所有参数请用逗号分隔。\n\n如果指定了第 2 个参数或更多参数，则 kwarg 的数组成员被忽略。\n如果参数 @1 不符合前述规则，\n则与 call 调用相同的方式将所有参数作为调用时的匿名参数。\n\n如果参数 @1 为 null，则忽略第一个参数并禁用命名参数。\n并将第二个参数作为第一个参数，后续参数依次前移。
+invokeObject() = !pyObject.
+invoke( =  该对象为 Python 函数对象时支持使用此方法调用 Python 函数,\n与通过 call 方法调用不同的是 invoke 支持传递命名参数，\n如果函数调用成功，返回值除数值、布尔值、字符串、字节数组以外的值\n在 aardio 中存为 py.object 对象。\n\npyObject.func.invoke 可缩写为 pyObject.$func
+invoke(.(kwarg=value,arg1->->->) = 如果参数@1是未指定元表的纯表对象,且没有 pyObject 成员，\n则将该表中的名值对作为调用时的命名参数，\n该表中的数组成员作为调用时的匿名参数，\n注意名值对参数应当且只能写在最前面，所有参数请用逗号分隔。\n\n如果指定了第 2 个参数或更多参数，则 kwarg 的数组成员被忽略。\n如果参数 @1 不符合前述规则，\n则与 call 调用相同的方式将所有参数作为调用时的匿名参数。\n\n如果参数 @1 为 null，则忽略第一个参数并禁用命名参数。\n并将第二个参数作为第一个参数，后续参数依次前移。
+invoke() = !pyObject.
+invokeObject() = !pyObject.
+getFuncDesc() = 获取函数原型，返回值为字符串。
+getFuncName() = 获取函数名，返回值为字符串。
 type() = 返回类型名字
 getTypeFlags() = 返回类型特性,用法请参考此函数源码以及 Python 文档
 hasFeature(__) = 检测类型特性,这个函数实现了C++中的PyType_HasFeature宏相同的功能 

@@ -265,9 +265,9 @@ lock(
 		var pyObjPtr = ::Python3.PyEval_GetBuiltinsP(); 
 		IncRef(pyObjPtr); //Borrowed reference 
 		builtin = dict(pyObjPtr);
-		int = builtin.int;	
-		float = builtin.float;
-		str = builtin.str;
+		int =  lambda(...) builtin.int.invokeObject(,...);
+		float = lambda(...) builtin.float.invokeObject(,...);
+		str = lambda(...) builtin.str.invokeObject(,...);	
 		set = builtin.set;
 		
 		if(mainThread){
@@ -364,13 +364,43 @@ lasterr = function(){
 
 ..subscribe("afterConsoleOpen",function(...){
 	lock(
-		function(){ 
+		function(){
+			
+			var stdin = _msvcr100.__iob_func(0);
+			_msvcr100.freopen("CONIN$", "r+t", stdin);
+			_msvcr100.freopen("CONOUT$", "w+t", stdin + 32);
+			_msvcr100.freopen("CONOUT$", "w+t", stdin + 64);
+			
 			PyRun_SimpleString(`import sys;sys.stdout = sys.stderr = open("CONOUT$","wt");sys.stdin = open("CONIN$","rt");	`);
 		}
 	) 
 } )
 
-/*python引用计数规则{{*//*
+
+/*用前必读点这里展开{{*//*
+
+aardio 与 Python 数据类型转换规则
+===============================================================
+所有 Python 对象在 aardio 中存为 PyObject。
+对于 py3 扩展库，PyObject 就是 py3.object 。
+
+其他 py3.dict,py3.list,py3.tuple 分别对应相应的 Python 类型。
+这几个对象同样基于 py3.object 扩展。
+
+调用 pyObject.parseValue() 可将 Python 对象转换为纯 aardio 值。
+
+调用 pyObject.parseValue(true) 可将：
+浮点数值、不大于 53 位的整型数值、布尔值、字节数组转换为纯 aardio 值。
+其他返回原来的 PyObject 对象。
+
+所有在 aardio 中获取的 Python 对象自动调用 pyObject.parseValue(true)。
+但对 PyObjec 使用常用的算术运算符时，返回结果仍然是 PyObject。
+
+所有 aardio 对象传入 Python 时都会转换为纯 aardio 值。
+使用 py3.export 可以在 Python 中引用并调用 aaradio 对象或函数。
+
+关于 Python API 引用计数
+===============================================================
 1、new reference(owned reference) 增加计数的引用
 2、borrow reference 不增加计数直接借用
 
@@ -446,7 +476,7 @@ eval() = !pyObject.
 execf( = 首先调用 string.format 格式化代码\n然后执行格式化后的代码
 execf(.("Python代码",->->->) = 首先调用 string.format 格式化参数并生成代码,\n然后执行格式化后的代码。\n\n详细用法请参考\n[格式化字符串](chm://libraries/kernel/string/format.html)
 exec( = 运行 Python 代码,\n参数也可以指定内嵌资源文件路径\n注意需要引用的 Python 模块应当放在 /py 目录下,\naardio 路径以斜杠或反斜杆开始则表示应用程序根目录下的路径,\n应用程序根目录开发时为 aardio 工程目录,发布后为 EXE 文件所在目录
-exec(.("Python代码",flags,->->->) = 在默认的__main__名字空间运行 Python 代码，成功返回 true。\n在导入 py3 扩展库前调用 console.open 可查看 Python 错误信息。\n\n参数@1如果首字符为单个斜杠或反斜杆开始的文件路径：\n└── 可支持工程资源目录下的文件。\n└── 如果文件后缀为 ".aardio" 则支持 aardio 模板语法。\n\n可选使用参数 @2 设置 PyCompilerFlags 参数,\n参数@2不必指定,用法参考 Python 文档。\n\n参数@3 开始可选指定一个或多个启动参数，\n注意不必像 py3.setArgv 函数那样在首个参数中指定启动程序路径
+exec(.("Python代码",flags,->->->) = 在默认的__main__名字空间运行 Python 代码，成功返回 true。\n\n参数@1如果首字符为单个斜杠或反斜杆开始的文件路径：\n└── 可支持工程资源目录下的文件。\n└── 如果文件后缀为 ".aardio" 则支持 aardio 模板语法。\n\n可选使用参数 @2 设置 PyCompilerFlags 参数,\n参数@2不必指定,用法参考 Python 文档。\n\n参数@3 开始可选指定一个或多个启动参数，\n注意不必像 py3.setArgv 函数那样在首个参数中指定启动程序路径
 execfile( = 运行 *.py 文件\n注意需要引用的 Python 模块应当放在 /py 目录下,\naardio 以斜杠或反斜杆开始则表示应用程序根目录下的路径,\n应用程序根目录开发时为 aardio 工程目录,发布后为 EXE 文件所在目录
 execfile(.("Python文件路径",flags,->->->) = 运行 *.py 文件,成功返回true,\n参数@1如果以斜杠或反斜杆开始则表示应用程序根目录下的路径,\n应用程序根目录开发时为 aardio 工程目录,发布后为 EXE 文件所在目录,\n可选用 参数@2 设置 PyCompilerFlags 参数,\n可选增加任意个启动参数,即 sys.argv 参数
 getDict(__/*模块指针*/) = 相当于Python模块对象的__dict__ 属性，得到模块名称空间下的字典对象

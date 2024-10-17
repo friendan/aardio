@@ -155,7 +155,7 @@ namespace pip{
     	..py3.pip("install --upgrade pip");
     }
     
-   
+    ..process.python.version = "3.8.10";
     ..process.python.path = "~\lib\process\python\.res\3.8.10-win32\python.exe";
     ..process.python.pip.target = "/py/Python38/site-packages";
     ..process.python.win32 = true;

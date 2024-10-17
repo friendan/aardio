@@ -1,6 +1,8 @@
 import fsys;
-import process.popen;
 import chm.compiler;
+import process.popen;
+import process.chm;
+
 namespace chm;
   
 //反编译CHM文件的函数
@@ -8,17 +10,26 @@ function decompile(src,outdir,...){
 	if( ! ( src && ..string.endWith(src,".chm",true ) ) ){
 		return null,"CHM文件路径错误"
 	}
-	
+	 
+	src = ..io.fullpath(src);
 	if(!outdir){
 		outdir = ..string.left(src,-5);
 	} 
-    var out = ..io.createDir(outdir);
-    if( !out ){
+    var outdir2 = ..io.createDir(outdir);
+    if( !outdir2 ){
     	return null,"创建目录失败:" + outdir;
     }
+    
+    outdir2 = ..fsys.shortpath(outdir2);
+    
+    //如果有符合 8.3 格式且包含空格的目录名( hh.exe 不认双引号 )
+    if( ..string.find(outdir2,"\s") ){
+    	outdir2 = "$chm-decompile-temp$";
+    }
 
+	var tPath = ..io.splitpath(src);
     var prcs = ..process.popen( "HH.EXE" 
-    	,"-decompile",..fsys.shortpath(out) ,..fsys.shortpath(src),... );
+    	,{"-decompile",outdir2,tPath.file,...},{workDir=tPath.dir} );
  
     if(prcs){ 
         
@@ -27,22 +38,49 @@ function decompile(src,outdir,...){
 
 		if(#err){
 			prcs.close();
+			
+			if(outdir2 = "$chm-decompile-temp$"){
+				..fsys.delete(..io.joinpath(tPath.dir,"$chm-decompile-temp$"))
+			}
 			return null,err;
-		} 
+		}  
 		
 		var ok = prcs.process.getExitCode() == 0;
 		prcs.close();
+		
+		if(outdir2 = "$chm-decompile-temp$"){
+			if(ok){
+				..fsys.copy(..io.joinpath(tPath.dir,"$chm-decompile-temp$\*.*"),outdir) 
+			}
+			
+			..fsys.delete(..io.joinpath(tPath.dir,"$chm-decompile-temp$"))
+			 
+			..fsys.enum(outdir,{"*.htm","*.html"},
+				function(dir,filename,fullpath,findData){ 
+					if(filename){ 
+			           var str = ..string.load(fullpath);
+			           if( !..string.isUtf8(str) ){
+			           		..string.save(..io.joinpath(outdir,"\.vscode\settings.json"),`{
+    							"files.encoding": "gb2312"
+							}` ) 
+			           }
+			           
+			           return false;
+					} 
+				} ,false
+			); 
+		}
 		return ok,out;
 	}
 }	
  
 explore = function(chm,path){
-	..process.execute("hh.exe","mk:@MSITStore:" + ..fsys.shortpath(chm) + "::" + path);
+	return ..process.chm(chm,path);
 }
 
 /**intellisense(chm)
-decompile(.("CHM文件路径","输出目录") = 反编译CHM文件\n输出目录为可选参数
-explore(.(.("CHM文件路径","HTML文件路径") = 显示CHM文件指定页面
+decompile(.("CHM文件路径","输出目录") = 反编译 CHM 文件\n输出目录为可选参数
+explore(.("CHM文件路径","HTML文件路径") = 显示 CHM 文件指定页面
 end intellisense**/
 
  

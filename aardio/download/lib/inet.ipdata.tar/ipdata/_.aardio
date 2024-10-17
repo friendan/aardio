@@ -139,10 +139,12 @@ class ipdata{
 	} 
 }
 
-ipdata.update = function(){
+ipdata.update = function(url){
+	
 	var path = ..io.appData("aardio\std\inet\ipdata\qqwry.dat");
+	 
 	var downBox = ..inet.downBox(,"正在下载最新 IP 数据库",1)
-	return downBox.download("https://cdn.jsdelivr.net/gh/out0fmemory/qqwry.dat/qqwry_lastest.dat",path);
+	return downBox.download(url || "https://github.com/metowolf/qqwry.dat/releases/latest/download/qqwry.dat",path);
 }
 
 /*
@@ -151,7 +153,7 @@ http://bbs.aardio.com/forum.php?mod=viewthread&tid=3848
 */ 
 
 /**intellisense()
-inet.ipdata = 纯直 IP 数据库
+inet.ipdata = 纯真 IP 数据库
 inet.ipdata.update() = 更新 IP 数据库\n注意应当在关闭 IP  数据库文件时更新
 inet.ipdata() = 创建IP数据库连接\n!inet_ipdata.
 !inet_ipdata.query( = 查询IP归属性

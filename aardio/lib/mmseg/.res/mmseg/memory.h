@@ -33,6 +33,10 @@ namespace rmmseg
          * large object. Larger pre-alloc chunk size will also reduce the
          * impact of this leak. So this is generally not a problem. */
         _pool_base = static_cast<char *>(std::malloc(REALLOC_SIZE));
+        if (!_pool_base) {
+            // Handle memory allocation failure
+            return nullptr;
+        }
         mem = _pool_base;
         _pool_base += len;
         _pool_size = REALLOC_SIZE - len;

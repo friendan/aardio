@@ -12,7 +12,7 @@ compiler.Reference(
 compiler.Parameters.CompilerOptions = "/optimize" ;//https://learn.microsoft.com/dotnet/csharp/language-reference/compiler-options
 
 //设置待编译C#源码（ 注释可赋值为字符串，注释标记首尾星号数目要一致 ）
-//支持模板语法： chm://the%20language/template_syntax.html
+//支持模板语法： doc://language-reference/templating/syntax.html
 compiler.Source = /******  
 using System;
 using System.Windows.Automation; 

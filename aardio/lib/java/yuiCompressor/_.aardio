@@ -1,17 +1,37 @@
 import fsys;
 import java;
+import inet.http;
+import inet.url;
+
 namespace java.yuiCompressor;
 
 var jrePath = ..io.appData("aardio\std\java\yuicompressor.jar" 
 	, $"~\lib\java\yuiCompressor\.res\yuicompressor.jar") 
 
+lineBreak = 1000;
+
 compress = function( srcPath,outPath,charset,_type ) { 
+	
+	var tempInPath,tempOutPath;
+	if( ..inet.url.is(srcPath) ){
+		var bin = ..inet.http.get(srcPath);
+		if(!bin) return null,"下载 JS 失败";
+		
+		srcPath = ..io.tmpname(,".js");
+		..string.save(srcPath,bin );
+		tempInPath = srcPath;
+	}
 
 	//确认一下源文件是否存在,否则yuicompressor会一直等控制台输入不返回
 	srcPath = srcPath ? ..fsys.shortpath(srcPath);
 	if(!srcPath) return null,"请指定正确的源文件路径"; 
 	
-	outPath = ..io.localpath(outPath) : outPath;
+	if(!outPath){
+		outPath = ..io.tmpname(,".js");
+		tempOutPath = outPath;
+	}
+	else outPath = ..io.localpath(outPath) : outPath;
+	
 	if(!charset) charset = "utf-8";
 	
 	var args = { 
@@ -49,19 +69,48 @@ compress = function( srcPath,outPath,charset,_type ) {
 	var prcs = ..java.popenProcess( args ); 
 	
 	if(prcs){
-		var out,err,exitCode = prcs.readAll();
-		if(#err) return null,err; 
-		return exitCode == 0;
+		var out,err,exitCode = prcs.readAll(); 
+		if(tempInPath) ..io.remove(tempInPath) 
+	 
+		if(exitCode) {
+			if(tempOutPath) ..io.remove(tempOutPath);
+			return null,err;  
+		}
+		
+		if(tempOutPath){
+			var js = ..string.load(tempOutPath);
+			..io.remove(tempOutPath);
+			return js;
+		}
+		
+		return true;
 	}
+	
+	if(tempInPath) ..io.remove(tempInPath); 
+	if(tempOutPath)  ..io.remove(tempOutPath);
 }
 
 compressJs = function(srcPath,outPath,charset){
-	if(!outPath)outPath='.js$:-min.js';//will minify all .js files and save them as -min.js
+	if(!outPath && !..inet.url.is(srcPath) ){
+		if(..io.exist(srcPath)){
+			outPath=..fsys.path.replaceExt(srcPath,".min.js");
+		}
+		else {
+			outPath='.js$:-min.js';//will minify all .js files and save them as -min.js
+		} 
+	}
 	return compress(srcPath, outPath,charset,"js");
 }
 
 compressCss = function(srcPath,outPath,charset){
-	if(!outPath)outPath='.css$:-min.css';//will minify all .css files and save them as -min.css
+	if(!outPath && !..inet.url.is(srcPath) ){
+		if(..io.exist(srcPath)){
+			outPath=..fsys.path.replaceExt(srcPath,".min.css");
+		}
+		else {
+			outPath='.css$:-min.css';//will minify all .css files and save them as -min.css
+		}
+	}
 	return compress(srcPath, outPath,charset,"css");
 }
 
@@ -69,9 +118,9 @@ compressCss = function(srcPath,outPath,charset){
 nomunge = js压缩选项,设为true仅压缩不混淆
 preserveSem = js压缩选项,设为true保留所有分号
 disableOptimizations = js压缩选项,设为true禁止优化
-lineBreak = 指定列数以自动换行,如果指定为0则按分号换行
+lineBreak = 指定列数以自动换行，默认值已指定为 1000 。\n因为 ScriptControl 的限制 web.script 不支持 JS 一行的字数太长。\n现在很多压缩 JS 都会因为单行太长导致 web.script 无法加载。\n但 ScriptControl 控件加载每行最大字数不超过 1000-2000（因版本不同） 是安全的。 
 verbose = 显示详细信息
-compress(.("源文件路径","输出路径","编码") = 压缩js或css文件\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值
-compressJs(.("JS文件路径","输出路径","编码") = 压缩js文件\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值 
-compressCss(.("CSS文件路径","输出路径","编码") = 压缩css文件\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值
+compress(.("源文件路径","输出路径","编码") = 压缩 js 或 css 文件。\n源文件路径可指定网址或本地文件。\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值。\n成功返回 true ，失败返回 null,错误信息。\n如果参数 @2 不指定输出文件路径，压缩成功返回压缩后的文件数据。
+compressJs(.("JS文件路径","输出路径","编码") = 压缩js文件。\n源文件路径可指定网址或本地文件。\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值。\n如果参数 @2 不指定输出文件路径，压缩成功返回压缩后的文件数据。 
+compressCss(.("CSS文件路径","输出路径","编码") = 压缩css文件。\n源文件路径可指定网址或本地文件。\n编码为可选参数,默认为"utf-8"\n如果未找到java运行时,该函数为空值。\n如果参数 @2 不指定输出文件路径，压缩成功返回压缩后的文件数据。
 end intellisense**/

@@ -10,13 +10,18 @@ dotNet.reference({
 
 dotNet.import("FlaUI.UIA2");
 
+if(!FlaUI[["UIA"]]){
+	FlaUI[["UIA"]] = FlaUI.UIA2
+	FlaUI[["UIA"]][["UIAAutomation"]] = FlaUI.UIA2.UIA2Automation;	
+}
+
 FlaUI.UIA2.UIA2Automation[["ctor"]] = function(automation){
 	automation[["By"]] = class {
  		ctor( option ){
  			var condition;
  			for k,v in ..table.eachName(option){ 
  			  	
- 				var func = ..table.getCall(automation.ConditionFactory,"By"+k); 
+ 				var func = automation.ConditionFactory["By"+k]; 
  				if(k=="ControlType") v = ..FlaUI.Definitions.ControlType[v]; 
  				
  				var cond = invoke(func,automation.ConditionFactory,v); 

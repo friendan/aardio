@@ -2,7 +2,7 @@
 
 原生类型指的是直接访问和操作原生内存数据的类型系统。
 
-ardio 本身是动态语言，aardio 语言本身的数据类型( datatype ) 与原生数据类型( raw datatype ) 是两套类型系统。aardio 会自动做必要的类型转换，但不要混淆这两种数据类型。举个例子，在原生数据类型中数值有 int,long,double,float …… 一大堆，但是对于 aardio 语言本身的类型系统来说，数值都是双精度浮点数（相当于 double 类型）。
+aardio 本身是动态语言，aardio 语言本身的数据类型( datatype ) 与原生数据类型( raw datatype ) 是两套类型系统。aardio 会自动做必要的类型转换，但不要混淆这两种数据类型。举个例子，在原生数据类型中数值有 int,long,double,float …… 一大堆，但是对于 aardio 语言本身的类型系统来说，数值都是双精度浮点数（相当于 double 类型）。
 
 原生接口有关的文档提到的"API 函数"是特指的外部 DLL 文件提供的原生接口函数，例如操作系统 DLL 提供的 "WinAPI" 函数。DLL 文件通常由 C/C++ 等原生编程语言编写。
 

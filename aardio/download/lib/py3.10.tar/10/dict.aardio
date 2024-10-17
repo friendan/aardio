@@ -66,17 +66,49 @@ namespace dict {
 			owner[k] = v;
 		}; 
 		__get = function(k,ownerCall){ 
-			var item = PyDict_GetItemString(owner.pyObject,k) 
+			
+			var t = type(k);
+			if( t==="string" && (ownerCall!==null) ){
+				if( owner.has(k) ){
+					return owner.getAttr(k,true);
+				}
+				
+				//下标不能访问属性，但不存在的属性可以改为访问下标。
+			}
+		 
+			var item;
+			if(t==="string" ){
+					item = PyDict_GetItemString(owner.pyObject,k) 
+			}
+			else {
+					item = ::Python3.PyDict_GetItemP(owner.pyObject,..py3.object(k)) 
+			}
+			
 			if(item){
 				..py3.IncRef(item);//特例 borrow reference
-				return ..py3.object(  item,true ) ;
+				return ..py3.object(  item,true ).parseValue(true);
 			} 
 		};
-		__set = function(k,v){
-			if(v===null)
-				PyDict_DelItemString(owner.pyObject,k);
+		__set = function(k,v,ownerAttr){
+			var t = type(k);
+			if( t==="string" && ownerAttr ){
+				owner.setAttr(k,v);
+				return; 
+			}
+			 
+			if(t==="string" ){
+				if(v===null)
+					PyDict_DelItemString(owner.pyObject,k);
+				else {
+			 		PyDict_SetItemString(owner.pyObject,k,..py3.object(v) ); 
+				}	
+			}
 			else {
-			 	PyDict_SetItemString(owner.pyObject,k,..py3.object(v) ); 
+				if(v===null)
+					::Python3.PyDict_DelItem(owner.pyObject,..py3.object(k));
+				else {
+			 		::Python3.PyDict_SetItem(owner.pyObject,..py3.object(k),..py3.object(v) ); 
+				}	
 			} 
 		};
 		each = function(){
@@ -135,24 +167,24 @@ py3.dict(.(pyObject指针) = 参数为指针则作为 Python 字典指针构建�
 py3.dict(.(pyObject对象) = 如果传入 Python 对象是一个 dict,\n返回绑定相同对象的 py3.dict 对象,添加引用计数,对象销毁时负责释放引用计数\n否则将传入对象作为 python 内置函数 dict 的参数并返回 py3.dict 对象\n失败返回 null
 py3.dict(.(aardio表) = 数为未指定元表的 aardio 表则转换为 Python 字典
 !py3Dict.stealPtr() =  接管此对象的指针并盗用一次引用计数\n原对象的内部指针被清空,并不再负责释放引用计数\n steal references
-!py3Dict.parseValue() = 转换为aardio数组
+!py3Dict.parseValue() = 转换为 aardio 表对象
 !py3Dict.type() = 返回类型名字
 !py3Dict.has("__/*属性名*/") = 是否存在指定的属性
-!py3Dict.getAttr("__/*属性名*/") = 读属性成员,也可以用成员操作符获取\n属性值为 py3.object 对象
-!py3Dict.setAttr("__/*属性名*/",) = 写属性成员的值,也可以用成员操作符赋值
-!py3Dict.getAttr() = !pyObject.
-!py3Dict.setItem("键名",) = 写字典中的元素的值，也可以直接用下标操作符赋值\n在aardio中也可以用成员操作符代替下标赋元素值
-!py3Dict.getItem("键名") = 返回字典中的元素的值，也可以直接用下标操作符取值\n在aardio中也可以用成员操作符代替下标取元素值,\n成员操作后后面是一个函数调用,则返回成员函数而不是返回字典中的元素
-!py3Dict.getItem() = !pyObject.
+!py3Dict.getAttr("__/*属性名*/") = 读属性值，也可以用成员操作符获取。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Dict.setAttr("__/*属性名*/",) = 写属性成员的值，也可以用成员操作符赋值。
+!py3Dict.getAttr() = !py3Object.
+!py3Dict.setItem("键名",) = 修改指定索引的项，也可以用索引下标操作符 [] 赋值。
+!py3Dict.getItem("键名") = 返回指定索引的项，也可以用索引下标操作符 [] 取值。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Dict.getItem() = !py3Object.
 !py3Dict.toString() = 转换为 aardio 字符串\n也可以直接将对象作为参数传入 tostring 函数转换为字符串
 !py3Dict.toTuple() = 转换为 Python 元组\n!py3Tuple.
 !py3Dict.toList() = 转换为 Python 列表\n!py3List.
 !py3Dict.checkDict() = 检测是否字典
-!py3Dict.each() =  @for( kObject,vObject in ??.each() ){\n	__/*两个都是py.object对象*/\n}\n!pyObject.
-!py3Dict.? = !pyObject.
+!py3Dict.each() =  @for( kObject,vObject in ??.each() ){\n	__/*两个都是py.object对象*/\n}\n!py3Object.
+!py3Dict.? = !py3Object.
 !py3Dict.statement(.("python语句",locals) = 以该字典为名字空间运行单个python语句
 !py3Dict.exec(.("python代码",locals) = 以该字典为名字空间运行代码,locals省略则默认为当前字典\n类似python代码中的 exec "..." in globals, locals 语句
 !py3Dict.eval(.("python表达式",locals) = 以该字典为名字空间运行代码并返回值,locals省略则默认为当前字典\n类似python代码中的 execfile("test.py", globals, locals)
-!py3Dict.eval() = !pyObject.
+!py3Dict.eval() = !py3Object.
 py3.dict() = !py3Dict.
 end intellisense**/

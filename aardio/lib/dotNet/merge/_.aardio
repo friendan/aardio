@@ -18,7 +18,7 @@ class merge{
 	popen = function(output,...){
 		var args = ..table.assign({},this.$defaultArguments);
 		if( !this.debug ) ..table.push(args,"/ndebug");
-		..table.push(args,"/target:" + (this.target : "dll"));
+		..table.push(args,"/target:" + (this.target : "library"));
 		..table.push(args,"/out:" + (..io.localpath(output):output));
 		
 		if(this.log === true){
@@ -63,7 +63,8 @@ popen( = 创建合并进程,返回 process.popen 对象
 popen(.(output,input->->->) = 创建合并进程,返回 process.popen 对象,\n参数@1指定输出文件,\n后面的参数指定一个或多个输入程序集,\也可以用一个数组指定多个输入程序集
 popen() = !process_popen.
 log = 设为 true 启用日志,\n指定文件路径则输出日志到指定的日志文件
-target = 目标 .Net 平台版本,默认为 v4
+target = 输出文件类型，默认为 "library"
+targetPlatform = 目标 .Net 平台版本,默认为 v4
 debug = 是否生成调试版本,\n设为 true 则会生成 pdb 文件
 addArguments(__) = 添加一个或多个默认合并参数,\n参数也可以是一个包含多个启动参数的数组\n注意参数中不必要使用引号,多个参数应分开写不要拼接成一个参数\n每个启动参数都是使用斜杠开始的字符串\n所有可用参数 https://github.com/dotnet/ILMerge/blob/master/ilmerge-manual.md
 end intellisense**/

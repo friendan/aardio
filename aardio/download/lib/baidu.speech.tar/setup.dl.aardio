@@ -7,4 +7,4 @@ import ide;
 ide.refreshStdLib();
 
 import win;
-win.msgboxTimeout("baidu.speech扩展库已安装成功!","aardio- baidu.speech扩展库安装程序")
+win.msgboxTimeout("baidu.speech 扩展库已安装成功!","aardio- baidu.speech扩展库安装程序")

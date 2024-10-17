@@ -84,13 +84,46 @@ FlaUI[["FromPoint"]]  = function(parentNode,x,y){
 	return result;
 }
 
+var AutomationElementExtensions = FlaUI.AutomationElements.AutomationElementExtensions;
 FlaUI[["As"]] = function(t,ele){
 	if(type.isString(t)){
-		return FlaUI.AutomationElements.AutomationElementExtensions["As"+t](ele);
+		return AutomationElementExtensions["As"+t](ele);
 	}
 	
-	return FlaUI.AutomationElements.AutomationElementExtensions.AsType(ele,t);
+	return AutomationElementExtensions.AsType(ele,t);
 }
+
+FlaUI[["AsButton"]] = lambda(ele) AutomationElementExtensions["AsButton"](ele);
+FlaUI[["AsCalendar"]] = lambda(ele) AutomationElementExtensions["AsCalendar"](ele);
+FlaUI[["AsCheckBox"]] = lambda(ele) AutomationElementExtensions["AsCheckBox"](ele);
+FlaUI[["AsComboBox"]] = lambda(ele) AutomationElementExtensions["AsComboBox"](ele);
+FlaUI[["AsDataGridView"]] = lambda(ele) AutomationElementExtensions["AsDataGridView"](ele);
+FlaUI[["AsDateTimePicker"]] = lambda(ele) AutomationElementExtensions["AsDateTimePicker"](ele);
+FlaUI[["AsLabel"]] = lambda(ele) AutomationElementExtensions["AsLabel"](ele);
+FlaUI[["AsGrid"]] = lambda(ele) AutomationElementExtensions["AsGrid"](ele);
+FlaUI[["AsGridRow"]] = lambda(ele) AutomationElementExtensions["AsGridRow"](ele);
+FlaUI[["AsGridCell"]] = lambda(ele) AutomationElementExtensions["AsGridCell"](ele);
+FlaUI[["AsGridHeader"]] = lambda(ele) AutomationElementExtensions["AsGridHeader"](ele);
+FlaUI[["AsGridHeaderItem"]] = lambda(ele) AutomationElementExtensions["AsGridHeaderItem"](ele);
+FlaUI[["AsHorizontalScrollBar"]] = lambda(ele) AutomationElementExtensions["AsHorizontalScrollBar"](ele);
+FlaUI[["AsListBox"]] = lambda(ele) AutomationElementExtensions["AsListBox"](ele);
+FlaUI[["AsListBoxItem"]] = lambda(ele) AutomationElementExtensions["AsListBoxItem"](ele);
+FlaUI[["AsMenu"]] = lambda(ele) AutomationElementExtensions["AsMenu"](ele);
+FlaUI[["AsMenuItem"]] = lambda(ele) AutomationElementExtensions["AsMenuItem"](ele);
+FlaUI[["AsProgressBar"]] = lambda(ele) AutomationElementExtensions["AsProgressBar"](ele);
+FlaUI[["AsRadioButton"]] = lambda(ele) AutomationElementExtensions["AsRadioButton"](ele);
+FlaUI[["AsSlider"]] = lambda(ele) AutomationElementExtensions["AsSlider"](ele);
+FlaUI[["AsSpinner"]] = lambda(ele) AutomationElementExtensions["AsSpinner"](ele);
+FlaUI[["AsTab"]] = lambda(ele) AutomationElementExtensions["AsTab"](ele);
+FlaUI[["AsTabItem"]] = lambda(ele) AutomationElementExtensions["AsTabItem"](ele);
+FlaUI[["AsTextBox"]] = lambda(ele) AutomationElementExtensions["AsTextBox"](ele);
+FlaUI[["AsThumb"]] = lambda(ele) AutomationElementExtensions["AsThumb"](ele);
+FlaUI[["AsTitleBar"]] = lambda(ele) AutomationElementExtensions["AsTitleBar"](ele);
+FlaUI[["AsToggleButton"]] = lambda(ele) AutomationElementExtensions["AsToggleButton"](ele);
+FlaUI[["AsTree"]] = lambda(ele) AutomationElementExtensions["AsTree"](ele);
+FlaUI[["AsTreeItem"]] = lambda(ele) AutomationElementExtensions["AsTreeItem"](ele);
+FlaUI[["AsVerticalScrollBar"]] = lambda(ele) AutomationElementExtensions["AsVerticalScrollBar"](ele);
+FlaUI[["AsWindow"]] = lambda(ele) AutomationElementExtensions["AsWindow"](ele);
 
 FlaUI[["DrawHighlight"]] = function(ele) {
 	return FlaUI.AutomationElements.AutomationElementExtensions.DrawHighlight(ele);; 
@@ -102,6 +135,10 @@ end details**/
 	
 /*****intellisense()
 FlaUI = .NET 组件 FlaUI。\n在 aardio 中 FlaUI 与 FlaUI.Core 指向同一名字空间。\n注意首字母大写常用于 .NET 名字空间，而 aardio 名字空间通常小写首字母。\n\n此组件库已自动导入 key,mouse 库
+FlaUI.UIA = 如果导入 FlaUI.UIA3 则指向 FlaUI.UIA3。\n如果未导入 FlaUI.UIA3 ，但导入 FlaUI.UIA2 ，则指向 FlaUI.UIA2
+FlaUI.UIA = 如果导入 FlaUI.UIA3 则指向 FlaUI.UIA3。\n如果未导入 FlaUI.UIA3 ，但导入 FlaUI.UIA2 ，则指向 FlaUI.UIA2
+FlaUI.UIA.UIAAutomation = 如果导入 FlaUI.UIA3 则此函数实际指向 FlaUI.UIA3.UIA3Automation。\n如果未导入 FlaUI.UIA3 ，但导入 FlaUI.UIA2 ，则指向 FlaUI.UIA2.UIA2Automation。
+FlaUI.UIA.UIAAutomation() = 创建 UIAAutomation 对象。\n\n!stdFlaUIA3Automation.
 end intellisense*****/
 
 /*****intellisense(FlaUI)
@@ -128,6 +165,42 @@ ControlType.Edit = 文本框
 ControlType.Button = 按钮
 As("Button",__) = 转换为指定类型的控件对象。\n参数 @1 指定控件类名，参数 @2 指定界面节点对象
 DrawHighlight(__) = 高亮参数@1指定的界面节点对象。\n这个函数很卡，建议改用 aardio 提供的 win.ui.mask
+AsButton(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Button控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsCalendar(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Calendar控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsCheckBox(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.CheckBox控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsComboBox(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.ComboBox控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsDataGridView(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.DataGridView控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsDateTimePicker(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.DateTimePicker控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsLabel(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Label控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsGrid(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Grid控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsGridRow(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.GridRow控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsGridCell(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.GridCell控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsGridHeader(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.GridHeader控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsGridHeaderItem(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.GridHeaderItem控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsHorizontalScrollBar(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.HorizontalScrollBar控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsListBox(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.ListBox控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsListBoxItem(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.ListBoxItem控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsMenu(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Menu控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsMenuItem(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.MenuItem控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsProgressBar(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.ProgressBar控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsRadioButton(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.RadioButton控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsSlider(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Slider控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsSpinner(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Spinner控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTab(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Tab控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTabItem(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.TabItem控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTextBox(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.TextBox控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsThumb(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Thumb控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTitleBar(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.TitleBar控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsToggleButton(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.ToggleButton控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTree(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Tree控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTreeItem(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.TreeItem控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsVerticalScrollBar(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.VerticalScrollBar控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsWindow(__) = 将参数 @1 指定的 UIA 节点转换为 FlaUI.AutomationElements.Window控件。\n返回控件的属性与方法请参考 FlaUI 文档或源码
+AsTextBox() = !FlaUITextBox.
+AsCheckBox() = !FlaUICheckBox.
+AsRadioButton() = !FlaUIRadioButton.
+AsButton() = !FlaUIButton.
+AsLabel() = !FlaUILabel.
 end intellisense*****/
 
 /*****intellisense(!stdFlaUIApp)
@@ -174,16 +247,48 @@ CaptureToFile(__) = 截图到文件。\n参数指定文件路径。\n如果路�
 Capture() = 截图并返回 System.Drawing.Bitmap 对象
 FindAllChildren() = 返回包含所有子节点的数组
 Properties = 元素属性。\n可用属性参考: https://github.com/FlaUI/FlaUI/blob/master/src/FlaUI.Core/FrameworkAutomationElementBase.Properties.cs#L77 \n!stdFlaUiProperty.
+Patterns = 在 aardio 中无法直接使用此接口。\n可参考 FlaUI.UIA3.Caret 源码通过 C# 调用 Patterns 接口。\n或者用 FlaUI.As 系列函数转换为控件以后再直接调用相关属性方法。
 end intellisense*****/
 
 /*****intellisense(!stdFlaUiProperty)
-LocalizedControlType = 本地化的控件类型，中文字符串
-ProcessId = 进程 ID
-NativeWindowHandle = 原生窗口句柄
-IsOffscreen = 在屏幕上是否不可见，不可见为 true
-IsPassword = 是否密码输入框
-IsPeripheral = 是否外围 UI 组件，例如菜单或浮动通知
-IsControlElement = 是否控件
-IsContentElement = 是否内容展示元素 
-ControlType = 控件类型，这是一个对象。\n些对象可传入 tostring 函数转换为英文字符串。\n也可用对象的 Value 成员返回枚举数值
+LocalizedControlType = 本地化的控件类型，中文字符串。\n此对象可传入 tostring 函数转换为字符串。\n也可用对象的 Value 成员返回字符串值
+LocalizedControlType.Value = 本地化的控件类型（字符串值）
+ProcessId = 进程 ID。\n此对象可传入 tonumber 函数转换为数值。\n也可用对象的 Value 成员返回数值
+ProcessId.Value = 进程 ID（数值）
+NativeWindowHandle = 原生窗口句柄。\n此对象可传入 tonumber 函数转换为数值。\n也可用对象的 Value 成员返回数值
+NativeWindowHandle.Value = 原生窗口句柄（数值）
+IsOffscreen = 在屏幕上是否不可见。\n此对象需用 Value 字段返回布尔值。
+IsPassword.Value = 在屏幕上是否不可见，不可见为 true
+IsPassword = 是否密码输入框。\n此对象需用 Value 字段返回布尔值。
+IsPassword.Value = 是否密码输入框
+IsPeripheral = 是否外围 UI 组件，例如菜单或浮动通知。\n此对象需用 Value 字段返回布尔值。
+IsPeripheral.Value = 是否外围 UI 组件
+IsControlElement = 是否控件。\n此对象需用 Value 字段返回布尔值。
+IsControlElement.Value = 是否密码输入框
+IsContentElement = 是否内容展示元素 。\n此对象需用 Value 字段返回布尔值。
+IsContentElement.Value = 是否密码输入框
+ControlType = 控件类型，这是一个对象。\n此对象可传入 tostring 函数转换为英文字符串。\n也可用对象的 Value 成员返回枚举数值
+end intellisense*****/
+
+/*****intellisense(!FlaUITextBox)
+Text = 获取文本
+IsReadOnly = 是否只读
+Enter(__) = 输入文本
+end intellisense*****/
+
+/*****intellisense(!FlaUICheckBox)
+Text = 获取文本
+IsChecked = 是否选中
+end intellisense*****/
+
+/*****intellisense(!FlaUIRadioButton) 
+IsChecked = 是否选中 
+end intellisense*****/
+
+/*****intellisense(!FlaUIButton) 
+Invoke() = 默认方法
+end intellisense*****
+
+/*****intellisense(!FlaUILabel) 
+Text = 获取文本
 end intellisense*****/

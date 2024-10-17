@@ -54,7 +54,7 @@ import ..py3.tuple;
 setPath = ::Python3.api("PySys_SetPath","void(str)");
 
 getPath = function(){
-	return( ..string.fromUnicode(::Python3.Py_GetPathP(),,true) ); 
+	return( ..string.fromUtf16(::Python3.Py_GetPathP(),,true) ); 
 }
 
 appendPath = function(path,...){
@@ -82,7 +82,7 @@ setArgv = function(...){
 	if(!#argv) return;
 	
 	for(k,v in argv){ 
-		argv[k] = ..string.toUnicode(v);
+		argv[k] = ..string.toUtf16(v);
 	}
 	
 	PySys_SetArgv(#argv,{string v[]=argv})
@@ -91,24 +91,24 @@ setArgv = function(...){
 run = function(...){
 	var argv = {..io._exepath;...};
 	for(k,v in argv){ 
-		argv[k] = ..string.toUnicode(v);
+		argv[k] = ..string.toUtf16(v);
 	} 
 	
 	return (::Python3.Py_Main(#argv,{string v[]=argv}));
 }
 
 getPythonHome = function(){
-	return( ..string.fromUnicode(::Python3.Py_GetPythonHomeP(),,true) ); 	
+	return( ..string.fromUtf16(::Python3.Py_GetPythonHomeP(),,true) ); 	
 }
 setPythonHome = function(str){
-	return ::Python3.Py_SetPythonHome( ..string.toUnicode(str) );	
+	return ::Python3.Py_SetPythonHome( ..string.toUtf16(str) );	
 }
 
 getProgramName = function(){
-	return( ..string.fromUnicode(::Python3.Py_GetProgramNameP(),,true) ); 	
+	return( ..string.fromUtf16(::Python3.Py_GetProgramNameP(),,true) ); 	
 }
 setProgramName = function(str){
-	return ::Python3.Py_SetProgramName( ..string.toUnicode(str) );	
+	return ::Python3.Py_SetProgramName( ..string.toUtf16(str) );	
 }
 
 PyRun_SimpleString = ::Python3.api("PyRun_SimpleString","int(string Str)")
@@ -251,7 +251,7 @@ if( ! ::Python3.Py_IsInitialized() ) begin
 		error("没有找到python标准库",2)
 	}
 	 
-	zipPath = ..string.toUnicode(zipPath);
+	zipPath = ..string.toUtf16(zipPath);
 	::CopyMemory( ::Python3.Py_GetPathP(),zipPath,#zipPath + 2);//没初始化以前不能调用setPath() 只能这样搞
 	::Python3.Py_Initialize();
 	
@@ -288,10 +288,10 @@ lock(
 		var pyObjPtr = ::Python3.PyEval_GetBuiltinsP();
 		IncRef(pyObjPtr); //Borrowed reference 
 		builtin = dict(pyObjPtr);
-		int = builtin.int;
-		float = builtin.float;
-		set = builtin.set;	
-		str = builtin.str;	 
+		int = lambda(...) builtin.int.invokeObject(,...);
+		float = lambda(...) builtin.float.invokeObject(,...);
+		str = lambda(...) builtin.str.invokeObject(,...);	
+		set = builtin.set; 
 		
 		if(mainThread){
 			import ..py3.export;
@@ -395,7 +395,30 @@ lasterr = function(){
 	) 
 } )
 
-/*python引用计数规则{{*//*
+/*用前必读点这里展开{{*//*
+
+aardio 与 Python 数据类型转换规则
+===============================================================
+所有 Python 对象在 aardio 中存为 PyObject。
+对于 py3 扩展库，PyObject 就是 py3.object 。
+
+其他 py3.dict,py3.list,py3.tuple 分别对应相应的 Python 类型。
+这几个对象同样基于 py3.object 扩展。
+
+调用 pyObject.parseValue() 可将 Python 对象转换为纯 aardio 值。
+
+调用 pyObject.parseValue(true) 可将：
+浮点数值、不大于 53 位的整型数值、布尔值、字节数组转换为纯 aardio 值。
+其他返回原来的 PyObject 对象。
+
+所有在 aardio 中获取的 Python 对象自动调用 pyObject.parseValue(true)。
+但对 PyObjec 使用常用的算术运算符时，返回结果仍然是 PyObject。
+
+所有 aardio 对象传入 Python 时都会转换为纯 aardio 值。
+使用 py3.export 可以在 Python 中引用并调用 aaradio 对象或函数。
+
+关于 Python API 引用计数
+===============================================================
 1、new reference(owned reference) 增加计数的引用
 2、borrow reference 不增加计数直接借用
 
@@ -469,7 +492,7 @@ setArgv(.("启动参数") = 设置sys.argv启动参数,\n参数可以是任意�
 eval(.("python表达式") = 在 __main__ 模块中计算表达式的值
 eval() = !py3Object.
 execf( = 首先调用 string.format 格式化代码\n然后执行格式化后的代码
-execf(.("Python代码",->->->) = 首先调用 string.format 格式化参数并生成代码,\n然后执行格式化后的代码。\n\n详细用法请参考\n[格式化字符串](chm://libraries/kernel/string/format.html)
+execf(.("Python代码",->->->) = 首先调用 string.format 格式化参数并生成代码,\n然后执行格式化后的代码。\n\n详细用法请参考\n[格式化字符串](doc://library-guide/builtin/string/format.html)
 exec( = 运行 Python 代码,\n参数也可以指定内嵌资源文件路径\n注意需要引用的 Python 模块应当放在 /py 目录下,\naardio 路径以斜杠或反斜杆开始则表示应用程序根目录下的路径,\n应用程序根目录开发时为 aardio 工程目录,发布后为 EXE 文件所在目录
 exec(.("Python代码",flags,->->->) = 在默认的__main__名字空间运行 Python 代码，成功返回 true。\n在导入 py3 扩展库前调用 console.open 可查看 Python 错误信息。\n\n参数@1如果首字符为单个斜杠或反斜杆开始的文件路径：\n└── 可支持工程资源目录下的文件。\n└── 如果文件后缀为 ".aardio" 则支持 aardio 模板语法。\n\n可选使用参数 @2 设置 PyCompilerFlags 参数,\n参数@2不必指定,用法参考 Python 文档。\n\n参数@3 开始可选指定一个或多个启动参数，\n注意不必像 py3.setArgv 函数那样在首个参数中指定启动程序路径
 execfile( = 运行 *.py 文件\n注意需要引用的 Python 模块应当放在 /py 目录下,\naardio 以斜杠或反斜杆开始则表示应用程序根目录下的路径,\n应用程序根目录开发时为 aardio 工程目录,发布后为 EXE 文件所在目录
@@ -488,10 +511,10 @@ int(__) = 调用 Python 的 int 函数,\n参数可指定 aardio 或 Python 中�
 str(__) = 调用 Python 的 str 函数,\n参数可指定 aardio 或 Python 中可转为字符串的对象,\n创建 Python 整型数并返回 py.object 对象,\npy.object 对象都提供 toString 函数可转为 aardio 字符串,\n也可以在 aardio 中使作为 tostring 函数的参数转为普通字符串
 float(__) = 调用 Python 的 float 函数,\n参数可指定 aardio 或 Python 中可转为浮点数的对象,\n创建 Python 浮点数并返回 py.object 对象,\n返回的 Python 对象支持 +,-,*,/,%,<,>,<=,>=,== 等运算符
 set(__) = 调用 Python 的 set 函数,\n参数可指定 aardio 或 Python 中可转为集合的对象,\n创建 Python 集合并返回 py.object 对象
-int() = !pyObject.
-str() = !pyObject.
-float() = !pyObject.
-set() = !pyObject.
+int() = !py3Object.
+str() = !py3Object.
+float() = !py3Object.
+set() = !py3Object.
 locals() = 局部名字空间\n!py3Dict.
 sysObject(.("名字") = 获取sys对象
 sysObject() = !py3Object.

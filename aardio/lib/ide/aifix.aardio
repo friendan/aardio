@@ -78,13 +78,13 @@ class aifix{
 				return "string.format("+p1+","+string.slice(p2,2,-2)+")"
 			} ); 
 		} 
-		
-		//JSON 用了双引号，所以 AI 一定会将其放入反引号
+
+		//JSON 用了双引号，所以 AI 一定会将其放入反引号或单引号
 		code = string.replaceUnmatched(code,".+",function(c){
 			c = replace(c,`=(\s*)\[([^\[\]]*)\]`,`=\1{\2}`); 
 			c = replace(c,`\[\]`,`{}`); 
 			return replace(c,"\[([^\[\],]+,[^\[\]]+)]","{\1}"); 
-		},"<`[^`]+`>");
+		},"<`[^`]+`>","<'[^']+'>");
 		
 		code = replace(code,`![\w.$]<new\s+>?array(%())`,function(arr){
 			return "{" +..string.slice(arr,2,-2) + "}"
@@ -420,6 +420,12 @@ class aifix{
 	
 		//for(i=1;10;++1)
 	 	code = replace(code,"![\w._$](for\s*\([^;\)\{]+;[^;\)\{]+;\s*)\+\+(\d+\s*\))","\1\2");
+	 	
+	 	//for(i=1;10;++i)
+	 	code = replace(code,"![\w._$](for\s*\([^;\)\{]+;[^;\)\{]+;\s*)<\+\+\w+>|<\w+\+\+>(\s*\))","\11\2");
+	 	 
+	 	//for(i=1;10;--i)
+	 	code = replace(code,"![\w._$](for\s*\([^;\)\{]+;[^;\)\{]+;\s*)<\-\-\w+>|<\w+\-\->(\s*\))","\1-1\2");
 	 	 
 		//for i from 1 to 10 
 	 	code = replace(code,"for(\s*\(?\s*\a\w*\s+)from(\s+[^,;\r\n\{=]+?)\s+to!\W","for\1=\2 to");
@@ -520,10 +526,12 @@ class aifix{
 			"inet.http","web.json","web.rest.client","web.rest.jsonClient","web.rest.jsonLiteClient",
 			"fsys.file",
 		}
-		if(string.find(code,"![\w\.$]inet.http![^\w\.$]")
-			&& !string.find(code,"![\w\.$]import\s+inet.http![^\w\.$]")){
-			code = 'import inet.http;\r\n'+code;
-		} 
+		for(k,lib in libs){
+			if(string.find(code,"![\w\.$]<@"+lib+"@>![^\w\.$]")
+				&& !string.find(code,"![\w\.$]import\s+<@"+lib+"@>![^\w\.$]")){
+				code = 'import "+lib+";\r\n'+code;
+			}  
+		}
 		
 		code = replace(code,`![\w\.$]import\s+/\N+`,"");  
 		code = replace(code,`![\w\.$]import\s+\"(.+?)\"`,"import \1");  
@@ -753,6 +761,7 @@ class aifix{
 		code = replace(code,"!\wConsoleWrite!\W","console.log"); 
 		code = replace(code,"\n(\s*)\?\s*(\w+)",'\n\\1console.log(\\2)'); 				
 		code = replace(code,"!\wwin\.loop!\W","win.loopMessage"); 
+		code = replace(code,"!\wapp\.run!\W","win.loopMessage");
 		code = replace(code,"!\wwindow\.create!\W","win.form"); 
 		code = replace(code,"!\wweb\.view\.create!\W","web.view"); 
 		code = replace(code,"\.navigate\(",".go("); 
@@ -889,15 +898,21 @@ class aifix{
 			code = replace( code,`![\w\._$]<gui>|<GUI>\.`,`win.ui.`);
 		}
 		
-		code,count = replace( code,`![\w\._$]import\s+[Ff]orms![^\w\._$]:?`,`import win.ui`);
+		code,count = replace( code,`![\w\._$]import\s+[Ff]orms![^\w\._$](;?)`,`import win.ui\1`);
 		if(count){
 			code = replace( code,`![\w\._$][Ff]orms\.create\(`,`win.form(`);
 			code = replace( code,`![\w\._$][Ff]orms\.`,`win.ui.`);
 		}
 		
+		code,count = replace( code,`![\w\._$]import\s+[Ww]inform![^\w\._$](;?)`,`import win.ui\1`);
+		if(count){
+			code = replace( code,`![\w\._$]winform![^\w\_$]`,`win.form`); 
+		}
+		
 		code = replace( code,`!\wwin\.ui\.run\s*%()`,`win.loopMessage()`);
 		code = replace( code,`!\wwin\.ui\.form\s*\(`,`win.form(`);
-		code = replace(code,`=\s+new\s+<Window>|<window>|<WinForm>|<winform>\(`,`= win.form(`);
+		code = replace( code,`![\w\._$]\a[\w.]*\.<dialog>|<createDialog>\s*\(`,`win.form(`);
+		code = replace( code,`=\s+new\s+<Window>|<window>|<WinForm>|<winform>\(`,`= win.form(`);
 		code = replace( code,`!\wwin\.ui\.form\s*\(`,`win.form(`);
 
 		if(..string.find(code,"![\w._$]win\.form\(")){
@@ -954,7 +969,8 @@ class aifix{
 			//formOrTabPage.add(win.ui.ctrl.button,{...});
 			code = replace( code,`![\w_.$](\a\w+.add\()\s*win\.ui.ctrl\.(\a\w+)\s*,\s*(%{}\s*\))`,function(method,cls,params){
 				cls = ..string.lower(cls);
-				if(cls=="textbox") cls="edit";
+				cls = __clsAlias__[cls] : cls;
+			
 				if(..string.endWith(cls,"control")){
 					cls = ..string.left(cls,-8);
 				} 
@@ -1004,15 +1020,30 @@ class aifix{
 					}
 				)
 			 
+			 	//必须在处理 form.add(x,y,width,height,text) 之前处理
+			 	//form.add(cls1,text1,x,y,cx,cy; cls2,text2,x2,y2,cx2,cy2)
+				code = replace(code,`![\w_$]`+formName+`\.add\(\s*([^\);]*<\s*\d+\s*,\s*\d+>+[^\);]*;[^\)]*)\);?`
+					,function(params){
+						params = replace( params,"//\N+","");
+						var args = ..string.splitEx(params,"\s*;\s*");
+						
+						var out = {}
+						for(i,p in args){
+							..table.push(out,formName+".add(",p,');\r\n');
+						}
+						
+						return string.join(out); 
+					});
+
 				/*
 				form.ctrlName = form.add(cls,x,y,width,height,text) 
 				var ctrlName = form.add(cls,x,y,width,height,text)
 				form.cls(x,y,width,height,text)
 				*/
 				code = replace(code,`![\w_$]((<\a\w+\s*=\s*>?)`+formName+`)\.(\a\w+)\(\s*([^\)]*<\s*\d+\s*,\s*\d+>+[^\)]*)\)`
-				,function(varName,ctrlName,cls,params){
-					
+				,function(varName,ctrlName,cls,params){ 
 					var newArgs = {};
+					params = replace( params,"//\N+","");
 					var args = ..string.splitEx(params,"\s*,\s*");
 					var ctrlNameOrClass = cls;
 					
@@ -1024,7 +1055,8 @@ class aifix{
 								ctrlNameOrClass = v;
 								
 								v = ..string.lower(v);
-								if(v=="textbox") v="edit"; 
+								v = __clsAlias__[v] : v;
+								 
 								if(..win.ui.ctrl[v]){
 									..table.remove(args,i);
 									cls = v;
@@ -1042,23 +1074,30 @@ class aifix{
 						cls = cls2;
 					}
 					
-					if(cls=="textbox") cls="edit";
+					cls = __clsAlias__[cls] : cls;
 					if(!..win.ui.ctrl[cls]){
 						return;
 					}
-					
-
-					var rc = { }
-					for(k,v in args){ 
-						 
+	
+					var rc = { } 
+					for(k,v in args){   
 						if(..string.match(v,"^\d+\s*$") ){
 							 ..table.push(rc,(tonumber(v)));
 						}
 						elseif(..string.match(v,`^%""$`) ){
-							if(#newArgs.text){
-								newArgs.name = newArgs.text;
+							var text = ..string.slice(v,2,-2);
+							if(#ctrlName){
+								if(#newArgs.text){
+									newArgs.name = newArgs.text;
+								}
+								newArgs.text = text;
 							}
-							newArgs.text = ..string.slice(v,2,-2);
+							elseif(#newArgs.name){
+								newArgs.text = text;
+							}
+							else {
+								newArgs.name = text;
+							} 
 						}
 					}
 					
@@ -1076,6 +1115,16 @@ class aifix{
 						newArgs.multiline = true;
 					} 
 					
+					if(!#ctrlName && !#newArgs.text && #newArgs.name){
+						//AI 将 cls 理解为 控件名称
+						if(!..string.find(code,"![\w.$_]"+formName+"."+newArgs.name+"![^\w$_]")){
+							if(..string.find(code,"![\w.$_]"+formName+"."+cls+"![^\w$_]")){
+								newArgs.text = newArgs.name;
+								newArgs.name = cls; 
+							}
+						}
+					}
+					
 					if(#newArgs.name){
 						var ctrlName = newArgs.name;
 						newArgs.name = null;
@@ -1091,7 +1140,6 @@ class aifix{
 					
 				} );
 
-		
 				code = replace( code,`(![\w._$]`+formName+`\.add\s*\(\s*)(%"")\s*,\s*\{`,`\1{cls=\2, `);
 				/*
 				winform.add(
@@ -1102,7 +1150,7 @@ class aifix{
 					,function(param){
 						return replace( param,`(\a\w+\s*\=\s*)!\wwin\.(\w+)\(\s*\{(\N+)\)`,function(ctrlName,cls,ctrlParam){ 
 							cls = ..string.lower(cls);
-							if(cls=="textbox") cls="edit";
+							cls = __clsAlias__[cls] : cls;
 							
 							if(string.indexOf(ctrlParam,",")){
 								return ctrlName ++ `{ cls="`+cls+`",`+ctrlParam+`;`;
@@ -1123,7 +1171,7 @@ class aifix{
 					,function(param){
 						return replace( param,`(\a\w+\s*\=\s*)!\wwin\.(\w+)\((\N+)\)`,function(ctrlName,cls,ctrlParam){ 
 							cls = ..string.lower(cls);
-							if(cls=="textbox") cls="edit";
+							cls = __clsAlias__[cls] : cls;
 							
 							if(string.indexOf(ctrlParam,",")){
 								return ctrlName ++ `{ cls="`+cls+`",`+ctrlParam+`}`;
@@ -1148,7 +1196,7 @@ class aifix{
 				code = replace( code,`((<\a\w*\s*=\s*>?)![\w._$]`+formName+`\.add)(\w+)\s*(%())`,function(method,varName,cls,param){ 
 					cls = ..string.lower(cls);
 					if(!string.find(param,"!\wcls\s*=")){ 
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 						param =replace(param,"!\w(\a\w*(\s*=\s*)[^;,]+([;,]?)(\s*))",function(p1,p2,p3,p4){
 							return `cls`+p2+`"`+cls+`"`+(#p3?p3:",")+(p4:"") +p1;
 						} ,1);	 
@@ -1173,7 +1221,7 @@ class aifix{
 				//winform.button( text = ....
 				code = replace( code,`(![\w._$]`+formName+`\.)(\w+)(\(\s*\{?\s*)(\a+\s*([=\:]\s*))`,function(ctrl,cls,p1,p2,eq){ 
 					cls = ..string.lower(cls);
-					if(cls=="textbox") cls="edit";
+					cls = __clsAlias__[cls] : cls;
 					if(!..win.ui.ctrl[cls]) return;
 					
 					return ctrl ++ `add`+p1+`cls`+eq+`"`+cls+`", `+p2;
@@ -1188,7 +1236,7 @@ class aifix{
 						if(cls==="form" || ..win[[cls]] ) return;
 						
 						cls = ..string.lower(cls);
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 						
 						return formName ++ `.add(cls="`+cls+`")`;
 					});
@@ -1198,7 +1246,7 @@ class aifix{
 						if(cls==="form" || ..win[[cls]]  ) return;
 						
 						cls = ..string.lower(cls);
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 						
 						return formName ++ `.add(cls="`+cls+`",text=`+txt+`)`;
 					});
@@ -1209,7 +1257,7 @@ class aifix{
 						if(cls==="form" || ..win[[cls]]  ) return;
 						
 						cls = ..string.lower(cls);
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 						
 						return formName ++ `.add({cls="`+cls+`",`;
 					});
@@ -1218,7 +1266,7 @@ class aifix{
 					code = replace( code,`!\wwin\.(\w+)\(\s*`+formName+`\s*([,;])\s*\a`,function(cls,sep){ 
 						if(cls==="form" || ..win[[cls]]  ) return;
 						cls = ..string.lower(cls);
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 						
 						return formName ++ `.add( cls="`+cls+`"` + sep;
 					});
@@ -1229,7 +1277,7 @@ class aifix{
 						if(cls==="form" || ..win[[cls]]  ) return;
 						
 						cls = ..string.lower(cls);
-						if(cls=="textbox") cls="edit";
+						cls = __clsAlias__[cls] : cls;
 
 						var beginstr,endstr = "{", "}"; 
 						if( params[1]=='('# ){
@@ -1282,7 +1330,7 @@ class aifix{
 				code = replace( code,`![\w._$]win\.<ui\.ctrl>|<ui\.controls>|<ui>\.(\w+)\s*(%())`,function(cls,params){ 
 					 
 					cls = ..string.lower(cls);
-					if(cls=="textbox") cls="edit";
+					cls = __clsAlias__[cls] : cls;
 					
 					params = string.trim(params);
 					params = ..string.slice(params,2,-2);
@@ -1294,6 +1342,9 @@ class aifix{
 						},1);
 
 					if(params[1]!='{'#){
+						if(..string.replace(params,"//\N+","") ){
+							return '{\r\n    ' + params +  '\r\n}';
+						}
 						return `{` + params +  "}";
 					}
 					
@@ -1316,10 +1367,19 @@ class aifix{
 				
 				};
 
+				
 				//只写了 cfg = {}; winform.add(cfg); 都没有，只能在 winform.add 之外处理这个问题
-				code = string.replaceUnmatched( code,`!\N(\s*<var\s+>?(\a\w*)\s*\=\s*)(\{.*?![\w._$]cls\s*=\s*.*?\});?`
-					,"\1"+formName+".add(\2=\3)",`![\w._$]`+formName+`.add\s*%\(\)`);
-		
+				code = string.replaceUnmatched( code,`!\N(\s*<var\s+>?(\a\w*)\s*\=\s*)(%{});?`
+					,function(varState,ctrlName,ctrlConfig){
+						if(string.find(ctrlConfig,"![\w._$]cls\s*=")){
+							ctrlConfig = replace(ctrlConfig,"![\w._$]parent\s*=\s*"+formName+"\s*[;,]?","");
+							
+							return varState ++ formName+`.add(`+ctrlName+`=`+ctrlConfig+`)`
+						}
+						
+					},`![\w._$]`+formName+`.add\s*%\(\)`
+				)	
+	
 				code = replace(code,"![\w._$]("+formName+`.add\()([^\)]*)![\w._$]<caption>|<title>(\s*[\:=][^\)]*\))`
 					,function(ctrl,p1,p2){
 						if(!(string.find(p1,"![\w._$]text(\s*[\:=]") || string.find(p2,"![\w._$]text(\s*[\:=]") ) ){
@@ -1350,16 +1410,14 @@ class aifix{
 							if(!string.find(ctrlProps,"![\w._$]cls\s*=")){ 
 								var cls = ctrlName;
 								cls = string.lower(cls);
-								if(cls==="textbox"){
-									cls = "edit";
-								}
+								cls = __clsAlias__[cls] : cls;
 								
 								return ctrlName ++ assign ++ replace(ctrlProps,"![\w._$](left\s*=(\s*)\d+(\s*[;,]\s*))",`cls\2=\2"`+cls+`"\3\1`);
 							}
 							
 							ctrlProps,count = replace(ctrlProps,"![\w._$](cls\s*=\s*)(\a\w+)",`\1"\2"`);
-							if(count || string.find(ctrlProps,"!\wonClick<ed>?\s*=")){
-								return ctrlName ++ assign ++ replace(ctrlProps,"!\wonClick<ed>?(\s*=)","oncommand\1");
+							if(count || string.find(ctrlProps,"!\won[cC]ick<ed>?\s*=")){
+								return ctrlName ++ assign ++ replace(ctrlProps,"!\won[cC]lick<ed>?(\s*=)","oncommand\1");
 							} 
 						}
 					) 
@@ -1368,15 +1426,23 @@ class aifix{
 				// 检查错误 cls 例如 cls="textbox"
 				code = replace( code,`![\w._$]`+formName+`.add\s*%\(\)`,function(ctrlsPopsTable){
 					
+						ctrlsPopsTable = replace(ctrlsPopsTable,`![\w._$]<on[Cc]lick<ed>?>|<onCommand>![^\w._$]`, "oncommand")
+						
+						//oncommand = {}
+						ctrlsPopsTable = replace(ctrlsPopsTable,`![\w._$](oncommand\s*=\s*)(%{})`
+							, lambda(m1,m2)m1++string.trim(string.slice(m2,2,-2)))
+						
 						return replace(ctrlsPopsTable
 							,`![\w._$](cls\s*[\:=]\s*["'])(.+?)(["'])`
 							,function(p1,cls,p2){
 								cls = string.lower(cls)
-								if( cls=="textbox" || cls=="text") { 
+								if(  __clsAlias__[cls]  == "edit") { 
 									return  p1 ++ "edit" ++ p2; 
 								}
 							} 
 						)	
+						
+						
 						
 				});
 				
@@ -1468,15 +1534,19 @@ class aifix{
 				//清除空行
 				controlsPropsTable = string.crlf(controlsPropsTable,,0);
 				
+				if(string.indexOf(controlsPropsTable,'\n}')){
+					//自动缩进
+					controlsPropsTable = replace(controlsPropsTable,"!\N",'    ');
+				}
+				
 				/*
 				合并，AI 如果取返回值参数表里就一定没有控件名，就不能合并
 				*/
 				code = replace( code,`!\N(\s*)(![\w._$]`+formName+`.add\s*%\(\));?`,function(space,props){
 					if(controlsPropsTable){
 						var cfg = controlsPropsTable;
-						controlsPropsTable = null;
-						 
-						return space + formName+'.add(\r\n' + cfg + '\r\n);';
+						controlsPropsTable = null; 
+						return string.crlf(space + formName+'.add(\r\n' + cfg + '\r\n);',,0);
 					}
 					
 					return "";
@@ -1515,12 +1585,12 @@ class aifix{
 				} 
 				
 				//窗口必须显示
-				if(!..string.find(code,`![\w._$]`+formName+`.show\(`)){
+				if(!..string.find(code,`![\w._$]<`+formName+`>|<winform>|<mainForm>.show\(`)){
 					var count;
 					code,count = replace( code,"//\s*显示窗体",formName+`.show();`);
 					
 					if(!count){
-						code = replace( code,"(<//\N+\n>?([ \t]*)![\w._$]win.loopMessage\()","\2"+formName+'.show();\r\n\\1');
+						code = replace( code,"(<//\N+\n>?([ \t]*)<return\s+>{0,1}![\w._$]win.loopMessage\()","\2"+formName+'.show();\r\n\\1');
 					}
 				}
 				
@@ -1583,10 +1653,13 @@ class aifix{
 		if(count){
 			code,count = replace(code,`![\w._$]json.\a\w+\(`,"web.\1"); 
 		}
+		code = replace(code,`![\w_$]json.decode\(`,"json.parse("); 
+		code = replace(code,`![\w_$]json.encode\(`,"json.stringify("); 
 		
 		if(..string.find(code,"![\w._$]json\.parse\(")
-			&&!..string.find(code,`![\w._$]import\s+json;?`)){
-			code = 'import web.json;json=web.json;\r\n'+code;
+			|| ..string.find(code,"![\w._$]json\.stringify\(")){
+			code,count = replace(code,`![\w._$]json.\a\w+\(`,"web.\1"); 
+			code = 'import web.json;\r\n'+code;
 		}
 		
 		if(..string.find(code,"![\w._$]web\.json\.parse\(")
@@ -1594,7 +1667,7 @@ class aifix{
 			code = 'import web.json;\r\n'+code;
 		}
 		
-		code = replace(code,"!\N\s*:+\s*\n","");
+		//code = replace(code,"!\N\s*:+\s*\n","");
 	 
 		code = string.crlf(code,,1);
 		code = string.replace(code,"(!\Nimport\s+\N+;?<\r?\n>)\s*<\r?\n>*(import\s+)","\1\2");
@@ -1609,6 +1682,15 @@ class aifix{
 		return string.trim(code);
 	}}
 }
+
+namespace aifix{
+		__clsAlias__ = {
+			textbox = "edit";
+			textedit = "edit";
+			text = "edit";
+		}
+}
+
 
 /*****intellisense()
 ide.aifix(__) = 用于修复 AI 生成代码的语法错误。\n在代码编辑器右键菜单点击『粘贴并更正』时自动调用 ide.aifix 。\n修复结果仅供参考。

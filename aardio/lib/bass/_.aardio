@@ -6,13 +6,14 @@ init = function(device=-1,freq=192000,flags,win,clsid){
     if(type(device)==type.string) device = findDevice(device); 
     if(!device) return 0x17/*_BASS_ERROR_DEVICE*/
     
-	return ::Bass.BASS_InitB( device,freq,flags,win,clsid);	
+    ::Bass.BASS_Free();
+	return ::Bass.BASS_InitB( device,freq,flags,win,clsid); 
 }
 init();
 
-..subscribe("beforeUnload",function(){
-	::Bass.BASS_Free()
-} );
+..table.gc(self,function(){
+	::Bass.BASS_Free();
+});
 
 getDeviceInfos = function(){
 	var result = {}

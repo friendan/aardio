@@ -13,11 +13,11 @@ import dotNet;
 //避免与 FlaUI 使用的同名不兼容 Interop.UIAutomationClient.dll 出现冲突
 var asm = dotNet.loadFile($"~\lib\System\Windows\Automation\3\.res\UIAComWrapperEx.dll");
 
-asm.import("System.Windows.Automation"); 
-asm.import("aardio.NetCaret"); 
+var Automation = asm.import("System.Windows.Automation"); 
+var NetCaret = asm.import("aardio.NetCaret"); 
 
-var Automation = System.Windows.Automation
-var NetCaret = aardio.NetCaret
+var Automation = System.Windows.Automation;
+var NetCaret = aardio.NetCaret;
  
 System.Windows.Automation = Automation;
 System.Windows.Automation["3"] = Automation; 
@@ -48,6 +48,55 @@ namespace System.Windows.Automation{
 			return caretRc;
 		}
 	} 
+	
+	And = function(cond,isNot){
+		var arr = {}
+		for k,v in ..table.eachName(cond){
+			if(k=="ControlType"){
+				if(type.isString(v)){
+					v = ControlType[v];
+				}
+			}
+			..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
+		}
+		 
+		return isNot? NotCondition(AndCondition(arr))  : AndCondition(arr);
+	}
+	
+	Or = function(cond,isNot){
+		var arr = {}
+		for k,v in ..table.eachName(cond){
+			if(..table.isArray(v)){
+				for(i,v in v){
+					if(k=="ControlType"){
+						if(type.isString(v)){
+							v = ControlType[v];
+						}
+					}
+					..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
+				
+				} 
+			}
+			else {
+				if(k=="ControlType"){
+					if(type.isString(v)){
+						v = Automation.ControlType[v];
+					}
+				}
+				..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
+			} 
+		}
+		
+		return isNot? NotCondition(OrCondition(arr))  : OrCondition(arr);
+	}
+	
+	FindByAnd = function(cond,root){
+		return (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, And(cond) )  
+	} 
+	
+	FindByOr = function(cond,root){
+		return (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, Or(cond) )  
+	}
 } 
 
 /**details(说明)
@@ -63,4 +112,3 @@ https://github.com/TestStack/UIAComWrapper/blob/master/LICENSE.txt
 
 不需要再导入 System.Windows.Automation 。
 end details**/
-

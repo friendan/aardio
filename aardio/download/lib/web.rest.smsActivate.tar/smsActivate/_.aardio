@@ -6,7 +6,7 @@ class smsActivate {
 		 
 		this = ..web.rest.jsonLiteClient();
 		this.strictParsing = true;
-		this.defaultUrlTemplate = "https://api.sms-activate.org/stubs/handler_api.php?action={action}";
+		this.defaultUrlTemplate = "https://api.sms-activate.io/stubs/handler_api.php?action={action}";
 		this.smsApi = this.api();
 		
 		this.setAuthToken = function(key,local){

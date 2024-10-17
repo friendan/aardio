@@ -78,9 +78,8 @@ class library{
             this.filePath = libPath;
         }
         else {
-            this.filePath = "~\" + libPath;
+            this.filePath = "~\lib\" + libPath;
         }
-        
         
         if(libPath) {
             if( ..string.endWith(libPath,"_.aardio") ) { 

@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--346305451|14|33|config\SYS.CFG
+216260946|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -79,7 +79,7 @@
 194757358|15918|5583|doc\language-reference\datatype\datatype.md
 -1233967595|3347|1595|doc\language-reference\datatype\newline.md
 -976672|2827|1324|doc\language-reference\datatype\number.md
-519469248|11144|4360|doc\language-reference\datatype\string.md
+454379197|11145|4361|doc\language-reference\datatype\string.md
 0|0|0|doc\language-reference\datatype\table\
 858198746|24|41|doc\language-reference\datatype\table\.aar
 185745373|18517|5496|doc\language-reference\datatype\table\meta.md
@@ -152,7 +152,7 @@
 1397190147|239|197|doc\library-guide\builtin\raw\.aar
 -1161318091|11312|4259|doc\library-guide\builtin\raw\api.md
 -1641272114|8847|3351|doc\library-guide\builtin\raw\callback.md
-1915585896|29374|8791|doc\library-guide\builtin\raw\datatype.md
+1197229747|29375|8788|doc\library-guide\builtin\raw\datatype.md
 17086796|9861|3716|doc\library-guide\builtin\raw\directCall.md
 -759074536|10336|3644|doc\library-guide\builtin\raw\mem.md
 1750010410|1386|773|doc\library-guide\builtin\raw\memdll.md
@@ -1561,7 +1561,6 @@
 1749230175|2520|1264|extensions\plugin\view\dsktip.aardio
 0|0|0|extensions\plugin\view\res\
 1148559993|9444|3024|extensions\plugin\view\startPage.aardio
-1148559993|9444|3024|extensions\plugin\view\startPage.aardio.plugin
 0|0|0|extensions\plugin\view\res\content\
 0|0|0|extensions\plugin\view\res\images\
 -1391698603|5243|1599|extensions\plugin\view\res\start-page.htm
@@ -2511,12 +2510,12 @@
 286913452|473|247|lib\golang\.res\aardio\jsonrpc\jsonrpc.go
 0|0|0|lib\golang\.res\aardio\jsonrpc\tcp\
 -1268986318|559|309|lib\golang\.res\aardio\jsonrpc\tcp\tcp.go
--615027595|64156|13583|lib\ide\aifix.aardio
+1051597802|67068|14222|lib\ide\aifix.aardio
 -1394918461|7075|2516|lib\ide\command.aardio
 -1410374365|187|156|lib\ide\customCtrl.aardio
 85987739|1816|789|lib\ide\debug.aardio
 0|0|0|lib\ide\doc\
-1052597426|16852|3712|lib\ide\doc\library.aardio
+800014048|16846|3715|lib\ide\doc\library.aardio
 1808283537|8374|2135|lib\ide\doc\libraryMd.aardio
 1053762083|6113|2125|lib\inet\adapter.aardio
 -1734177725|6652|2295|lib\inet\adapterInfo.aardio

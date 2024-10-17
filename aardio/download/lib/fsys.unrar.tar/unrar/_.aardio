@@ -11,8 +11,9 @@ class unrar{
 		}
 		var archive = RAROpenArchiveDataEx();
     	archive.ArcNameW = ..io.fullpath(rarFile);
-    	archive.CmtBuf = ..raw.malloc(0x10002);
-    	archive.CmtBufSize = 0x3FFF;  
+    	archive.CmtBuf = null;
+    	archive.CmtBufW = ..raw.malloc(0x10002);
+    	archive.CmtBufSize = 0x10002 / 2;  
     	archive.OpenMode = omExtract ? 1/*_RAR_OM_EXTRACT*/ :  0/*_RAR_OM_LIST*/;
 
 		if(!savePath){
@@ -27,7 +28,7 @@ class unrar{
 
     	this.handle = RAROpenArchiveEx(archive)
     	if( archive.OpenResult != 0 )  {  
-    		return errMessage[archive.OpenResult]:"未知错误",archive.OpenResult;
+    		return null,errMessage[archive.OpenResult]:"未知错误",archive.OpenResult;
     	}
 	
     	if( password ) { 
@@ -35,7 +36,7 @@ class unrar{
 		}
 	 
     	if (archive.CmtState == 1) {
-    		this.comment = ..raw.tostring(archive.CmtBuf,1,archive.CmtSize);
+    		this.comment = ..string.fromUtf16(archive.CmtBufW,,archive.CmtSize); 
     	} 
     	
     	this.rarHeaderData = RARHeaderDataEx();
@@ -67,7 +68,7 @@ class unrar{
 		var math_size64 = ..math.size64
 		var size64 = math_size64();;
 		var handle = this.handle; 
-		var rarHeader = this.rarHeaderData;
+		var rarHeader = this.rarHeaderData; 
 		
 		this.lastErrorMessage = null;
 		this.lastErrorCode = null;
@@ -83,7 +84,7 @@ class unrar{
 			this.lastErrorCode = err;	
 			this.lastErrorMessage = errMessage[err]:"未知错误"; 
 			return null,this.lastErrorMessage,err;
-		}
+		} 
 		
 		return size64;
 	};
@@ -135,7 +136,8 @@ class unrar{
 		return this.extractNext(1/*_RAR_TEST*/)
 	};
 	setCallback = function(cb,userData){
-		this.stdcallCallback = ..raw.tostdcall(cb,"int(addr,INT,ptr,addr)",this/*设为owner对象*/);
+		//UNRARCALLBACK_MESSAGES
+		this.stdcallCallback = ..raw.tostdcall(cb,"int(INT msg,INT UserData,ptr pData,INT size)",this/*设为owner对象*/);
 		_dll.RARSetCallback(this.handle,this.stdcallCallback,userData);
 	};
 	close = function(){
@@ -167,7 +169,9 @@ namespace unrar{
 		INT Flags;
 		ptr Callback;
 		int UserData;
-		INT Reserved[28];
+		INT OpFlags;
+		ptr CmtBufW;
+		INT Reserved[25];
 	}; 
  
 	class RARHeaderDataEx {
@@ -197,7 +201,17 @@ namespace unrar{
   		ptr RedirName;
   		INT RedirNameSize;
   		INT DirTarget;
-  		INT Reserved[994];
+  		INT MtimeLow;
+  		INT MtimeHigh;
+  		INT CtimeLow;
+  		INT CtimeHigh;
+  		INT AtimeLow;
+  		INT AtimeHigh;
+		ustring ArcNameEx;
+  		INT ArcNameExSize;
+		ustring FileNameEx;
+  		INT FileNameExSize;
+  		INT Reserved[982];
 	}; 
 	
 	count = function(rarFile,password){ 
@@ -220,21 +234,52 @@ namespace unrar{
  	 	return size64; 
 	};
 	
-	extract = function (rarFile,savePath,password) { 
+	extract = function (rarFile,savePath,password,cbProgress) { 
  		var unrar,errMessage,err = ..fsys.unrar(rarFile,savePath,password,1/*_RAR_OM_EXTRACT*/)
- 	 	if(!unrar){
+ 	 	if(!unrar){ 
  	 		return null,errMessage,err
  	 	}
- 	 	for( filename,rarHeader in unrar.eachHeader() ){
- 	 		var ok,errMsg,err = unrar.extractNext(opMode);
- 	 		if(  ! ok){
- 	 			unrar.close();
- 	 			return false,errMsg,err ;
+ 	 	
+ 	 	var totalSize;
+ 	 	var currentFilename,currentRarHeader;
+ 	 	if(cbProgress) { 
+ 	 		totalSize = unrar.size64();
+ 	 		
+ 	 		unrar,errMessage,err = ..fsys.unrar(rarFile,savePath,password,1/*_RAR_OM_EXTRACT*/)
+ 	 		if(!unrar){ 
+ 	 			return null,errMessage,err
  	 		}
+ 	 	 
+ 	 		var totalUnpackSize = ..math.size64(); 
+ 	 		unrar.setCallback(
+ 	 			function( msg,userData,pData,unpackSize){ 
+ 	 				if(msg==1/*UCM_PROCESSDATA*/){
+ 	 					
+ 	 					totalUnpackSize.add(unpackSize); 
+ 	 					
+ 	 					if(false === cbProgress( ..math.round(totalUnpackSize.divf(totalSize) * 100),totalSize,totalUnpackSize,currentFilename,currentRarHeader)){
+ 	 						return -1;//取消
+ 	 					}
+ 	 				} 
+ 	 				
+ 	 				return 1;//继续
+ 	 			} 
+ 	 		) 
+ 	 	}
+ 	 	
+ 
+ 	 	for( filename,rarHeader in unrar.eachHeader() ){ 
+ 	 		currentFilename,currentRarHeader = filename,rarHeader;  
+ 	 		var ok,errMsg,err = unrar.extractNext(opMode);
+ 	 		if( ! ok){
+ 	 			unrar.close(); 
+ 	 			return false,errMsg,err ;
+ 	 		} 
+ 	 		
  	 	};
     	unrar.close() 
     
-    	if(unrar.lastErrorMessage){
+    	if(unrar.lastErrorMessage){ 
     		return null,unrar.lastErrorMessage,unrar.lastErrorCode;
     	}
     	return unrar.savePath;
@@ -256,12 +301,13 @@ namespace unrar{
 		[/*_ERAR_MISSING_PASSWORD*/22]="缺少密码";
 		[/*_ERAR_EREFERENCE*/23]="";
 		[/*_ERAR_BAD_PASSWORD*/24]="密码错误"; 
+		[/*-ERAR_LARGE_DICT*/25]="超过字典大小限制"; 
 	}
 }
   
 /**intellisense(fsys.unrar)
-extract(.("rar压缩文件路径") = 解压文件到压缩包所在目录\n成功返回解压目录\n成功返回解压目录,失败返回:false,错误信息,错误代码
-extract(.("rar压缩文件路径","解压目录","密码") = 解压文件\n不存在的目录自动创建\n成功返回解压目录,失败返回:false,错误信息,错误代码
+extract("__/*rar压缩文件路径*/") = 解压文件到压缩包所在目录\n成功返回解压目录\n成功返回解压目录,失败返回:false,错误信息,错误代码
+extract("rar压缩文件路径","解压目录","密码",进度回调函数) = @.extract("rar压缩文件路径","解压目录","密码"\n	,function(percent,totalSize,unpackSize,filename,rarHeader){\n		__/*percent 为解压进度百分比，\ntotalSize 为解压后总大小，math.size64 对象。\nunpackSize 为已解压大小，math.size64 对象。\nfilename 为当前解压文件名。\nrarHeader 为当前 RAR 压缩头。\n函数返回 false 退出解压，无返回值或返回 true 继续操作*/\n	}\n)
 count(.("rar压缩文件路径","密码") = 以只读模式打开压缩包\n并计算压缩包内文件总数
 size64(.("rar压缩文件路径","密码") = 以只读模式打开压缩包\n并返回解压后文件大小
 size64() = !math_size64.
@@ -271,6 +317,7 @@ end intellisense**/
  /**intellisense()
 fsys.unrar() = !fsys_unrar.
 fsys.unrar(.("rar压缩文件路径","解压目录","密码",是否解压) = 创建RAR文件对象\n不存在的目录自动创建\n成功返回unrar对象,失败返回:null,错误信息,错误代码
+!fsys_unrar.comment = 注释，UTF-8 编码
 !fsys_unrar.savePath = 返回解压目录
 !fsys_unrar.readHeader() = 读取下一个文件头,\n成功返回文件头,文件名\n失败返回:null,错误信息,错误代码\n解压完成返回空
 !fsys_unrar.extractNext() = 解压并查找下一个文件\n失败返回:null,错误信息,错误代码\n成功返回true
@@ -280,7 +327,7 @@ fsys.unrar(.("rar压缩文件路径","解压目录","密码",是否解压) = 创
 !fsys_unrar.count() = 返回压缩包内文件总数
 !fsys_unrar.lastErrorCode = 最后发生的错误信息
 !fsys_unrar.lastErrorMessage = 最后发生的错误代码
-!fsys_unrar.setCallback( 回调函数 ) = @.setCallback(\n	function( msg,userData,pData,dataSize){\n		if(msg==4){\n			raw.copy(pData,string.toUnicode("password"));\n		}\n	} \n)
+!fsys_unrar.setCallback( 回调函数 ) = @.setCallback(\n	function( msg,userData,pData,dataSize){\n		if(msg==1/*UCM_PROCESSDATA*/){\n			\n		}\n		elseif(msg==4/*UCM_NEEDPASSWORDW*/){\n			raw.copy(pData,string.toUtf16("password"));\n		}\n	} \n)
 !fsys_unrar.eachHeader( ) = @for(filename,rarHeader in ??.eachHeader() ){ 
  	if(  ! ??.extractNext(opMode) ){
  	 	return false;__

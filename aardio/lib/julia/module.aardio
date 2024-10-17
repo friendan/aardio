@@ -5,18 +5,26 @@ import julia.value;
 namespace julia;
 
 class module{
-	ctor( name,method ){
+	ctor( module,method ){
 	
-		if(#method)::LibJulia.jl_eval_stringP( method + " " + name)
-		
-		var m = ::LibJulia.jl_eval_stringP(name);
-			if(!m) return null;
+		if(type(module)=="string"){
+			if(#method)::LibJulia.jl_eval_stringP( method + " " + module)
+		  	
+			module = ::LibJulia.jl_eval_stringP(module);
+			if(!module) return null;	
+		} 
+		elseif(type(module)!="pointer"){
+			error("参数必须是字符串")
+		} 
 			
 		this@ = {
+			_topointer = module;
 			_get = function(k){
 				var name = ::LibJulia.jl_symbolP(k);
 				if(!name) return;
-				return parseValue(::LibJulia.jl_get_globalP(m,name) ) 
+				 
+				var ret = ::LibJulia.jl_get_globalP(module,name) 
+				return parseValue(ret ) 
 			} 
 		} 
 	}; 
@@ -24,6 +32,27 @@ class module{
 
 module.parseValue = value.parse;
 
-/**intellisense()
+module.api = function(name){
+	var addr = ::LibJulia.api(name);
+	if(addr){
+		var p = ..raw.convert(addr,{ptr p}).p;
+		if(p) return module(p);
+	}
+}
+
+module.Main = module.api("jl_main_module");
+module.Core = module.api("jl_core_module");
+module.Base = module.api("jl_base_module");
+
+/**intellisense(julia)
 module(__) = 返回 Julia 模块对象,\n可选在参数@2指定导入模块的方法"using"或"import"
+module.Main = Main 是 Julia 主模块。\n代码默认在此模块下运行\n!juliaModule.
+module.Core = Core 模块\n!juliaModule.
+module.Base = Base 模块\n!juliaModule.
+module() = !juliaModule.
 end intellisense**/
+
+/*****intellisense(!juliaModule)
+? = 输入模块的全局变量名或者函数名。\n可以直接调用模块下的函数
+end intellisense*****/
+

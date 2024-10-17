@@ -1,4 +1,5 @@
 ﻿import fsys;
+import string.args;
 import process.popen;
 import wsock;
 import wsock.tcp.server;
@@ -12,6 +13,8 @@ import sys.volume;
 import fsys.knownFolder;
 import sys.volume;
 import process.job.limitKill;
+import bencoding.magnet;
+import util.metaProperty;
 
 namespace process;
 
@@ -20,7 +23,7 @@ class aria2{
 		self.server = this;
 		
 		this.downloadDir = ..sys.volume.maxSpace("download/aria2");
-		if(this.downloadDir[1]=='C'#){
+		if(this.downloadDir[1]=='C'# || !..io.createDir(this.downloadDir) ){
 			this.downloadDir = ..fsys.knownFolder("374DE290-123F-4565-9164-39C4925E467B","aria2");
 		}
 		
@@ -34,12 +37,13 @@ class aria2{
 			"--console-log-level=error";
 			"--show-console-readout=false";
 			"--rpc-allow-origin-all";"--enable-dht";
-			"--enable-rpc";"--bt-enable-lpd";"--enable-peer-exchange"};
+			"--enable-rpc";"--bt-enable-lpd";"--enable-peer-exchange";
+			"--always-resume"};
 			
 		this.listenPort = "6881-6999";
 		this.dhtListenPort = "6881-6999"; 
 		this.diskCache = "32M";
-		this.saveSessionInterval = 30;
+		this.saveSessionInterval = 30; 
 	}}; 
 	isReady = function(){
 		var jsonClient = this["(jsonClient)"]; 
@@ -55,36 +59,50 @@ class aria2{
 		else ..table.push( this.arguments,... );
 	};
 	startServer = function(...){
-		if(this.rpcUrl){
+		this.stopped = null;
+		
+		if(this.rpcUrl && this.isReady() ){
 			return this.rpcUrl; 
 		}
 		
 		//https://aria2.github.io/manual/en/html/aria2c.html#options
-		var args2;
+		var args;
 		if(type(...)=="table"){
-			args2 = ..table.concat(this.defaultArguments,(...));
+			args = ..table.concat(this.defaultArguments,(...));
 		}
 		else {
-			args2 = ..table.concat(this.defaultArguments,{...});
-		}
-		 
-		var args = ..table.append({},args2);
-		for k,v in ..table.eachName(args2){ 
-			if(k[1]!='-'#) k = "--"+..string.replace(k,'[A-Z]',lambda(c)"-"+..string.lower(c)) ; 
-			..table.push(args,(v===""||v===true)?k:(k + "=" + tostring(v)))
+			args = ..table.concat(this.defaultArguments,{...});
 		}
 		
 		if( this.rpcListenAll ){
 			..table.push(args,"--rpc-listen-all");
 		}
 		
-		if(!this.saveSessionPath){
-			this.saveSessionPath = ..io.joinpath(this.downloadDir,"aria2.session"); 
+		if(args.dir){
+			this.downloadDir = ..io.fullpath(args.dir);
 		}
-		..table.push(args,`--save-session=` + ..io.fullpath( this.saveSessionPath ));   
-		..table.push(args,`--save-session-interval=` + this.saveSessionInterval ); 
 		
-		..table.push(args,`--dir="` + ..io.createDir(this.downloadDir) + '"' );
+		if(!..io.createDir(this.downloadDir)){
+			error( ..string.concat( "创建下载目录失败:",this.downloadDir:"null"),2 );
+		}
+		
+		if(!this.saveSessionPath){
+			/*
+			如果不指定 dhtFilePath 则默认
+			在 %UserProfile%/.aria2/dht.dat 或 %UserProfile%/.cache/aria2/dht.dat 
+			*/
+			this.saveSessionPath = ..io.getSpecial(0x28/*_CSIDL_PROFILE*/,".cache/aria2/aria2.session") 
+		}
+		 
+		var saveSessionPath = ..io.fullpath( this.saveSessionPath ) ;
+		args["--save-session"] = saveSessionPath;
+		if(..io.exist(saveSessionPath) && !args["--input-file"] && !args["inputFile"]){
+			args["--input-file"] = saveSessionPath;
+		}
+		
+		args["--dir"] = this.downloadDir; 
+		
+		..table.push(args,`--save-session-interval=` + this.saveSessionInterval );  
 		..table.push(args,`--rpc-listen-port=` + this.rpcPort);
 
 		if(this.rpcToken){
@@ -98,7 +116,7 @@ class aria2{
 		if(this.userAgent){
 			..table.push(args,`--user-agent=` + this.userAgent);
 		}
-	 
+		
 		var trackerList = this.trackerList;
 		if(!trackerList) trackerList = "https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_best.txt";
 		if(!..string.indexAny(trackerList,'\n,')  && ..string.endWith(trackerList,".txt",true)){
@@ -195,8 +213,8 @@ class aria2{
 		}
 		
 		var err;	
-		this.server,err = ..process.popen(aria2path,args);
-		if(!this.server ) return null,err;
+		this.server,err = ..process.popen(aria2path,..string.args.joinEx(true,"=",false,args));
+		if(!this.server ) return null,err; 
 		
 		this.server.assignToJobObject(..process.job.limitKill);
 		
@@ -204,30 +222,57 @@ class aria2{
 		this.rpcUrl = "ws://127.0.0.1:" + this.rpcPort + "/jsonrpc";
 		
 		if(this.server){
-			var jsonClient = ..web.socket.jsonClient();
-			jsonClient.rpc.heartbeatInterval = -1;
 			
-			jsonClient.on("open",function(){
-				var $readyCallbacks = this.$readyCallbacks;
-				for(i=1;#$readyCallbacks;1){
-					var p = $readyCallbacks[i]
-					p();
-				}
-				this.$readyCallbacks = {};		
-			})
+			var jsonClient = this["(jsonClient)"]; 
+			if(!jsonClient){
+				jsonClient = ..web.socket.jsonClient();
+				jsonClient.rpc.heartbeatInterval = -1;
+				
+				jsonClient.on("open",function(){
+					var $readyCallbacks = this.$readyCallbacks;
+					for(i=1;#$readyCallbacks;1){
+						var p = $readyCallbacks[i]
+						p();
+					}
+					this.$readyCallbacks = {};		
+				})
+				
+				jsonClient.on("error",function(err,rpcErr){
+					this.$tellActiveCallback = null;
+					this.$tellWaitingCallback = null; 
+					this.$tellStoppedCallback = null;
+					
+					if(this.onError){
+						this.onError(err,rpcErr);	
+					}	
+				})
+				
+				jsonClient.on("close",function(e){ 
+					if(!this.stopped) this.startServer(); 
+				}) 
+				
+				jsonClient.rpc.url = this.rpcUrl; 
+				this["(jsonClient)"] = jsonClient;	
+			}
 			
-			jsonClient.on("error",function(err){
-				if(this.onRpcError){
-					this.onRpcError(err);	
-				}	
-			})
-			
-			jsonClient.rpc.url = this.rpcUrl;
 			jsonClient.connect(this.rpcUrl);
-			this["(jsonClient)"] = jsonClient;	
+			var err = this.server.peekErr();
+			if(err && jsonClient.rpc.onError){
+				jsonClient.rpc.onError(err);
+			}
 			
-			var jsonClientSync = ..web.rpc.jsonClient("http://127.0.0.1:" + this.rpcPort + "/jsonrpc");
-			this["(jsonClientSync)"] = jsonClientSync;
+			var jsonClientSync = this["(jsonClientSync)"];
+			if(!jsonClientSync){
+				jsonClientSync = ..web.rpc.jsonClient("http://127.0.0.1:" + this.rpcPort + "/jsonrpc");
+				jsonClientSync.rpc.onError = function(err){ 
+					if(this.onError){
+						this.onError(err,rpcErr);	
+					}	
+				}
+				
+				this["(jsonClientSync)"] = jsonClientSync;
+			}
+				
 			this["(jsonClient)"].sync = jsonClientSync; 
 			
 			if(this.rpcToken){
@@ -241,14 +286,161 @@ class aria2{
 					return reqData;
 				}
 			}
+			
+			this.$tellActiveCallback = null; 
+			this.$tellWaitingCallback = null; 
+			this.$tellStoppedCallback = null;
 		}
 		return this.rpcUrl;
 	};
+	getGlobalOption = function(){
+		return this["(jsonClientSync)"].aria2.getGlobalOption()[["result"]]; 
+	};
+	taskAdd = function(url,callback){
+		url = ..string.trim(url,'"');
+		url = ..string.trim(url); 
+		
+		var jsonClient = callback ? this["(jsonClient)"] : this["(jsonClientSync)"]; 
+		if(..io.exist(url) ){
+			if(  ..string.endWith(url,".torrent",true) ){
+				var bin = ..string.load(url);
+				
+				if(!callback) return jsonClient.aria2.addTorrent(..crypt.encodeBin(bin) );
+				else jsonClient.aria2.addTorrent(..crypt.encodeBin(bin) ).end = callback;
+				return;
+			}
+			elseif(  ..string.endWith(url,".aria2",true) ){
+				var url2 = ..bencoding.magnet.get(url);
+				
+				if(!callback) return jsonClient.aria2.addUri({url2},{dir=..io.splitpath(url).dir});
+				else jsonClient.aria2.addUri({url2},{dir=..io.splitpath(url).dir}).end = callback;
+				return;
+			}
+		}
+		
+		var t = url ? ..string.match(url,"thunder\://(\S+)");
+		if(t){
+			t = ..crypt.decodeBin(t)
+			if(t) url = ..string.slice(t,3,-3);
+		} 
+		
+		if(!callback) return jsonClient.aria2.addUri({url});
+		else jsonClient.aria2.addUri({url}).end = callback;
+	}; 
+	taskRemove = function(gid){ 
+		return this["(jsonClient)"].aria2.remove(gid);
+	}; 
+	taskPause = function(gid){ 
+		return this["(jsonClient)"].aria2.pause(gid);
+	}; 
+	taskUnpause = function(gid){ 
+		return this["(jsonClient)"].aria2.unpause(gid);
+	};
+	taskFiles = function(gid){
+		if(!this["(jsonClientSync)"]) return; 
+		return this["(jsonClientSync)"].aria2.getFiles(gid)[["result"]];
+	};
+	taskFilePath = function(gid){
+		var path = this.taskFiles(gid)[[1]][["path"]];
+		if(path && !..string.startWith(path,"[METADATA]") ){
+			return path; 
+		}
+	}; 
+	taskUrl = function(gid){
+		var status = this.tellStatus(gid,"bittorrent","infoHash");
+		if(status && status.infoHash && status.bittorrent){
+			var url = 'magnet:?'+ "xt=urn:btih:" + ..string.upper(status.infoHash);
+			if(status.bittorrent[["info"]][["name"]]){
+				url = url + "&" +..inet.url.stringifyParameters({   
+					dn = status.bittorrent[["info"]][["name"]]; 
+				})	
+			}
+			return url;	
+		}
+		 
+		return this.taskFiles(gid)[[1]][["uris"]][[1]][["uri"]]; 
+	};
+	taskName = function(gid){
+	
+		var jsonClient = this["(jsonClientSync)"]
+		
+		var ret,err = jsonClient.aria2.tellStatus(gid,{
+			"files","bittorrent"
+		})
+		
+		ret = ret[["result"]];
+		if(ret){ 
+			var name = ret[["bittorrent"]][["info"]][["name"]];
+			if(name){
+				return name;
+			}
+			
+			if(#ret.files==1){
+				var file = ret.files[1];
+				if(#file.path){
+					return ..io.splitpath(file.path).file; 
+				}
+				
+				var uri = file.uris[1][["uri"]];
+				if(uri){
+					return ..inet.url.getFileName(uri),true;
+				}
+			}
+		}
+		
+		return "",true;
+	};
+	taskErrorMessage = function(gid){ 
+		return this["(jsonClientSync)"].aria2.tellStatus(gid,{
+			"errorMessage"
+		})[["result"]][["errorMessage"]] ;
+	};
+	tellStatus = function(gid,...){
+		if(!this["(jsonClient)"]) return;
+		return this["(jsonClientSync)"].aria2.tellStatus(gid,{...})[["result"]];
+	}; 
+	tellActive = function(callback,...){ 
+		if(!this["(jsonClient)"]) return;
+		
+		if(this.$tellActiveCallback && !this.$tellActiveCallback.done){
+			return; 
+		} 
+		
+		this.$tellActiveCallback = this["(jsonClient)"].aria2.tellActive({...}) 
+		this.$tellActiveCallback.end = callback;
+	};
+	tellStopped = function(offset,num,callback,...){ 
+		if(!this["(jsonClient)"]) return; 
+		
+		if(this.$tellStoppedCallback && !this.$tellStoppedCallback.done){
+			return; 
+		}  
+		
+		this.$tellStoppedCallback = this["(jsonClient)"].aria2.tellStopped(offset,num,{...}) 
+		this.$tellStoppedCallback.end = callback;
+	};
+	tellWaiting = function(offset,num,callback,...){ 
+		if(!this["(jsonClient)"]) return; 
+		
+		if(this.$tellWaitingCallback && !this.$tellWaitingCallback.done){
+			return; 
+		}  
+		
+		this.$tellWaitingCallback = this["(jsonClient)"].aria2.tellWaiting(offset,num,{...}) 
+		this.$tellWaitingCallback.end = callback;
+	};
+	saveSession = function(gid){
+		if(!this["(jsonClientSync)"]) return; 
+		this["(jsonClientSync)"].aria2.saveSession() 
+	};
 	stop = function(async){
 		if(!this.server) return; 
+		this.stopped = true;
 		
 		var jsonClient = this["(jsonClient)"]; 
 		if( jsonClient){ 
+			jsonClient.sync.aria2.saveSession();
+			
 			if(async && jsonClient.rpc.isConnected()) jsonClient.aria2.shutdown()
 			else {
 				jsonClient.sync.aria2.shutdown();
@@ -277,12 +469,53 @@ class aria2{
 		if(!this["(jsonClientSync)"]) this.startServer();
 		return this["(jsonClientSync)"];
 	};
+	@_metaProperty;
 }
 
 namespace aria2{
 	
+	_metaProperty = ..util.metaProperty(
+	
+		onDownloadStart = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onDownloadStart",value)
+			} 	
+		};
+		
+		onDownloadPause = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onDownloadPause",value)
+			} 	
+		};
+		
+		onDownloadStop = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onDownloadStop",value)
+			} 	
+		};
+		
+		onDownloadComplete = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onDownloadComplete",value)
+			} 	
+		};
+		
+		onBtDownloadComplete = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onBtDownloadComplete",value)
+			} 	
+		}; 
+		
+		onDownloadError = { 
+			_set = function( value ){
+				owner.jsonClient().on("aria2.onDownloadError",value)
+			} 	
+		};
+	)
+	 
 	..subscribe("beforeUnload",function(){
 		if(self.server){
+			self.server.startServer = function(){};
 			self.server.stop();
 		}
 	} );
@@ -328,7 +561,7 @@ trackerList = 指定 Tracker 服务器列表，可以逗号或换行符分隔多
 isReady() = aria2已启动，并且 jsonClient 已连接时返回true
 ready(proc) = @.ready(\n	function(){\n		var jsonClient = ??.jsonClient();\n		__/*aria2已启动，并且jsonClient已连接时执行此函数*/\n	}\n)
 addArguments(__) = 使用一个或多个参数指定 aria2 启动参数,应在 startRpcUrl 之前调用
-startServer() = 启动 aria2 服务进程。\n注意所有下载配置都需要在调用此函数以前指定才会有效。\n可选使用一个或多个参数指定 aria2 启动参数。\n可用参数见 https://aria2.github.io/manual/en/html/aria2c.html#options \n启动参数可指定多个字符串参数，也可指定包含数组或名值对的表。\n短参数名应用逗号分隔为 2 个参数，例如: "-j",10 。\n长参数可在一个参数内以等号分隔名字与参数值，\n也可以小驼峰式命名写为表的名值对，如：\n{ maxConcurrentDownloads = 12  }
+startServer() = 启动 aria2 服务进程，返回 RPC 地址。\n如果服务进程已启动且正常运行则直接返回 RPC 地址，否则启动或重新启动 aria2。\n注意所有下载配置都需要在调用此函数以前指定才会有效。\n可选使用一个或多个参数指定 aria2 启动参数。\n可用参数见 https://aria2.github.io/manual/en/html/aria2c.html#options \n启动参数可指定多个字符串参数，也可指定包含数组或名值对的表。\n短参数名应用逗号分隔为 2 个参数，例如: "-j",10 。\n长参数可在一个参数内以等号分隔名字与参数值，\n也可以小驼峰式命名写为表的名值对，如：\n{ maxConcurrentDownloads = 12  }
 jsonClient() = 启动并返回基于 WebSocket 协议的异步 JSON-RPC 客户端，\n成功返回 web.socket.jsonClient 对象。\n如果服务端未启动，则启动服务进程。\n可用接口函数请参考 https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface \n\njsonClientSync 与 jsonClient 函数返回的 API 接口是一样的，\n区别是 jsonClientSync 调用后阻塞等待结果返回，\n而 jsonClient 则立即返回，RPC 调用结束再触发返回对象的 end 成员函数\n!stdwebsocketjsonClient.
 jsonClientSync() = 启动并返回基于 HTTP 协议的同步 JSON-RPC 客户端，\n成功返回 web.rpc.jsonClient 对象。\n如果服务端未启动，则启动服务进程。\n可用接口函数请参考 https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface \n!web_rpcJsonClientObject.
 rpcMaxRequestSize = 最大请求数\n如果自定义此属性，将在调用 startServer 函数时生效
@@ -336,16 +569,55 @@ rpcToken = RPC密钥\n如果自定义此属性，将在调用 startServer 函数
 rpcUrl = 默认为 null，调用 startServer 函数后为启动的 RPC 接口地址
 rpcPort = RPC端口\n不指定时自动分配空闲端口\n如果自定义此属性，将在调用 startServer 函数时生效
 userAgent =  指定下载客户端特征字符串,\n不指定则使用默认值  aria2/version
-rpcListenAll = 是否允许外部网络使用RPC调用aria2接口,默认为false\n如果自定义此属性，将在调用startServer函数时生效
+rpcListenAll = 是否允许外部网络使用 RPC 调用 aria2 接口,默认为 false \n如果自定义此属性，将在调用 startServer 函数时生效
 listenPort = 允许的监听端口,默认为 "6881-6999"。\n可以指定一个或多个用逗号分隔的端口配置，\n可指定单个端口，也可用 "6881-6999" 格式表示端口范围。\n调用 startServer 以后可用 listeningPort 属性查看实际监听端口
 listeningPort = 实际使用的监听端口，\n请先用 listenPort 配置允许的监听端口
 dhtListenPort = 允许的 DHT 监听端口,默认为 "6881-6999"。\n可以指定一个或多个用逗号分隔的端口配置，\n可指定单个端口，也可用 "6881-6999" 格式表示端口范围。\n调用 startServer 以后可用 dhtListeningPort 属性查看实际监听端口
 dhtListeningPort =  实际使用的 DHT 监听端口，\n请先用 listenPort 配置允许的  DHT 监听端口
 downloadDir = 自定义下载目录,默认为系统下载目录。\n如果自定义此属性，将在调用 startServer 函数时生效
-saveSessionPath = 保存状态文件路径，用于恢复下载，\n不指定则默认存于 downloadDir属性指定的目录下，文件名为 aria2.session
+saveSessionPath = 保存状态文件路径，用于恢复下载，\n不指定则默认存于 downloadDir 属性指定的目录下，文件名为 aria2.session
 saveSessionInterval = 保存下载状态时间间隔，默认为 30 秒
 diskCache = 磁盘缓存大小，默认为 32M
 fileAllocation = 文件分配方式。\n建议保持为 null 由 aardio 自动指定：\nNTFS 分区自动指定为 "falloc"，否则为 "prealloc"
 server = 服务进程\n!process_popen.
+stopped = 是否已调用 stop 函数停止 aria2 服务端。\n不可修改此属性。\n如果在断开连接后自动调用 startServer 函数，\n应当首先检查 stopped 属性以避免在调用 stop 函数以后重启 aria2 。\n调用 startServer 函数以后会重置此属性为 null 值。
 stop() = 关闭 aria2，并等待调用完成。\n如果参数 @1 为 true，则发送 RPC 指令后不等待调用完成。\n当前进程退出后也会自动关闭 aria2
+getGlobalOption() = 返回 aria2 全局配置表。
+taskAdd( = 添加下载任务
+taskAdd(.(url,callback) = 参数 @url 可指定下载链接、磁力链接、本地 torrent 文件路径。\n如果不指定 callback 在调用同步接口直接返回结果。\n否则异步回调 @callback 指定的函数，回调参数 @1 为下载 gid 。\n回调参数 @2 为错误对象，错误对象的 message 字段为错误信息。\n如果未出错则错误对象为 null。
+taskRemove(__/*gid*/) = 移除下载，参数 @1 指定下载 gid。 
+taskPause(__/*gid*/) = 暂停下载，参数 @1 指定下载 gid。
+taskUnpause(__/*gid*/) = 从暂停恢复下载，参数 @1 指定下载 gid。
+taskUrl(__/*gid*/) = 参数 @1 指定下载 gid。\n返回磁力链接或下载网址。
+taskFilePath(__/*gid*/) = 参数 @1 指定下载 gid。\n返回下载文件列表中第一个文件的路径。\nBT元数据路径 返回 null。
+taskFiles(__/*gid*/) = 参数 @1 指定下载 gid。\n返回下载文件信息列表，每个文件的 path 字段指定路径。\nBT元数据路径以 [METADATA] 开头。
+taskErrorMessage(__/*gid*/) = 参数 @1 指定下载 gid。\n返回该下载任务发生错误返回的错误信息。 
+taskName(__/*gid*/) = 参数 @1 指定下载 gid。\n返回该下载任务的下载文件名。\n如果参数 @2 为 true 则返回的是仅根据 URL 获取的文件名。\n此类文件名建议稍后重新获取。
+tellActive(callback,keys->->->) = @.tellActive(function(result,err){\n	if(result) {\n		for(i,task in result){\n			__/*tellActive 用于返回所有正在下载的任务。\ntask 为下载任务对象，tellActive 函数的第三个参数开始可指定一个或多个要返回的状态字段名。\n*/\n		} \n	}  \n},"gid","status","connections","downloadSpeed","totalLength","completedLength"); 
+tellWaiting(offset,num,callback,keys->->->) = @.tellWaiting(0,20,function(result,err){\n	if(result) {\n		for(i,task in result){\n			__/*tellWaiting 用于返回所有正在等待的任务。\ntask 为下载任务对象，tellActive 函数的第三个参数开始可指定一个或多个要返回的状态字段名。\n*/\n		} \n	}  \n},"gid","status","connections","downloadSpeed","totalLength","completedLength"); 
+tellStopped(offset,num,callback,keys->->->) = @.tellStopped(0,20,function(result,err){\n	if(result) {\n		for(i,task in result){\n			__/*tellStopped 用于返回所有已停止的任务。\ntask 为下载任务对象，tellActive 函数的第三个参数开始可指定一个或多个要返回的状态字段名。\n*/\n		} \n	}  \n},"gid","status","connections","downloadSpeed","totalLength","completedLength"); 
+tellStatus(.(gid,keys->->->) = 参数 @1 指定下载 gid。\n返回该下载任务的状态信息。\n参数@2 开始可指定一个或多个要返回的状态字段名。
+onError = function(errMessage,rpcError){
+	__/*出错时触发此函数，errMessage 为错误信息。\n如果服务端按 jsonrpc 协议返回 error 对象，\n则 rpcError 有值，包含 messge，code 字段。*/	
+}
+saveSession() = 保存会话
+onDownloadStart = @.onDownloadStart = function(task){
+	__/*开始下载，task.gid 可获取下载任务 gid */
+}
+onDownloadPause = @.onDownloadPause = function(task){
+	__/*暂停下载，task.gid 可获取下载任务 gid */
+}
+onDownloadStop = @.onDownloadStop = function(task){
+	__/*停止下载，task.gid 可获取下载任务 gid */
+}
+onDownloadComplete = @.onDownloadComplete = function(task){
+	__/*下载完成，task.gid 可获取下载任务 gid */
+}
+onBtDownloadComplete = @.onBtDownloadComplete = function(task){
+	__/*BT 下载完成，task.gid 可获取下载任务 gid */
+}
+onDownloadError = @.onDownloadError = function(task){
+	var errMsg = ??.taskErrorMessage(task.gid); 
+	__/*下载出错了，task.gid 可获取下载任务 gid。\nerrMsg 为错误信息。 */
+}
 end intellisense**/

@@ -8,6 +8,7 @@ protect = function(args,callback){
 	var tlsState = ..raw.convert(pTlsState,{ptr topGcStack});
 	var prevGcStack = tlsState.topGcStack;
 
+	//JL_GC_PUSHARGS
 	var currentGcStack = ..raw.buffer({
 		int nroots = #args<<2|1;
 		ptr prevGcStack = prevGcStack;

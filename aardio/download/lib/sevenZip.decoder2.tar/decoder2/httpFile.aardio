@@ -19,28 +19,30 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
 		saveName = tPath.file;
 	}
 	
-	var savePath = ..io.joinpath(saveDir,saveName)
-	if(!extraDir){
-		var tpath = ..io.splitpath(savePath);
-		if(tpath.ext){
-			tpath.ext = ""
-		}
-		else {
-			tpath.ext = ".uncompress"
-		}
-		
-		extraDir = tostring(tpath);
-	}
-	else {
-		extraDir = ..io.fullpath(extraDir);
-	} 
+	var savePath = ..io.joinpath(saveDir,saveName);
 	
 	var downBox = ..inet.downBox(parentForm:..win.getActive(),title,false) 
 	downBox.headers = self.headers;
 	downBox.referer = self.referer;
 	downBox.userAgent = self.userAgent; 
 	
-	downBox.endProc = function(){ 
+	downBox.endProc = function(savePath){ 
+		
+		if(!extraDir){
+			var tpath = ..io.splitpath(savePath);
+			if(tpath.ext){
+				tpath.ext = ""
+			}
+			else {
+				tpath.ext = ".uncompress"
+			}
+			
+			extraDir = tostring(tpath);
+		}
+		else {
+			extraDir = ..io.fullpath(extraDir);
+		} 
+		
 		
 		var archive = ..sevenZip.decoder2();
 		archive.printError = function(name,message){

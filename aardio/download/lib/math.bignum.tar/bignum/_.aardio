@@ -124,8 +124,11 @@ namespace bignum{
 				_dll.bignum_from_string(owner.bigNumber,num,#num);
 				return owner;
 			}; 
+			"tonumber": lambda() tonumber(owner);
 		};
 		_tostring = function(radix){
+			if(radix===null)radix = 10;
+			
 			var size = (_arraySize: 32)*8;
 			if(radix && radix!=16){
 				var ptr = ..raw.realloc(size+2)
@@ -157,36 +160,47 @@ namespace bignum{
 			return 0 >  _dll.bignum_cmp( owner,..math.bignum(n));
 		};
 		_add = function(b){
-			return owner.add(b);
+			return (is(b)?b:..math.bignum(owner)).add(b);
 		};
 		_sub = function(b){
-			return owner.sub(b);
+			return (is(b)?b:..math.bignum(owner)).sub(b);
 		};
 		_mod = function(b){
-			return owner.mod(b);
+			return (is(b)?b:..math.bignum(owner)).mod(b);
 		};
 		_div = function(b){
-			return owner.div(b);
+			return (is(b)?b:..math.bignum(owner)).div(b);
 		};
 		_mul = function(b){
-			return owner.mul(b);
+			return (is(b)?b:..math.bignum(owner)).mul(b);
 		};
+		_pow = function(b) {
+			return (is(b)?b:..math.bignum(owner)).pow(b);
+ 		}
 		_lshift = function(b){
-			return owner.lshift(b);
+			return (is(b)?b:..math.bignum(owner)).lshift(b);
 		};
 		_rshift = function(b){
-			return owner.rshift(b);
+			return (is(b)?b:..math.bignum(owner)).rshift(b);
 		};
 		_concat = function(b){
 			return tostring(owner) ++ tostring(b);
 		};
 	}
+	
+	is = lambda(v)v@==_meta;
 }
 
+/**details(说明)
+此扩展库基于开源项目 tiny-bignum-c 
+https://github.com/kokke/tiny-bignum-c
+end details**/
+
 /**intellisense()
-math.bignum = 大数对象\n大数对象可以使用tostring函数转换为普通字符串\n并可以在tostring的第二个参数中指定显示进制
-math.bignum(__) = 创建大数对象\n参数可以使用10进制或16进制的字符串指定数值,16进制必须有0x前缀,\n也可以是普通整数,或者math.size64函数创建的长整数,\n传入math.bignum对象则复制为新的大数对象
+math.bignum = 大数对象，仅支持正整数，不支持负数或小数。\n大数对象可以使用 tostring 函数转换为普通字符串\n并可以在 tostring 的第二个参数中指定显示进制，默认输出 10 进制数。
+math.bignum(__) = 创建大数对象\n参数可以使用 10 进制或 16 进制的字符串指定数值,16进制必须有0x前缀,\n也可以是普通整数,或者 math.size64 函数创建的长整数,\n传入math.bignum对象则复制为新的大数对象
 math.bignum() = !stdmathbignum.
+math.bignum.is(__) = 参数 @1 是否 math.bignum 对象。
 end intellisense**/
 
 /**intellisense(!stdmathbignum)

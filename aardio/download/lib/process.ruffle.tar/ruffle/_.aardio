@@ -1,5 +1,4 @@
 ﻿import process.apiHook;
-import process.job.limitKill;
 
 namespace process;
 
@@ -12,8 +11,32 @@ class ruffle{
 		
 		winform.text = "";
 		this._form = winform;
+		
+		winform._onDestroy = function(){
+			if(this.hwndFlash){
+				if( this.apiHook ){
+					this.apiHook.unInstallAll();
+					this.apiHook = null;
+				}
+			
+			 	..win.close(this.hwndFlash,0x10/*_WM_CLOSE*/);    
+			 	this.hwndFlash = null;
+			}
+		}
+
 	};
 	go = function(swfPath){
+		if(this.$waiting) return; 
+		this.$waiting = true;
+		
+		if(this.hwndFlash){
+			if( this.apiHook ){
+				this.apiHook.unInstallAll();
+				this.apiHook = null;
+			}
+			..win.close(this.hwndFlash,0x10/*_WM_CLOSE*/);   
+			this.hwndFlash = null;
+		}
 		 
 		var x,y,cx,cy = this._form.getPos();
 		
@@ -100,22 +123,23 @@ class ruffle{
 		);	
 
 	    this.process.resume();
-		this.process.assignToJobObject(..process.job.limitKill); 
+		this.process.killOnExit(); 
 		
-		if(this.hwndFlash) ..win.close(this.hwndFlash);
 		this.hwndFlash = this.process.waitMainWindow("Window Class"); 
 		this.hwndEventTarget = this.process.waitMainWindow("Winit Thread Event Target");
-		
+
 		if(this.hwndFlash){   
 			this._form.orphanWindow(,this.hwndFlash); 
 			this._form.show();
-		}
+		} 
+		
+		this.$waiting = false;
 	};
 }
 
 namespace ruffle{ 
 	
-    exePath = ..io.appData("aardio/ruffle/2024.3.27.ruffle.dll",$"~\lib\process\ruffle\.res\ruffle.dll") // https://ruffle.rs/#downloads
+    exePath = ..io.appData("aardio/ruffle/2024.8.26.ruffle.dll",$"~\lib\process\ruffle\.res\ruffle.dll") // https://ruffle.rs/#downloads
 	..io.appData("aardio/ruffle/CreateWindowExHook.dll",$"~\lib\process\ruffle\.res\CreateWindowExHook.dll")	
 }  
 

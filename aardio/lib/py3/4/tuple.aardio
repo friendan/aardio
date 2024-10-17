@@ -89,20 +89,27 @@ namespace tuple {
 			owner[k] = v;
 		};  
 		__get = function(k,ownerCall){ 
-			if( type(k) != type.number ) {
+			var t = type(k);
+			if( t==="string" && (ownerCall!==null) ){
 				return owner.getAttr(k); 
-			}
-			
-			var item = pyTuple_GetItem(owner.pyObject,k);
-			if(item){
-				..py3.IncRef(item);//特例 borrow reference
-				return ..py3.object(  item,true ) ;
 			} 
+			
+			if( t == "number" ) {
+				var item = pyTuple_GetItem(owner.pyObject,k);
+				if(item){
+					..py3.IncRef(item);//特例 borrow reference
+					return ..py3.object(  item,true ) ;
+				} 
+			}
 		} 
-		__set = function(k,v){
-			if( type(k) != type.number ) {
+		__set = function(k,v,ownerAttr){
+			var t = type(k);
+			if( t==="string" && ownerAttr ){
+				owner.setAttr(k,v);
 				return;
 			}
+			
+			if( t != "number" ) return ;
 			
 			if(v!==null) {
 				if( type(v) == "pointer" ){
@@ -141,9 +148,12 @@ py3.tuple(.(aardio数组) = 创建新的元数组,\n如果数组成员中包含p
 !pyTuple.parseValue() = 转换为aardio数组
 !pyTuple.type() = 返回类型名字
 !pyTuple.has("__/*属性名*/") = 是否存在指定的属性
-!pyTuple.getAttr("__/*属性名*/") = 读属性成员,也可以用成员操作符获取\n属性值为 py3.object 对象
-!pyTuple.setAttr("__/*属性名*/",) = 写属性成员的值,也可以用成员操作符赋值
-!pyTuple.getAttr() = !p3yObject.
+!py3Tuple.getAttr("__/*属性名*/") = 读属性值，也可以用成员操作符获取。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Tuple.setAttr("__/*属性名*/",) = 写属性成员的值，也可以用成员操作符赋值。
+!py3Tuple.getAttr() = !p3yObject.
+!py3Tuple.getItem(__/*索引*/) = 返回指定索引的项，也可以用索引下标操作符 [] 取值。\n除数值、布尔值、字符串、字节数组以外的值在 aardio 中存为 py.object 对象
+!py3Tuple.setItem(__/*索引*/，) = 修改指定索引的项，也可以用索引下标操作符 [] 赋值。
+!py3Tuple.getItem() = !p3yObject.
 !pyTuple.getItem(__/*索引*/) = 返回指定项,类似在python中使用下标操作符取值
 !pyTuple.setItem(__/*索引*/，) = 修改指定项,类似在python中使用下标操作符赋值
 !pyTuple.getItem() = !p3yObject.

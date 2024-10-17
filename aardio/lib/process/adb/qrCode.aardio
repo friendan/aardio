@@ -1,5 +1,6 @@
 ﻿//qrCode 扫码配对
 import qrencode.bitmap;
+import golang.mdns;//Go 写的 DLL 必须在主线程加载且不要释放
 
 namespace process.adb;
  
