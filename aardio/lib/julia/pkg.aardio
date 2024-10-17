@@ -1,0 +1,27 @@
+﻿//pkg 包管理
+import julia;
+import julia.process;
+
+namespace julia.pkg;
+
+add = function(name){
+	if(!..julia.import(name)){
+		..julia.process.exec(`import Pkg
+Pkg.add(ARGS[1])`,name).waitOne() 
+		return ..julia.import(name); 		
+	}
+}
+
+setServer = function(url){
+	..string.setenv("JULIA_PKG_SERVER",url);
+}
+
+setServer("https://mirrors.sjtug.sjtu.edu.cn/julia");
+
+/*****intellisense(julia.pkg)
+add(__) = 添加参数 @1 指定的模块。\n参数 @1 用一个字符串指定模块名。\n如果模块无法导入则安装模块。\n否则安装模块，安装成功则导入模块。\n成功返回模块对象
+add() = !juliaModule.
+setServer(_) = 设置镜像服务器。\n参数 @1 用一个字符串指定镜像服务器地址
+end intellisense*****/
+
+

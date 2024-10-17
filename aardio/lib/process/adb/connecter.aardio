@@ -1,0 +1,122 @@
+//connecter 连接
+import win.ui;
+import process.adb;
+import process.adb.qrCode;
+import win.ui.atom;
+
+namespace process.adb;
+
+class connecter{
+	ctor(parent,tParam){
+	/*DSG{{*/
+	this = ..win.form(text="正在等待安卓手机连接 ……";right=564;bottom=593;bgcolor=16777215;exmode="none";mode="popup";parent=parent)
+	this.add(
+	button={cls="button";text="连接到 ...";left=299;top=542;right=530;bottom=575;db=1;disabled=1;dr=1;z=5};
+	edit={cls="edit";left=19;top=382;right=544;bottom=535;db=1;dl=1;dr=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=2};
+	editPort={cls="edit";left=158;top=546;right=274;bottom=573;db=1;dr=1;edge=1;num=1;z=3};
+	plus={cls="plus";left=19;top=20;right=544;bottom=361;db=1;dl=1;dr=1;dt=1;repeat="scale";z=1};
+	static={cls="static";text="请输入连接端口：";left=9;top=550;right=139;bottom=574;align="right";db=1;dr=1;transparent=1;z=4}
+	)
+	/*}}*/
+	
+		if(..process.adb.isConnected()){
+			this.close();//关闭窗口，避免程序不退出
+			return true;
+		}  
+	
+		this.findAdbDevice =  function(){
+			
+			if(!this.lastAddress) {
+				this.lastAddress = ..process.adb.lastAddress(); 
+				if(#this.lastAddress){
+					this.edit.print("正在连接：" + this.lastAddress);
+				}
+			}
+			 
+			
+			//尝试无线连接
+ 			if(!..process.adb.findDevice()) { 
+				..process.adb.connect()
+			} 	 
+ 			
+ 			//如果连接成功
+			if( ..process.adb.isConnected()){  
+				 
+				this.button.disabledText = null;
+				
+				this.endModal(true);
+				
+				//退出定时器
+				return false;
+			}  
+		}
+		
+		this.show();
+		this.button.disabledText = {"✶";"✸";"✹";"✺";"✹";"✷"} 
+		 
+		
+		/*
+		下面是配对代码，只有首次连接需要配对。
+		*/
+		this.button.oncommand = function(id,event){
+			
+			//无线连接手机
+			var str = ..process.adb.connect(owner.adbInfo.addr + ":" + this.editPort.text);
+			if(str){
+		 		  
+				var addr = ..process.adb.tcpip("5555",true);
+				if( addr ){
+					this.edit.print("已开启无线调试固定端口，连接地址：",addr);
+					this.edit.print("已自动保存连接地址，之后可以免参数调用连接手机。" );
+			 		
+					this.findAdbDevice();
+				}
+			} 
+			else {
+				this.msgboxErr("连接失败，请输入正确端口")
+			}
+		}
+ 
+		//配对成功回调此函数
+		this.onAdbPair = function(info){
+			if(info){
+				if(this.findDeviceTimerId){
+					this.clearInterval(this.findDeviceTimerId);
+					this.findDeviceTimerId = null;			
+				}
+ 		
+ 				this.edit.print("");
+				this.edit.print("配对成功：",info);
+				this.edit.print("请输入手机开发设置显示的无线调试端口号，点击连接。"); 
+				this.button.adbInfo = info; 
+				this.button.disabledText = null; 
+				
+				this.button.text = "连接到：" + info.addr;
+			}
+			
+			return true;//返回 false 停止此二维码的自动配对
+		}
+		
+		//生成配对二维码 
+		var qrBmp = ..process.adb.qrCode(this );
+		this.plus.setBackground(qrBmp.copyBitmap(this.plus.width));
+		
+		this.edit.text = /*
+手机与电脑连接到同一无线局域网，
+然后打开安卓手机 > 设置 > 找到手机版本号连续点按显示开发者选项。
+然后打开安卓手机 > 设置 > 开发者选项 > 无线调试 > 扫二维码配对。
+*/ 
+		this.edit.print("");
+		
+ 		if(this.findAdbDevice()!==false){
+ 			this.findDeviceTimerId = this.setInterval( this.findAdbDevice ,2000 );
+ 		} 
+		
+		return this.doModal();
+	};
+}
+
+if( !owner ) ..process.adb.connecter();
+/**intellisense()
+process.adb.connecter() = 安卓手机连接向导。\n连接成功返回 true 。\n无连接或连接失败显示二维码配对与连接向导。\n连接失败返回 false。\n!this.
+end intellisense**/

@@ -1,0 +1,68 @@
+﻿//process 进程
+import julia.lib;
+import string.cmdline;
+import process;
+import process.popen;
+
+namespace julia;
+
+var exePath = ..io.joinpath(..string.getenv("JULIA_BINDIR"),"julia.exe");
+
+class process{
+    ctor(...){{
+    	 
+		var err;
+    	this,err = ..process(exePath,..string.cmdline.arguments(...),{workDir=workDir});
+    	if(!this) error(err,2);  
+    }};
+}
+
+process.workDir = ..io.fullpath("/");
+
+process.popen = function(...){
+	var err;
+    var prcs,err = ..process.popen(exePath,..string.cmdline.arguments(...),{workDir=workDir});
+    if(!prcs) error(err,2); 
+	
+    prcs.codepage = 65001;
+    prcs.killOnExit();  
+    return prcs;
+}
+
+process.eval = function(code,...){ 
+    var args = ..string.cmdline.arguments(...); 
+    if( type.isString(code) &&  ..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>') ){
+    	var err;
+		code,err = ..string.loadcode(code);
+		if(err) error(err,2);
+	}
+	
+	..table.unshift(args,"-E",code);
+    var prcs = process.popen(args);
+    if(prcs){
+    	return prcs.readAll() 
+    }
+}
+
+process.exec = function(code,...){ 
+    var args = ..string.cmdline.arguments(...); 
+    if( type.isString(code) &&  ..string.find(code,'^<\xEF\xBB\xBF>?\\s*<\\?\\>>|<\\<\\?>') ){
+    	var err;
+		code,err = ..string.loadcode(code);
+		if(err) error(err,2);
+	}
+	
+	..table.unshift(args,"-e",code);
+    return process(args);
+}
+
+/*****intellisense()
+julia.process(__) = 创建 Julia 进程，打开控制台窗口。\n返回进程（ process ）对象。\n可以用一个字符串参数指定多个启动参数，用空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+julia.process.popen(__) = 创建 Julia 进程，不打开控制台窗口。\n返回进程管道（ process.popen ）对象。\n主进程退出时此函数创建的 Julia 进程会自动退出。\n可以用一个字符串参数指定多个启动参数，用空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
+julia.process.eval(__) = 创建 Julia 进程执行参数指定的 Julia 代码。\n不打开控制台窗口，返回进程所有输出以及表达式的值。\n主进程退出时此函数创建的 Julia 进程会自动退出。\n\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n在 Julia 代码中可以用 ARGS 获取参数
+julia.process.exec(__) = 创建 Julia 进程执行参数指定的 Julia 代码。\n打开新的控制台窗口。返回进程（ process ）对象。\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义。\n在 Julia 代码中可以用 ARGS 获取参数
+julia.process() = !process.
+julia.process.popen() = !process_popen.
+julia.process.exec() = !process.
+end intellisense*****/
+ 
