@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-216260946|14|33|config\SYS.CFG
+66716503|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -2510,7 +2510,7 @@
 286913452|473|247|lib\golang\.res\aardio\jsonrpc\jsonrpc.go
 0|0|0|lib\golang\.res\aardio\jsonrpc\tcp\
 -1268986318|559|309|lib\golang\.res\aardio\jsonrpc\tcp\tcp.go
-1051597802|67068|14222|lib\ide\aifix.aardio
+1011404012|67995|14400|lib\ide\aifix.aardio
 -1394918461|7075|2516|lib\ide\command.aardio
 -1410374365|187|156|lib\ide\customCtrl.aardio
 85987739|1816|789|lib\ide\debug.aardio
@@ -2903,7 +2903,7 @@
 -2136488360|1984|999|lib\web\nativeMessaging\install.aardio
 -1079806336|2887|1296|lib\web\nativeMessaging\_.aardio
 -1722746574|1384|711|lib\web\npm\_.aardio
--1776015353|38932|9555|lib\web\rest\client.aardio
+796830092|38824|9527|lib\web\rest\client.aardio
 -1891981387|3187|1285|lib\web\rest\github.aardio
 1624930173|3030|1119|lib\web\rest\htmlClient.aardio
 1876649742|2851|1240|lib\web\rest\jsonClient.aardio

@@ -108,8 +108,7 @@ class client{
 		this._http.afterSend = this.afterSend;
 		this._http.addHeaders = this.addHeaders;
 
-		var contentType = this.contentType || this.defaultContentType ;
-		if( contentType ==  this.defaultContentType ) contentType = contentType + '; charset=' + this.charset; 
+		var contentType = this.contentType || this.defaultContentType;
 		
 		if(receiveCallback){
 			if( fileReceive ){
