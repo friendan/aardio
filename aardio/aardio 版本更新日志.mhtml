@@ -1,24 +1,24 @@
 From: <Saved by Blink>
 Snapshot-Content-Location: https://ide.update.aardio.com/log/
 Subject: =?utf-8?Q?aardio=20=E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97?=
-Date: Fri, 18 Oct 2024 22:01:21 +0800
+Date: Sun, 20 Oct 2024 12:28:36 +0800
 MIME-Version: 1.0
 Content-Type: multipart/related;
 	type="text/html";
-	boundary="----MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf----"
+	boundary="----MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----"
 
 
-------MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf----
+------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
 Content-Type: text/html
-Content-ID: <frame-24F6309140DC021E11C6F7E2217E5D3F@mhtml.blink>
+Content-ID: <frame-EE1D31985D9426F2746BD9078CAE9542@mhtml.blink>
 Content-Transfer-Encoding: quoted-printable
 Content-Location: https://ide.update.aardio.com/log/
 
 <!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
 t/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"text/css" href=3D=
-"cid:css-4ffa7298-f7e4-4ba3-8436-b07adabfabbc@mhtml.blink" /><link rel=3D"s=
-tylesheet" type=3D"text/css" href=3D"cid:css-a86f2501-e485-49af-b64b-ed167d=
-9df2c9@mhtml.blink" />
+"cid:css-e201b158-86fb-4cfd-87b7-0dbc4c873f71@mhtml.blink" /><link rel=3D"s=
+tylesheet" type=3D"text/css" href=3D"cid:css-1916eeef-b6cb-41c0-9e96-58b557=
+09e3d2@mhtml.blink" />
 =09
 	<title>aardio =E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97</titl=
 e>
@@ -78,6 +78,18 @@ v37.x =E8=87=AA=E5=8A=A8=E6=9B=B4=E6=96=B0=E5=A4=B1=E8=B4=A5=E4=BB=A5=E4=B8=
 =E8=A1=8C=E4=B8=BA=E3=80=82
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+aardio v37.5.2
+----------------------------------
+1. =E4=BF=AE=E6=AD=A3 web.form.chat =E6=9C=AA=E6=98=BE=E7=A4=BA=E7=AD=89=E5=
+=BE=85=E6=95=88=E6=9E=9C=E3=80=82=20
+
+aardio v37.5.1
+----------------------------------
+1. =E5=A2=9E=E5=8A=A0=E5=BA=93 web.form.simpleMarkdown, web.form.chat=E3=80=
+=82
+2. =E5=A2=9E=E5=8A=A0 web.rest / AI =E8=81=8A=E5=A4=A9=E5=8A=A9=E6=89=8B=E8=
+=8C=83=E4=BE=8B=E3=80=82
 
 aardio v37.5.0
 ----------------------------------
@@ -2194,10 +2206,10 @@ play: none;">=E9=87=8D=E8=AF=95</a><a data-v-367aca12=3D"" class=3D"login" =
 style=3D"display: none;">=E7=AB=8B=E5=8D=B3=E7=99=BB=E5=BD=95</a></div><div=
 ><div data-v-23c9a954=3D""><!----></div></div><!----></div></div></template=
 ></div></html>
-------MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf----
+------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-4ffa7298-f7e4-4ba3-8436-b07adabfabbc@mhtml.blink
+Content-Location: cid:css-e201b158-86fb-4cfd-87b7-0dbc4c873f71@mhtml.blink
 
 @charset "utf-8";
 
@@ -2211,10 +2223,10 @@ r: pointer; position: absolute; top: 16px; right: 16px; }
 
 .qa-sdk-close-btn:hover { border-radius: 50%; background-color: rgb(213, 21=
 7, 223); }
-------MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf----
+------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-a86f2501-e485-49af-b64b-ed167d9df2c9@mhtml.blink
+Content-Location: cid:css-1916eeef-b6cb-41c0-9e96-58b55709e3d2@mhtml.blink
 
 @charset "utf-8";
 
@@ -2224,7 +2236,7 @@ Content-Location: cid:css-a86f2501-e485-49af-b64b-ed167d9df2c9@mhtml.blink
   #ai-assist-root-bangs, #ai-assist-root-bilibili, #ai-assist-root-new { di=
 splay: none !important; }
 }
-------MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf----
+------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
 Content-Type: image/jpeg
 Content-Transfer-Encoding: base64
 Content-Location: https://ide.update.aardio.com/log/weixin2.jpg
@@ -2490,4 +2502,4 @@ KbP/AIt+c/npH/qpi+2fTfb/APbVjt6pPoAZRrtU38B6/UXRX3/8r/hanayqb8p+1fYvyX+OYUyQ
 /wC//ZPuTz9m+8/ZvqPpfrFX0/yfH8xvt94gmLwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwD
 wDwDwP/Z
 
-------MultipartBoundary--Gx4iJKmUz2iF8UBfCl11F2hf9CXSs6HcjkHod14FNf------
+------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO------

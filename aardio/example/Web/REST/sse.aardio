@@ -1,11 +1,16 @@
-//event-stream
+//web.rest 支持服务端流式输出
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="web.rest - event-stream";right=753;bottom=434)
+var winform = win.form(text="web.rest - 服务端推送事件";right=753;bottom=434)
 winform.add(
 edit={cls="edit";left=20;top=12;right=734;bottom=404;edge=1;multiline=1;z=1}
 )
 /*}}*/
+
+/*
+web.rest 客户端支持 SSE( Server-Sent Events) 事件流（ MIME 为 "text/event-stream" ），
+同时自动兼容 ndjson 流（ MIME 为 "application/x-ndjson" ）。
+*/
 
 import wsock.tcp.simpleHttpServer;  
 var url = wsock.tcp.simpleHttpServer.startUrl(function(response,request,session){

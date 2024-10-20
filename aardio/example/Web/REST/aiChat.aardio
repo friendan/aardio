@@ -1,0 +1,69 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="调用大模型 API 实现 AI 聊天助手";right=973;bottom=607)
+winform.add(
+btnSend={cls="button";text="问 AI";left=801;top=569;right=918;bottom=604;db=1;dr=1;z=2};
+editPrompt={cls="edit";left=8;top=452;right=965;bottom=567;db=1;dl=1;dr=1;edge=1;multiline=1;z=3};
+promptTool={cls="syslink";text="提示词生成器";left=161;top=574;right=373;bottom=603;db=1;dl=1;z=5};
+splitter={cls="splitter";left=8;top=446;right=965;bottom=451;db=1;dl=1;dr=1;frame=1;horz=1;z=4};
+wndBrowser={cls="custom";text="自定义控件";left=8;top=5;right=965;bottom=442;db=1;dl=1;dr=1;dt=1;z=1}
+)
+/*}}*/
+
+import web.form.chat;
+var wb = web.form.chat(winform.wndBrowser);
+	
+//输入系统提示词
+wb.system(
+	"你是 aardio 编程助手，擅长  aardio 编程。你会解答  aardio 编程问题，并且帮助生成或修改  aardio 代码。"
+);
+
+//响应按键事件
+winform.btnSend.oncommand = function(id,event){
+	
+	//输入 AI 提示词
+	wb.prompt( winform.editPrompt.text )
+
+	//创建多线程
+	thread.invoke( 
+		function(winform,wb){ 
+			
+			import web.rest.jsonClient;
+			var client = web.rest.jsonClient();
+			
+			//请输入大模型 API 接口的令牌（ Key ）
+			client.setAuthToken("API Key");
+			
+			//各家大模型基本都兼容 OpenAI 接口，只要更换域名就可以
+			var bot = client.api("https://api.deepseek.com/v1");
+		
+			//调用接口
+			var ok,err = bot.chat.completions({  
+				model = "deepseek-chat",
+				messages = wb.chatMessage, 
+				temperature = 0.4,//温度
+				stream = true,//启用 SSE 事件流（ text/event-stream ）
+				max_tokens = 500,//限制 AI 生成的  token 数
+			},function(eventStream){ //如果不是流式推送则不需要用回调函数接收
+				
+				//输出 AI 应答( 打字效果输出 )
+				wb.assistant(eventStream.data.choices);
+			} )  
+			
+			if(err){
+				wb.errorMessage(err)
+			}   
+		},winform,wb
+	)
+}
+
+//拆分界面
+winform.splitter.split(winform.wndBrowser,winform.editPrompt);
+
+//默认设置输入框焦点
+winform.editPrompt.setFocus();
+
+winform.promptTool.link = "https://www.aardio.com/zh-cn/doc/?q=/zh-cn/ai/prompt/"
+
+winform.show();
+win.loopMessage();

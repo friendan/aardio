@@ -1,0 +1,172 @@
+﻿//simpleMarkdown 显示 Markdown
+import web.form;
+import string.markdown;
+
+namespace web.form;
+
+class simpleMarkdown{
+	ctor(...){{
+		this = ..web.form(...); 
+
+		this.loadcode(`
+		<!DOCTYPE html><html><head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<style>
+		.chat-role {
+    		display: inline-block;
+    		line-height: 1.5em;
+    		margin: 2px 0;
+    		padding: 5px 10px;
+    		font-weight: bold;
+    		cursor: text;
+    		position: relative;
+    		font-size: 14px;
+    		color: #fff;
+    		border-radius: 5px;
+		}
+		
+		.chat-role.assistant {
+    		background-color: #007bff;
+		}
+		
+		.chat-role.user {
+    		background-color: #28a745;
+		}
+		
+		.chat-prompt {
+    		display: inline-block;
+    		background-color: #E7F8FF;
+    		border-radius: 8px; 
+    		text-align: center;
+    		padding:2px 10px;
+		}
+		
+		.error-message {
+            border: 1px solid #f5c6cb;
+            background-color: #f8d7da;
+            color: #d97e87;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        hr{box-sizing:content-box;overflow:hidden;background:0 0;border-bottom:1px solid #d0d7deb3;height:.25em;padding:0;margin:24px 0;background-color:#d0d7de;border:0}
+        
+		</style>
+		<script> 
+		
+		window.lastInsertElement = function(){
+			return document.body.children[ document.body.children.length -1 ]
+		}
+		
+		window.onWriteEnd = function(){
+			if(window.interval){
+				clearInterval( window.interval );
+				window.interval  = 0;
+			}
+			
+			Prism.highlightAll(); 
+			document.documentElement.scrollTop = document.documentElement.scrollHeight;
+			
+		}
+		
+		window.showLoading = function(title){ 
+			if(!title) title = "正在加载 "
+			if(window.interval){
+				clearInterval( window.interval );
+				window.interval  = 0;
+			}
+			
+			var dots = 1;
+			window.interval = setInterval(function() {
+				var loading = document.getElementById('loading');
+				if(!loading){
+					
+					clearInterval( window.interval );
+					
+					//用定时器滚动更轻快，不能打一个字就滚一下那会卡得不行
+					window.interval = setInterval(function() {
+						document.documentElement.scrollTop = document.documentElement.scrollHeight;
+     				},800);
+     				
+					return;
+				}
+				
+    			var text = '';
+    			for (var i = 0; i < dots; i++) {
+        			text += '.';
+    			}
+    			loading.innerText = title + "" + text;
+    			dots = (dots % 10) + 1;
+			}, 700); 			
+		}
+		
+
+		</script>
+		
+		<style><?=$"~\doc\style.css"?></style><script><?=$"~\doc\index.js"?></script></head><body>
+		
+		</body></html>
+		`)
+		
+		var lastElement;    
+		var markdownText = "";
+		this.getMarkdown = function(){
+			return markdownText;
+		};
+		
+		var markdown = ..string.markdown(); 
+		this.showLoading = function(title){
+			lastElement = null;
+			this.body.insertAdjacentHTML("beforeEnd",`<div id="loading"></div>`)
+			this.script.showLoading(title);
+		}
+		
+		this.write = function(content,final){
+    		if(!content){  
+         		this.script.onWriteEnd(); 
+         		lastElement = null; 
+         		
+         		if(#markdownText) markdownText = markdownText + '\n\n<br>\n\n';
+         		return; 
+    		}
+    		
+    		if(final){
+    			var html = markdown.render(content);
+    			html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
+    			this.body.innerHTML = html;  
+    			return;
+    		}
+    		
+    		markdownText = markdownText ++ content; 
+    		
+    		if(lastElement && 
+        		( (lastElement.tagName=="PRE"&&!..string.indexOf(content,"`")) || !..string.find(content,"\p")) ){
+        		lastElement.insertAdjacentText("beforeEnd",content)  
+    		}
+    		else {
+        		var html = markdown.render(markdownText);
+        		html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
+        		this.body.innerHTML = html; 
+         		
+        		lastElement = this.script.lastInsertElement() 
+    		}
+		}
+		
+		this.BeforeNavigate2=function( pDisp, url,flags,target,postData,headers,cancel ) { 
+ 			..raw.execute(url);
+			return url, flags, target, postData, headers,true;
+		}
+		
+		this.noScriptErr = true; 
+		
+	} }; 
+}
+
+/*****intellisense()
+web.form.simpleMarkdown = 用于显示 Markdown 生成的 HTML 的专用 web 窗体。 
+web.form.simpleMarkdown( = 创建用于显示 Markdown 生成的 HTML 的专用 web 窗体。 
+web.form.simpleMarkdown(.(winform,hostFlags,dlControl,userAgent,securityTrusted) = 创建 Web 窗体。\nwinform 必须指定窗体或 custom 控件。\n其他参数不必指定，这些参数的用法请参考 web.form 。
+web.form.simpleMarkdown() = !wb.
+end intellisense*****/

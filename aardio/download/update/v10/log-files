@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-66716503|14|33|config\SYS.CFG
+-302751109|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -1222,10 +1222,11 @@
 -1747045361|1277|760|example\Web\JSON\JSON.aardio
 809828210|588|401|example\Web\JSON\rpcClient.aardio
 755294258|2283|1194|example\Web\JSON\rpcServer.aardio
-11537025|461|311|example\Web\REST\.aar
--836809160|501|339|example\Web\REST\auth.aardio
+-728570829|467|317|example\Web\REST\.aar
+1894850172|2250|1232|example\Web\REST\aiChat.aardio
+-816568122|730|445|example\Web\REST\auth.aardio
 -2035787935|708|435|example\Web\REST\encodeKey.aardio
--2134437013|960|598|example\Web\REST\headers.aardio
+823418178|1190|697|example\Web\REST\headers.aardio
 -542248154|355|248|example\Web\REST\html.aardio
 746311643|728|389|example\Web\REST\http.aardio
 -2091311963|1390|636|example\Web\REST\jsonClient.aardio
@@ -1235,9 +1236,8 @@
 1690050783|557|406|example\Web\REST\proxy.aardio
 -535256015|795|499|example\Web\REST\receiveFile.aardio
 -1839370673|1592|828|example\Web\REST\sendMultipartForm.aardio
-1907838798|1201|730|example\Web\REST\sse.aardio
+-601622625|1417|824|example\Web\REST\sse.aardio
 -1367843479|2301|1149|example\Web\REST\start.aardio
-1758362115|709|445|example\Web\REST\yuque.aardio
 -2114134907|40|53|example\Web\RPC\.aar
 -374990276|4084|1736|example\Web\RPC\externalServer.aardio
 -372929655|248|120|example\Web\WebSocket\.aar
@@ -1561,6 +1561,7 @@
 1749230175|2520|1264|extensions\plugin\view\dsktip.aardio
 0|0|0|extensions\plugin\view\res\
 1148559993|9444|3024|extensions\plugin\view\startPage.aardio
+1148559993|9444|3024|extensions\plugin\view\startPage.aardio.plugin
 0|0|0|extensions\plugin\view\res\content\
 0|0|0|extensions\plugin\view\res\images\
 -1391698603|5243|1599|extensions\plugin\view\res\start-page.htm
@@ -2861,8 +2862,10 @@
 583175206|1022|562|lib\web\uploadData.aardio
 0|0|0|lib\web\view\
 -1865275232|1613|781|lib\web\_.aardio
+-1725764828|3353|1323|lib\web\form\chat.aardio
 1597099594|1953|943|lib\web\form\menu.aardio
 -1635206826|1525|622|lib\web\form\query.aardio
+429330876|4849|1842|lib\web\form\simpleMarkdown.aardio
 1131581254|2203|927|lib\web\form\snap.aardio
 -1734690316|2309|925|lib\web\form\sockpuppet.aardio
 -1175352145|5438|2066|lib\web\form\util.aardio

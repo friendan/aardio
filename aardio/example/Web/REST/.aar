@@ -1,4 +1,5 @@
 ﻿入门=start.aardio
+AI 聊天助手=aiChat.aardio
 HTTP 客户端=http.aardio
 自动模式匹配=match.aardio
 设置 HTTP 头=headers.aardio
@@ -11,5 +12,4 @@ event-stream=sse.aardio
 jsonClient=jsonClient.aardio
 jsonLiteClient=jsonLiteClient.aardio
 HTML 抓取=html.aardio
-语雀 API=yuque.aardio
 获取圆周率=pi.aardio

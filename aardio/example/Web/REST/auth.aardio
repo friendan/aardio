@@ -6,6 +6,13 @@ console.showLoading("正在登录")
 //创建 HTTP 客户端
 var http = web.rest.jsonClient();
 
+/*
+使用默认的 Authorization 请求头指定认证 token。
+调用 http.setAuth 会清除 http.setAuthToken 的设置，
+调用 http.setAuthToken  也会清除 http.setAuth 的设置。
+*/
+http.setAuthToken("token");
+
 //设置登录信息，支持 Basic , Digest 认证
 http.setAuth("user","passwd");
 

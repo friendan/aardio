@@ -1,0 +1,111 @@
+﻿//chat 聊天界面
+import web.form;
+import web.form.simpleMarkdown;
+
+namespace web.form;
+
+class chat{
+	ctor( ... ){
+		this = ..web.form.simpleMarkdown(...)
+		this.chatMessage = ..table.array();
+	};
+	system = function(content){
+		this.pushMessage(
+    		{ 
+        		role = "system"; 
+        		content  = content;
+    		}
+		);
+	};
+	prompt = function(content){
+		this.pushMessage(
+    		{ 
+        		role = "user"; 
+        		content  = content;
+    		}
+		);
+	};
+	assistant = function(choices){
+		if(choices){ 
+            this.pushMessage(choices[1].delta.content);
+        } 
+        else {
+            this.pushMessage(null);
+        }
+	};
+	pushMessage = function(msg){ 
+		var chatMessage = this.chatMessage;
+		
+		//加入聊天消息 
+		if(msg){
+			
+			if(type.isString(msg)){
+				this.write(msg);
+				
+				var lastMsg = chatMessage[#chatMessage]
+				if(lastMsg[["role"]]!="assistant"){
+					lastMsg = {
+            			role = "assistant";
+            			content  = msg||"";
+         			};
+         			
+         			..table.push(chatMessage,lastMsg);
+         			return;
+				}
+				elseif(msg) {
+					lastMsg.content = lastMsg.content++msg;
+				} 
+			}
+			else {
+				//加入聊天消息
+				..table.push(chatMessage,msg);
+				
+				if(this.limit && #chatMessage>=this.limit ){
+					..table.shift(chatMessage,#chatMessage-this.limit);	
+				}
+				
+				if(msg.role=="user"){ 
+    				this.write('\n\n<span class="chat-role user">我</span>\n
+    				<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n<p></p>');
+    				
+    				this.showLoading("正在思考 ");
+    				
+				}
+			} 
+		}
+		else{
+			this.write(null);  
+		} 
+	}; 
+	lastMarkdown = function(){
+		var chatMessage = this.chatMessage;
+		var lastMsg = chatMessage[#chatMessage]
+		if(lastMsg[["role"]]!="assistant"){
+			return  lastMsg.content; 
+		}
+	}; 
+	errorMessage = function(msg){
+		  this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
+	}; 
+	
+}
+
+
+/*****intellisense()
+web.form.chat = 用于显示 Markdown 生成的 HTML 的 AI 助手专用 web 窗体。\n此对象继承自 web.form.simpleMarkdown 与 web.form 对象。
+web.form.chat( = 创建用于显示 Markdown 生成的 HTML 的 AI 助手专用 web 窗体。 \n此对象继承自 web.form.simpleMarkdown 与 web.form 对象。
+web.form.chat(.(winform,hostFlags,dlControl,userAgent,securityTrusted) = 创建 Web 窗体。\nwinform 必须指定窗体或 custom 控件。\n其他参数不必指定，这些参数的用法请参考 web.form 。
+web.form.chat() = !stringChatMessageForm.
+end intellisense*****/
+
+/*****intellisense(!stringChatMessageForm)
+errorMessage(__/*错误信息*/) = 显示错误信息
+assistant(__/*错误信息*/) = 显示并记录 AI 接口返回的 result.data.choices 。
+prompt(__/*提示词*/) = 添加并显示用户提示词
+system(__/*提示词*/) = 添加并显示系统提示词
+chatMessage = 消息队列，用于发送到 chat/completions 聊天接口。
+chatMessage.limit = 可选指定一个限制队列大小的数值
+lastMarkdown() = 获取最后一次 AI 回复的 Markdown 格式内容
+getMarkdown() = 返回输出到页面的所有 Markdown 格式内容 
+end intellisense*****/
+

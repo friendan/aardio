@@ -5,10 +5,16 @@ import web.rest.jsonLiteClient;
 
 var http = web.rest.jsonLiteClient();  
 
-//如果所有请求都要添加的相同HTTP头，在这里指定
+//设置默认添加到所有请求的 HTTP 头
+http.addHeaders = { ["X-Auth-Token"] = "自定义 Token" }
+
+//如果 addHeaders 是表则添加所有请求都要添加的 HTTP 头，否则替换请求头。
 http.setHeaders(
 	["Test"] = "test"
 )
+
+//使用默认的 Authorization 请求头指定 token 
+http.setAuthToken("token");
 
 /*
 如果每次请求都要修改HTTP头，可以写到这个事件里.
