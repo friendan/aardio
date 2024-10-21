@@ -65,11 +65,16 @@ class chat{
 				}
 				
 				if(msg.role=="user"){ 
-    				this.write('\n\n<span class="chat-role user">我</span>\n
-    				<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n<p></p>');
+					
+					if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
+						this.write('\n\n<span class="chat-role user">我</span>\n' + msg.content + '\n<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+					}
+					else{
+    					this.write('\n\n<span class="chat-role user">我</span>\n
+    					<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+    				}
     				
     				this.showLoading("正在思考 ");
-    				
 				}
 			} 
 		}
@@ -85,11 +90,10 @@ class chat{
 		}
 	}; 
 	errorMessage = function(msg){
-		  this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
+		this.write("");//清除 loading
+		this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
 	}; 
-	
 }
-
 
 /*****intellisense()
 web.form.chat = 用于显示 Markdown 生成的 HTML 的 AI 助手专用 web 窗体。\n此对象继承自 web.form.simpleMarkdown 与 web.form 对象。

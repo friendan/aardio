@@ -2,6 +2,14 @@
 
 # aardio 编程语言快速入门 —— 语法速览
 
+## 导入库
+
+aardio 中除 raw,string,table,math,io,time,thread 等无需导入的内置库以外，其他所有库（标准库或扩展库）都必须先用 `import` 语句导入后才能使用。
+
+```aardio
+import win;
+win.msgbox("你好！");
+```
 
 ##  第一个控制台程序
 
@@ -33,27 +41,26 @@ console.pause(true);
 ```aardio
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form")
+var winform = win.form(text="第一个 aardio 窗口程序")
 winform.add(
-button={cls="button";text="测试";left=435;top=395;right=680;bottom=450;color=14120960;font=LOGFONT(h=-14);note="点这里";z=2};
+button={cls="button";text="点这里";note="这是一个很酷的按钮";left=435;top=395;right=680;bottom=450;color=14120960;z=2};
 edit={cls="edit";left=18;top=16;right=741;bottom=361;edge=1;multiline=1;z=1}
 )
 /*}}*/
 
-
 //按钮回调事件
 winform.button.oncommand = function(){
-    winform.edit.text = "测试"; //修改控件属性
+    winform.edit.text = "Hello, World!"; //修改控件属性
 }
-
 
 //显示窗口
 winform.show();
 
-
-//启动界面消息循环，保持窗口显示，并响应用户操作
+//启动界面线程的消息循环，保持窗口显示，并响应用户操作
 win.loopMessage();
 ```
+
+**【重要】窗口程序必须使用 `import win.ui` 导入 `win.form` 窗口类**。
 
 请参考文档：[创建窗口与控件](../../library-guide/std/win/ui/create-winform.md)
 
@@ -104,6 +111,23 @@ wb.go("https://www.example.com/");
 
 请参考文档：[web.view 入门指南](../../library-guide/std/web/view/_.md)
 
+## 调用标准库 web.json 解析 JSON
+
+```aardio
+import web.json;
+
+var json = `
+name = {
+    a: 123,
+    b: 456,
+    c: [1,2,3]
+}`
+
+//JSON 字串解码成 table 对象
+var tabObject  = web.json.parse(json);
+```
+
+请参考文档：[web.json 库参考](../../library-reference/web/json.md)
 
 ##  调用原生 API
 
@@ -681,9 +705,9 @@ var str = tostring( ( add(1, 2) )  );
 
 ## for 循环语句（ Numeric for ）
 
-for 循环语句是基于数值范围的循环（Range-based for）。
+aardio 使用基于数值范围的 for 循环语法（Range-based for）。
 
-for 循环语句基本结构：  
+`for` 循环语句基本结构：  
   
 ```aardio
 for(i = initialValue;finalValue;incrementValue){
@@ -691,11 +715,12 @@ for(i = initialValue;finalValue;incrementValue){
 }
 ```  
 
+- 可选用 `()` 包含循环条件，可选用分号或逗号分隔循环参数。
 - 循环体可以是用 `{}` 包含的语句块，也可以是一个单独的语句。
+- `initialValue` 指定起始数值，`finalValue` 指定结束数值，`incrementValue` 指定循环增量（ 省略则默认为 1 ）。循环增量用可负数表示递减循环。 
 - 循环变量 `i` 的值从 `initialValue` 开始，到 `finalValue` 结束，每次递增 `incrementValue`。
-- 全部循环参数都必须是数值表达式。`initialValue` 指定起始数值，`finalValue` 指定结束数值，`incrementValue` 指定循环增量（ 省略则默认为 1 ）。循环增量用可负数表示递减循环。
 
-aardio 虽然使用类 C 语法并且也使用 {} 包含循环体，但是 for 循环的条件部分与其他类 C 风格编程语言完全不同。aardio 使用基于数值范围的 for 循环语法（Range-based for）， for 循环范围的终止值 `finalValue` 是一个纯数值表达式而不是需要循环计算的条件表达式，循环增量 `incrementValue` 也是一个纯数值表达式而不是一个需要迭代执行的语句（例如自增自减语句）。
+【重要】aardio 虽然使用类 C 语法并且也使用 `{}` 包含循环体，但是 `for` 循环的条件部分与其他类 C 风格编程语言完全不同。 **aardio 使用基于数值范围的 `for` 循环，循环条件部分不能使用条件表达式与更新语句，只能包含纯数值表达式。** 。
 
 示例：  
 

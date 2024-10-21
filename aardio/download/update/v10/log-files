@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
--302751109|14|33|config\SYS.CFG
+77055822|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -45,7 +45,7 @@
 2024585794|8185|3399|doc\guide\language\pattern-matching.md
 -967534168|18239|6854|doc\guide\language\special-characters.md
 202997425|12418|4477|doc\guide\language\string.md
-1758017385|23164|8159|doc\guide\language\syntax-quick-ref.md
+-229614210|23713|8426|doc\guide\language\syntax-quick-ref.md
 446309413|19166|6515|doc\guide\language\thread.md
 -219881517|639|657|doc\icon\error.gif
 -1516240610|631|605|doc\icon\help.gif
@@ -503,7 +503,6 @@
 1444375896|318|245|example\Console\MultiplicationTable.aardio
 262645999|475|320|example\Console\PlayCards.aardio
 -896934275|938|594|example\Console\RabbitCount.aardio
-516273955|308|259|example\Console\zh.aardio
 -455225377|76|65|example\Database\.aar
 0|0|0|example\Database\access\
 0|0|0|example\Database\csv\
@@ -1223,7 +1222,7 @@
 809828210|588|401|example\Web\JSON\rpcClient.aardio
 755294258|2283|1194|example\Web\JSON\rpcServer.aardio
 -728570829|467|317|example\Web\REST\.aar
-1894850172|2250|1232|example\Web\REST\aiChat.aardio
+352050254|2234|1228|example\Web\REST\aiChat.aardio
 -816568122|730|445|example\Web\REST\auth.aardio
 -2035787935|708|435|example\Web\REST\encodeKey.aardio
 823418178|1190|697|example\Web\REST\headers.aardio
@@ -1561,7 +1560,6 @@
 1749230175|2520|1264|extensions\plugin\view\dsktip.aardio
 0|0|0|extensions\plugin\view\res\
 1148559993|9444|3024|extensions\plugin\view\startPage.aardio
-1148559993|9444|3024|extensions\plugin\view\startPage.aardio.plugin
 0|0|0|extensions\plugin\view\res\content\
 0|0|0|extensions\plugin\view\res\images\
 -1391698603|5243|1599|extensions\plugin\view\res\start-page.htm
@@ -2250,7 +2248,6 @@
 0|0|0|lib\winex\
 0|0|0|lib\wsock\
 0|0|0|lib\zlib\
-0|0|0|lib\控制台\
 1895937561|2224|923|lib\access\oleDb.aardio
 -1826531292|527|332|lib\access\query.aardio
 -973941349|29162|8206|lib\access\_.aardio
@@ -2511,7 +2508,7 @@
 286913452|473|247|lib\golang\.res\aardio\jsonrpc\jsonrpc.go
 0|0|0|lib\golang\.res\aardio\jsonrpc\tcp\
 -1268986318|559|309|lib\golang\.res\aardio\jsonrpc\tcp\tcp.go
-1011404012|67995|14400|lib\ide\aifix.aardio
+-1279337276|68022|14399|lib\ide\aifix.aardio
 -1394918461|7075|2516|lib\ide\command.aardio
 -1410374365|187|156|lib\ide\customCtrl.aardio
 85987739|1816|789|lib\ide\debug.aardio
@@ -2862,7 +2859,7 @@
 583175206|1022|562|lib\web\uploadData.aardio
 0|0|0|lib\web\view\
 -1865275232|1613|781|lib\web\_.aardio
--1725764828|3353|1323|lib\web\form\chat.aardio
+-1280705683|3690|1408|lib\web\form\chat.aardio
 1597099594|1953|943|lib\web\form\menu.aardio
 -1635206826|1525|622|lib\web\form\query.aardio
 429330876|4849|1842|lib\web\form\simpleMarkdown.aardio
@@ -3113,7 +3110,6 @@
 1754183471|6171|2286|lib\zlib\zip.aardio
 -164656525|17888|4854|lib\zlib\_.aardio
 1580871684|148992|73289|lib\zlib\.res\zlibwapi.dll
--496146701|10629|3884|lib\控制台\_.aardio
 1368358608|271|247|tools\.aar
 0|0|0|tools\.res\
 0|0|0|tools\Code\

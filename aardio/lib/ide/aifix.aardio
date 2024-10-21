@@ -28,7 +28,9 @@ class aifix{
 		var count;  
 
 		code = replace(code,`，`,`,`); 
-		code = replace(code,'\u00A0',` `);  
+		code = replace(code,'\u00A0',` `); 
+		code = replace(code,'\u200b',``);
+		
 		code = replace(code,"!\wlet!\W","var"); 
 		code = replace(code,"!$$(\w)!\W","\1"); 
 		code = replace(code,`\s+\.+\s+\"`,` + "`); 
@@ -933,14 +935,13 @@ class aifix{
 			code = replace(code,`![\w._$](\a\S+\s*=\s*win\.form\s*\(\s*)\"(\s*\a\w+\s*=.+?)\"(\s*\))`,"\1\2\3");
 			
 			code = replace(code
-			,`![\w._$](\a\S+\s*=\s*win\.form\s*\()([^\)]*<\s*\d+\s*,\s*\d+>+[^\)]*)\)`
-				,function(winform,params){
-					var args = ..string.splitEx(params,",\s*");
+			,`![\w._$](\a\S+\s*=\s*win\.form\s*\()\s*([^\)]*<\s*\d+\s*,\s*\d+>+[^\)]*?)\s*\)`
+				,function(winform,params){ 
+					var args = ..string.splitEx(params,"\s*,\s*");
 					
 					var newArgs = {};
 					var rc = { }
-					for(k,v in args){ 
-						 
+					for(k,v in args){
 						if(..string.match(v,"^\d+$") ){
 							 ..table.push(rc,(tonumber(v)));
 						}
@@ -948,7 +949,6 @@ class aifix{
 							newArgs.text = ..string.slice(v,2,-2);
 						}
 					}
-					
 					
 					if(#rc==4){
 						newArgs.left = rc[1];
@@ -1702,13 +1702,12 @@ class aifix{
 }
 
 namespace aifix{
-		__clsAlias__ = {
-			textbox = "edit";
-			textedit = "edit";
-			text = "edit";
-		}
+	__clsAlias__ = {
+		textbox = "edit";
+		textedit = "edit";
+		text = "edit";
+	}
 }
-
 
 /*****intellisense()
 ide.aifix(__) = 用于修复 AI 生成代码的语法错误。\n在代码编辑器右键菜单点击『粘贴并更正』时自动调用 ide.aifix 。\n修复结果仅供参考。
