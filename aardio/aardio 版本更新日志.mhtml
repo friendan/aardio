@@ -1,24 +1,24 @@
 From: <Saved by Blink>
 Snapshot-Content-Location: https://ide.update.aardio.com/log/
 Subject: =?utf-8?Q?aardio=20=E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97?=
-Date: Sun, 20 Oct 2024 12:28:36 +0800
+Date: Tue, 22 Oct 2024 22:54:24 +0800
 MIME-Version: 1.0
 Content-Type: multipart/related;
 	type="text/html";
-	boundary="----MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----"
+	boundary="----MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----"
 
 
-------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
+------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
 Content-Type: text/html
-Content-ID: <frame-EE1D31985D9426F2746BD9078CAE9542@mhtml.blink>
+Content-ID: <frame-577D6517817919918382675D1D09065A@mhtml.blink>
 Content-Transfer-Encoding: quoted-printable
 Content-Location: https://ide.update.aardio.com/log/
 
 <!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
 t/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"text/css" href=3D=
-"cid:css-e201b158-86fb-4cfd-87b7-0dbc4c873f71@mhtml.blink" /><link rel=3D"s=
-tylesheet" type=3D"text/css" href=3D"cid:css-1916eeef-b6cb-41c0-9e96-58b557=
-09e3d2@mhtml.blink" />
+"cid:css-95324921-92a8-4117-8946-7ac688e84c1d@mhtml.blink" /><link rel=3D"s=
+tylesheet" type=3D"text/css" href=3D"cid:css-8dd7d11e-d7af-4641-84b2-b5e522=
+7cb514@mhtml.blink" />
 =09
 	<title>aardio =E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97</titl=
 e>
@@ -78,6 +78,19 @@ v37.x =E8=87=AA=E5=8A=A8=E6=9B=B4=E6=96=B0=E5=A4=B1=E8=B4=A5=E4=BB=A5=E4=B8=
 =E8=A1=8C=E4=B8=BA=E3=80=82
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+aardio v37.5.5
+----------------------------------
+1. =E4=BC=98=E5=8C=96 F1 =E5=BF=AB=E6=8D=B7=E9=94=AE =E3=80=82
+
+aardio v37.5.4
+----------------------------------
+1. =E6=94=B9=E8=BF=9B web.form.chat =E3=80=82
+
+aardio v37.5.3
+----------------------------------
+1. =E6=94=B9=E8=BF=9B=E3=80=8E=E7=B2=98=E8=B4=B4=E4=B8=8E=E6=9B=B4=E6=AD=A3=
+=E3=80=8F
 
 aardio v37.5.2
 ----------------------------------
@@ -2206,10 +2219,10 @@ play: none;">=E9=87=8D=E8=AF=95</a><a data-v-367aca12=3D"" class=3D"login" =
 style=3D"display: none;">=E7=AB=8B=E5=8D=B3=E7=99=BB=E5=BD=95</a></div><div=
 ><div data-v-23c9a954=3D""><!----></div></div><!----></div></div></template=
 ></div></html>
-------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
+------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-e201b158-86fb-4cfd-87b7-0dbc4c873f71@mhtml.blink
+Content-Location: cid:css-95324921-92a8-4117-8946-7ac688e84c1d@mhtml.blink
 
 @charset "utf-8";
 
@@ -2223,10 +2236,10 @@ r: pointer; position: absolute; top: 16px; right: 16px; }
 
 .qa-sdk-close-btn:hover { border-radius: 50%; background-color: rgb(213, 21=
 7, 223); }
-------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
+------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-1916eeef-b6cb-41c0-9e96-58b55709e3d2@mhtml.blink
+Content-Location: cid:css-8dd7d11e-d7af-4641-84b2-b5e5227cb514@mhtml.blink
 
 @charset "utf-8";
 
@@ -2236,7 +2249,7 @@ Content-Location: cid:css-1916eeef-b6cb-41c0-9e96-58b55709e3d2@mhtml.blink
   #ai-assist-root-bangs, #ai-assist-root-bilibili, #ai-assist-root-new { di=
 splay: none !important; }
 }
-------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO----
+------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
 Content-Type: image/jpeg
 Content-Transfer-Encoding: base64
 Content-Location: https://ide.update.aardio.com/log/weixin2.jpg
@@ -2502,4 +2515,4 @@ KbP/AIt+c/npH/qpi+2fTfb/APbVjt6pPoAZRrtU38B6/UXRX3/8r/hanayqb8p+1fYvyX+OYUyQ
 /wC//ZPuTz9m+8/ZvqPpfrFX0/yfH8xvt94gmLwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwD
 wDwDwP/Z
 
-------MultipartBoundary--QF1tjjKtQYmD0GVcoQZ75VFc4eAyGXey3qJHqVNUGO------
+------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa------

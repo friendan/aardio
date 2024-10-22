@@ -12,31 +12,35 @@ edit.hwnd = hwnd;
 var text = edit.selText
 if(#text){
 	text = string.trim(text);
+	text = string.trim(text,".");
 	var libPath = string.match(text,"^!\w(\w[\.\w]+)\.[^\.\s]+!\W$");
 	var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1;ide=1};
 	
-	if(( #libPath && (builtin[libPath] || io.libpath(libPath)) )
-		|| builtin[text] || io.libpath(text)){ 
-			
-		var url;
-		if(builtin[libPath]){
-			url = "doc://library-reference/"+libPath+"/_.html"
-		}
-		elseif(builtin[text]){
-			url = "doc://library-reference/"+text+"/_.html"
-		}
-		else {
-			var filePath = io.libpath(libPath) || io.libpath(text);
-			var filePath = fsys.path.relative(filePath,"~/lib/");
-        	filePath = fsys.path.replaceExt(filePath,".html");
-        	filePath = io.joinpath("library-reference",filePath);
-        	filePath = string.replace(filePath,"\\","/");
-        	url = "doc://"+filePath;
-		}
-		 
+	var filePath = io.libpath(text) || (#libPath && io.libpath(libPath) );
+	if(text == "win.form" || text == "winform" || text == "mainForm"
+		|| libPath == "winform" || libPath == "mainForm"){
+		filePath = ..io.libpath("win.ui");
+	}
+	
+	var url;
+	if(filePath){
+		var filePath = fsys.path.relative(filePath,"~/lib/");
+        filePath = fsys.path.replaceExt(filePath,".html");
+        filePath = io.joinpath("library-reference",filePath);
+        filePath = string.replace(filePath,"\\","/");
+        url = "doc://"+filePath;	
+	}
+	elseif(builtin[text]){
+		url = "doc://library-reference/"+text+"/_.html"
+	} 
+	elseif( #libPath && builtin[libPath] ){ 
+		url = "doc://library-reference/"+libPath+"/_.html"
+	}
+	
+	if(url){
 		url = ..inet.url.appendExtraInfo(url,{q=text});	
 		ide.openDocument(url); 
-		return;
+		return;	
 	}
 	
 	var url = inet.url.appendExtraInfo("http://api.aardio.com/search",{

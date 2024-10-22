@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-77055822|14|33|config\SYS.CFG
+1938880472|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -1570,7 +1570,7 @@
 -823630779|2863|2894|extensions\plugin\view\res\images\panel-caption-back.png
 743936213|23558|4107|extensions\res\app.ico
 -837119668|1372|551|extensions\trigger\aifix.aardio
--2124387220|1454|739|extensions\trigger\codeEditorHelp.aardio
+-1099977830|1578|771|extensions\trigger\codeEditorHelp.aardio
 2054796948|1178|523|extensions\trigger\copyCodeAsHtml.aardio
 1628538018|952|458|extensions\trigger\default.aproj
 318035403|1680|672|extensions\trigger\editDefault.aardio
@@ -2706,7 +2706,7 @@
 981960385|789|455|lib\string\eventStream.aardio
 1160691486|3558|1353|lib\string\fontRanges.aardio
 -84347027|8151|2443|lib\string\fuzzyMatching.aardio
-810202900|1952|873|lib\string\glob.aardio
+-1759267416|2514|1126|lib\string\glob.aardio
 1619006979|5020|2050|lib\string\html.aardio
 -893503952|3071|1404|lib\string\http.aardio
 -1949396914|1361|743|lib\string\intSegments.aardio

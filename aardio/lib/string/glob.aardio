@@ -1,7 +1,7 @@
 ﻿//glob 模式匹配
 namespace string;
 
-class glob{
+class glob {
 	ctor( pattern ){
 		this.push = function(pattern){
 			if(type(pattern) === "table"){
@@ -24,8 +24,6 @@ class glob{
 		if(..io.exist(path)){
 			for(line in ..io.lines(path)){ 
 				line = ..string.trim(line);
-				line = ..string.replace(line,"/","\\");
-				
 				if(!#line) continue;
 				if(line[1]!='#'#) ..table.push(this,convert(line))
 			} 
@@ -43,7 +41,7 @@ class glob{
 	};
 }
 
-namespace glob{
+namespace glob {
 	
 	convert = function(pattern){
 		if(pattern[1]==='^'){
@@ -51,29 +49,27 @@ namespace glob{
 		}
 		
 		var set = false;
-		return "^" + ..string.replace(pattern,"<\*\*>|\p",function(c) {
-			if(set) {
-				if( c==="]" ) { set = false; }
-				return c;
-			}
+		pattern =  "^" + ..string.replaceUnmatched(pattern,"<\*\*>|\p",function(c) {
+		 
 			if( c==="*" ) return "[^\\]*?";
 			if( c==="**" ) return ".*?";
-			if( c==="?" ) return "[^\\]";
-			if( c==="[" ) { 
-				set = true;
-				return c;
-			}
+			if( c==="?" ) return "[^\\]"; 
 			
 			return "\"+c;
-		}) + "$" 
+		},"\[[^\]]*\]") + "$" 
+		
+		pattern = ..string.replace(pattern,"\[\!([^\]]*\])","[^\1"); 
+		return (..string.replace(pattern,"/","\\"));
 	} 
 }
 
 /**intellisense()
-string.glob(__) = glob模式匹配工具,\n参数可以是符合glob语法的模式文本，或包含模式文本的数组\n可省略参数
-string.glob() = !string_blog.
-!string_blog.test(__) = 测试一个字符串是否匹配
-!string_blog.push(__) = 添加模式,\n参数可以是符合glob语法的模式文本，或包含模式文本的数组
-!string_blog.load(__) = 自文件加载并添加模式,不清空之前的模式,\n每行文本指定一个模式,#字符开头的为注释,\n忽略首尾空格，忽略空行
-!string_blog.clear() = 清空所有模式
+string.glob = glob 模式匹配工具。\n\nglob 模式用于匹配文件名或文件路径，主要通配符包括:\n- `*` 匹配任意个字符(不含路径分隔符)\n- `**` 匹配任意层级的目录(含路径分隔符)\n- `?` 匹配单个字符\n`[abc]` 匹配方括号中的任意单个字符\n- `[!abc]` 或 `[^abc]` 匹配不在方括号中的任意单个字符。\n\n注意：`\` 不用于转义，模式中的`/`自动转换为`\`进行匹配。
+string.glob( = 创建 glob 模式匹配工具
+string.glob(.(pattern) = glob 模式匹配工具。\n参数 @pattern 可指定符合 glob 语法的模式文本，或包含模式文本的数组。\n可省略参数。
+string.glob() = !string_glob.
+!string_glob.test(__) = 测试一个字符串是否匹配
+!string_glob.push(__/*模式*/) = 添加 glob 模式。\n参数 @1 可以是符合 glob 语法的模式文本，或包含模式文本的数组
+!string_glob.load(__/*模式文件*/) = 自文件加载并添加 glob 模式，不清空之前的模式。\n每行文本指定一个模式,#字符开头的为注释,\n忽略首尾空格，忽略空行
+!string_glob.clear() = 清空所有 glob 模式。
 end intellisense**/
