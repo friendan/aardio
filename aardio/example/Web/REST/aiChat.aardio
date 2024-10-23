@@ -1,69 +1,235 @@
+import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="调用大模型 API 实现 AI 聊天助手";right=973;bottom=607)
+var winform = win.form(text="调用大模型 API 实现 AI 聊天助手";right=759;bottom=607)
 winform.add(
-btnSend={cls="button";text="问 AI";left=801;top=569;right=918;bottom=604;db=1;dr=1;z=2};
-editPrompt={cls="edit";left=8;top=452;right=965;bottom=567;db=1;dl=1;dr=1;edge=1;multiline=1;z=3};
-promptTool={cls="syslink";text="提示词生成器";left=161;top=574;right=373;bottom=603;db=1;dl=1;z=5};
-splitter={cls="splitter";left=8;top=446;right=965;bottom=451;db=1;dl=1;dr=1;frame=1;horz=1;z=4};
-wndBrowser={cls="custom";text="自定义控件";left=8;top=5;right=965;bottom=442;db=1;dl=1;dr=1;dt=1;z=1}
+btnClear={cls="plus";text="清除消息";left=531;top=572;right=625;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF014';notify=1;textPadding={left=25};z=6};
+btnSend={cls="plus";text="问 AI";left=634;top=572;right=706;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF007';notify=1;textPadding={left=25};z=5};
+btnSetting={cls="plus";text="设置";left=454;top=572;right=521;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF013';notify=1;textPadding={left=25};z=7};
+editMaxTokens={cls="edit";left=367;top=576;right=410;bottom=599;align="right";db=1;dr=1;edge=1;z=9};
+editPrompt={cls="edit";left=11;top=452;right=754;bottom=567;db=1;dl=1;dr=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=2};
+promptTool={cls="syslink";text="提示词生成器 / AI 搜索";left=20;top=577;right=163;bottom=600;center=1;db=1;dl=1;notify=1;z=4};
+spinMaxTokens={cls="spin";left=411;top=577;right=431;bottom=599;db=1;dr=1;z=8};
+splitter={cls="splitter";left=8;top=453;right=751;bottom=458;db=1;dl=1;dr=1;frame=1;horz=1;z=3};
+static={cls="static";text="回复长度：";left=292;top=574;right=358;bottom=597;align="right";center=1;db=1;dr=1;transparent=1;z=10};
+wndBrowser={cls="custom";text="自定义控件";left=8;top=5;right=751;bottom=447;db=1;dl=1;dr=1;dt=1;z=1}
 )
 /*}}*/
 
+//创建显示聊天消虑的 Web 浏览器窗口
 import web.form.chat;
 var wb = web.form.chat(winform.wndBrowser);
 	
 //输入系统提示词
-wb.system(
-	"你是 aardio 编程助手，擅长  aardio 编程。你会解答  aardio 编程问题，并且帮助生成或修改  aardio 代码。"
-);
+wb.system("
+## 角色：
+你是 aardio 编程助手，擅长  aardio 编程。
 
-//响应按键事件
+## 任务：
+你会解答  aardio 编程问题，并且帮助用户生成或改进 aardio 代码。
+
+## aardio 语法要求:
+        
+- 数组起始索引为 1 。 
+- 只能使用 var 声明局部变量。
+- 使用 `++` 连接字符串。 
+- 函数默认参数只能定义为布尔值、字符串、数值之一。
+- aardio 默认使用模式匹配语法代替正则表达式。模式匹配使用尖括号包含的`<>`包含非捕获组。模式运算符能用于非捕获组但不能用于捕获组。
+
+## for 循环语句格式：
+
+```aardio
+for(i = initialValue;finalValue;incrementValue){
+    // code block to be executed
+}
+```
+");
+
+
+import fsys.table;
+var config = fsys.table(io.appData("aardio/ide/aiChat/~"))
+
+//响应按键事件，输入用户提示词
 winform.btnSend.oncommand = function(id,event){
 	
+	//按钮显示等待动画
+	winform.btnSend.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+	winform.btnClear.disabled = true;
+	
 	//输入 AI 提示词
-	wb.prompt( winform.editPrompt.text )
+	wb.prompt( winform.editPrompt.text );
 
-	//创建多线程
+	//创建多线程向服务端发送请求
 	thread.invoke( 
-		function(wb){ 
-			
+		function(wb,apiUrl,apiKey,maxTokens){ 
+		
+			//导入调用 HTTP 接口的 REST 客户端
 			import web.rest.jsonClient;
 			var client = web.rest.jsonClient();
-			
-			//请输入大模型 API 接口的令牌（ Key ）
-			client.setAuthToken("API Key");
+		 
+			/*
+			设置 key，下面的 key 24 小时后失效。
+			DeepSeek 的 key 充 10 元估计能用上一年，所以请自己申请一个好吗？！
+			*/
+			client.setAuthToken( #apiKey ? apiKey : "sk-2f729981180a45e3b28971e9a5c68c72");
+			if(maxTokens>1024 && !#apiKey){
+				wb.errorMessage(`回复长度超过 1024 时，必须更改为您自己的API 密钥 。<a href="https://platform.deepseek.com">点这里获取密钥</a> &nbsp;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点这里设置新密钥</a>`);
+				return;
+			}
 			
 			//各家大模型基本都兼容 OpenAI 接口，只要更换域名就可以
-			var bot = client.api("https://api.deepseek.com/v1");
-		
-			//调用接口
+			var bot = client.api( #apiUrl ? apiUrl : "https://api.deepseek.com/v1");
+	
+			//调用 OpenAI 兼容接口
 			var ok,err = bot.chat.completions({  
 				model = "deepseek-chat",
 				messages = wb.chatMessage, 
 				temperature = 0.1,//温度
 				stream = true,//启用 SSE 事件流（ text/event-stream ）
-				max_tokens = 500,//限制 AI 生成的  token 数
+				max_tokens = maxTokens,//限制 AI 生成的  token 数
 			},function(eventStream){ //如果不是流式推送则不需要用回调函数接收
 				
-				//输出 AI 应答( 打字效果输出 )
+				//输出 AI 应答( 以打字效果输出到 Web 窗口 )
 				wb.assistant(eventStream.data.choices);
 			} )  
 			
 			if(err){
-				wb.errorMessage(err)
+				//获取错误对象（解析 JSON 格式的错误信息）
+				var errObject = client.lastResponseError()
+				if(errObject[["error"]][["type"]] == "authentication_error" ){
+					wb.errorMessage(`API 密钥错误，<a href="https://platform.deepseek.com">点这里获取密钥</a> &nbsp;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点这里设置新密钥</a>`)
+				}
+				else {
+					wb.errorMessage(err)
+				}
 			}   
-		},wb
+		},wb,config.url,config.key,winform.spinMaxTokens.pos//将参数传入线程
 	)
+}
+
+//响应按钮事件
+winform.btnClear.oncommand = function(id,event){
+	wb.clear();//清除聊天上下文
+}
+
+//在 AI 回复结束后回调此函数
+wb.onWriteEnd = function(){
+	winform.btnSend.disabledText = null;//关闭等待动画
+	winform.btnClear.disabled = false;
+}
+
+//在 AI 回复结束以前回调此函数，自动修正 aardio 代码块中的常见幻觉错误
+import ide.aifix;
+wb.beforerWriteEnd = function(markdown){
+	return ide.aifix.markdown(markdown);
+}
+
+//导出 aardio 函数到网页 JavaScript 中。
+wb.external = {
+	updateApiKey = function(){
+		winform.btnSetting.oncommand();
+	} 
+}
+
+//设置接口地址与 API 令牌的窗口
+winform.btnSetting.oncommand = function(id,event){
+	var frmSetting = win.form(text="aardio - 设置AI 聊天助手";right=562;bottom=185;border="dialog frame";exmode="none";max=false;min=false;mode="popup")
+	frmSetting.add(
+		btnSave={cls="button";text="更新设置";left=287;top=126;right=455;bottom=166;z=5};
+		editApiKey={cls="edit";left=113;top=60;right=515;bottom=87;edge=1;multiline=1;password=1;z=2};
+		editApiUrl={cls="edit";text="https://api.deepseek.com/v1";left=113;top=17;right=515;bottom=44;edge=1;multiline=1;z=1};
+		static={cls="static";text="接口地址：";left=16;top=19;right=99;bottom=40;align="right";transparent=1;z=3};
+		static2={cls="static";text="API key：";left=19;top=63;right=102;bottom=84;align="right";transparent=1;z=4};
+		static3={cls="static";text="推荐使用 Claude 3.5 Sonnet 或 DeepSeek 大模型。";left=112;top=95;right=435;bottom=117;transparent=1;z=6}
+	)
+	
+	//如果有配置文件
+	if(config){
+		frmSetting.editApiUrl.text = config.url || "https://api.deepseek.com/v1";
+		frmSetting.editApiKey.text = config.key;
+	}
+	
+	//保存并更新配置
+	frmSetting.btnSave.oncommand = function(id,event){
+		config.url = frmSetting.editApiUrl.text;
+		config.key = frmSetting.editApiKey.text;
+		config.save();
+		
+		frmSetting.endModal(); 
+		
+		thread.delay(100)
+		winform.editPrompt.setFocus();
+	}
+	
+	frmSetting.doModal(winform);
+}
+
+//获取 IDE 中当前选中的代码
+import ide;
+var codeEditor = ide.getActiveCodeEditor();
+if(codeEditor){
+	var selText = codeEditor.selText;
+	if(selText){
+		selText = '解释代码：\r\n\r\n``````aardio\r\n' + selText + '\r\n``````';
+		winform.editPrompt.text = string.crlf(selText);
+	}
+}
+
+//默认设置输入框焦点
+winform.editPrompt.setFocus(0,-1);
+
+//打开 AI 搜索
+winform.promptTool.link = "https://www.aardio.com/zh-cn/doc/?q=/zh-cn/ai/prompt/"
+winform.promptTool.onHyperlinkClick = function(nmSysLink,url,id,index){
+	var q = winform.editPrompt.text;
+	if(#q){
+		import inet.url;
+		raw.execute("https://www.aardio.com/zh-cn/ai/prompt/?q="+inet.url.encode(q));
+	}
+	else {
+		raw.execute(url);
+	} 
 }
 
 //拆分界面
 winform.splitter.split(winform.wndBrowser,winform.editPrompt);
 
-//默认设置输入框焦点
-winform.editPrompt.setFocus();
+winform.spinMaxTokens.buddy = winform.editMaxTokens;
+winform.spinMaxTokens.setRange(1,1024*8);
+winform.spinMaxTokens.pos = config.maxTokens || 1024;
+winform.spinMaxTokens.inc = 1024;
+//按钮外观样式
+winform.btnClear.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
 
-winform.promptTool.link = "https://www.aardio.com/zh-cn/doc/?q=/zh-cn/ai/prompt/"
+//按钮外观样式
+winform.btnSend.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
 
+//按钮外观样式
+winform.btnSetting.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.beforeDestroy = function(){
+    config.maxTokens = winform.spinMaxTokens.pos;
+}
 winform.show();
 win.loopMessage();

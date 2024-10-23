@@ -264,7 +264,7 @@ namespace string{
 	expand = function(s,p,r){
 		var c;
 		if(!p){p,r="\%([^%]+)\%",getenv}
-		do{ s,c = replace(s,p,lambda(v)r(v):"") }while(c);
+		do{ s,c = replace(s,p,lambda(v)r(v) ) } while(c);
 		if(#s) return s;
     }
 

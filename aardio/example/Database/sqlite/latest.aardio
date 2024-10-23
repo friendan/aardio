@@ -6,7 +6,7 @@ import console;
 一般够用，但不支持一些 SQLite.dll 新版才有的功能。
 
 如果使用 import sqlite.latest 替代 import sqlite，
-则会改用新版 SQLite 组件，体积会大一些，但支持的功能更多一些。。
+则会改用新版 SQLite 组件，体积会大一些，但支持的功能更多一些。
 */
 import sqlite.latest;
 /*

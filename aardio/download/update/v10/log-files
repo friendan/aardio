@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-1938880472|14|33|config\SYS.CFG
+1992002968|14|33|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 -2023104499|125636|32210|config\intellisense\kernel.txt
@@ -158,8 +158,8 @@
 1750010410|1386|773|doc\library-guide\builtin\raw\memdll.md
 -262438202|5666|2488|doc\library-guide\builtin\raw\overload.md
 -1584622649|2730|1334|doc\library-guide\builtin\raw\remoteApi.md
--53291929|10892|3980|doc\library-guide\builtin\raw\struct.md
-1475907735|6057|2310|doc\library-guide\builtin\raw\utf16.md
+617440590|10889|3978|doc\library-guide\builtin\raw\struct.md
+253044682|6054|2306|doc\library-guide\builtin\raw\utf16.md
 1776659532|269|209|doc\library-guide\builtin\string\.aar
 -290543105|1229|715|doc\library-guide\builtin\string\file.md
 -1705263833|7309|2787|doc\library-guide\builtin\string\format.md
@@ -270,7 +270,7 @@
 -1232071842|2226|1107|doc\library-guide\std\win\ui\ctrl\tab.md
 -1909226318|31958|29998|doc\library-guide\std\win\ui\images\z.png
 1096009203|13|32|doc\library-guide\std\win\ui\tabs\.aar
-639399538|9713|2984|doc\library-guide\std\win\ui\tabs\_.md
+1586629472|9710|2983|doc\library-guide\std\win\ui\tabs\_.md
 21271746|32|49|doc\library-guide\std\winex\.aar
 355144813|14671|3996|doc\library-guide\std\winex\winex.md
 -768853118|74|84|doc\library-reference\.aar
@@ -336,7 +336,7 @@
 -1174621927|189|155|example\aardio\DateTime\.aar
 -1970321839|5930|1865|example\aardio\DateTime\clock.aardio
 -826185426|1174|696|example\aardio\DateTime\performanceCount.aardio
-1650075530|3927|1625|example\aardio\DateTime\time.aardio
+905346723|3924|1625|example\aardio\DateTime\time.aardio
 321771840|898|527|example\aardio\DateTime\time.ole.aardio
 -882727464|688|257|example\aardio\DateTime\timestamp.aardio
 -1562590167|991|502|example\aardio\DateTime\win.taskScheduler.aardio
@@ -352,7 +352,7 @@
 1764991797|1680|855|example\aardio\Raw\struct.aardio
 -248485700|90|96|example\aardio\README\.aar
 -1647923088|3100|1457|example\aardio\README\gc.aardio
-1275710547|1456|891|example\aardio\README\size64.aardio
+-917983574|1453|888|example\aardio\README\size64.aardio
 760550241|2476|1287|example\aardio\README\sparse-array.aardio
 -131631207|631|374|example\aardio\Thread\.aar
 -168886531|6309|2811|example\aardio\Thread\00.start.aardio
@@ -533,7 +533,7 @@
 1531741442|1897|1071|example\Database\sqlite\Each.aardio
 -173600522|2572|1329|example\Database\sqlite\fts.aardio
 872375879|2652|1403|example\Database\sqlite\Intro.aardio
--1275740559|1048|686|example\Database\sqlite\latest.aardio
+1586634970|1045|682|example\Database\sqlite\latest.aardio
 -2083011221|2649|1278|example\Database\sqlite\prepare.aardio
 2020661845|733|507|example\Database\sqlite\process.aardio
 -541298054|1404|745|example\Database\sqlite\replace.aardio
@@ -546,7 +546,7 @@
 445122626|1456|780|example\Excel\Excelize.aardio
 1108486895|526|391|example\Excel\more.aardio
 1170472717|1091|667|example\Excel\NPOI.aardio
--1105115855|2350|1299|example\Excel\ReoGrid.aardio
+-1854841254|2347|1297|example\Excel\ReoGrid.aardio
 598213195|2483|1225|example\Excel\SheetJS.aardio
 118489980|1460|962|example\Excel\SQL.aardio
 -2098779440|352|298|example\File\.aar
@@ -677,7 +677,7 @@
 -1423912786|10687|3381|example\Languages\Bat\cmd2Gui.aardio
 1990026477|218|177|example\Languages\Bat\ctrlEvent.aardio
 1103713720|855|486|example\Languages\Bat\env.aardio
--1544047776|1184|786|example\Languages\Bat\popen.aardio
+-1077379645|1181|783|example\Languages\Bat\popen.aardio
 232670614|68|76|example\Languages\Bat\Bat aardio对比\.aar
 1875486893|642|422|example\Languages\Bat\Bat aardio对比\for.fsys.aardio
 -570482299|1986|1087|example\Languages\Bat\Bat aardio对比\for.string.aardio
@@ -687,7 +687,7 @@
 1496218191|1563|797|example\Languages\C\flexible_array.aardio
 146169401|2851|1570|example\Languages\C\getCdecl.aardio
 1100683502|2756|1129|example\Languages\C\raw.cdeclParameter.aardio
-51415859|1158|668|example\Languages\C\raw.struct.aardio
+-779906326|1155|666|example\Languages\C\raw.struct.aardio
 -1363924378|483|339|example\Languages\C\run_main.aardio
 1171943277|774|490|example\Languages\C\setCdecl.aardio
 2133547090|601|469|example\Languages\C\start.aardio
@@ -880,7 +880,7 @@
 1779938938|857|539|example\Languages\Python\Python 2.x\export.aardio
 -1085950289|1272|758|example\Languages\Python\Python 2.x\hmac-sha1.aardio
 887896991|2481|1374|example\Languages\Python\Python 2.x\import.aardio
-525553192|4286|2041|example\Languages\Python\Python 2.x\import.ext.aardio
+1663162105|4283|2040|example\Languages\Python\Python 2.x\import.ext.aardio
 -2015780548|653|379|example\Languages\Python\Python 2.x\md5.aardio
 403921350|909|476|example\Languages\Python\Python 2.x\number.aardio
 1732141145|859|592|example\Languages\Python\Python 2.x\requests.aardio
@@ -898,7 +898,7 @@
 -791092790|1704|1037|example\Languages\Python\Python 3.x\gil.aardio
 -126194353|1272|760|example\Languages\Python\Python 3.x\hmac-sha1.aardio
 1067374480|2511|1380|example\Languages\Python\Python 3.x\import.aardio
--185340825|3875|1963|example\Languages\Python\Python 3.x\import.install.aardio
+667904202|3872|1961|example\Languages\Python\Python 3.x\import.install.aardio
 0|0|0|example\Languages\Python\Python 3.x\JSON-RPC\
 1269066393|1371|867|example\Languages\Python\Python 3.x\matplotlib.aardio
 -797395037|542|315|example\Languages\Python\Python 3.x\md5.aardio
@@ -1222,7 +1222,7 @@
 809828210|588|401|example\Web\JSON\rpcClient.aardio
 755294258|2283|1194|example\Web\JSON\rpcServer.aardio
 -728570829|467|317|example\Web\REST\.aar
-352050254|2234|1228|example\Web\REST\aiChat.aardio
+597484416|8792|3519|example\Web\REST\aiChat.aardio
 -816568122|730|445|example\Web\REST\auth.aardio
 -2035787935|708|435|example\Web\REST\encodeKey.aardio
 823418178|1190|697|example\Web\REST\headers.aardio
@@ -1271,7 +1271,7 @@
 -439636793|221|187|example\WebUI\Electron\.aar
 -917548292|4435|2169|example\WebUI\Electron\electron.aardio
 1192908861|1245|772|example\WebUI\Electron\go.aardio
-1326442064|3728|1956|example\WebUI\Electron\main.js.aardio
+434600992|3725|1955|example\WebUI\Electron\main.js.aardio
 -232828224|1542|740|example\WebUI\Electron\multiWindow.aardio
 939141625|4099|1890|example\WebUI\Electron\remoteDebugging.aardio
 0|0|0|example\WebUI\Electron\res\
@@ -1554,7 +1554,7 @@
 0|0|0|extensions\plugin\view\
 -390347847|3558|1429|extensions\plugin\pane\addfile.aardio
 -249281647|6370|1846|extensions\plugin\pane\example.aardio
-2061809853|6507|1854|extensions\plugin\pane\tool.aardio
+149923414|7557|2165|extensions\plugin\pane\tool.aardio
 592823224|1227|792|extensions\plugin\view\bbx.aardio
 551100781|1157|733|extensions\plugin\view\config.aardio
 1749230175|2520|1264|extensions\plugin\view\dsktip.aardio
@@ -1579,7 +1579,7 @@
 160670510|2194|1093|extensions\trigger\init.aardio
 0|0|0|extensions\trigger\lib\
 1509943656|953|515|extensions\trigger\openProject.aardio
--1916809898|403|261|extensions\trigger\openUrl.aardio
+179809821|459|257|extensions\trigger\openUrl.aardio
 -1371185444|13434|4543|extensions\trigger\publish.aardio
 563426514|1787|891|extensions\trigger\publishBefore.aardio
 -322915635|5010|1775|extensions\trigger\publishWebSite.aardio
@@ -2250,7 +2250,7 @@
 0|0|0|lib\zlib\
 1895937561|2224|923|lib\access\oleDb.aardio
 -1826531292|527|332|lib\access\query.aardio
--973941349|29162|8206|lib\access\_.aardio
+-573388471|29159|8209|lib\access\_.aardio
 -2018672658|3370|1200|lib\bencoding\decoder.aardio
 162527712|1570|612|lib\bencoding\encoder.aardio
 -376317522|2500|1076|lib\bencoding\magnet.aardio
@@ -2259,7 +2259,7 @@
 -1412317506|6344|2790|lib\builtin\io.aardio
 -1179361940|3803|1585|lib\builtin\math.aardio
 -1270832904|11137|3395|lib\builtin\raw.aardio
-310104186|16346|5418|lib\builtin\string.aardio
+-1166607161|16345|5416|lib\builtin\string.aardio
 1227749183|7257|2220|lib\builtin\struct.aardio
 -229132384|27661|8339|lib\builtin\table.aardio
 -1111483803|13720|4574|lib\builtin\thread.aardio
@@ -2457,7 +2457,7 @@
 -647041717|7009|2284|lib\fsys\version.aardio
 -2145745389|3076|1266|lib\fsys\watch.aardio
 -1692173656|2290|1036|lib\fsys\wow64.aardio
--1851105782|28244|8205|lib\fsys\_.aardio
+1206067771|28241|8203|lib\fsys\_.aardio
 673506009|11112|3443|lib\fsys\asar\reader.aardio
 -1800817618|6930|2407|lib\fsys\asar\writer.aardio
 909371783|3392|1353|lib\fsys\cab\maker.aardio
@@ -2508,7 +2508,7 @@
 286913452|473|247|lib\golang\.res\aardio\jsonrpc\jsonrpc.go
 0|0|0|lib\golang\.res\aardio\jsonrpc\tcp\
 -1268986318|559|309|lib\golang\.res\aardio\jsonrpc\tcp\tcp.go
--1279337276|68022|14399|lib\ide\aifix.aardio
+1537451460|68276|14524|lib\ide\aifix.aardio
 -1394918461|7075|2516|lib\ide\command.aardio
 -1410374365|187|156|lib\ide\customCtrl.aardio
 85987739|1816|789|lib\ide\debug.aardio
@@ -2566,7 +2566,7 @@
 1735740602|3305|1470|lib\mouse\screenArea.aardio
 -516683242|12438|3307|lib\mouse\_.aardio
 -322888008|1298|482|lib\nodeJs\process.rpc.js
-549036226|27073|5532|lib\nodeJs\_.aardio
+-1376677804|27064|5530|lib\nodeJs\_.aardio
 -836214966|5309|2089|lib\process\admin.aardio
 0|0|0|lib\process\apiHook\
 -343873572|1156|627|lib\process\atom.aardio
@@ -2587,7 +2587,7 @@
 -1872254587|2929|1055|lib\process\list.aardio
 -2138520827|4372|1806|lib\process\mutex.aardio
 0|0|0|lib\process\php\
-722785717|34244|8590|lib\process\popen.aardio
+562067982|34241|8588|lib\process\popen.aardio
 0|0|0|lib\process\python\
 0|0|0|lib\process\r\
 0|0|0|lib\process\rpc\
@@ -2859,10 +2859,10 @@
 583175206|1022|562|lib\web\uploadData.aardio
 0|0|0|lib\web\view\
 -1865275232|1613|781|lib\web\_.aardio
--1280705683|3690|1408|lib\web\form\chat.aardio
+-447873344|3999|1519|lib\web\form\chat.aardio
 1597099594|1953|943|lib\web\form\menu.aardio
 -1635206826|1525|622|lib\web\form\query.aardio
-429330876|4849|1842|lib\web\form\simpleMarkdown.aardio
+-102995561|5613|1975|lib\web\form\simpleMarkdown.aardio
 1131581254|2203|927|lib\web\form\snap.aardio
 -1734690316|2309|925|lib\web\form\sockpuppet.aardio
 -1175352145|5438|2066|lib\web\form\util.aardio
@@ -3045,7 +3045,7 @@
 659969705|10991|3702|lib\win\ui\ctrl\picturebox.aardio
 1746949909|95452|22309|lib\win\ui\ctrl\plus.aardio
 -1944431417|6818|2396|lib\win\ui\ctrl\progress.aardio
--85693445|58880|16255|lib\win\ui\ctrl\richedit.aardio
+-1725206629|58877|16258|lib\win\ui\ctrl\richedit.aardio
 20556836|8397|2958|lib\win\ui\ctrl\scrollbar.aardio
 -1533503747|9212|3377|lib\win\ui\ctrl\spin.aardio
 -1747405797|12951|3835|lib\win\ui\ctrl\splitter.aardio
@@ -3110,7 +3110,7 @@
 1754183471|6171|2286|lib\zlib\zip.aardio
 -164656525|17888|4854|lib\zlib\_.aardio
 1580871684|148992|73289|lib\zlib\.res\zlibwapi.dll
-1368358608|271|247|tools\.aar
+12201600|244|230|tools\.aar
 0|0|0|tools\.res\
 0|0|0|tools\Code\
 0|0|0|tools\Convert\

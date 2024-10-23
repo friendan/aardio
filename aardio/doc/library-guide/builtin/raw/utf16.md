@@ -77,7 +77,7 @@ Windows API（ WinAPI ） 函数名以 'W' 尾标表示 Unicode ( UTF-16 ) API�
 无论是不是 Unicode API，  
 API 函数声明里的其他类型则始终遵守相同的规则：
 
-- 声明为 ustring / USTRING 的参数总是会自动转换编码，。
+- 声明为 ustring / USTRING 的参数总是会自动转换编码。
 - 声明为 string 类型总是被 aardio 认为是二进制数据，不会自动转换编码。
 - 声明为 buffer、指针（pointer）等类型总是被认为是二进制数据，不会自动转换编码。
   

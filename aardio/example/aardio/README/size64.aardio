@@ -16,7 +16,7 @@ aardio 的有效整数上限是正负 (2**53 - 1)，100 万年内应该够用了
 而且 aardio 额外专门提供了 64 位无符号数类型 math.size64 。
 
 如果这还不够，aardio 还提供了
-支持大数运算的 math.bignum 以及 System.Numerics.BigInteger 库。。
+支持大数运算的 math.bignum 以及 System.Numerics.BigInteger 库。
 */
 
 //创建 64 位无符号整数

@@ -41,7 +41,9 @@ class aifix{
 				return ..string.slice(str,2,-2);
 			}); 
 		}
-		code = replace(code,`![$\{]\{([\w\.]+)\}`,`[1]`); 
+		
+		code = replace(code,"\s*\{\s*([\w#.]+)\s*\.\.\s*([\w#.]+)\s*\}"," table.range(\1,\2)"); 
+		//code = replace(code,`![$\{]\{([\w\.]+)\}`,`[1]`); //与模式匹配量词{b,e}冲突
 
 		var pyLike;
 		for(i=1;5;1){ 
@@ -499,12 +501,12 @@ class aifix{
 	 			return 	func ++ params ++ blockBegin ++ defArgs ++ indent;
 			}
 		)
- 		
+
  		//-------------------- 其他语法转换 --------------------------------------------
  		
  		code = replace(code,"(\w+)\:(\a\w*\()","\1\.\2");   
  		
-		code = replace(code,`\.\.(\s*['"])`,"++\1"); 
+		code = replace(code,`\.\.(\s*['"])`,"++\1");
  		code = replace(code,"\s+\.\.\s+"," ++ ");  
  		code = replace(code,"(\a\w*)\.\.","\1++"); //i..num.. 
  		
@@ -535,6 +537,7 @@ class aifix{
 			}  
 		}
 		
+		code = replace(code,`\@import\s+`,"import ");  
 		code = replace(code,`![\w\.$]import\s+/\N+`,"");  
 		code = replace(code,`![\w\.$]import\s+\"(.+?)\"`,"import \1");  
 		//只能替换分号前面的库，考虑类似 thread.table  
@@ -548,7 +551,8 @@ class aifix{
 		code = replace(code,"![\w\.$]import\s+io\.file![^\w.];?","");
 		code = replace(code,"![\w\.$]import\s+thread![^\w.];?","");
 		code = replace(code,"![\w\.$]import\s+win\.ui\.window![^\w.];?","");
-		code = replace(code,"![\w._$]import\s+string.utf8;*",""); 
+		code = replace(code,"![\w._$]import\s+string.utf8![^\w.];?",""); 
+		code = replace(code,"![\w._$]import\s+ui![^\w.]","import win.ui"); 
 		
 		code,count = replace(code,"![\w._$]import\s+array![^\w.];?",""); 
 		if(count){
@@ -775,23 +779,8 @@ class aifix{
 		//要在上面两句的 下面，顺序不能改
 		code = replace(code,"!\w[Cc]onsole.log*\(\s*tostring(%\(\))\s*\)","console.log\1");  
 				
-		code = replace(code,"Aardio","aardio");  
-		
-		code = replace(code,"!\wtable\.range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)",function(b,e){
-			var arr = {}
-			for(i=b;e;1){
-				..table.push(arr,i);
-			} 
-			return ..util.table.stringify(arr); 
-		} ); 
-		
-		code = replace(code,"!\wrange\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)",function(b,e){
-			var arr = {}
-			for(i=b;e;1){
-				..table.push(arr,i);
-			} 
-			return ..util.table.stringify(arr); 
-		} ); 
+		code = replace(code,"Aardio","aardio"); 
+		code = replace(code,"![\w.$_]range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)","table.range(\1,\2)"); 
 		
 		code = replace(code,"!\wos\.getenv\(","string.getenv("); 
 		code = replace(code,"!\wos\.setenv\(","string.setenv("); 
@@ -1707,8 +1696,17 @@ namespace aifix{
 		textedit = "edit";
 		text = "edit";
 	}
+	
+	markdown = function(md){
+		return (..string.replace(md,"!\N(```+)<aardio>(.+?)!\N\1",function(t,c){ 
+		 	c = ..ide.aifix(c);
+		 	c = ..string.replace(c,"\\","\\\\");
+			return t + 'aardio\r\n'++c+'\r\n'+t
+		}));
+	}
 }
 
 /*****intellisense()
 ide.aifix(__) = 用于修复 AI 生成代码的语法错误。\n在代码编辑器右键菜单点击『粘贴并更正』时自动调用 ide.aifix 。\n修复结果仅供参考。
+ide.aifix.markdown(__) = 用于修复 AI 生成的 markdown 中的 aardio 代码块。
 end intellisense*****/

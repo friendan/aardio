@@ -58,7 +58,7 @@ grid.Save("/test.xlsx");
 winform.show();
 win.loopMessage();
 
-//可如下快速编译 C# 函数然后调用。。
+//可如下快速编译 C# 函数然后调用。
 /****
 
 import dotNet.ReoGrid.Compiler; 

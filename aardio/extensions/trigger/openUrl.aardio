@@ -14,7 +14,10 @@ if(string.startWith(url,"file://~/",true)
 	return;
 }
 
+if(string.startWith(url,"file://",true) ){
+	url = string.expand(url);
+}
+
 raw.execute( url
 	,"","open",5/*_SW_SHOW*/,..io.fullpath("~/")
-	,ide.getMainHwnd()
 )

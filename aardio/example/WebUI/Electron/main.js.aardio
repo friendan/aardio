@@ -7,7 +7,7 @@ var app = electron.app( ,,true);// 如果第3个参数为true，可以查看js�
 electron是多进程运行环境，
 显示网页的叫渲染进程（类似浏览器环境）而启动electron的main.js则称为主进程，
 主进程、渲染进程与aardio交互的方法是一样的（不一样的麻烦地方我给大家处理好了），
-在js中aardio = require('aardio') 导入aardio接口就可以与aardio交互了。。
+在js中aardio = require('aardio') 导入aardio接口就可以与aardio交互了。
 */
 
 app.jsMain =/**  

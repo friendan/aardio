@@ -14,7 +14,7 @@ import process.popen
 打开命令行,隐藏命令行窗口，并返回可读写的进程管道。
 
 参数@2 可用字符串指定进程启动参数，多个参数用空格分格。
-如果 参数@3 是字符串，则自 参数@2 开始合并参数，并以空格分开，单参数含空格或需转义时首尾添加双引号。，
+如果 参数@3 是字符串，则自 参数@2 开始合并参数，并以空格分开，单参数含空格或需转义时首尾添加双引号。
 */
 var prcs,err = process.popen("cmd.exe","/k chcp "+::Kernel32.GetACP())
 if(!prcs) return winform.msgboxErr(err); 

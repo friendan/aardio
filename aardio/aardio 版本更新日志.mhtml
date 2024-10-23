@@ -1,24 +1,24 @@
 From: <Saved by Blink>
 Snapshot-Content-Location: https://ide.update.aardio.com/log/
 Subject: =?utf-8?Q?aardio=20=E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97?=
-Date: Tue, 22 Oct 2024 22:54:24 +0800
+Date: Wed, 23 Oct 2024 22:42:01 +0800
 MIME-Version: 1.0
 Content-Type: multipart/related;
 	type="text/html";
-	boundary="----MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----"
+	boundary="----MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f----"
 
 
-------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
+------MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f----
 Content-Type: text/html
-Content-ID: <frame-577D6517817919918382675D1D09065A@mhtml.blink>
+Content-ID: <frame-721197B38667144C17D91C53889B61E2@mhtml.blink>
 Content-Transfer-Encoding: quoted-printable
 Content-Location: https://ide.update.aardio.com/log/
 
 <!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
 t/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"text/css" href=3D=
-"cid:css-95324921-92a8-4117-8946-7ac688e84c1d@mhtml.blink" /><link rel=3D"s=
-tylesheet" type=3D"text/css" href=3D"cid:css-8dd7d11e-d7af-4641-84b2-b5e522=
-7cb514@mhtml.blink" />
+"cid:css-3cd3fc0d-ee3e-4916-a660-b56158f37331@mhtml.blink" /><link rel=3D"s=
+tylesheet" type=3D"text/css" href=3D"cid:css-1f66446c-641f-4aea-8bdd-23be2e=
+854130@mhtml.blink" />
 =09
 	<title>aardio =E7=89=88=E6=9C=AC=E6=9B=B4=E6=96=B0=E6=97=A5=E5=BF=97</titl=
 e>
@@ -78,6 +78,32 @@ v37.x =E8=87=AA=E5=8A=A8=E6=9B=B4=E6=96=B0=E5=A4=B1=E8=B4=A5=E4=BB=A5=E4=B8=
 =E8=A1=8C=E4=B8=BA=E3=80=82
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+aardio v37.6.1
+----------------------------------
+1. AI =E5=8A=A9=E6=89=8B=E5=8F=AF=E8=87=AA=E5=AE=9A=E4=B9=89=E5=9B=9E=E5=A4=
+=8D=E9=95=BF=E5=BA=A6=E3=80=82
+=E4=BF=AE=E6=94=B9=E9=95=BF=E5=BA=A6=E5=90=8E=EF=BC=8C=E5=BF=85=E9=A1=BB=E6=
+=94=B9=E7=94=A8=E8=87=AA=E5=B7=B1=E7=9A=84 API =E5=AF=86=E9=92=A5=E3=80=82
+
+aardio v37.6.0
+----------------------------------
+=E5=A2=9E=E5=8A=A0=EF=BC=9A =E5=B7=A5=E5=85=B7  /  AI =E5=8A=A9=E6=89=8B=E3=
+=80=82
+=E5=8F=AF=E4=BB=A5=E5=9C=A8=E7=BC=96=E8=BE=91=E5=99=A8=E5=85=88=E9=80=89=E4=
+=B8=AD=E4=BB=A3=E7=A0=81=EF=BC=8C=E7=84=B6=E5=90=8E=E7=82=B9=E3=80=8EAI =E5=
+=8A=A9=E6=89=8B=E3=80=8F=E8=A7=A3=E9=87=8A=E4=BB=A3=E7=A0=81=E3=80=82
+=E6=9B=B4=E6=96=B0=E5=90=8E=E9=87=8D=E5=90=AF aardio =E6=89=8D=E8=83=BD=E7=
+=9C=8B=E5=88=B0=E3=80=82
+
+aardio v37.5.7
+----------------------------------
+1. =E5=A2=9E=E5=8A=A0 ide.aifix.markdown =E5=87=BD=E6=95=B0=E3=80=82
+2. =E4=BC=98=E5=8C=96 AI =E8=81=8A=E5=A4=A9=E8=8C=83=E4=BE=8B=E3=80=82
+
+aardio v37.5.6
+----------------------------------
+1. web.form.chat =E5=A2=9E=E5=8A=A0 clear =E5=87=BD=E6=95=B0 =E3=80=82
 
 aardio v37.5.5
 ----------------------------------
@@ -2219,10 +2245,10 @@ play: none;">=E9=87=8D=E8=AF=95</a><a data-v-367aca12=3D"" class=3D"login" =
 style=3D"display: none;">=E7=AB=8B=E5=8D=B3=E7=99=BB=E5=BD=95</a></div><div=
 ><div data-v-23c9a954=3D""><!----></div></div><!----></div></div></template=
 ></div></html>
-------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
+------MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-95324921-92a8-4117-8946-7ac688e84c1d@mhtml.blink
+Content-Location: cid:css-3cd3fc0d-ee3e-4916-a660-b56158f37331@mhtml.blink
 
 @charset "utf-8";
 
@@ -2236,10 +2262,10 @@ r: pointer; position: absolute; top: 16px; right: 16px; }
 
 .qa-sdk-close-btn:hover { border-radius: 50%; background-color: rgb(213, 21=
 7, 223); }
-------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
+------MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f----
 Content-Type: text/css
 Content-Transfer-Encoding: quoted-printable
-Content-Location: cid:css-8dd7d11e-d7af-4641-84b2-b5e5227cb514@mhtml.blink
+Content-Location: cid:css-1f66446c-641f-4aea-8bdd-23be2e854130@mhtml.blink
 
 @charset "utf-8";
 
@@ -2249,7 +2275,7 @@ Content-Location: cid:css-8dd7d11e-d7af-4641-84b2-b5e5227cb514@mhtml.blink
   #ai-assist-root-bangs, #ai-assist-root-bilibili, #ai-assist-root-new { di=
 splay: none !important; }
 }
-------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa----
+------MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f----
 Content-Type: image/jpeg
 Content-Transfer-Encoding: base64
 Content-Location: https://ide.update.aardio.com/log/weixin2.jpg
@@ -2515,4 +2541,4 @@ KbP/AIt+c/npH/qpi+2fTfb/APbVjt6pPoAZRrtU38B6/UXRX3/8r/hanayqb8p+1fYvyX+OYUyQ
 /wC//ZPuTz9m+8/ZvqPpfrFX0/yfH8xvt94gmLwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwDwD
 wDwDwP/Z
 
-------MultipartBoundary--Ll7PRuXhKmrp3dkd64iJneZTQOQBC87CL9ajGOFAFa------
+------MultipartBoundary--otSGoWBxuYU3mKTgaJT1DVXlxAI2DeIyrf9gIndR2f------

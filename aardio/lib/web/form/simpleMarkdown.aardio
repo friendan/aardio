@@ -38,7 +38,7 @@ class simpleMarkdown{
     		display: inline-block;
     		background-color: #E7F8FF;
     		border-radius: 8px; 
-    		text-align: center;
+    		text-align: left;
     		padding:2px 10px;
 		}
 		
@@ -68,7 +68,6 @@ class simpleMarkdown{
 			
 			Prism.highlightAll(); 
 			document.documentElement.scrollTop = document.documentElement.scrollHeight;
-			
 		}
 		
 		window.showLoading = function(title){ 
@@ -119,21 +118,44 @@ class simpleMarkdown{
 		var markdown = ..string.markdown(); 
 		this.showLoading = function(title){
 			lastElement = null;
+			
 			this.body.insertAdjacentHTML("beforeEnd",`<div id="loading"></div>`)
 			this.script.showLoading(title);
 		}
 		
+		this.showError = function(msg){
+			 
+			this.write("");//清除 loading 
+			this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
+			lastElement = null;
+			
+			this.script.onWriteEnd(); 
+			if(this.onWriteEnd){ this.onWriteEnd(); }
+		}
+		
 		this.write = function(content,final){
-    		if(!content){  
+    		if(!content){
+    		    
+         		if(#markdownText) {
+         			
+         			if(this.beforerWriteEnd){
+         				markdownText = this.beforerWriteEnd(markdownText);
+         			}
+         			
+         			var html = markdown.render(markdownText);
+        			html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
+        			this.body.innerHTML = html;
+         		}
+         		
          		this.script.onWriteEnd(); 
          		lastElement = null; 
-         		
-         		if(#markdownText) markdownText = markdownText + '\n\n<br>\n\n';
+         		if(this.onWriteEnd){ this.onWriteEnd(); }
          		return; 
     		}
     		
     		if(final){
-    			var html = markdown.render(content);
+    		    markdownText = content;
+    			var html = markdown.render(content); 
     			html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
     			this.body.innerHTML = html;  
     			return;
@@ -150,7 +172,9 @@ class simpleMarkdown{
         		html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
         		this.body.innerHTML = html; 
          		
-        		lastElement = this.script.lastInsertElement() 
+         		if(#content){
+         			lastElement = this.script.lastInsertElement() 
+         		}
     		}
 		}
 		
@@ -159,7 +183,7 @@ class simpleMarkdown{
 			return url, flags, target, postData, headers,true;
 		}
 		
-		this.noScriptErr = true; 
+		//this.noScriptErr = true; 
 		
 	} }; 
 }

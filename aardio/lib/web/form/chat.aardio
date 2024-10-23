@@ -67,13 +67,14 @@ class chat{
 				if(msg.role=="user"){ 
 					
 					if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
-						this.write('\n\n<span class="chat-role user">我</span>\n' + msg.content + '\n<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+						this.write('\n\n<span class="chat-role user">我</span>\n
+    					<div class="chat-prompt">\n'+msg.content + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
 					}
 					else{
     					this.write('\n\n<span class="chat-role user">我</span>\n
     					<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
     				}
-    				
+    				 
     				this.showLoading("正在思考 ");
 				}
 			} 
@@ -90,9 +91,12 @@ class chat{
 		}
 	}; 
 	errorMessage = function(msg){
-		this.write("");//清除 loading
-		this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
+		this.showError(msg);
 	}; 
+	clear = function(){
+		this.write("",true);
+		this.chatMessage = ..table.array();
+	};
 }
 
 /*****intellisense()
@@ -103,6 +107,7 @@ web.form.chat() = !stringChatMessageForm.
 end intellisense*****/
 
 /*****intellisense(!stringChatMessageForm)
+clear() = 清除会话记录
 errorMessage(__/*错误信息*/) = 显示错误信息
 assistant(__/*错误信息*/) = 显示并记录 AI 接口返回的 result.data.choices 。
 prompt(__/*提示词*/) = 添加并显示用户提示词
@@ -110,6 +115,11 @@ system(__/*提示词*/) = 添加并显示系统提示词
 chatMessage = 消息队列，用于发送到 chat/completions 聊天接口。
 chatMessage.limit = 可选指定一个限制队列大小的数值
 lastMarkdown() = 获取最后一次 AI 回复的 Markdown 格式内容
-getMarkdown() = 返回输出到页面的所有 Markdown 格式内容 
+getMarkdown() = 返回输出到页面的所有 Markdown 格式内容。
+onWriteEnd = @.onWriteEnd = function(){
+	__/*发出问题以后，AI 回复完成或出现错误回调此事件*/
+}
+beforerWriteEnd = @.beforerWriteEnd = function(markdown){
+	__/*在输出完整回复以前，可在此回调中修改返回输出的全部 Markdown。\n错误输出不会触发此函数。*/
+}
 end intellisense*****/
-
