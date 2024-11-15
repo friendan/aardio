@@ -1,4 +1,4 @@
-//反编译工具
+//.NET 反编译工具
 import fsys.dlg;
 import dotNet.ilSpy;
 

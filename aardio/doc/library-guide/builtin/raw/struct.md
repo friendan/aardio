@@ -274,7 +274,7 @@ var arr  =  {
   
    函数根据从第一个参数 @arrayOrLenght 获取的长度在结构体中创建一个值为原生类型数组的字段（由第三个参数 @rawTypename 指定字段名称 ）。参数 @arrayOrLenght 可以直接用一个数值指定数组长度，也可以用于初始化数组内容与大小的普通数组（ table 对象 ）。
 
-   第二个参数 @rawTypename 指定定[原生数据类型名](datatype.md)，默认为"struct" 类型。
+   第二个参数 @rawTypename 指定[原生数据类型名](datatype.md)，默认为"struct" 类型。
 
    第三个参数 @rawTypename 指定创建的结构体中保存原生数组的字段名称，省略则使用默认字段名 "array"。
 

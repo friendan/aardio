@@ -1,7 +1,7 @@
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="调用 MPlayer 播放器（按回车全屏，按空格暂停）";right=856;bottom=483;bgcolor=16515070)
+var winform = win.form(text="调用 MPlayer 视频播放器（按回车全屏，按空格暂停）";right=856;bottom=483;bgcolor=16515070)
 winform.add(
 btnFullScreen={cls="plus";text='\uF047';left=811;top=453;right=852;bottom=483;color=1938422;db=1;dr=1;font=LOGFONT(h=-16;name='FontAwesome');iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};notify=1;repeat="center";z=4};
 btnPlay={cls="plus";text='\uF04B';left=10;top=456;right=42;bottom=479;color=1938422;db=1;dl=1;font=LOGFONT(h=-19;name='FontAwesome');notify=1;repeat="scale";z=5};

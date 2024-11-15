@@ -22,7 +22,7 @@ getPassword = function(url){
 	if(!hr)return str;
 }
 getPort = function(url){
-	hr,str = UrlGetPart(url,10,5,5,0);
+	hr,str = UrlGetPart(url,12,6,5,0);
 	if(!hr)return str;
 }
 getQuery = function(url){

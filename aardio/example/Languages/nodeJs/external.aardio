@@ -1,4 +1,4 @@
-//JS 调用 aardio
+//Node.js 回调 aardio
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="RPC 服务端 - 支持任意本地网页调用 aardio 函数";right=759;bottom=469)

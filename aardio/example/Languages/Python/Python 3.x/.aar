@@ -1,12 +1,12 @@
-入门=start.aardio
-执行 Python 代码=hmac-sha1.aardio
+入门=QuickStart.aardio
+执行 Python 代码=exec.aardio
 导入模块 =import.aardio
 安装模块=import.install.aardio
 调用 aardio 对象  =export-ctor.aardio
 导出 aardio 模块=export.aardio
 命名参数=requests.aardio
 eval 示例=compile-eval.aardio
-HTTP 服务器=exec.aardio
+HTTP 服务器=httpServer.aardio
 捕获标准输出=catchOutErr.aardio
 run=run.aardio
 多线程 GIL=gil.aardio

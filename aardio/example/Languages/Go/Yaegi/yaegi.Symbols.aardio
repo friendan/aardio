@@ -1,4 +1,4 @@
-//提取符号表
+//aardio 调用 Go 语言 yaegi 脚本 - 提取符号表
 //教程: https://mp.weixin.qq.com/s/_YBW0kN2uJ_pBekNF_b0WQ
 import console.int; 
 import golang;

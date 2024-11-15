@@ -1,4 +1,4 @@
-﻿//replace 语句
+﻿//sqlite 库 - replace 语句
 import sqlite;
 import console;
 

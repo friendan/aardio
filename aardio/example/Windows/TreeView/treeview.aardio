@@ -1,4 +1,4 @@
-//树形控件入门示例
+//树视图（treeview）控件 - 入门示例
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=349;bottom=249;parent=...)

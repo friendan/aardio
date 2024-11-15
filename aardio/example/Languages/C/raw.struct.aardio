@@ -1,5 +1,5 @@
-//静态内存结构体
-//相关范例：aardio 语言 > 原生类型 > 静态内存结构体
+//aardio 调用 C 语言之静态内存结构体
+//相关范例: file://~/example/aardio/Raw/raw.struct.aardio
 
 import console.int;
 import tcc;

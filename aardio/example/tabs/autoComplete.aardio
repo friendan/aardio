@@ -1,4 +1,4 @@
-//自动完成
+//用高级选项卡（win.ui.tabs）实现自动完成效果
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

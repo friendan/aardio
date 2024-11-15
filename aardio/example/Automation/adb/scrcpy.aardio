@@ -1,4 +1,4 @@
-//安卓手机投屏
+//aardio 通过 adb 实现安卓手机投屏
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="process.adb 扩展库范例 - 安卓手机无线投屏";right=564;bottom=554;bgcolor=16777215)

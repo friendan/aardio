@@ -1,4 +1,4 @@
-//对象数组
+//aardio 调用 AutoCAD - 对象数组
 import com.cad
 var cad = com.cad();
 cad.Visible = true;  

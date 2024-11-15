@@ -1,4 +1,4 @@
-//导入模块 
+//在 aardio 中导入 Python 模块 
 import console;
 import py3; 
 

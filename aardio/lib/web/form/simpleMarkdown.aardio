@@ -49,6 +49,7 @@ class simpleMarkdown{
             padding: 10px;
             border-radius: 5px;
             margin: 10px 0;
+            font-size: 14px;
         }
         
         hr{box-sizing:content-box;overflow:hidden;background:0 0;border-bottom:1px solid #d0d7deb3;height:.25em;padding:0;margin:24px 0;background-color:#d0d7de;border:0}
@@ -67,7 +68,7 @@ class simpleMarkdown{
 			}
 			
 			Prism.highlightAll(); 
-			document.documentElement.scrollTop = document.documentElement.scrollHeight;
+			document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
 		}
 		
 		window.showLoading = function(title){ 
@@ -76,6 +77,9 @@ class simpleMarkdown{
 				clearInterval( window.interval );
 				window.interval  = 0;
 			}
+			
+			loading.innerText = title;
+			document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
 			
 			var dots = 1;
 			window.interval = setInterval(function() {
@@ -86,7 +90,7 @@ class simpleMarkdown{
 					
 					//用定时器滚动更轻快，不能打一个字就滚一下那会卡得不行
 					window.interval = setInterval(function() {
-						document.documentElement.scrollTop = document.documentElement.scrollHeight;
+						document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
      				},800);
      				
 					return;
@@ -98,7 +102,7 @@ class simpleMarkdown{
     			}
     			loading.innerText = title + "" + text;
     			dots = (dots % 10) + 1;
-			}, 700); 			
+			}, 800); 			
 		}
 		
 
@@ -115,7 +119,19 @@ class simpleMarkdown{
 			return markdownText;
 		};
 		
+		this.setMarkdown = function(md){
+			markdownText = md;
+			this.write(md);
+		}
+		
 		var markdown = ..string.markdown(); 
+		this.write = function(md){
+			var html = markdown.render(md); 
+    		html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
+    		this.body.innerHTML = html;  
+    		this.script.onWriteEnd();  
+		}
+		
 		this.showLoading = function(title){
 			lastElement = null;
 			
@@ -125,24 +141,28 @@ class simpleMarkdown{
 		
 		this.showError = function(msg){
 			 
-			this.write("");//清除 loading 
-			this.body.insertAdjacentHTML("beforeEnd",`<span class="error-message">`+(msg:"未知错误")+`</span>`);
+			this.writeDelta("");//清除 loading 
+			this.body.insertAdjacentHTML("beforeEnd",`<div class="error-message">`+(msg:"未知错误")+`</div>`);
 			lastElement = null;
 			
 			this.script.onWriteEnd(); 
 			if(this.onWriteEnd){ this.onWriteEnd(); }
 		}
 		
-		this.write = function(content,final){
-    		if(!content){
+		this.writeDelta = function(delta){
+    		if(!delta){
     		    
          		if(#markdownText) {
          			
+         			var html;
          			if(this.beforerWriteEnd){
-         				markdownText = this.beforerWriteEnd(markdownText);
+         				var md = this.beforerWriteEnd(markdownText);
+         				html = markdown.render(md || markdownText);
+         			}
+         			else {
+         				html = markdown.render(markdownText);	
          			}
          			
-         			var html = markdown.render(markdownText);
         			html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
         			this.body.innerHTML = html;
          		}
@@ -153,26 +173,18 @@ class simpleMarkdown{
          		return; 
     		}
     		
-    		if(final){
-    		    markdownText = content;
-    			var html = markdown.render(content); 
-    			html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
-    			this.body.innerHTML = html;  
-    			return;
-    		}
-    		
-    		markdownText = markdownText ++ content; 
+    		markdownText = markdownText ++ delta; 
     		
     		if(lastElement && 
-        		( (lastElement.tagName=="PRE"&&!..string.indexOf(content,"`")) || !..string.find(content,"\p")) ){
-        		lastElement.insertAdjacentText("beforeEnd",content)  
+        		( (lastElement.tagName=="PRE"&&!..string.indexOf(delta,"`")) || !..string.find(delta,"\p")) ){
+        		lastElement.insertAdjacentText("beforeEnd",delta)  
     		}
     		else {
         		var html = markdown.render(markdownText);
         		html = ..string.replace(html,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
         		this.body.innerHTML = html; 
          		
-         		if(#content){
+         		if(#delta){
          			lastElement = this.script.lastInsertElement() 
          		}
     		}
@@ -183,7 +195,7 @@ class simpleMarkdown{
 			return url, flags, target, postData, headers,true;
 		}
 		
-		//this.noScriptErr = true; 
+		this.noScriptErr = true; 
 		
 	} }; 
 }

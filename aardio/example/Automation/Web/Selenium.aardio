@@ -1,4 +1,4 @@
- //Selenium
+ //使用 Selenium 实现网页自动化操作
 import console;
 console.showLoading(" 正在启动 Selenium .NET ");
  

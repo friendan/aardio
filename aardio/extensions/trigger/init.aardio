@@ -58,7 +58,7 @@ thread.invoke(
 			import fsys.version;
 			if( fsys.version(cfgVersion ) >= fsys.version( versionInfo.version ) ){
 				
-				ide.startpage();
+				//ide.startpage();
 				return;
 			}
 		

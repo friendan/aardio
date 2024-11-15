@@ -1,4 +1,4 @@
-//组合框效果
+//用 plus 控件创建组合框效果
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="plus 控件 - 实现组合框";right=748;bottom=257)

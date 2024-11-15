@@ -1,4 +1,4 @@
-//入门
+//用 web.rest 客户端调用 HTTP API - 入门
 import console;
 console.showLoading(" 正在连接服务器")
 

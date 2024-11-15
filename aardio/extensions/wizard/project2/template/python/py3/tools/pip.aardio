@@ -1,5 +1,6 @@
 import py3.pip;//如果程序中用的是 py3.10，这一句也要改为 py3.10.pip
-py3.pip.setIndexUrl("aliyun");//切换国内镜像源，参数为空恢复
+//py3.pip.setIndexUrl("aliyun");//切换国内镜像源，参数为空恢复
+py3.pip.process.setIndexUrl("aliyun");//切换国内镜像源，参数为空恢复
 
 /*
 进程外安装模块到 /py/Python+版本号/site-packages 目录，

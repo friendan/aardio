@@ -1,4 +1,4 @@
-//分行模式匹配
+//aardio 调用进程管道 - 分行模式匹配
 import console;
 import process.popen;
 

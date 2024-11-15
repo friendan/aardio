@@ -1,4 +1,4 @@
-///Xml,XPath
+//aardio 调用 .NET 组件 System.Xml 实现 XPath 查询
 import console.int;
 import dotNet;
 

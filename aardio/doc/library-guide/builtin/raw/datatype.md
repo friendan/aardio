@@ -9,7 +9,7 @@ aardio 本身是动态语言，aardio 语言本身的数据类型( datatype ) �
 在 aardio 中使用原生类型主要有两种方式：
 
 - raw 库函数
-- 原生原生 API 函数。这个主要是指原生 DLL 接口。
+- 原生 API 函数。这个主要是指原生 DLL 接口。
 - aardio 定义的结构体。 
 
 参考：
@@ -20,7 +20,7 @@ aardio 本身是动态语言，aardio 语言本身的数据类型( datatype ) �
 
 ## 原生数据类型( raw datatype )  
 
-注意原生原生数据类型声明严格区分大小写，数据类型大写表示对类型有更严格的限制条件。  
+注意原生数据类型声明严格区分大小写，数据类型大写表示对类型有更严格的限制条件。  
 
 - 数值类型小写表示允许负数，大写表示无符号数据类型(没有负数，仅有正整数)。   
 - 对于支持指针的类型(string,pointer)，小写表示允许 null 值并允许自动转换（例如字符串转换为指针），大写表示不接受 null 实参。  
@@ -56,7 +56,7 @@ aardio 对原生类型做了简化，只要掌握几个基础类型就可以了�
 | 字节数组 | pointer | 32位/64位 | buffer null | `char *`,`unsigned char *` |  | <p>这种可以让 API 读或写数据的字节数组也就是 aardio 中的 buffer 类型，使用 raw.buffer() 函数创建 buffer。 <br><br>如果一个被作为 API 函数输出参数的结构体的指针字段被赋值为 buffer ，在这个结构体返回时如果指针指向的地址没有变化则字段值不变（仍然指向原来的 buffer） </p> <p></p> |
 | UTF-16 字符串 | ustring | 32位 | ustring pointer null | `const wchar_t *` | LPCWSTR,<br>LPWSTR,    | <p>Unicode(UTF16) 纯文本字符串 (遇 `'\u0000'` 结束)，aardio 会自动做双向编码转换，传给 API 时是 UTF16 ，从 API 返回时转换为 UTF8。在 API 回调函数或结构体中API返回0~0xFFFF或-1的指针地址aardio将转换为指针而不是字符串 <br></p> |
 | UTF-16 字符串 | USTRING | 32位 | string pointer | `const wchar_t* `| LPCWSTR,<br>LPWSTR,    |  类型名 USTRING 大写时禁用 null 值。|
-| 结构体 | struct | 32位 | table | struct |  | <p>注意在原生 API 函数中，struct 对象总是传址（传结构体指针），如果是按值传递的结构体，可尝试[展开其成员为多个普通参数](struct#by-val)。<br><br>原生 API 函数的 struct 参数不允许传 null 值，必须使用空表 `{}` 表示表示结构体指针传 null 值。</p> <p></p> |
+| 结构体 | struct | 32位 | table | struct |  | <p>注意在原生 API 函数中，struct 对象总是传址（传结构体指针），如果是按值传递的结构体，可尝试[展开其成员为多个普通参数](struct#by-val)。<br><br>原生 API 函数的 struct 参数不允许传 null 值，必须使用空表 `{}` 表示结构体指针传 null 值。</p> <p></p> |
 | 联合 | union | 32位 | table | union |  | `u = { union value = { BYTE c=8; WORD s=123; } }` |
 | 空类型 | void |  |  | void |  | 标识函数返回值为空 |
 |  |   |  |  |   |  | <div style="width:590px"></div>  |
@@ -168,7 +168,7 @@ var ret,caption = apiFunc(hwnd,text,caption,uType);
 | 双精度浮点数 | `double &` | `double *` |  |
 | 布尔值 | `bool &` | `bool *` `BOOL *` |   |
 | 指针 | `pointer &`<br>`POINTER &` | `void **` | 二级指针。 |
-| 字符串 | `string &`<br>`STRING &` | `char **` | <p>string &类型的参数参数可以使用 buffer 对象（这时候对应的输出参数返回值为buffer类型，而非字符串）。<br><br> 如果参数是一个字符串，这时候 aardio 会创建一个等长的临时的 buffer 并拷贝字符串到该内存，并将内存指针发送给API函数，在调用结束后增加相应的返回值返回新的字符串。<br><br> 如果参数是一个指定 buffer 长度的数值（以字节为单位），aardio初始化 buffer 所有字节值为0，并且在 buffer 尾部增加2个字节并写入'\\u0000'。使用参数0表示传递给此类型参数一个null指针(而不是使用null空参数）<br><br>这种API类型，也可以在 aardio 中声明为pointer指针类型，然后用 raw.buffer() 函数创建一个可以让API写入数据的 buffer 传过去。</p> |
+| 字符串 | `string &`<br>`STRING &` | `char **` | <p>string &类型的参数可以使用 buffer 对象（这时候对应的输出参数返回值为buffer类型，而非字符串）。<br><br> 如果参数是一个字符串，这时候 aardio 会创建一个等长的临时的 buffer 并拷贝字符串到该内存，并将内存指针发送给API函数，在调用结束后增加相应的返回值返回新的字符串。<br><br> 如果参数是一个指定 buffer 长度的数值（以字节为单位），aardio初始化 buffer 所有字节值为0，并且在 buffer 尾部增加2个字节并写入'\\u0000'。使用参数0表示传递给此类型参数一个null指针(而不是使用null空参数）<br><br>这种API类型，也可以在 aardio 中声明为pointer指针类型，然后用 raw.buffer() 函数创建一个可以让API写入数据的 buffer 传过去。</p> |
 | 文本字符串 | `str &` | `const char **` | 同上,但以'\\0'为终结符返回文本字符串。如果参数使用 buffer 对象，这时候对应的输出参数返回值为字符串，而非buffer类型 |
 | 宽字符串 | `ustring &`<br>`USTRING &` | `wchar_t * `| <p>可以使用 buffer 对象（这时候对应的输出参数返回值为字符串，而非buffer类型）。<br><br> 如果参数是一个字符串(aardio会自动转换为UTF16编码再取长度)，这时候aardio会创建一个等长的临时的 buffer 并拷贝字符串到该内存，并将内存指针发送给API函数，在调用结束后增加相应的返回值返回新的字符串。<br><br> 如果参数是一个指定 buffer 长度的数值（以字符为单位，一个字符占2个字节），aardio初始化 buffer 所有字节值为0，并且在 buffer 尾部增加2个字节并写入'\\u0000'。使用参数0表示传递给 buffer 一个null指针(而不是使用null空参数）<br><br>也可以 buffer 对象作为参数，如果使用 buffer，输入值不转换编码，但返回值转换为UTF8编码，并转换为字符串类型作为返回值（不改变输入参数的类型）</p> |
 | 结构体 | `struct &` | `void *` | 结构体按引用传递，具有副作用的，即使不接收对应的返回值，结构体仍然可被API函数修改值。<br><br>可以在API参数中使用空结构体 {} 表示C/C++中的null结构体指针 <br><br>请参考：[table参数的副作用](../../../language-reference/function/parameter.md#table) |
@@ -260,7 +260,7 @@ aardio 中的 string 数据类型是传址的，多个相同内容的字符串�
   
 `pointer &` 类型的输出参数必须使用 pointer 类型的实参、或 null 值接收新的指针值。
 
-`pointer ` 类型输入参数中可以以使用 string、pointer 类型的实参、也可以使用 buffer 对象。如果 aardio 对象声明了 `_topointer` 元方法，并通过 `_topointer` 元方法返回一个 pointer 指针或数值，则可以作为指针实参使用。 `_topointer` 元方法可以指向返回指针或内存地址的函数，也可以直接设置一个指针或内存地址值（数值）。
+`pointer ` 类型输入参数中可以使用 string、pointer 类型的实参、也可以使用 buffer 对象。如果 aardio 对象声明了 `_topointer` 元方法，并通过 `_topointer` 元方法返回一个 pointer 指针或数值，则可以作为指针实参使用。 `_topointer` 元方法可以指向返回指针或内存地址的函数，也可以直接设置一个指针或内存地址值（数值）。
 
 aardio 字符串的指针是常量指针，外部 API 函数不应当修改 aardio 字符串指针指向的内存。 而 raw.buffer 分配的内存是可修改的，当使用 raw.buffer 分配的指针作为参数时，该参数在 API 函数参数中应当声明为`pointer`类型而不应当声明为`pointer&`类型，因为 buffer 用收接收指针指向的数据而不是接收指针本身。
 

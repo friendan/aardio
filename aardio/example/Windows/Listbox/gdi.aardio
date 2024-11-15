@@ -1,4 +1,4 @@
-//GDI自绘
+//列表框控件（listbox） - GDI 自绘
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="listbox自绘(GDI方式)";right=757;bottom=467)

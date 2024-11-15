@@ -1,4 +1,4 @@
-//切片
+//aardio 调用 Go 语言 - 切片
 import golang;
 var go = golang();   
 go.main = /**********

@@ -78,7 +78,7 @@ dispinterface 接口名 {
 ### 2.4 备注
 - aardio 里最常用的是 dispinterface 接口，否则必须是继承自 IDispatch 的自动化接口。
 - dispinterface 接口不能继承自其他接口（因为必须继承自IDispatch）。
-- dispinterface 不需要要在最后一个参数指定返回值，并且也不需要返回  `HRESULT` 值，而是直接指定实际需要的返回值就可以了。
+- dispinterface 不需要在最后一个参数指定返回值，并且也不需要返回  `HRESULT` 值，而是直接指定实际需要的返回值就可以了。
 - 添加 [out] 标记参数能声明输出参数，实际上 COM 接口很少用这种输出参数，直接使用返回值更简单。
 - 所有 DISPID 的值必须小于 10000 并大于等于 0 ，大于 10000 的 DISPID 由 aardio 自动分配。
 

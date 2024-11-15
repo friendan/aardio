@@ -1,4 +1,4 @@
-﻿//带参数属性
+﻿//COM 接口 - 带参数属性
 import console;
 import com.excel; 
 

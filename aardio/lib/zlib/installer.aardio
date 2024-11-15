@@ -11,7 +11,7 @@ class installer{
 		}
 	
 		return ..zlib.httpFile.download(url
-			,"正在下载程序运行必需组件：" + appName,downloadDir,,,..win.getActive()
+			,"正在下载程序运行必需组件：" + appName,savePath,,,..win.getActive()
 			,function(downBox,extraDir){
 				downBox.text = "安装本程序运行必需组件：" + appName;  
 				downBox.labInfo.text = "请允许 " + appName + " 安装程序以管理权限启动  ……"; 

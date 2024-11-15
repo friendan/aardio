@@ -1,4 +1,4 @@
-//桌面图标
+//获取桌面图标信息
 import winex.desktop; 
 import console;
  

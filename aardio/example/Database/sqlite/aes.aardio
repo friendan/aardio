@@ -1,4 +1,4 @@
-//加密算法
+//sqlite 库 - 加密算法
 import console;
 import sqlite.ciphers; 
 

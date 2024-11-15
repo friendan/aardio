@@ -1,4 +1,4 @@
-//效率模式
+//设置进程效率模式
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

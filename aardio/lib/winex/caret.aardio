@@ -58,7 +58,8 @@ get = function(hwnd){
 			if( ::User32.GetCursorInfo(cursorInfo) && (cursorInfo.hCursor == iBeam) ){
 				caret = ::RECT();
 				::User32.GetCursorPos(caret);
-				caret.hwnd = hwndTarget;  
+				caret.hwnd = hwndTarget;
+				caret.type = "cursor";
 			} 
 		}
 	}

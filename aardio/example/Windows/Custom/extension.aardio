@@ -1,4 +1,4 @@
-//扩展控件
+//窗口程序 - 使用自定义控件作为宿主窗口创建扩展控件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=759;bottom=469)

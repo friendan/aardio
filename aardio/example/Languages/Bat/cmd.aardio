@@ -1,4 +1,4 @@
-//批量执行CMD命令
+//aardio 批量执行 CMD 命令
 //相关范例：进程 > 管道
 
 import process.popen

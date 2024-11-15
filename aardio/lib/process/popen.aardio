@@ -442,6 +442,11 @@ class popen{
 		if(ret &&!retErr) return ..web.json.tryParse(ret);
 		return null,retErr;
 	};
+	ndjsonAll = function(close){
+		var ret,retErr  = this.readAll(,close)
+		if(ret &&!retErr)  return ..table.filter(..web.json.ndParse(ret),lambda(v)type(v)=="table");
+		return null,retErr;
+	};
 	jsonWrite = function(obj){
 		return this.write(..web.json.stringify(obj),'\n')
 	};
@@ -586,9 +591,9 @@ namespace popen{
 }
 
 /**details(相关范例)
-范例程序 > 进程 > 管道
-范例程序 > 调用其他语言 > 批处理与命令行
-范例程序 > 文件操作 > 文件权限
+[范例程序/进程/管道](doc://example/Process/Pipe/QuickStart.aardio)
+[范例程序/调用其他语言/批处理与命令行](doc://example/Languages/Bat/popen.aardio)
+[范例程序/文件操作/文件权限](doc://example/File/Permissions/cacls.html)
 end details**/
  
 /**intellisense()
@@ -619,7 +624,7 @@ process.popen.ps() = !process_popen.
 process.popen.ps1() = !process_popen.
 process.popen.detached() = !process_popen.
 process.popen.wsl() = !process_popen.
-!process_popen.codepage = 进程输入输出使用的代码页,默认为0
+!process_popen.codepage = 进程输入输出使用的代码页,默认为 0（系统默认 ANSI 编码）。\nUTF-8 编码的程序必须指定为 65001 ，否则可能会出现乱码。\n\n传统命令行程序通常使用 ANSI 编码。\n而一些跨平台的语言编写的命令行程序通常会使用 UTF-8 编码。
 !process_popen.textMode(.(output,input) = 参数 @output 指定进程输出是否使用文本模式\n参数 @input 指定进程输入是否使用文本模式\n输入输出默认都是二进制模式\n\n文本模式下'\x1A'(CTRL+Z),'\0'表示终止文本,\n并且读入时自动转换回车换行为换行,\n写出时自动转换换行符为回车换行
 !process_popen.reaUtf8(__) = 所有参数用法与 read 函数相同。\n此函数直接读入，不作任何编码转换。
 !process_popen.read(0) = 检测是否读取到文件尾
@@ -676,6 +681,7 @@ process.popen.wsl() = !process_popen.
 !process_popen.stdIn = 进程标准输入\n\nwaitOne 函数返回 true，或 each ，expect 等函数检测到进程退出，\n或readAll 或 read 函数参数为 -1 时\n会自动关闭目标进程标准输入管道\n!ioFile.
 !process_popen.json() = 等待并读取进程输出的一行 JSON ，并解析为对象。\n成功返回对象，失败返回 null,错误信息。\n此函数不阻塞界面线程消息。\n\nJSON 最外层必须是大括号 {} 或中括号 []，JSON不能包含非转义换行，且必须以换行结束。\n自动忽略不符合要求的其他输出。\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json
 !process_popen.jsonAll() = 读取进程的全部输出，并用 JSON 解析为 aardio 对象。\n成功返回对象，失败返回 null,错误信息。\n此函数会等待进程结束，但不会阻塞当前线程窗口消息。\n\n进程输出应符合 JSON 语法。\n如果参数 @1 为 true 或省略，读取后关闭进程管道。\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json
+!process_popen.ndjsonAll() = 读取进程的全部输出，并将多行 JSON 解析为 aardio 对象。\n有效的 JSON 必须是JSON 对象或数组，忽略其他 JSON 类型或无效的行。\n成功返回对象，失败返回 null,错误信息。\n此函数会等待进程结束，但不会阻塞当前线程窗口消息。\n如果参数 @1 为 true 或省略，读取后关闭进程管道。\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json
 !process_popen.jsonWrite() = 将对象转换为 JSON 并写入进程标准输入，\nJSON 不包含换行，且以换行结尾。\n最好统一为输入对象生成的JSON 最外层是大括号 {} 或中括号 []\n\n使用此函数前必须导入 web.json 库，\n注意 process.popen 并不导入 web.json\n\n成功返回 true，失败返回 null ，错误代码，错误信息。
 !process_popen.onResponseEnd() = @.onResponseEnd = function(){
 	__/*被调用进程结束，异步或同步调用 logResponse 函数结束后触发此回调*/

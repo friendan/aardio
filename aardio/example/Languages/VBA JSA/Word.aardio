@@ -1,4 +1,4 @@
-//Word
+////aardio 调用 VBA/JSA 操作 Word
 //以下代码兼容 WPS JS
 import console.int;
 import com.doc;

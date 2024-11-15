@@ -1,4 +1,4 @@
-﻿//模板编译
+﻿//aardio 使用模板语法编译并运行 C# 代码
 //dotNet.desktop 扩展库使用了这种技术
 import win.version;
 import dotNet; 

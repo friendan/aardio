@@ -1,4 +1,4 @@
-﻿//InvokeMember
+﻿//PowerShell 使用 InvokeMember 回调 aardio
 import win;
 import console; 
 console.showLoading(" 正在执行 PowerShell 命令");

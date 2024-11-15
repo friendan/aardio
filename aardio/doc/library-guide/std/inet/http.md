@@ -161,7 +161,7 @@ web.rest.htmlClient
   
 aardio 基于 inet.http 扩展的库非常多，足见 inet.http 有良好的扩展能力。可以设想一下，如果 inet.http 不是把更多的机会留给其他库去发挥，而是什么事都抢着干，提前干，不管别人需不需要的功能都强行干了 —— 这多么可怕？！  
   
-inet.http 有个自动解压 gzip 压缩数据的功能，同样需要需要多写一句代码，先看例子：  
+inet.http 有个自动解压 gzip 压缩数据的功能，同样需要多写一句代码，先看例子：  
 
 ```aardio
 import zlib;
@@ -215,7 +215,7 @@ var data = http.post("http://eu.httpbin.org/post",
 Content-Type: application/json; charset=utf-8
 ```
 
-其实 inet.http 已经默默的做了很多事，以简化我们的调用代码，但仍然要注意这种简化是有底线和边界的。
+其实 inet.http 已经 默默地做了很多事，以简化我们的调用代码，但仍然要注意这种简化是有底线和边界的。
 
 
 ## 七、web.rest

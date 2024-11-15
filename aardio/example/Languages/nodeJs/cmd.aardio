@@ -1,4 +1,4 @@
-//安装并调用命令
+//aardio 通过 Node.js 安装并调用 uglifyjs 命令
 import nodeJs;
 import console.int; 
 

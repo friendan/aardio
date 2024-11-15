@@ -1,4 +1,4 @@
-﻿//入门 
+﻿//FlaUI 自动化 - 入门 
 import FlaUI.UIA3;
  
 //创建自动化对象

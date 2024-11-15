@@ -1,10 +1,9 @@
-//监视进程
+//WMI 监视进程
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="使用WMI监视进程打开关闭事件";right=759;bottom=469;)
+var winform = win.form(text="使用WMI监视进程打开关闭事件";right=759;bottom=469)
 winform.add(
-edit={cls="edit";left=16;top=16;right=744;bottom=448;edge=1;multiline=1;z=1;};
-
+edit={cls="edit";left=16;top=16;right=744;bottom=448;edge=1;multiline=1;z=1}
 )
 /*}}*/
 

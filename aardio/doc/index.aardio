@@ -7,26 +7,26 @@ import wsock.tcp.simpleHttpServer;
 /*DSG{{*/
 var winform = win.form(text="aardio 文档";right=903;bottom=569;bgcolor=16382457;exmode="none";mode="popup")
 winform.add(
-bk2={cls="bk";left=-17;top=-5;right=924;bottom=36;bgcolor=16579578;dl=1;dr=1;dt=1;z=1};
+bk2={cls="bk";left=-17;top=-5;right=906;bottom=36;bgcolor=16579578;dl=1;dr=1;dt=1;z=1};
 bk3={cls="bk";left=3;top=30;right=267;bottom=31;bgcolor=15461355;dl=1;dt=1;forecolor=11842740;z=2};
 btnAiSearch={cls="plus";text="问 AI";left=342;top=3;right=410;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);hide=1;iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome');padding={left=8}};iconText='\uF007';notify=1;textPadding={left=25};z=10};
-btnBack={cls="plus";text='\uF060';left=785;top=8;right=812;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=8};
-btnForward={cls="plus";text='\uF061';left=826;top=8;right=853;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=9};
+btnBack={cls="plus";text='\uF060';left=783;top=8;right=810;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=8};
+btnForward={cls="plus";text='\uF061';left=824;top=8;right=851;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=9};
 btnSearch={cls="plus";text="搜索";left=274;top=3;right=335;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF002';notify=1;textPadding={left=25};z=4};
-btnWebDoc={cls="plus";text='\uF268';left=868;top=8;right=895;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=11};
-custom={cls="custom";text="自定义控件";left=231;top=39;right=908;bottom=567;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=6};
+btnWebDoc={cls="plus";text='\uF268';left=866;top=8;right=893;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=11};
+custom={cls="custom";text="自定义控件";left=231;top=39;right=902;bottom=567;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=6};
 editKeyWord={cls="edit";left=3;top=8;right=267;bottom=30;align="right";bgcolor=16579578;color=3355443;dl=1;dt=1;z=5};
-editUrl={cls="edit";left=408;top=9;right=765;bottom=36;align="right";bgcolor=16579578;color=3355443;dl=1;dr=1;dt=1;z=7};
+editUrl={cls="edit";left=408;top=9;right=767;bottom=36;align="right";bgcolor=16579578;color=3355443;dl=1;dr=1;dt=1;z=7};
 treeview={cls="treeview";left=3;top=47;right=228;bottom=567;asel=false;bgcolor=16579578;db=1;dl=1;dt=1;z=3}
 )
 /*}}*/
 
-var atom,hwnd = winform.atom("0B839EBF-903D-4818-9C70-CCBE1A8ABEEA.doc");
-if(!atom){
-	if(!____search_doc__path){
+if(!____search_doc__path){
+	var atom,hwnd = winform.atom("0B839EBF-903D-4818-9C70-CCBE1A8ABEEA.doc");
+	if(!atom){ 
 		win.quitMessage();	
-		return;		
-	} 
+		return;	 
+	}
 }
 
 var explorer = win.ui.explorer( winform.treeview );//自动检测顶部的 combobox 并转换为驱动器下拉列表
@@ -343,6 +343,12 @@ winform.btnSearch.oncommand = function(id,event){
 		return ; 
 	}
 	
+	if(!..string.find(keyWord,"\p") && string.find(keyWord,"\s") ){
+		keyWord = string.replace(keyWord,"\S+","<\0>");
+		keyWord = string.replace(keyWord,"\s+","|");
+		winform.editKeyWord.text = keyWord;
+	}
+	
 	var err;
 	try{
 		string.find("",keyWord)
@@ -654,7 +660,10 @@ wb.external = {
 		winform.btnAiSearch.hide = !text;
 		winform.btnAiSearch.webSelectedText = text;
 	}
-	
+	openExample = function(path){
+		ide.openDocument(path)
+		winform.hitMin();
+	} 
 }
 
 import process;

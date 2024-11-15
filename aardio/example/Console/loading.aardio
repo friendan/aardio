@@ -1,4 +1,4 @@
-﻿//加载动画与进度
+﻿//控制台程序 - 加载动画与进度
 import console;
 import console.progress; 
 var bar = console.progress();

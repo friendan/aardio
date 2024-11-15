@@ -1,4 +1,4 @@
-//预处理命令
+//sqlite 库 - 预处理命令
 import sqlite
 
 //创建测试数据库

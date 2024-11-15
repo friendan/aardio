@@ -1,4 +1,4 @@
-﻿入门=start.aardio
+﻿入门=QuickStart.aardio
 异步回显=logResponse.aardio
 安装模块=pip.aardio
 切换版本=version.aardio

@@ -1,4 +1,3 @@
-import win.ui;
 namespace string;
 
 class markdown{
@@ -10,6 +9,7 @@ class markdown{
 			| 1/*_MD_MKDEXT_NO_INTRA_EMPHASIS*/
 			| 0x40/*_MD_MKDEXT_SPACE_HEADERS*/
 			| 0x10/*_MD_MKDEXT_STRIKETHROUGH*/ 
+			| 0x100/*_MD_MKDEXT_LAX_SPACING*/
 		}
 		this._callbacks = sd_callbacks() ;
 		this._options = html_renderopt();
@@ -36,6 +36,22 @@ class markdown{
 		var str = tostring(ob) ;
 		ob.release(); 
 		return str;
+	};
+	codeBlock = function(code,lang){
+		var tag = "```"
+		while(..string.indexOf(code,tag)){
+			tag++="```"
+		}
+		
+		//sundown 不支持这种引号配对，转换 HTML 应改用 renderCode 
+		return  tag ++ (lang||"")+ '\r\n'+code+'\r\n'+tag;
+	};
+	renderCode = function(code,lang){ 
+		//sundown 不支持反引号数目配对，所以需要自行处理嵌套的代码块
+		code = ..string.replace(code,'```',`&#x60;&#x60;&#x60;`); 
+		var html = this.render(  '```'+(lang||"")+'\r\n'+code+'\r\n```' );
+		html = ..string.replace(html,`\&amp;#x60;\&amp;#x60;\&amp;#x60;`,'```');
+		return html;
 	};
 	renderFile = function(path){
 		var buf = ..string.loadBuffer(path);
@@ -200,15 +216,15 @@ namespace markdown{
 
 /*****intellisense(说明)
 
-string.markdown（Sundown） 解析器要注意的规则：
+string.markdown（Sundown） 解析器默认规则：
 
-- 一级列表一定要出现在空行之后，以结束前面的段落。
-- 二级列表如果是不同类型，则不能出现空行。 
-    - 相同类型的嵌套列表项优先优先将空行后的缩进识别为列表项，
-    - 不同类型优先将空行后的缩进识别为代码块。
-- 强调语法使用严格模式，**星号内则不能有空格**
-- 默认支持删除线，示例： ~~这里显示删除线~~
-- 默认支持表格，但是注意表头与表内容的分隔线每列不能小于三个短横线，忽略对齐标记（两端的冒号）
+- 列表解析默认使用宽松规则。
+无论一级列表还是二级列表（无论类型是否相同），都不要求前面有或没有空格。
+- 标题的开始标记 `#` 号后面必须有空格。
+- 强调语法使用严格模式，**星号内则不能有空格**，但前面必须有空格。
+- 默认支持删除线，示例： ~~这里显示删除线~~ 。
+- 默认启用表格扩展。
+- 默认启用围栏代码块（Fenced Code Blocks）扩展。
 
 DLL 源码: https://github.com/vmg/sundown
 
@@ -220,6 +236,8 @@ string.markdown(extensions,maxNesting,htmlOpt,自定义回调函数) = @.markdow
 string.markdown() = !string_markdown.
 !string_markdown.render(.(markdownText) = 解析参数 @markdownText 指定的 Markdown 文本并返回 HTML。\n自动调用 tostring 函数将参数 @markdownText 转换为字符串。
 !string_markdown.renderFile(.(markdownFilePath) = 解析参数 @markdownFilePath 指定的 Markdown 文件并返回 HTML
+!string_markdown.codeBlock(.(code,lang) = 将 @code 参数指定的代码首尾加上三连反引号代码块标记。\n如果代码已经包含三连反引号，则会重复首尾三连反引号直到没有冲突。\nstring.markdown 不支持这种嵌套的代码块，可用 renderCode 函数单独处理。\n可选用 lang 参数指定编程语言名称
+!string_markdown.renderCode(.(code,lang) = 将代码中的三连反引号进行转义，\n然后首尾加上三连反引号代码块标记并转换为 HTML。\n可选用 lang 参数指定编程语言名称
 !string_markdown.free() = 释放解析器对象,\n该函数可在对象回收时自动调用
 string.markdown.buffer(.(缓冲区初始大小) = 创建缓冲区,参数可选
 string.markdown.buffer() = !string_markdown_buf.

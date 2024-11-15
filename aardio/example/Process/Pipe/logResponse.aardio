@@ -1,4 +1,4 @@
-//回显 / 异步回显
+//aardio 调用进程管道 - 回显 / 异步回显
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="进程管道读写 - 异步回显";right=759;bottom=469)
@@ -22,6 +22,9 @@ import process.popen
 指定多个启动参数，用 process.joinArguments 合并所有启动参数( 参数间用空格分开 )。
 */
 var prcs = process.popen("ping","127.0.0.1","-n", "10")
+
+//如果调用 UTF8 编码的程序，请添加下面的编码声明，否则会显示乱码。
+//prcs.codepage = 65001
 
 //输出所有结果直到目标进程结束，不阻塞界面消息
 /*

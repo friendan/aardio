@@ -149,13 +149,13 @@ namespace image {
 				return n > 1 ? n+ 1 : n;
 			}
 		};
-		eachFrame = function(){
+		eachFrame = function(loop){
 			var delays = owner.getFrameDelays();
 			var total = #delays;
 			if( total <= 1 ) return;
 			 
 			var dimension = owner.getFrameDimensionsList()[[1]];
-			var loop = owner.getLoopCount();
+			if(loop===null) loop = owner.getLoopCount();
 		
 			var cur = owner.activeFrame : 1; 
 			var this = owner;
@@ -169,10 +169,10 @@ namespace image {
 						if( loop == 0 ) loop = -1;
 					}
 					this.selectActiveFrame(total,dimension);
-					return delays[total];
+					return delays[total],total;
 				} 
 				this.selectActiveFrame(cur,dimension);
-				return delays[cur];
+				return delays[cur],cur;
 			} 
 		};
 		isPlaying = lambda() !! owner.animationId;
@@ -251,10 +251,13 @@ namespace image {
 			var e,buffer = gdip.GetPropertyItem(owner[["pImage"]],id,size,size);
 			if( e ) return null,gdip.errMsg[e];
 				
-			var item = ..raw.convert(buffer,{int propId;int length;word type;BYTE value[]={0}});
+			var item = ..raw.convert(buffer,{
+				int propId;int length;word type;BYTE value[]={0};
+				@_metaPropertyItem
+			});
 			var convert = convertPropertyValue[item.type];
-			if(!convert)return;
-			return convert( item,buffer,size-item.length,item.length );  
+			if(!convert) return item;
+			return convert( item,buffer,size-item.length/*offset*/,item.length,id );  
 		};
 		removePropertyItem = function(id){
 			var e = gdip.RemovePropertyItem(owner[["pImage"]],id);
@@ -267,7 +270,7 @@ namespace image {
 				item = ..table.assign( {int propId;int length;word type;string value},item);
 			}
 			else {
-				if( !item.value[["_struct"]] ) error("value字段必须是一个结构体",2);
+				if( !item.value[["_struct"]] ) error("value 字段必须是一个结构体",2);
 				item = ..table.assign( {int propId;int length;word type;pointer value},item);
 				item.value = ..raw.buffer(item.value);
 			}
@@ -409,14 +412,23 @@ namespace image {
 		}
 	)
 	
+	_metaPropertyItem = {
+		_tostring = lambda() owner.text;
+		_tonumber = lambda() owner.number;
+		_get = function(k){
+			if(k==="text") return tostring(owner.value);
+		}
+	}
+	
 	convertPropertyValue = {
 		[1] = function(i,b,of,len){
-			i.value = ..string.right(b,len);
-			i.text = i.value;
+			i.value = ..raw.buffer(len);
+			..raw.copy(i.value,..raw.toPointer(b,of),len);
 			return i;
 		}
 		[2] = function(i,b,of,len){
-			i.value = ..string.str( ..string.right(b,len) );
+			//PropertyTagTypeASCII
+			i.value = len ? ..string.slice(b,of+1,of+len-1) : ""; 
 			i.text = i.value;
 			return i;
 		}
@@ -432,39 +444,87 @@ namespace image {
 			i.number = i.value.array[1];
 			return i; 
 		}
-		[5] = function(i,b,of,len){
+		[5] = function(i,b,of,len,id){
 			var s = ..raw.toarray( len/8,"struct");
 			s.array = { {INT numerator;INT denominator} };
 			i.value = ..raw.convert(b,s,of );  
+		
+			var arr = i.value.array;
+			if(id===2 || id===4){
+				//GpsLatitude,GpsLongitude
+				var d,m,s = arr[1].numerator / arr[1].denominator,
+						arr[2].numerator / arr[2].denominator,
+						arr[3].numerator / arr[3].denominator;
+				
+				i.number = d + (m / 60) + (s / 3600);
+				i.text = arr[3].numerator ? ..string.format(`%d°%d'%d"`, d,m,s) : ..string.format(`%d°%s'`, d,..math.stringify(m,3));
+			}
+			else {
+				var lst = {};
+				for(i=1;#arr;1){
+					..table.push(lst,..string.format("%u/%u",arr[i].numerator,arr[i].denominator ))
+				}
+				i.text = ..string.join(lst,",");
 			
-			var v = i.value.array[1];
-			i.text = ..string.format("%u/%u",v.numerator,v.denominator )
-			i.number = v.numerator / v.denominator;
+				i.number = arr[1].numerator / arr[1].denominator;	
+			}
+			
 			return i; 
 		} 
-		[7] = function(i,b,of,len){
-			i.value = ..string.right(b,len);
-			i.text = i.value;
-			return i;
+		[6] = function(i,b,of,len){
+			i.value = ..raw.convert(b, ..raw.toarray( len,"byte"),of )  
+			i.text = ..string.join(i.value.array,","); 
+			i.number = i.value.array[1];
+			return i; 
 		}
+		[7] = function(i,b,of,len){
+			i.value = ..raw.buffer(len);
+			..raw.copy(i.value,..raw.toPointer(b,of),len);
+			return i; 
+		}
+		[8] = function(i,b,of,len){
+			i.value = ..raw.convert(b, ..raw.toarray( len/2,"word"),of );  
+			i.text = ..string.join(i.value.array,","); 
+			i.number = i.value.array[1];
+			return i; 
+		} 
 		[9] = function(i,b,of,len){
 			i.value = ..raw.convert(b, ..raw.toarray( len/4,"int"),of )  
 			i.text = ..string.join(i.value.array,","); 
 			i.number = i.value.array[1];
 			return i; 
-		}
-		[10] = function(i,b,of,len){
+		} 
+		[10] = function(i,b,of,len,id){
 			var s = ..raw.toarray( len/8,"struct");
 			s.array = { {int numerator;int denominator} };
 			i.value = ..raw.convert(b,s,of );  
 			
-			var v = i.value.array[1];
-			i.text = ..string.format("%d/%d",v.numerator,v.denominator )
-			i.number = v.numerator / v.denominator;
+			var arr = i.value.array;
+			
+			var lst = {};
+			for(i=1;#arr;1){
+				..table.push(lst,..string.format("%d/%d",arr[i].numerator,arr[i].denominator ))
+			}
+			i.text = ..string.join(lst,",");
+		
+			i.number = arr[1].numerator / arr[1].denominator;	 
+			return i; 
+		}
+		[11] = function(i,b,of,len){
+			i.value = ..raw.convert(b, ..raw.toarray( len/4,"float"),of )  
+			i.text = ..string.join(i.value.array,","); 
+			i.number = i.value.array[1];
+			return i; 
+		}
+		[12] = function(i,b,of,len){
+			i.value = ..raw.convert(b, ..raw.toarray( len/8,"double"),of )  
+			i.text = ..string.join(i.value.array,","); 
+			i.number = i.value.array[1];
 			return i; 
 		}
 	}  
 }
+
 
 var $ = _dll; //http://msdn.microsoft.com/en-us/library/ms534041(v=vs.85).aspx
 /*intellisense(gdip)*/
@@ -585,7 +645,8 @@ gdip.image("__/*请输入文件路径\n或图片数据*/") = 创建GDI+L图片�
 !gdipimage.getFrameDelays() = 返回多帧图像每帧延时数值组成的数组,\n延时单位为厘秒,即0.01秒
 !gdipimage.setFrameDelays(__) = 修改多帧图像每帧延时数值\n参数必须是由数值组成的非空数组,\n延时单位为厘秒,即0.01秒\n必须在调用saveAdd以前设置
 !gdipimage.selectActiveFrame(.(帧序号) = 设置当前动画帧
-!gdipimage.eachFrame() = 如果图像支持动画,则返回一个帧迭代器,\n否则此函数返回 null,\n每次调用帧迭代器切换到下一帧并返回当前帧所需延时\n动画完成迭代器返回 null
+!gdipimage.eachFrame( = 如果图像支持动画，则返回一个帧迭代器。\n否则此函数返回 null。
+!gdipimage.eachFrame(.(loopCount) = 遍历动画帧。\n每次调用帧迭代器切换到下一帧并返回当前帧所需延时，帧索引。\n动画完成迭代器返回 null 。\n可选用 @loopCount 参数指定循环所有帧的次数，0 为无限循环。\n不指定参数则获取图像默认循环次数。\n\n示例：\n```aardio\nfor delay,frame in bmp.eachFrame(1) {\n    bmp.save("/"+frame+".gif");\n}\n```
 !gdipimage.createAnimation( = 如果图像是一个动画,创建定时器执行动画\n注意每个图像同时只能在一个窗口上创建动画\n创建动画前自动删除之前创建的动画定时器\n如果图像不是动画,此函数不执行任何操作\n成功返回定时器ID
 !gdipimage.createAnimation(.(窗口对象,回调函数) = 在窗口上创建定时器,\n每帧动画触发回调函数,\n回调函数owner参数被设为参数@1指定的窗口对象\n\n如果不指定控件,则默认指定为上次创建动画的控件,\n如果不指定回调函数,则默认指定为控件的redrawTransparent函数	
 !gdipimage.stopAnimation() = 如果此图像已运行动画,则停止动画并返回 true
@@ -595,18 +656,16 @@ gdip.image("__/*请输入文件路径\n或图片数据*/") = 创建GDI+L图片�
 !gdipimage.removePropertyItem(__/*属性ID*/) = 移除字段
 !gdipimage.setPropertyItem(.(字段结构体) = 修改字段
 !gdipimage.getPropertyItem() = !gdip_exif_item.
-!gdipimage.eachProperty = @for( id,propertyItem in ??.eachProperty() ){
+!gdipimage.eachProperty() = @for( tagId,propertyItem in ??.eachProperty() ){
 	 propertyItem.__/*遍历图像属性字段*/
-}
-!gdipimage.eachProperty() = !gdip_exif_item.
-!gdip_exif_item.propId = 属性ID
+}\n!gdip_exif_item.
+!gdip_exif_item.propId = 属性 ID
 !gdip_exif_item.length = 数据长度
 !gdip_exif_item.type = 数据类型 
-!gdip_exif_item.value = 数据值\n可值可能为文本、或一个结构体\n如果是结构体,则数组值放在array字段里\n如果value为文本则number字段为空
+!gdip_exif_item.value = 原始数据值。\n值可能为文本、buffer、或一个结构体。\n如果是结构体,则数组值放在 array 字段里\n如果 value 为文本或 buffer 则 number 字段为空
 !gdip_exif_item.value.array = 数组值
-!gdip_exif_item.text = 尝试转换为文本格式的值
-!gdip_exif_item.number = 数值格式\n如果是数组仅显示第一个数值\n如果value为文本则number字段为空
-!gdip_exif_item.tagName = 标记名   
+!gdip_exif_item.text = 尝试转换为文本格式的值，\n将对象转入 tostring 函数返回此字段。\n此字段有可能是根据 value 在 _get 元方法中动态生成。
+!gdip_exif_item.number = 数值格式\n如果是数组仅显示第一个数值\n如果value为文本则number字段为空  
 gdip.image() = !gdipimage.
 gdip.loadImageFromString(__/*请输入图片数据*/) = 从内存字符串直接创建图像
 gdip.encoder.parameter("SaveFlag",{int v}) = 创建保存图像参数,用法参考函数源码

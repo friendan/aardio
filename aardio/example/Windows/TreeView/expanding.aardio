@@ -1,4 +1,4 @@
-//动态加载子项演示
+//树视图（treeview）控件 - 动态加载子项演示
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="树形控件动态加载子项演示";right=349;bottom=249)

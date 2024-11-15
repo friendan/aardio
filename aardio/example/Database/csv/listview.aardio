@@ -1,4 +1,4 @@
-//listview 导入导出
+//使用 listview 导入导出 CSV 数据
 import win.ui;
 import string.database;
 import fsys.dlg;

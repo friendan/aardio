@@ -1,4 +1,4 @@
-//引用 .NET 值
+//在 aardio 中引用 .NET 对象
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");//创建C#语言编译器
 compiler.Source = /***

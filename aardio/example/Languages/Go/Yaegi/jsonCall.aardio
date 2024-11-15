@@ -1,4 +1,4 @@
-//aardio 回调函数
+//aardio 调用 Go 语言 yaegi 脚本 - 回调函数
 import golang.yaegi;
 var go = golang.yaegi();
 

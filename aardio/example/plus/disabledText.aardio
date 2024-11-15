@@ -1,4 +1,4 @@
-//动画文字图标
+//用 plus 控件创建动画文字图标
 import fonts.fontAwesome
 import win.ui;
 /*DSG{{*/

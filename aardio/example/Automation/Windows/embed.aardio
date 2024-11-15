@@ -1,4 +1,4 @@
-//嵌入外部窗口
+//窗口自动化 - 嵌入外部窗口
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=886;bottom=627;parent=...)

@@ -1,4 +1,4 @@
-//拦截 Ctrl + C
+//控制台程序 - 拦截 Ctrl + C
 import console.int;
 
 //拦截 Ctrl + C 等中断信号

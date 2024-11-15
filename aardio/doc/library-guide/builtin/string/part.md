@@ -188,6 +188,13 @@ maxLength 则用于限定反回数组的最大长度，默认不指定则不限�
 - maxLength 则用于限定返回数组的最大长度，默认不指定则不限制返回数组长度。  
 - position 指定允许字符最早出现的位置 ，以字节为单位 。不指定此参数则不作限制，默认从开始拆分。
 
+string.lines 封装了 string.splitEx 函数并提供了一个用于 [for in](../../../language-reference/statements/iterator.md) 语句的迭代器，主要增加了以下功能：
+
+- 除了可以指定行分隔符，还可以选择指定列分隔符以进行二次拆分。
+- 当模式串模式串头部有 `^` 符号并且尾部有 `$` 符号时，捕获组会作为单独的拆分结果由迭代器返回为第一个循环变量，此时迭代器返回的第二个循环变量为 true 以表明这是一个分模式串头部有 `^` 符号并且尾部有 `$` 符号， 则捕获组将由迭代器返回为单独的拆分结果，紧随其后的第二个返回值为 true 以表明该拆分结果是一个分隔符。调用代码格式为  `for line,isSeparator in string.lines(str,"^(分隔符)$"){ }` 这个特性被用于实现文本分句的 [string.sentences 库](../../../library-reference/string/) 。
+
+参考： [文本解析函数 string.lines](parsing.md#lines)
+
 
 ## 字符串数组合并
 

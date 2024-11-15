@@ -1,4 +1,4 @@
-//遍历与显示
+//sqlite 库 - 遍历与显示
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="sqlie 数据库示例 - 遍历与显示查询结果";right=1031;bottom=712)

@@ -1,4 +1,4 @@
-//编辑树形控件
+//编辑树形视图（treeview）控件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="树形控件编辑项文本 演示";right=349;bottom=249;parent=...)

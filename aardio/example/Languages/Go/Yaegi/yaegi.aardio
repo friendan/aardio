@@ -1,4 +1,4 @@
-//Go 语言脚本
+//aardio 调用 Go 语言 yaegi 脚本
 
 //创建 Yaegi 解释器（同一线程底层只会创建一个解释器环境）  
 import golang.yaegi;

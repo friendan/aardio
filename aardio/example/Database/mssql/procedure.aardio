@@ -1,4 +1,4 @@
-//存储过程
+//sqlServer 库 -  MSSQL 存储过程
 
 import console;
 import sqlServer;
@@ -12,19 +12,20 @@ var db = sqlServer(
 )
  
 //创建存储过程
-if( ! db.existsProcedure("proc_aardio_test") ){
+if( ! db.existsProcedure("proc_aardio_test2") ){
  	db.exec("
  	CREATE PROC proc_aardio_test( @a INT OUTPUT,@b INT )    
 	AS
 	begin
 		SET @a=123
+		SELECT @a
 		SELECT @a + @b
 	end
 	");    
 }
 
 //创建命令参数对象,用于执行存储过程
-var cmd = db.createCommand( "proc_aardio_test" ); 
+var cmd = db.createCommand( "proc_aardio_test2" ); 
 
 //绑定存储过程参数
 cmd.bind(
@@ -36,6 +37,16 @@ cmd.bind(
 console.dump(cmd.stepQuery() )
 
 console.dump("输出参数a的值",cmd.parameters("@a").value)
+
+/*
+//多结果集查询示例
+var rs = cmd.executeRecords();
+var data = rs.stepQuery() 
+
+//下一个结果集
+rs = rs.nextRecordset();
+var data = rs.stepQuery()
+*/
 
 //关闭数据库连接
 db.close();

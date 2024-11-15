@@ -1,0 +1,170 @@
+﻿//bm25 词频统计算法
+class string.bm25{
+
+    ctor( keywords ){
+        this.documentLength = {@{_readonly=false}}
+        this.documentsWithKeyword = {@{_readonly=false}} 
+        this.tfData = {@{_readonly=false}}
+        this.bm25Data = {@{_readonly=false}}
+        this.keywords = {@{_readonly=false}}
+
+        if(keywords){
+            for(i,kw in keywords){
+                this.keywords[kw] = true;
+            }           
+        } 
+        else {
+            this.all = true;
+        } 
+    };
+
+    addDocument = function(idOrPath,words){
+        var keywords = this.keywords;
+        var tfData = {@{_readonly=false}}
+
+        if( this.all ){
+            for(i,k in words){
+                tfData[k] = (tfData[k]:0)+1; 
+                keywords[k] = true;
+            }   
+        }
+        else {
+            for(i,k in words){
+                if(keywords[k]){
+                    tfData[k] = (tfData[k]:0)+1; 
+                }
+            }       
+        } 
+
+        var documentsWithKeyword = this.documentsWithKeyword;
+        for(k,v in tfData){ 
+            documentsWithKeyword[k] = (documentsWithKeyword[k]:0)+1; 
+        }
+
+        this.documentLength[idOrPath] = #words;
+        this.tfData[idOrPath] = tfData;  
+    };
+
+    calc = function(b = 0.75, k1 = 1.5, minDocLength = 0){
+        var tf,idf;
+        var keywords = this.keywords;
+        var documentsWithKeyword = this.documentsWithKeyword;
+
+        var totalDocuments = 0;
+        var totalDocLength = 0;
+        for(idOrPath,docLength in this.documentLength){
+            totalDocLength = totalDocLength + docLength;
+            totalDocuments++;
+        }
+        var avgDocLength = totalDocLength / totalDocuments;
+
+        for(idOrPath,tfData in this.tfData){ 
+            var docLength = this.documentLength[idOrPath];
+
+            var keywordToBm25 = {};
+            for(kw in keywords){
+                tf = tfData[kw];
+                if(tf){ 
+                    idf = ..math.log(totalDocuments / (1 + documentsWithKeyword[kw]));
+
+                    var numerator = tf * (k1 + 1);
+                    var denominator = tf + k1 * (1 - b + b * docLength / avgDocLength);
+                    var tfBm25 = numerator / denominator;
+
+                    var lengthFactor = docLength < minDocLength ? docLength / minDocLength : 1;
+
+                    keywordToBm25[kw] = tfBm25 * idf * lengthFactor;
+                } 
+            }
+
+            this.bm25Data[idOrPath] = keywordToBm25; 
+        }  
+    };
+
+    getKeywords = function(idOrPath,topN,excludePatterns,excludeWords){
+        var keywordToBm25 = this.bm25Data[idOrPath]
+        if(keywordToBm25){
+            var kw = {};
+            var push = ..table.push;
+            for(k in keywordToBm25){
+                if(excludeWords && excludeWords[k]){
+                    continue;
+                }
+
+                if(excludePatterns){
+                    for(i,p in excludePatterns){
+                         if( ..string.find(k,p) ){
+                            continue 2;
+                         }
+                    } 
+                }
+
+                push(kw,k);
+            } 
+
+            ..table.sort(kw,lambda(b)keywordToBm25[owner] > keywordToBm25[b] );
+            if(topN) return ..table.slice(kw,1,topN);
+            return kw; 
+        }
+    };
+
+    getScore = function(keywords,idOrPath,decimals) {
+        var score = 0; 
+        var keywordToBm25 = this.bm25Data[idOrPath]
+        var bm25 = {}
+        var v;
+
+        for(i=1;#keywords){
+            v = (keywordToBm25[keywords[i]]||0);
+            bm25[i] = decimals!==null?..math.round(v,decimals):v;
+            score = score + v;
+        }
+
+        return score,bm25;
+    };
+
+    search = function(keywords,topN){
+        var bm25;
+        var scores = {};
+        for(idOrPath,keywordToBm25 in this.bm25Data){  
+
+            var score = 0;   
+            for(i=1;#keywords){
+                var kw = keywords[i]; 
+                bm25 = keywordToBm25[kw]
+                if(bm25) { 
+                    score = score + bm25;
+                }
+            }
+
+            if(score){
+                ..table.push(scores,{idOrPath,score});
+            } 
+        }
+
+        ..table.sort(scores, lambda(b) owner[2] > b[2]);
+        
+        if(topN) return ..table.slice(scores,1,topN);
+        return scores;
+    };
+}
+
+/*****intellisense()
+string.bm25 = 用于计算 BM25 词频。\n相关库： string.tfidf
+string.bm25( = 创建 BM25 对象
+string.bm25(.(keywords) = 创建 BM25 对象。\n可选用一个字符串数组限定要计数的全部关键词。\n不指定则计算所有出现的分词
+string.bm25() = !stringBm25.
+end intellisense*****/
+
+/*****intellisense(!stringBm25)
+addDocument( = 添加文档数据
+addDocument(.(idOrPath,words) = 添加文档数据。\nidOrPath可指定任何可作为键名的标识,可指定文档路径。\nwords 指定文档内容分词后的字符串数组。
+calc( = 计算或重新计算 BM25 值
+calc(.(b,k1,minDocLength) = 在添加所有文档后可调用此函数计算或重新计算 BM25 值。\nb 参数用于调整文档长度归一化的影响，值在 0 到 1 之间，默认为 0.75。\nb 值越大，长度归一化的影响越大，建议在 0.3~0.9 之间调整。\nk1 参数用于调整词频饱和度，默认为 1.5。建议在 1.2~2.0 之间调整。\nk1 越大，词频对相关性得分的影响越大。\nminDocLength 可选用于指定最小文档长度（分词数目,非字数）。\n默认值为 0,小于 minDocLength 的过短文档将会抑制其权重。
+getScore( = 计算关键词在指定文档中的权重。
+getScore(.(keywords,idOrPath,decimals) =  计算关键词在指定文档中的权重。\nkeywords 参数指定关键词数组。\nidOrPath 参数指定文档标志,通常为路径。\n第一个返回值为计算得到的总权重,\n第二个返回值为对应关键词顺序的权重数组。\n可选用 decimals 参数限定返回数组中权重的小数位数
+search( = 搜索文档
+search(.(keywords,topN) = 搜索文档。\nkeywords 指定要搜索的关键词数组。\n可选用 topN 参数限定返回的文档数目上限。\n返回的到的文档数组,按权重排序。
+getKeywords( = 调用 bm25 函数后可获取文档统计的关键字数组,按 BM25 值排序。
+getKeywords(.(idOrPath,topN,excludePatterns,excludeWords) = idOrPath 参数指定文档标记（例如路径）。\n数组按 BM25 值排序,BM25 值较高的在前。\n可选用 topN 参数限定返回数组长度。\n可选通过 excludePatterns 参数使用一个模式串数组指定要排除的词。\n可选用 excludeWords 参数指定一个要排除的关键词表,键为要排除的词
+end intellisense*****/

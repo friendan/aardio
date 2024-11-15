@@ -60,5 +60,8 @@ crypt.hmac.sha384(.("密钥","源数据") = 返回 HMAC-SHA384 哈希对象
 crypt.hmac.md5(.("密钥","源数据") = 返回 HMAC-MD5 哈希对象
 crypt.hmac() = !crypt_hash.
 crypt.hmac.sha1() = !crypt_hash.
+crypt.hmac.sha256() = !crypt_hash.
+crypt.hmac.sha384() = !crypt_hash.
+crypt.hmac.sha512() = !crypt_hash.
 crypt.hmac.md5() = !crypt_hash.
 end intellisense**/

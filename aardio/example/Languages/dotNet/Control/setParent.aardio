@@ -1,4 +1,4 @@
-//嵌入窗口
+//aardio 嵌入 .NET 窗口
 import dotNet;  
 var compiler = dotNet.createCompiler("C#");
 compiler.Reference("System.Drawing.dll","System.Data.dll","System.Windows.Forms.dll");

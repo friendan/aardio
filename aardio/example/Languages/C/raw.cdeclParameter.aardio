@@ -1,4 +1,4 @@
-//结构化参数表
+//aardio 调用 C 语言 - 结构化参数表
 
 import tcc; 
 var c = tcc();

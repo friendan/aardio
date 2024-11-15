@@ -1,6 +1,7 @@
+//控制台程序范例 - 出牌
 import console;
 
-//组合
+//组合（笛卡尔积）
 import table.product;
 product = function(a,b){
     var t = {};
@@ -10,7 +11,7 @@ product = function(a,b){
     return t;
 }
 
-//洗牌
+//洗牌（ 数组乱序 ）
 var cards = table.shuffle( product(
      {"红桃"; "方块"; "黑桃"; "梅花"},
      {"A"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"; "J"; "Q"; "K" }

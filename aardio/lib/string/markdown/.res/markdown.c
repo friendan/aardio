@@ -1461,7 +1461,7 @@ parse_paragraph(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t 
 		 * let's check to see if there's some kind of block starting
 		 * here
 		 */
-		if ((rndr->ext_flags & MKDEXT_LAX_SPACING) && !isalnum(data[i])) {
+		if ((rndr->ext_flags & MKDEXT_LAX_SPACING) && !isalpha(data[i])) {
 			if (prefix_oli(data + i, size - i) ||
 				prefix_uli(data + i, size - i)) {
 				end = i;
@@ -1691,14 +1691,18 @@ parse_listitem(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t s
 			has_next_oli = prefix_oli(data + beg + i, end - beg - i);
 		}
 
+
 		/* checking for ul/ol switch */
+		/*
 		if (in_empty && (
 			((*flags & MKD_LIST_ORDERED) && has_next_uli) ||
 			(!(*flags & MKD_LIST_ORDERED) && has_next_oli))){
+			
 			*flags |= MKD_LI_END;
-			break; /* the following item must have same list type */
+			break; // the following item must have same list type 
 		}
-
+		*/
+	
 		/* checking for a new item */
 		if ((has_next_uli && !is_hrule(data + beg + i, end - beg - i)) || has_next_oli) {
 			if (in_empty)
@@ -2105,7 +2109,7 @@ parse_table_header(
 		if (i < under_end && data[i] != '|')
 			break;
 
-		if (dashes < 3)
+		if (dashes < 1)
 			break;
 
 		i++;

@@ -1,4 +1,4 @@
-//调用 DLL
+//aardio 调用 Go 语言 - 调用 COM 接口 DLL
 import console.int; 
 console.open();
 

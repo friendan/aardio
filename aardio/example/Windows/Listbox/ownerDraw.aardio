@@ -1,4 +1,4 @@
-//GDI+自绘
+//列表框控件（listbox） - GDI+自绘
 import win.ui;
 /*DSG{{*/
 winform = win.form(text="listbox 自绘演示(GDI+)";right=973;bottom=619)

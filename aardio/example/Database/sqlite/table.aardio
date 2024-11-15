@@ -1,4 +1,4 @@
-//存取表对象
+//sqlite 库 - 存取表对象
 import sqlite
 import console;
  

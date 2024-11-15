@@ -1,4 +1,4 @@
-//透明 3D
+//web.view( WebView2 浏览器控件) - 透明 3D
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="WebView2 - 透明3D";right=757;bottom=467;border="none")

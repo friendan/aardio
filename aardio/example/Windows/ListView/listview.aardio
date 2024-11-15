@@ -1,4 +1,4 @@
-//响应事件
+//列表视图（listview）控件 - 响应事件
 import win.ui;
 import win.ui.menu;
 /*DSG{{*/

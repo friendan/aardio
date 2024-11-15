@@ -1,4 +1,4 @@
-//编辑列表项
+//列表视图（listview）控件 - 编辑列表项
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=343;bottom=244;parent=...)

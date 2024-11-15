@@ -43,7 +43,7 @@ aardio 还提供了以下未设置为保留函数的普通全局函数：
 - lasterr 获取系统错误
 - publish  发布消息
 - subscribe 订阅消息
-- print 模板输出函数，参考[模板语法](../templating/syntax.md)
+- print 模板输出函数
 
 这几个函数并非全局对象，在非全局名字空间使用时要加上 `..` 前缀，例如 `..lasterr()`。
 

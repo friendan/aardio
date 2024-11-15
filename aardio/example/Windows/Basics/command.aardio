@@ -1,4 +1,4 @@
-//响应控件命令
+//窗口程序 - 响应控件命令
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="_WM_COMMAND 消息与 oncommand 事件";right=759;bottom=411)

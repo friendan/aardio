@@ -1,4 +1,4 @@
-//导出 aardio 模块
+//导出 aardio 对象为 Python 模块
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text='导出一个名字为"aardio"的模块到 Python 代码';right=759;bottom=469)

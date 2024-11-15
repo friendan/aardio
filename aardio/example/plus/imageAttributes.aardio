@@ -1,9 +1,9 @@
-//调色矩阵
+//plus 控件 - 调色矩阵
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="plus控件 - 调色矩阵";right=759;bottom=469)
 winform.add(
-plus={cls="plus";left=117;top=27;right=334;bottom=170;color=16737536;font=LOGFONT(h=-48;name='FontAwesome';charset=0);foreRepeat="stretch";foreground="~/example/Graphics/.gdip.jpg";notify=1;z=1};
+plus={cls="plus";left=117;top=27;right=334;bottom=170;color=16737536;font=LOGFONT(h=-48;name='FontAwesome';charset=0);foreRepeat="stretch";foreground="~\example\Graphics\.gdip.jpg";notify=1;z=1};
 static={cls="static";text="鼠标移到图像上,绿色会增强,红色会减弱";left=237;top=196;right=469;bottom=255;transparent=1;z=2}
 )
 /*}}*/

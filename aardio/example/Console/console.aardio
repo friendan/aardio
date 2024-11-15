@@ -1,4 +1,4 @@
-//入门
+//控制台程序 - 入门
 import console;
 
 console.log("console 库函数大多可以自动打开控制台")

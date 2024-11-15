@@ -1127,7 +1127,7 @@ namespace win.form{
 				return owner;
 			};
 			preloadForm = function(...){
-				if( (...)[["hwnd"]] || (...===null) ) return owner.loadForm(...); 
+				if( (...)[["hwnd"]] || (...===null) ) return owner.loadForm(...); //custom 控件
 				
 				var this = owner;
 				var args = {...};
@@ -1950,8 +1950,6 @@ namespace win.form{
  	_fakeMeta = {
 		_float = true;
 		_get = function(k){
-			import console
-		 
 			var tParam = owner.tParam;
 			owner.tParam = null;
 			owner@ = null;

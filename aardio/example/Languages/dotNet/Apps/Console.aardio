@@ -1,4 +1,4 @@
-//控制台
+//aardio 调用 .NET 之控制台操作
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");
  

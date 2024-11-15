@@ -17,12 +17,12 @@ import win.ui.simpleWindow;
 win.ui.simpleWindow( mainForm );
 
 import win.ui.tabs;
-var tbs = win.ui.tabs( 
+var tabs = win.ui.tabs( 
 	mainForm.nav1,
 	mainForm.nav2,
 );
 
-tbs.skin({
+tabs.skin({
 	background={
 		active=0xFFFFFFFF;
 		default=0x00FFFFFF;
@@ -37,16 +37,16 @@ tbs.skin({
 	}
 })
 
-tbs.add({
+tabs.add({
 	text="反馈";
 	iconText='\uF0E0';
 })
 
-tbs.loadForm(1,"\forms\main\webPage.aardio" );
-tbs.loadForm(2,"\forms\main\frmPage2.aardio" );
-tbs.loadForm(3,"\forms\main\frmPage3.aardio" );
+tabs.loadForm(1,"\forms\main\webPage.aardio" );
+tabs.loadForm(2,"\forms\main\frmPage2.aardio" );
+tabs.loadForm(3,"\forms\main\frmPage3.aardio" );
 
-tbs.selIndex = 1;
+tabs.selIndex = 1;
 
 mainForm.show();
 return win.loopMessage(); 

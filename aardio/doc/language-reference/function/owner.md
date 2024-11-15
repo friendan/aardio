@@ -2,13 +2,34 @@
 
 请参考：[定义函数](definitions.md)
 
-## 成员函数的owner参数
+## 成员函数的 owner 参数
 
 请参考：[定义成员函数](definitions.md#member)  
 
-在成员函数内部可以使用 owner 参数获取当前的调用该函数的所有者对象。通俗的 onwer 参数指向被调用的成员函数名前面的`.`操作符前面的所有对象。
+owner 参数是 aardio 中一个自动传递的隐藏参数，在形参与实参列表中都不用显式指定。可以认为它是函数的第 0 个参数，位于所有显式指定的参数之前。
 
-必须直接使用成员操作符调用成员函数才有 owner 参数，使用下标或其他方式调用成员函数时 owner 参数为 null。
+如果用成员操作符`.` 获取并调用对象的成员函数，
+则点号`.`前面的对象将被自动指定为被调用成员函数的 owner 参数，
+否则被调用函数的 owner 参数为 null。
+
+例如使用 `object.method()` 格式调用对象的成员函数时，`object` 自身将隐式传递为 `owner` 参数。
+
+代码示例：
+
+```aardio 
+var object = {
+	property = 123;
+	method = function(){
+		//使用 owner 可以方便地访问对象自身属性 owner.property，输出 123 
+		print( owner.property );
+	}; 
+}
+
+//调用成员函数
+object.method()
+```
+
+onwer 参数指向被调用的成员函数名前面的`.`操作符前面的所有对象。**使用下标或其他方式调用成员函数时 owner 参数为 null。**
 
 例如：
 
@@ -45,9 +66,9 @@ tab2.method();  //显示 "我是 tab2 我被调用了"
 
 实际上在 aardio 中需要修改 owner 的情况极为少见。虽然在理论上 owner 是可变的，但通常我们没必要去改变 owner 。
 
-但是我们需要了解这个机制和原理。
+owner 参数的最主要的作用是用于在成员函数中动态获取成员函数的所有者对象，以方便地访问成员函数当前所属对象的其他成员。
 
-参考：[this 对象](../class/class.md#this)
+在类实例中，owner 参数默认指向 this 对象，请参考：[this 对象](../class/class.md#this)
 
 ## aardio 代码文件的 owner 参数
 
@@ -148,3 +169,19 @@ for i,v in eachArray(tab) {
 
 console.pause();
 ```
+
+## 数组排序回调函数的 owner 参数
+
+在使用 table.sort 对数组排序时，排序回调函数将使用 owner 参数与第一个参数比较两个元素的大小，示例：
+
+```aardio
+var array = {1,2,3}
+
+//排序
+table.sort(array,function(next){
+	//较大的值应排序在前
+	return owner > next
+})
+```
+
+请参考： [table.sort](../../library-guide/builtin/table/_.md#sort)

@@ -1,4 +1,4 @@
-﻿//委托
+﻿//.NET 委托自动支持 aardio 函数对象
 //.NET 静态委托回调自动支持 aardio 的回调函数，兼容低版本 .NET 2.0
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");  

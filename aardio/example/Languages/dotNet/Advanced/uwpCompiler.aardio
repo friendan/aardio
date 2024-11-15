@@ -1,4 +1,4 @@
-﻿//调用 UWP 接口 
+﻿//aardio 通过 .NET 调用 UWP 接口 
 //标准库 dotNet.ocr, 扩展库 dotNet.toastListener 都运用了以下方法编译 DLL 。
 import dotNet.uwpCompiler  
 

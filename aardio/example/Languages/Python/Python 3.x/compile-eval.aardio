@@ -1,4 +1,4 @@
-//eval 示例
+//aardio 调用 eval 计算 Python 表达式。
 import console;
 import py3;
 

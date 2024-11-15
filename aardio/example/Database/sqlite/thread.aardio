@@ -1,4 +1,4 @@
-//多线程读写
+//sqlite 库 - 多线程读写
 import console; 
 import sqlite;
 

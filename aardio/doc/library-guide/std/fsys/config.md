@@ -4,7 +4,7 @@
 ## 简介
 
 fsys.config 实际上是对 fsys.table的封装，
-fsys.table 的功能是是将table对象映射为硬盘文件 - 以创建一个可持久化的 table 对象，在 aardio中 数组、哈希表、结构体等等都是 table（请参考语法文档）。
+fsys.table 的功能是将table对象映射为硬盘文件 - 以创建一个可持久化的 table 对象，在 aardio中 数组、哈希表、结构体等等都是 table（请参考语法文档）。
 
 fsys.table 使用 table.tostring() 函数将一个table转换为aardio代码并写入一个字符串对象（忽略表的所有函数成员）。然后将此字符串写入硬盘，在加载文件时，使用 eval()函数解析aardio 代码重新生成table对象。
 

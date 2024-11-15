@@ -1,4 +1,4 @@
-//enum
+//在 aardio 中使用 .NET 枚举（enum）
 import console;
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");

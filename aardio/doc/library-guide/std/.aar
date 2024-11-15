@@ -6,5 +6,6 @@ inet 网络应用=inet
 process 进程操作=process
 fsys 文件操作=fsys
 crypt 加密算法=crypt
+key 键盘输入=key
 dotNet 框架=dotNet
 golang 语言=golang

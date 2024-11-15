@@ -1,0 +1,69 @@
+﻿//tencentCloud 腾讯云
+import web.rest.jsonClient;
+import crypt.hmac;
+
+class web.rest.tencentCloud{
+	ctor(...){
+		this = ..web.rest.jsonClient(...);
+		
+		/*
+		this.beforeRequestHeaders 在发送请求前触发，返回自定义 HTTP 头。
+		
+		params 调用接口的表参数。
+		payload 上面的 params 转换为字符串类型的 HTTP 请求数据。
+		url 请求网址。
+		httpMethod 请求方法。
+		contentType 请求 MIME 类型。
+		*/
+		this.beforeRequestHeaders = function(params,payload,url,httpMethod,contentType){
+    		var tUrl = ..inet.url.split(url);
+    	 
+    		var signedHeaders = "content-type;host;x-tc-action";
+    		var requestInfo = ..string.join({
+        		httpMethod;"/";
+        		httpMethod == "GET" ? payload : "";
+        		 "content-type:" ++ contentType ++ '\nhost:' ++ tUrl.host ++ '\nx-tc-action:' ++ ..string.lower(this.config.action) ++ '\n';
+        		signedHeaders;
+        		..crypt.sha256(httpMethod == "GET"?"":payload,false);
+    		},'\n')
+
+    		var utcTime = ..time.utc();
+    		var strDate = tostring(utcTime,"!%Y-%m-%d");
+    		var timestamp = tonumber(utcTime);
+    		
+    		var algorithm = "TC3-HMAC-SHA256"
+    		var credentialScope = strDate ++ "/" ++ this.config.service ++ "/" ++ "tc3_request";
+    		  
+    		var signRequest = ..string.join({
+        		algorithm;
+        		timestamp;
+        		credentialScope;
+        		..crypt.sha256(requestInfo,false)
+    		},'\n')
+
+    		var secretDate = ..crypt.hmac.sha256("TC3" ++ this.config.secretKey,strDate).getValue();
+    		var secretService = ..crypt.hmac.sha256(secretDate,this.config.service).getValue();
+    		var secretSigning = ..crypt.hmac.sha256(secretService,"tc3_request").getValue();
+    		var signature = ..crypt.hmac.sha256(secretSigning,signRequest).getHexValue(false)
+
+    		var authorization = ..string.format("%s Credential=%s/%s, SignedHeaders=%s, Signature=%s",
+        		algorithm,this.config.secretId,credentialScope,signedHeaders,signature
+    		)
+     		
+    		return {
+        		["Authorization"] = authorization;   
+        		["X-TC-Timestamp"] = timestamp; 
+				["X-TC-Action"] = this.config.action; 
+				["X-TC-Version"] = this.config.version; 
+				["X-TC-Region"] = this.config.region; 
+    		} 
+    	}
+	}; 
+}
+
+/**intellisense()
+web.rest.tencentCloud = 腾讯云 API 客户端。\n请求数据，返回数据都使用 JSON 格式。\n[使用范例](doc:///example/Web/REST/tencentCloud.html)
+web.rest.tencentCloud( = 创建 腾讯云 API 客户端。\n请求数据，返回数据都使用 JSON 格式
+web.rest.tencentCloud(config) = @.tencentCloud(\n	secretId = "secretId";\n	secretKey = "secretKey";\n	action =  "action";\n	version = "2018-11-19";\n	region =  "ap-shanghai"; \n	service = "service";__/*创建 腾讯云 API 客户端。\n参数用法请参考腾讯云 API 文档。\n\n可选指定 userAgent,proxy,proxyBypass,httpFlags 等创建 HTTP 客户端的选项，\n这几个选项的用法请参考 web.rest.client,inet.http 文档*/\n);
+web.rest.tencentCloud() = !web_restClient.
+end intellisense**/

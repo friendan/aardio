@@ -57,42 +57,42 @@ win.ui.simpleWindow( mainForm );
 import win.ui.tabs;
 
 //至少要添加2个创建好的选项卡作为设计模板
-var tbs = win.ui.tabs( 
+var tabs = win.ui.tabs( 
 	mainForm.btnNav2,
 	mainForm.btnNav1
 );
 
 //指定选项卡的外观样式
-tbs.skin( style.main.strip )  
+tabs.skin( style.main.tabs )  
 
 //加载窗口,绑定第一个选项卡
-tbs.loadForm(1,"\forms\plus.aardio" );
+tabs.loadForm(1,"\forms\plus.aardio" );
 
 //加载窗口, 绑定第二个选项卡
-tbs.loadForm(2,"\forms\winform.aardio" )
+tabs.loadForm(2,"\forms\winform.aardio" )
 
 //动态添加更多选项卡，可以直接用第2个参数同时加载并绑定一个窗体
-tbs.add({
+tabs.add({
 	text="控制台";
 	foreground="\res\icons\console.png"; 
 },"\forms\console.aardio" )
 
-tbs.add({
+tabs.add({
 	text="Web 界面";
 	foreground="\res\icons\web.png"; 
 },"\forms\web.aardio" )
 
-tbs.add({
+tabs.add({
 	text="Web 服务端";
 	foreground="\res\icons\website.png"; 
 },"\forms\website.aardio")
 
-tbs.add({
+tabs.add({
 	text="CGI 服务端";
 	foreground="\res\icons\fastcgi.png"; 
 },"\forms\fastcgi.aardio" )
 
-tbs.selIndex = 2;
+tabs.selIndex = 2;
 
 mainForm.btnCreateProject.oncommand = function(id,event){
 	if( ! #mainForm.editProjectName.text ){
@@ -122,7 +122,7 @@ mainForm.btnCreateProject.oncommand = function(id,event){
 		return;
 	}
 	
-	var srcTemplate = tbs.selForm.getTemplatePath()
+	var srcTemplate = tabs.selForm.getTemplatePath()
  
 	fsys.enum(  srcTemplate, 
 				"*.*", 
@@ -200,8 +200,8 @@ if(_ARGV.opt == "test"){\r\n
 		string.save(pathMain,strMain)
 	}
 	
-	if(tbs.selForm.getTemplateConfig){
-		var srcTemplateConfig = tbs.selForm.getTemplateConfig();
+	if(tabs.selForm.getTemplateConfig){
+		var srcTemplateConfig = tabs.selForm.getTemplateConfig();
 		if(srcTemplateConfig){
 			var template = string.template(strMain);
 			strMain = template.format(srcTemplateConfig)
@@ -209,8 +209,8 @@ if(_ARGV.opt == "test"){\r\n
 		}
 	} 
 	
-	if(tbs.selForm.onProjectCreated){ 
-		tbs.selForm.onProjectCreated(dstDir,pathMain);
+	if(tabs.selForm.onProjectCreated){ 
+		tabs.selForm.onProjectCreated(dstDir,pathMain);
 	}
 	 
 	/*-------------------------------

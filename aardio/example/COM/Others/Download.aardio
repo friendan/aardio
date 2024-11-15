@@ -1,4 +1,4 @@
-//下载网页
+//COM 接口 - 下载网页
 import com;
 import console;
 

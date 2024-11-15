@@ -1,4 +1,4 @@
-//原生结构体
+//aardio 调用 .NET - 原生结构体操作
 import dotNet; 
 import console.int; 
 console.open();

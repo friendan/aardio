@@ -1,4 +1,4 @@
-//自动完成2
+//下拉框控件 - 自动完成效果 2
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="自动完成( 固定列表数据,请输入字母f )";right=600;bottom=400)

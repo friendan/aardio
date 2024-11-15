@@ -1,4 +1,4 @@
-//获取系统信息
+//WMI 获取系统信息
 //参考 https://bbs.aardio.com/forum.php?mod=viewthread&tid=2477
 //相关范例: 范例\操作系统\系统版本信息;范例\操作系统\硬件信息\查询硬件信息  
 import console;

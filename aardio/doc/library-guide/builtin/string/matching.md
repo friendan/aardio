@@ -119,7 +119,7 @@
 
 1. 语法：
 
-    `str = string.replace (str, pattern, repl [, n])`  
+    `str,count = string.replace (str, pattern, repl [, n])`  
 
 2. 说明：
 
@@ -132,6 +132,8 @@
     第四个可选参数用于限定替换的次数，默认替换所有的找到的字符串。
 
     如果需要禁用模式语法，请在模式串开始添加 `@` 字符。
+
+    函数返回值 str 为替换结果，返回值 count 为替换次数。
 
 3. 示例：
   
@@ -219,3 +221,44 @@ console.pause();
 ```  
 
 注意在替换函数中 onwer 参数指向原始字符串。
+
+## 五、在不匹配模式的部分进行替换 <a id="replaceUnmatched" href="#replaceUnmatched">&#x23;</a>
+
+如果我们希望在匹配指定模式的部分进行替换这很容易。
+
+即使我们需要将复杂的模式匹配拆分为多次更简单的模式匹配这也很简单，我们只要在替换回调函数中再次调用 string.replace 即可，例如：
+
+```aardio
+var str,count = string.replace("abc123","\w+",function(text){
+	
+	return string.replace(text,"\d+","***");
+})
+```
+
+但如果我们要在不匹配一个或多个模式的部分替换要，那就需要用到 string.replaceUnmatched 函数了。
+
+函数原型：
+
+ `str = string.replaceUnmatched(str, pattern, repl , keep1 [ , keep2, ... keepN ] )`  
+
+ string.replaceUnmatched 的 str 参数指定要进行替换的源字符串，而 pattern 指定替换模式串，repl 参数指定替换对象，这些参数的用法与 string.replace 函数完全一样。 repl 参数同样可以指定替换字符串、替换表或替换回调函数。
+
+ 函数返回值 str 为替换结果，返回值 count 为替换次数，这与 string.replace 函数也完全一样。
+
+ 区别在于 string.replaceUnmatched 可用 keep1 到 keepN 参数使用模式匹配语法指定一个或多个需要排除部分的模式串。
+
+ 举个例子：
+
+ ```aardio
+var code = `
+var tab = {};
+
+// tab  
+`
+
+code = string.replaceUnmatched(code,"tab","tab2","//\N+");
+```
+
+上面的代码替换 tab 为 tab2，但是 "//\N+" 匹配的注释行将被排除在外不进行任何替换。
+
+

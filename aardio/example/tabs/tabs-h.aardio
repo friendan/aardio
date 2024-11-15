@@ -1,4 +1,4 @@
-//水平选项卡
+//用 win.ui.tabs 创建水平"高级选项卡"
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

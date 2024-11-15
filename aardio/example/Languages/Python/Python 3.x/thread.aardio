@@ -1,4 +1,4 @@
-//后台线程
+//在 aardio 中通过后台线程运行 Python 解释器
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio - 后台线程运行 Python";right=1163;bottom=753)

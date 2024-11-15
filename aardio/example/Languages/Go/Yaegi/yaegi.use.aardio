@@ -1,4 +1,4 @@
-//第三方模块
+//aardio 调用 Go 语言 yaegi 脚本 - 第三方模块
 import console.int;
 assert(_WIN10_LATER,"操作系统版本太低");
 import golang.excelize;

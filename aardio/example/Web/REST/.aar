@@ -1,4 +1,4 @@
-﻿入门=start.aardio
+﻿入门=QuickStart.aardio
 AI 聊天助手=aiChat.aardio
 HTTP 客户端=http.aardio
 自动模式匹配=match.aardio
@@ -13,3 +13,4 @@ jsonClient=jsonClient.aardio
 jsonLiteClient=jsonLiteClient.aardio
 HTML 抓取=html.aardio
 获取圆周率=pi.aardio
+图像转 Excel=tencentCloud.aardio

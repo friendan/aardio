@@ -106,4 +106,4 @@ mainForm.show();
 win.loopMessage();
 ```
 
-如果希望界面更漂亮一些，可以使用高级选项卡，参考[高级选项卡范例](../../../../example/tabs/start.html)。  
+如果希望界面更漂亮一些，可以使用高级选项卡，参考[高级选项卡范例](../../../../example/tabs/QuickStart.html)。  

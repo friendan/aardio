@@ -1,4 +1,4 @@
-//JSON-RPC-WS
+//Node.js 通过 JSON-RPC(WebSocket) 调用 aardio
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio创建WebSocket/JSON-RPC 服务端与Node.js交互的例子";left=10;top=4;right=774;bottom=467)

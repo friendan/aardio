@@ -1,4 +1,4 @@
-﻿//遮罩效果
+//窗口程序 - 遮罩效果
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="遮罩示例";right=759;bottom=469)

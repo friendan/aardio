@@ -1,4 +1,4 @@
-//全文搜索
+//sqlite 库 - 全文搜索
 import sqlite;
 import console.int;
   

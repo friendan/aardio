@@ -1,4 +1,4 @@
-//事件输出参数
+//COM 接口 - 事件输出参数
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="用连接点注册事件";right=964;bottom=605)

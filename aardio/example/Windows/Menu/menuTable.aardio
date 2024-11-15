@@ -1,4 +1,4 @@
-//窗口菜单
+//窗口程序 - 菜单
 import win.ui;
 import win.ui.menu;
 /*DSG{{*/

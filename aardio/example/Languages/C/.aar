@@ -1,4 +1,4 @@
-﻿快速入门=start.aardio
+﻿快速入门=QuickStart.aardio
 生成 DLL =dll.aardio
 aardio 调用 C=getCdecl.aardio
 C 调用 aardio=setCdecl.aardio

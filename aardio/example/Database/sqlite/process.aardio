@@ -1,4 +1,4 @@
-//加密算法（命令行）
+//sqlite 库 - 加密算法（命令行）
 import console.int;
 import process.sqlCipher;
 

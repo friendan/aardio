@@ -1,4 +1,4 @@
-//嵌入模板
+//aardio 调用 R 语言 - 嵌入模板
 import console.int; 
 import process.r;
 

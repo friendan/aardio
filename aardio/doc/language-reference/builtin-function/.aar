@@ -5,3 +5,4 @@ loadcode 加载代码=loadcode.md
 loadcodex 加载代码=loadcodex.md
 assert 断言=assert.md
 reduce 数组归约=reduce.md
+print 模板输出=print.md

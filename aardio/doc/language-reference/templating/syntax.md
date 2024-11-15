@@ -31,7 +31,10 @@ aardio 语言内置的模板语法规则如下：
 
    print 函数可能被负责模板输出的库或框架重新定义并指向不同的实际函数，以实现不同的模板输出应用。例如在 HTTP 服务端中 print 将自动指向 response.write 函数。而在调用 string.loadcode 时 print 将临时指向拼接字符串的代码， 请在内置库 builtin.string 中查看 string.loadcode 函数的源代码，以了解如何通过自定义 print 函数捕获或修改模板输出。
 
-   如果没有加载任何修改 print 函数的功能，print 函数默认指向 io.print 函数（如提前导入 console 则能自动打开控制台）。如在开发环境中运行代码且首次调用模板或 print 输出的是 HTML，则会创建一个网页控件以预览模板输出的内容。
+   如果没有调用任何修改 print 函数的库或函数，在默认情况下：
+   
+   - 如果在开发环境中且首次调用模板或 print 输出的是 HTML 代码，则创建网页浏览器控件并显示该 HTML 代码生成的网页内容。
+   - 否则 print 函数将默认调用 io.print 函数向控制台窗口输出内容。print 函数在默认调用 io.print 前会自动打开控制台，之后在退出非界面线程( 指未导入 win.ui 的线程 ) 前会暂停控制台。
 
    可以粘贴下面的示例代码到 aardio 编辑器中然后按 F5 直接运行以预览模板输出效果：
 
@@ -40,7 +43,7 @@ aardio 语言内置的模板语法规则如下：
    <html><head><meta charset="utf-8"><title>帮助页面</title></head>
    <body>当前时间<? = time() ?>
    </body></html>
-   ```  
+   ```
 
 
 

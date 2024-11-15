@@ -1,4 +1,4 @@
-//web.form
+//使用 web.form 实现网页自动化操作
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="使用webform调用网页上的对象、函数";right=848;bottom=585)

@@ -1,4 +1,4 @@
-//Makefile
+//aardio 调用 GCC 之 Makefile
 import process.gcc;
 
 //在下面的参数中指定 Makefile 文件所在目录

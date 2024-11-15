@@ -1,4 +1,4 @@
-//获取字段名 
+//sqlite 库 - 获取字段名 
 import console;
 import sqlite
 

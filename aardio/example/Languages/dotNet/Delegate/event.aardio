@@ -1,4 +1,4 @@
-﻿//event 
+﻿//在 aardio 中使用 .NET 事件（event ）
 import console;
 import dotNet; 
 

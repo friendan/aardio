@@ -1,4 +1,4 @@
-//RUNAS//UWP本机隔离
+//RUNAS//列表视图（listview）控件范例 - UWP本机隔离
 import win.ui;
 import win.ui.menu;
 import fonts.fontAwesome;

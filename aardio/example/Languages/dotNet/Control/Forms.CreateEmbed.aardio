@@ -1,4 +1,4 @@
-//数据表格
+//aardio 嵌入 .NET 数据表格
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="嵌入 .NET 控件";right=759;bottom=510)

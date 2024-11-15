@@ -1,4 +1,4 @@
-//显示普通表对象
+//树视图（treeview）控件 - 显示普通表对象
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="显示普通表对象";right=536;bottom=674)

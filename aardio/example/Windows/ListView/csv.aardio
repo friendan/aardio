@@ -1,4 +1,4 @@
-//CSV 导入导出
+//列表视图（listview）控件 - CSV 导入导出
 import win.ui;
 import string.database;
 import fsys.dlg;

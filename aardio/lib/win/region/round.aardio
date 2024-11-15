@@ -5,11 +5,12 @@ import win.ui.minmax;
 namespace win.region; 
 
 class round { 
-    ctor(winform,minX,minY,wEllipse,hEllipse){   
+    ctor(winform,minX,minY,wEllipse,hEllipse){ 
 		this = winform
 		var maxminInfo = ..win.ui.minmax(winform,minX,minY);
 		 
 		roundRectRgn(winform,wEllipse,hEllipse);
+		
 		winform.adjust = function(cx,cy,wParam){
 			if(  wEllipse <=0  || hEllipse <=0 ) return;
 			
@@ -19,13 +20,7 @@ class round {
 			else {
 				::SetWindowRgn( winform.hwnd,  , true );
 			} 
-		}; 
-		
-		if( ! ( winform._layout || winform.hasBackground ) ){
-			winform.onEraseBkgnd = function(hwnd,message,wParam,lParam){
-    			return 0;
-			};
-		};
+		};  
     };
     setEllipse = function(w,h){ 
     	if( w > 0 && h > 0 ){
@@ -60,10 +55,14 @@ namespace round{
 }
 
 /**intellisense()
-win.region.round( = 创建一个圆角无边框窗口\n最大化自动取消圆角
-win.region.round(.(winform,窗体最小宽度,高度,圆角宽度,高度)  =  除第一个参数以外,其他参数可选,\n默认取窗体当前大小为最小大小,\n圆角宽高默认都是4个像素
-win.region.round() = !roundform.
-!roundform.setMinTrackSize(.(窗体最小宽度,高度) = 设置窗体最小宽度,高度
-!roundform.setEllipse(.(圆角宽度,圆角高度) = 重新设置圆角大小
 win.region.round = 圆角无边框窗口支持库
+win.region.round( = 创建一个圆角无边框窗口。\n最大化自动取消圆角。
+win.region.round(.(winform,窗体最小宽度,高度,圆角宽度,高度)  =  除第一个参数以外，其他参数可选。参数　winform　必须指定无边框窗口（窗体构造参数表的 border 属性为 "none"）。\n默认取窗体当前大小为最小大小,\n圆角宽高默认都是4个像素
+win.region.round() = !winReginRound.
+!winReginRound.setMinTrackSize(.(窗体最小宽度,高度) = 设置窗体最小宽度,高度
+!winReginRound.setEllipse(.(圆角宽度,圆角高度) = 重新设置圆角大小
 end intellisense**/
+
+/**details(范例)
+[范例](doc://example/Windows/Effects/round.aardio)
+end details**/

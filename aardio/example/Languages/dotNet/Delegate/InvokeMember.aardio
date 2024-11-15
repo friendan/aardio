@@ -1,4 +1,4 @@
-//InvokeMember
+//C# 使用 InvokeMember 调用 aardio
 import dotNet; 
 var compiler = dotNet.createCompiler("C#"); 
 compiler.Parameters.CompilerOptions = "/optimize";

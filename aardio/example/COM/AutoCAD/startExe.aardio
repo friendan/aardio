@@ -1,4 +1,4 @@
-//LISP 调用 aardio
+//AutoCAD - LISP 调用 aardio
 if(_STUDIO_INVOKED) error("请复制此代码到 aardio 工程的 main.aardio 内，然后生成 EXE 文件再运行",2);
 /*
 LISP 调用 aardio 的三种途径

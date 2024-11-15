@@ -1,4 +1,4 @@
-//获取圆周率
+//用 web.rest 客户端调用 HTTP API - 获取圆周率
 import console.int;  
 import web.rest.jsonLiteClient;
 

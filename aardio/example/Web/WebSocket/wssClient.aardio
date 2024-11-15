@@ -1,4 +1,4 @@
-//WSS 客户端
+//WebSocket 异步客户端（ WSS 客户端）
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=759;bottom=469)

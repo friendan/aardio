@@ -13,7 +13,7 @@ var hwnd = winex.findEx(hwndParent,,"Afx\:RibbonBar\:\x+\:\x+\:\x+\:\x+","aardio
 
 //窗口截图
 var imgWindow = soImage();
-imgWindow.captureWindow(hwnd);
+imgWindow.captureWindow(hwnd);//如果找不到函数，先运行 file://~/tools/ext.aardio 更新扩展库。
  
 //查找目标图像
 var sm,x,y = imgFind.findImage( imgWindow );//注意：默认对窗口客户区截图，注意这里的坐标参数必须是窗口客户区坐标（不含系统标题栏，不是指自绘标题栏）

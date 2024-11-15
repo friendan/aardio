@@ -1,6 +1,6 @@
 ﻿# aardio 语言 Web 服务端开发指南
 
-## 简介
+## 一、简介
 
 aardio 用户接触 Web 开发的相对比较多，在 aardio 中开发桌面软件，应用 Web 技术,HTML 等等非常普遍，
 所以大家切换到网站开发应当是轻车熟路，不会有太大的难度，现在很多软件应用都是基于服务端接口，几乎每一个软件都要与服务端接口互动，不仅仅是桌面软件，例如一些手机应用，客户端是HTML5,服务端是REST接口，这种模式是未来的方向，所以应用领域还是比较广的。
@@ -15,9 +15,9 @@ aardio 用户接触 Web 开发的相对比较多，在 aardio 中开发桌面软
 aardio 直接支持与 PHP 类似的语言级模板语法，可以 html,aardio 代码混合生成页面，非常方便。
 
 
-## 网站开发
+## 二、网站开发
 
-### 创建网站工程
+### 1. 创建网站工程
 
 首先请在主菜单中点击新建工程。
 
@@ -42,65 +42,49 @@ app.run(
 
 每一个 aardio 创建的 Web 服务器应用都应该遵守相同的调用约定，使用相同的回调函数格式，并创建相同的 `response`,`request` 对象，无论是创建本地服务器，还是在IIS等Web服务器上创建FastCGI模块，网站应用程序的入口是一致的。
 
-### aardio 模板语法
+### 2. aardio 模板语法
 
 在 aardio 代码中可直接支持 HTML 模板语法。
 
-#### 一、aardio 代码如果以 HTML 代码开始，或以 `<?` 标记开始则自动启用模板语法。  
-aardio 代码可以是纯 aardio 代码，也可以是纯 HTML，或者是 HTML、aardio 相互混合的模板代码。  
+ardio 代码如果以 HTML 代码开始，或以 `<?` 标记开始则自动启用模板语法。启用模板语法以后，aardio 代码必须置于 `<? ..... ?>` 内部。aardio 代码可以是纯 aardio 代码，也可以是纯 HTML，或者是 HTML、aardio 相互混合的模板代码。 
 
-可直接将 HTML 模板代码复制到 aardio 编辑器中运行并预览网页。
-  
-可在 aardio 开发环境新建一个 aardio 源码文件，复制下面的源代码并粘贴到 aardio 编辑器中：
+请参考： [aardio 模板语法](../../language-reference/templating/syntax.md)
 
-```aardio
-<!doctype html>
-<html><head><meta charset="utf-8"><title>帮助页面</title></head>
-<body>当前时间<? = time() ?>
-</body></html>
-```
+### 3. request,response,session 对象 
 
-然后点【运行】按钮，可以看到立即生成了一个网页。  
+使用 aardio 编写的网站应用中最重要的几个对象：
 
-#### 二、启用模板语法以后，aardio 代码必须置于 `<? ..... ?>` 内部。  
-aardio 将不在 `<? ..... ?>` 之内的部分作为参数调用全局函数 print 函数输出。  
-aardio 模板语法并不限于输出 HTML 代码 - 而是可用于输出任何文本。
-
-#### 三、使用 print 函数的规则：
-
-*   aardio 中全局 print 函数只能用于捕获或修改模板输出，不可用于其他用途。
-*   print 允许接收多个参数，并且必须对每个参数调用 tostring() 以转换为字符串。
-*   在一个独立 aardio 模板文件解析结束时，print 函数将收到一个 null 参数调用。
-
-  
-aardio 提供 string.loadcode() 函数可直接解析 aardio 模板并获取模板输出。  
-请在标准库 builtin/string 中查看此函数的源代码，了解如何通过自定义 print 函数捕获或修改模板输出。
-
-#### 四、模板开始标记 `<?` 必须独立，不能紧跟英文字母。例如 `<?xml...` 不被解析为 aardio 代码段开始标记。  
-另外，aardio 总是忽略文件开始的空白字符（包含空格、制表符，换行）。
-
-#### 五、可以使用 `<?=表达式?>` 输出文本 - 作用类似于 print( 表达式 )，可用逗号分隔多个表达式。  
-aardio 会忽略表达式前面等号首尾的空白字符 , 下面的写法也是允许的：  
-
-```aardio
-<?
-= 表达式1,表达式2
-?>
-```
-
-#### 六、aardio 文件只能以 UTF-8 编码保存，不建议添加 UTF8 BOM(如果添加了 BOM,aardio 仍然会自动移除)
-
-
-### 网站开发 request,response,session 对象函数文档
-
-请参考  fastcgi.client 库模块帮助文档中 request,response,session 对象的函数文档。
-
-request,response,session 的文档由 fastcgi.client 库模块提供。
+- request: HTTP 请求对象
+- response:  HTTP 响应对象
+- session:  HTTP 会话对象
 
 在 aardio 中所有 HTTP 服务端实现都支持兼容的 request,response,session 对象，这些对象的接口与用法是一样的。
 
+关于这几个对象的详细说明请参考 [fastcgi.client 库](../../library-reference/fastcgi/client/_.md) 文档。
 
-## 创建 FastCGI 服务端
+## 三、创建 HTTP 服务端
+
+可以使用 aardio 标准库中的 wsock.tcp.simpleHttpServer 或 wsock.tcp.asynHttpServer 启动微型 HTTP 服务端。这几个服务端非常小并且不依赖外部文件，可以方便地嵌入到程序中，可以作为网页界面的嵌入后端使用。
+
+wsock.tcp.simpleHttpServer 是多线程 HTTP 服务端，不依赖消息循环。在界面线程中可以调用 `wsock.tcp.simpleHttpServer.startUrl("/")` 创建一个单实例（多次调用不会重复创建线程）的 HTTP 服务器线程（自动分配空闲端口，在界面线程退出时自动退出），并且返回参数指定路径的 HTTP 访问地址。 
+
+而 wsock.tcp.asynHttpServer 则是单线程异步的 HTTP 服务端，只能用于界面线程。
+
+在使用 [web.view 创建的网页程序](../../library-guide/std/web/view/_.md) 中，只要简单地调用 `import wsock.tcp.simpleHttpServer` 或者 `import wsock.tcp.asynHttpServer` 就可以自动创建 HTTP 服务端并且 wb.go 函数可自动参数中基于应用程序根目录访问的路径转换为 HTTP 地址，例如：
+
+```aardio
+import web.view;
+var theView  = web.view(mainForm);  
+
+import wsock.tcp.simpleHttpServer; 
+theView.go("\web\index.html");
+```
+
+在 aardio 工程向导中选择 『 网页界面 / web.view 』 中的任何工程模板都可以创建包含以上代码的完整示例工程。
+
+## 四、创建 FastCGI 服务端
+
+在 IIS 这样的服务端中可通过 FastCGI 加载 aardio 编写的 FastCGI 服务端，就可以支持 aardio 编写的网站程序，下面我们介绍具体步骤。 
 
 首先请在主菜单中点击新建工程。
 

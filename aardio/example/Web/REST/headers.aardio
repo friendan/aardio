@@ -1,4 +1,4 @@
-﻿//设置 HTTP 头
+﻿//用 web.rest 客户端调用 HTTP API - 设置 HTTP 头
 
 import crypt;
 import web.rest.jsonLiteClient;

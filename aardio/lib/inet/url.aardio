@@ -329,6 +329,7 @@ location = URL中#号后面的网页位置,不包含#号
 end intellisense*/
                                     
 /**intellisense()
+inet.url = 网址（URL）函数库。\ninet.http,inet.whttp 以及所有 web.rest 客户端都已经自动导入 inet.url 。
 _URLIS_URL=@0x0/*_URLIS_URL*/
 _URLIS_OPAQUE=@//是否Opaque URL,如邮件地址,Javascript脚本\n0x1/*_URLIS_OPAQUE*/
 _URLIS_NOHISTORY=@//URL是否未曾访问过\n0x2/*_URLIS_NOHISTORY*/

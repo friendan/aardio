@@ -1,4 +1,4 @@
-//进度条
+//aardio 调用 PowerShell 之进度条
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="PowerShell 进度条";right=606;bottom=463;max=false)

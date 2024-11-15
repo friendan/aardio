@@ -1,4 +1,4 @@
-//增删改查
+//sqlite 库 - 增删改查
 
 import sqlite
 import console;

@@ -1,7 +1,8 @@
-//换行规则
+//文本框换行规则
+//文本框, 编辑框, 富文本框, edit, richedit
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="文本框换行规则";right=314;bottom=342;border="dialog frame";max=false;min=1)
+var winform = win.form(text="文本框换行规则";right=314;bottom=342;border="dialog frame";max=false)
 winform.add(
 edit={cls="edit";text="edit";left=39;top=129;right=278;bottom=210;edge=1;multiline=1;z=1};
 edit2={cls="edit";text="自动换行";left=39;top=29;right=278;bottom=110;autohscroll=false;edge=1;multiline=1;z=3};

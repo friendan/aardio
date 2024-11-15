@@ -1,4 +1,4 @@
-//aardio.CallPtr
+//aardio 调用 Go 语言 - aardio.CallPtr
 import golang;
 var go = golang();//创建 Go 编译器（ 仅调用编译的 DLL 不需要此扩展库 ）。
 

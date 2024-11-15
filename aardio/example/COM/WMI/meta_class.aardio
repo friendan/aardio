@@ -1,4 +1,4 @@
-//搜索类名
+//搜索 WMI 类名
 import console; 
 import com.wmi;
 

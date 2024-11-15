@@ -1,4 +1,4 @@
-//orphanWindow
+//窗口程序 - orphanWindow
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="智能提示";right=600;bottom=400)

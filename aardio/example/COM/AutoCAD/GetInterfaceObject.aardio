@@ -1,4 +1,4 @@
-//进程内对象
+//aardio 调用 AutoCAD - 进程内对象
 import console
 import com.cad;
 

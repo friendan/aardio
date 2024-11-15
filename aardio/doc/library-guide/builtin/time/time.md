@@ -21,7 +21,7 @@ class time{
 }
 ```  
 
-time 结构体兼容 WinAPI 的 SYSTEMTIME 结构体、兼容 COM 接口日期时间对象。 可在在 WinAPI 函数，COM 函数中直接使用。
+time 结构体兼容 WinAPI 的 SYSTEMTIME 结构体、兼容 COM 接口日期时间对象。 可在 WinAPI 函数，COM 函数中直接使用。
 
 ## 创建时间对象
 

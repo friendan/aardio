@@ -1,4 +1,4 @@
-﻿//下标 Item[]
+﻿//在 aardio 中访问 .NET 下标 Item[]
 import console;  
 import dotNet;  
 var compiler = dotNet.createCompiler("C#");

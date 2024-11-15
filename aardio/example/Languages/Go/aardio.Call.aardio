@@ -1,4 +1,4 @@
-//aardio.Call
+//aardio 调用 Go 语言 - aardio.Call
 import golang; 
 var go = golang();
 

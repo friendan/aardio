@@ -32,11 +32,13 @@ if(string.endWith(request.path,".md",true)){
 	}
 	elseif( string.startWith(request.path,"/example/") ){ 
 		request.path = string.left(request.path,-4) + ".aardio" 
+		 
 		htmlTitle = "范例"
 		var code = string.load("~"+request.path ); 
-		if(code){
-			code = ..string.replace(code,"```","&#96;&#96;&#96;");
-			htmlBody = markdown.render('```\n'+code+'\n```'); 
+		if(code){  
+			htmlBody = `<a href="javascript:void(0)" onclick="javascript:external.openExample('`
+				+ string.repline("~"+request.path,"\\","/") 
+				+`')">在 aardio 编辑器中打开</a>` + markdown.renderCode(code,"aardio");  
 		}
 	}
 	else {
@@ -54,14 +56,13 @@ if(string.endWith(request.path,".md",true)){
 elseif( string.startWith(request.path,"/example/") ){ 
 	htmlTitle = "范例"
 	var code = string.load("~"+request.path ); 
-	if(code){ 
-		htmlBody = markdown.render('``````aardio\n'+code+'\n``````'); 
-	}
+	if(code){  
+		htmlBody = `<a href="javascript:void(0)" onclick="javascript:external.openExample('`
+			+ string.repline("~"+request.path,"\\","/") 
+			+`')">在 aardio 编辑器中打开</a>` + markdown.renderCode(code,"aardio") ;  
+	} 
 }
 
-if(htmlBody){
-	htmlBody = string.replace(htmlBody,`@<pre><code class="aardio"`,`<pre><code class="language-aardio"`)
-}
 ?>
 <!DOCTYPE html>
 <html>

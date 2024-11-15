@@ -1,4 +1,4 @@
-//原生数组
+//aardio 调用 C 语言之原生数组操作
 import console;
 import tcc;  
 

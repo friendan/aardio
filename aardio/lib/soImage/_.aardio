@@ -128,7 +128,10 @@ namespace soImage {
 			}
 			captureWindow = function(hwnd,x,y,cx,cy,nc){ 
 				var rc = ::RECT();
-				if(!nc)::User32.GetClientRect(hwnd,rc); 
+				if(!nc){
+					::User32.GetClientRect(hwnd,rc);  
+					::User32.MapWindowPoints(hwnd,,rc,2);
+				}
 				else ::User32.GetWindowRect(hwnd,rc);  
 				
 				var x2,y2,cx2,cy2 = rc.xywh();

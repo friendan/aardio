@@ -2,7 +2,7 @@
 
 ## 一、IDispatch 对象
 
-aardio 支持 COM 原生接口，在标准库的 com.interface 名字空间下可找到很多这类原生接口。COM 原生接口使用的参数的数据类型与调用原生原生 API 相类似，参考 raw 库 [相关文档](../raw/datatype.md) 即可。
+aardio 支持 COM 原生接口，在标准库的 com.interface 名字空间下可找到很多这类原生接口。COM 原生接口使用的参数的数据类型与调用原生 API 相类似，参考 raw 库 [相关文档](../raw/datatype.md) 即可。
 
 我们一般所说的 COM 对象并非上面所述的原生接口对象，而是实现了 COM 动态接口的 IDispatch 对象，com.CreateObject 用于 创建 IDispatch 对象， com.IsObject() 函数用于判断参数是否 IDispatch 对象。
 

@@ -1,4 +1,4 @@
-//入门
+//sqlite 库 - 入门
 import win.ui;
 /*DSG{{*/
 mainForm = win.form(text="sqlite 入门";right=425;bottom=498)

@@ -1,4 +1,4 @@
-//发送Ctrl+C
+//发送 Ctrl+C
 import console
 import process.popen
 

@@ -5,4 +5,4 @@
 jpegUtil=~/example/Graphics/jpegUtil.aardio
 zbar=zbar.aardio
 AppPath=appPath.aardio
-十六进制编辑器=hexEditor.aardio
+十六进制编辑器=~\example\Windows\Edit\hexEditor.aardio

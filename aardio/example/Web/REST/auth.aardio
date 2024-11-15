@@ -1,4 +1,4 @@
-//登录认证
+//用 web.rest 客户端调用 HTTP API - 登录认证
 import console;
 import web.rest.jsonClient;
 console.showLoading("正在登录")

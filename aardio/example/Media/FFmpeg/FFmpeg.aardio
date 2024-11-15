@@ -1,4 +1,4 @@
-//入门
+//FFmpeg 入门
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="调用 FFmpeg";right=759;bottom=469)

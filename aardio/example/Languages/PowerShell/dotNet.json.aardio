@@ -1,4 +1,4 @@
-//JSON 
+//aardio 调用 PowerShell 之 JSON 操作
 import console;
 import dotNet.ps;
 /*

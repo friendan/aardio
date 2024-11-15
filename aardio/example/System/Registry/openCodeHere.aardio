@@ -1,4 +1,4 @@
-﻿//右键打开 VSCode
+﻿//注册表操作 - 右键菜单添加打开 VSCode
 import win;
 import win.reg;
 import process.code; 

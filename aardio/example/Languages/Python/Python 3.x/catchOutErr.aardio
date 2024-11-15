@@ -1,4 +1,4 @@
-//捕获标准输出
+//aardio 捕获 Python 标准输出
 import win.dlg.message;
 import py3;
 

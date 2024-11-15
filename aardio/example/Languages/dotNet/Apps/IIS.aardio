@@ -1,4 +1,4 @@
-//管理 IIS 服务器
+//aardio 调用 .NET 管理 IIS 服务器
 import dotNet; 
 
 //自 IIS 自带的程序集导入 ServerManager 名字空间

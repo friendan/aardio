@@ -173,8 +173,9 @@ table.unshift(.(数组,要插入的一个或多个元素) = 插入一个或多�
 table.shift( = 自数组头部移除指定个数的元素
 table.shift(.(数组,移除数目) = 自数组头部移除指定个数的元素，\n并返回这些移除的元素，每个返回值返回一个移除元素。\n参数 @2 可选,默认为 1
 table.splice(.(数组,位置,删除长度,要插入的一个或多个元素) = 在数组指定位置删除指定长度元素，替换为不定个数的插入元素,\n如果删除了元素,该函数返回包含删除元素的数组
-table.sort(.(array) = 排序,\n修改 @array 参数指定的数组，函数无返回值
-table.sort(.(array,comProc) = 排序,\n修改 @array 参数指定的数组，函数无返回值\ncomProc指定用于比较元素大小的函数\n该函数比较owner参数与第一个参数,如果应排序在前面返回 true\n\n注意数值使用 `<` 或 `>` 比较,\n2 个值相等不应当返回 true,\n所以直接用 `<=` 或 `>=` , `==` 判断并返回值是错误的
+table.sort(  = 排序数组
+table.sort(.(array) = 排序 @array 参数指定的数组，函数无返回值。\n默认将较小的值排序在前。
+table.sort(.(array,compareProc) = @.sort(__/*排序 @array 参数指定的数组，函数无返回值。\ncompareProc 指定用于比较元素大小的函数。\n该函数比较 owner 参数与第一个参数，owner 排序在前面则返回 true。\n\n注意数值使用 `<` 或 `>` 比较，\n2 个值相等不应当返回 true，不应直接用 `<=` 或 `>=` , `==` 判断并返回值。*/,lambda(next) owner > next )
 table.reverse(__) =  table数组倒序排列,\n注意此函数无返回值
 table.range( = 如果指定 table 对象作为参数，则用于获取 table 对象的最小数值索,最大数值索引。\n指定数值参数则可用于生成序列数组。
 table.range(.(tab) =  返回 table 对象的最小数值索,最大数值索引，支持稀疏数组。
@@ -428,7 +429,7 @@ io.rename(.(from,to) = 将参数 @1 指定路径的文件重命名为参数 @2 �
 io.remove("__") = 删除参数 @1 指定路径的文件。\n在路径前加上 `\\?\` 可支持畸形路径。\n成功返回 true，失败返回 null，错误信息，错误代码 。\n\n此函数仅用于删除文件，\n删除目录请改用 fsys.delete、fsys.deleteEx 或 fsys.remove 函数。
 io.splitpath(__) = 拆分文件路径为目录、文件名、后缀名、分区号等，\n返回 io.pathInfo 对象，\n返回对象可修改drive,path,name,ext等字段，\n并可作为 tostring 函数的参数重新合成为文件路径
 io.print(.(->->->) = 在标准输出流（默认为控制台）输出信息。\n可指定任意个参数，参数自动调用 tostring 函数转为字符串。\n多参数输出时自动以制表符分开，最后会输出一个换行。
-io.print( = 在标准输出流（默认为控制台）输出信息。\n此函数没有自动打开控制台的功能。\n改用 console.log 函数可自动打开控制台窗口。
+io.print( = 在标准输出流（默认为控制台）输出信息。\n此函数没有自动打开控制台的功能。\n改用 print，console.log 函数可自动打开控制台窗口。
 io.exist( = 判断文件路径是否存在，\n也可以用于判断文件是否可读写。\n\n包含不可见字符的错误路径可用「工具>文本文件>十六进制编辑器」\n或 string.hex 函数查看
 io.exist(.("文件路径") = 判断文件路径是否存在\n存在则转换为绝对路径并返回该路径,不存在返回null\n参数@1不是有效字符串返回null
 io.exist(.("文件路径",2) = 测试文件是否可写\n成功则转换为绝对路径并返回该路径,失败返回null\n目录或只读文件直接返回null\n参数@1不是有效字符串返回null
@@ -616,8 +617,8 @@ __messageTranslateDispatch(msg) = 分发处理窗口消息,\n参数为消息对�
 
 win.ui.disableDpiScaling = 在创建窗口前设为 false 则全局禁用 DPI 自动缩放
 onError(错误信息,是否已退出退用栈) = @//此函数应在主线程中定义并自动注册到子线程，应遵守线程函数规则\nglobal.onError = function( err,over ){ \n    if(!over){\n        import debug;\n        var stack = debug.traceback(,"调用栈",3);\n    }\n    \n    if( _STUDIO_INVOKED ) return err;__/*IDE中返回错误信息以继续显示*/ \n}
-print( = aardio 代码在解析模板语法时，将自动调用此函数输出数据。\nprint 函数默认指向 io.print 函数（如提前导入 console 则能自动打开控制台）。\n如在开发环境中且首次调用模板或 print 输出的是 HTML，则创建网页控件显示 HTML。\n\n在不同类弄的应用中，print 可能指向不同的输出函数。\n例如在 HTTP 服务端中 print 将自动指向 response.write 函数。\n而在调用 string.loadcode 时 print 将临时指向拼接字符串的代码。\n\n非必要请不要直接使用或修改 print 函数。
-print(.(->->->) = aardio 代码在解析模板语法时，将自动调用此函数输出数据。\n支持多个不定参数,每个参数都会调用 tostring 转换为字符串,但不会再添加换行,\n\n此函数可能被负责模板输出的框架重新定义并指向不同的实际函数,\n例如在 fastcgi.client 中指向 response.write，而在HTMLayout中动态指向每个不同页面的输出函数\n此函数不可随意改动指向，应交由负责模板输出的框架自动管理,\n也不应赋值到其他变量后再进行调用，因为print函数随时可能被框架变更指向另外的输出函数\n\n在服务端网页开发时，建议直接调用 response.write 而不是调用 print 函数。\n在控制台程序中建议调用 console.log 而不是使用 print 函数。
+print( = aardio 代码在解析模板语法时，将自动调用此函数输出数据。\n在不同类型的应用中，print 可能指向不同的输出函数。\n例如在 HTTP 服务端中 print 将自动指向 response.write 函数。\n而在调用 string.loadcode 时 print 将临时指向拼接字符串的代码。\n\n用户不应随意改动 print 函数的指向，应交由负责模板输出的库或框架自动管理,\n也不应将 print 赋值到其他变量后再进行调用，因为 print 函数随时可能被改变指向。\n用户应当调用确定的 response.write，console.log 等函数而不是可变的 print 函数。\n\n在未调用重写 print 函数的库或函数的默认情况下：\n如果在开发环境中且首次调用模板或 print 输出的是 HTML 代码，则创建网页控件并显示 HTML，\n否则 print 函数将默认调用 io.print 函数向控制台窗口输出内容。\nprint 在默认调用 io.print 前会自动打开控制台，之后在退出非界面线程前会暂停控制台。
+print(.(->->->) = aardio 代码在解析模板语法时，将自动调用此函数输出数据。\n支持多个不定参数，每个参数都会自动调用 tostring 转换为字符串。\n此函数可能实际指向不同的输出函数。
 beforeUnload = @..subscribe("beforeUnload",function(){\n	__/*进程的启动线程退出前执行此回调非。\n启动线程可用 table.gc 注册析构函数。*/\n} );
 beforeSystemEndSesssion = @..subscribe("beforeSystemEndSesssion",function(){\n	__/*即将关机执行此回调，不可执行耗时操作*/\n} );
 console = 控制台窗口

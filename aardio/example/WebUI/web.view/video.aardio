@@ -1,4 +1,4 @@
-//视频 / 全屏
+//web.view( WebView2 浏览器控件) - 视频 / 全屏
 import web.view; 
 import wsock.tcp.asynHttpServer;
 import win.ui;

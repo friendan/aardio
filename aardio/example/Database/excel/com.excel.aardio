@@ -1,4 +1,4 @@
-﻿//COM 接口
+﻿//COM 接口操作 Excel
 import console;
 import com.excel; 
 

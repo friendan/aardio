@@ -1,4 +1,4 @@
-//调用包 UglifyJS 
+//aardio 通过 Node.js 调用 UglifyJS 包  
 import console;  
 import nodeJs;
 

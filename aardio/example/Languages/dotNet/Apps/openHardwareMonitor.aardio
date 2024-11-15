@@ -1,4 +1,4 @@
-//RUNAS//硬件温度
+//RUNAS//aardio 调用 .NET 开源组件检测硬件温度
 import win.ui;
 /*DSG{{*/
 var mainForm = win.form(text="aardio 利用开源库OpenHardwareMonitor获取CPU或显卡温度";right=791;bottom=699)
@@ -11,8 +11,8 @@ edit={cls="edit";left=8;top=4;right=787;bottom=696;db=1;dl=1;dr=1;dt=1;edge=1;hs
 请右键点击 sys.openHardwareMonitor 
 在弹出菜单内点「转到定义 / 文件」查看库源码。
 
-这是一个调用 .Net 开源组件（OpenHardwareMonitorLib.dll）的演示。
-aardio 可以内存加载 .Net 生成的 DLL 程序集，并生成独立 EXE 文件。
+这是一个调用 .NET 开源组件（OpenHardwareMonitorLib.dll）的演示。
+aardio 可以内存加载 .NET 生成的 DLL 程序集，并生成独立 EXE 文件。
 */
 import sys.openHardwareMonitor; 
 var computer = sys.openHardwareMonitor.computer();

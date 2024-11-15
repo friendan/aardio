@@ -1,4 +1,4 @@
-//窗口菜单
+//窗口自动化 - 操作窗口菜单
 import winex; 
 import process;
 import win.version;

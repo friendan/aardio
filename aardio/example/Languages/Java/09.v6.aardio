@@ -1,4 +1,4 @@
-//精简 Java6 运行时
+//aardio 调用 Java - 精简 Java6 运行时
 import console;
 import java.jre.v6;//仅6.8MB,可生成独立EXE文件,支持 Windows XP
  

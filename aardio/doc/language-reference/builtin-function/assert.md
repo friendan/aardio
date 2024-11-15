@@ -23,7 +23,7 @@ loadcode 如果执行失败，第一个返回值为null，第二个返回值为�
 
 `assert2(level,value,message,...)`
 
-参数 @value 为真则返回其他值,否则则将参数 @message 作为异常抛出。参数 @level 指定抛出异常的调用级别，2 为调用者,1 为当前函数。
+参数 @value 为真则返回其他值,否则将参数 @message 作为异常抛出。参数 @level 指定抛出异常的调用级别，2 为调用者,1 为当前函数。
 
 assert2 与 assert 函数的用法与作用是一样的，唯一的区别是 assert2 可以在首个参参数中指定抛出异常的调用栈级别。
 

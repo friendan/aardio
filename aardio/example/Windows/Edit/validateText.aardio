@@ -1,4 +1,4 @@
-//校验输入文本
+//文本框 - 校验输入文本
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="文本框限制输入金额";right=759;bottom=469)

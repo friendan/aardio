@@ -1,4 +1,4 @@
-//操作安卓手机
+//aardio 调用 adb 操作安卓手机
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="process.adb 扩展库 - 安卓手机扫码配对，无线调试";right=564;bottom=593;bgcolor=16777215)

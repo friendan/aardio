@@ -1,4 +1,4 @@
-﻿//弹性数组 
+﻿//aardio 调用 C 语言之弹性数组 
 import tcc; 
 tcc.build( "/.flexible_array.dll").code = /** 
 #include <stdlib.h>

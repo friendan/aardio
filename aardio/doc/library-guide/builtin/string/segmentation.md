@@ -1,6 +1,7 @@
 # 中文分词与分句
 
-## 使用 mmseg 实现中文分词
+## 使用 mmseg 实现中文分词 <a id="mmseg" href="#mmseg">&#x23;</a>
+
 
 mmseg 是一个轻量简洁的中文分词组件（对英文使用空格与标点自然分词），调用示例：
 
@@ -39,7 +40,8 @@ var text = "研究生命起源";
 var words = mmseg.list(text);
 ```
 
-## 使用 string.sentences 实现文本分句
+## 使用 string.sentences 实现文本分句 <a id="sentences" href="#sentences">&#x23;</a>
+
 
 分句指的是文本拆分为一个个语意相对独立的语句。
 

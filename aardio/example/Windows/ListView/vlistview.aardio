@@ -1,4 +1,4 @@
-//虚表
+//列表视图（listview）控件 - 虚表
 //相关范例：范例 / 数据库 / sqlite / 虚表
 //下面listview 控件的类名（cls属性）请改为 "vlistview"
 import win.ui;

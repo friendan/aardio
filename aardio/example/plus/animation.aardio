@@ -1,4 +1,4 @@
-//自绘动画
+//plus 控件 - 自绘动画
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="自定义动画演示";right=577;bottom=419)

@@ -1,4 +1,4 @@
-//安装模块
+//在 aardio 中安装 Python 模块
 import console;
 
 import py3.pip;//如果程序中用的是 py3.10，这一句也要改为 py3.10.pip，Python 3.7 以下版本不支持 pip 工具

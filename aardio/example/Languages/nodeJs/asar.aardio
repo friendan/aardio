@@ -1,4 +1,4 @@
-//调用 asar
+//aardio 通过 Node.js 调用 asar 包
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio做界面调用node.js解压asar文件";right=714;bottom=199)

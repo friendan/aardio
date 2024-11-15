@@ -1,4 +1,4 @@
-﻿//实现 Python.exe
+//在 aardio 中模拟 Python.exe 运行
 
 import console;
 import py3;

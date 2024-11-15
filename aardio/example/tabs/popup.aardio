@@ -1,4 +1,4 @@
-//实现弹出菜单
+//用高级选项卡（win.ui.tabs）实现弹出菜单
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

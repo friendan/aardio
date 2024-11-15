@@ -1,6 +1,5 @@
-//UIAutomationClient
-//此功能调用 .NET 组件，相关范例：调用其他语言 > dotNet
-//探测工具 loadcodex("~\tools\Spy\inspect.aardio")
+//使用 .NET 调用 UIA 接口 
+//探测工具  file://~/tools/Spy/inspect.aardio
 
 //运行程序
 import process;  
@@ -13,7 +12,7 @@ var hwnd,hEdit = winex.waitActive(,,"Notepad"
 
 //导入 .NET 类  
 //https://learn.microsoft.com/zh-cn/dotnet/api/system.windows.automation?view=netframework-4.6
-import System.Windows.Automation;
+import System.Windows.Automation;//通过 UIAutomationClient 加载
 //改为 import System.Windows.Automation.3 可支持 TextPattern2 等接口，下面的代码不必更改。
 
 //访问 .NET 类的静态成员

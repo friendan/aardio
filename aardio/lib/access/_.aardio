@@ -201,72 +201,18 @@ class access {
 		if( ... )sql = format(sql,...);
 		var ok,err = call(rs.Open,rs,sql,this.connection,cursorType,lockType);
 		if(!ok) return null,err;
-		return rs;
+		
+		return _recordSet(rs)
 	}; 
 	getRows = function(sql,...){
 		var rs,err = owner.openRecordSet(sql,,,...);
 		if(!rs) error(err,2);
 		 
-		var recordCount = 0;
-		var eof = rs.eof;
-		var data = eof ? { @{} } : rs.GetRows();  
-		
-		var fields = {};
-		var name; 
-		for( i=1;rs.Fields.Count ){
-			var name = rs.Fields(i-1).Name;
-			if(#name){
-				fields[i]  = name;
-				data[ name ] = data[ i ]; 
-			};
-			if(!eof){
-				var _,len = ..table.range(data[ i ]);
-				recordCount = ..math.max(len,recordCount);
-			}
-		} 
-		
-		rs.close();
-		
-		data@.recordCount = recordCount;
-		data@.fields = fields; 
-		return data;
+		return _getRows(rs,true);
 	};
 	getTable = function(sql,...){
-		var data,err = this.getRows(sql,...);
-		if(!data) error(err,2);
-		
-        var result = {}; 
-        var v; 
-        var rowCount = data@.recordCount;
-        var trim = ..string.trimright; 
-        var fields = data@.fields;
-        for(c=1;#data){
-            var col = data[c];
-            var name = fields[c];
-            if(!#name) name = c;
-            
-            if(c>1){
-            	for(r=1;rowCount){
-        			v = col[r];
-        			if( type( v ) == "string" ) v = trim(v);
-        			elseif( ..time.istime(v) ) v = ..time.ole(v);
-        		
-        			result[r][name]  = v;
-        		} 
-        	}
-        	else {
-        		for(r=1;rowCount){
-        			v = col[r];
-        			if( type( v ) == "string" ) v = trim(v);
-        			elseif( ..time.istime(v) ) v = ..time.ole(v);
-        			
-        			result[r] = { [name]  = v };
-        		} 
-        	}
-        }
-        
-        result.fields = fields;
-		return result;
+		var data = this.getRows(sql,...);
+		if(data) return _rows2table(data);
 	};
 	stepQuery = function(...){
 		return this.getTable(...)[[1]];
@@ -393,6 +339,13 @@ class access {
 			cmd.execute(ra,parameters,cmd.adExecuteNoRecords);
 		};
 		
+		cmd[["executeRecords"]] = function(ra,parameters){
+			var rs = cmd.execute(ra,parameters);
+			if(rs){
+				return _recordSet(rs)
+			}
+		};
+		
 		cmd[["executeStream"]] = function(ra,parameters){
 			cmd.execute(ra,parameters,cmd.adExecuteStream);
 		};
@@ -400,69 +353,11 @@ class access {
 			var rs,err = cmd.execute(...); 
 			if(!rs) error(err,2);
 		 	
-			var recordCount = 0;
-			var closed = (rs.State == rs.AdStateClosed);
-			var eof = closed || rs.eof;
-			var data = eof ? { @{} } : rs.GetRows();  
-			
-			var fields = {};
-			var name; 
-			for( i=1;rs.Fields.Count ){
-				var name = rs.Fields(i-1).Name;
-				if(#name){
-					fields[i]  = name;
-					data[ name ] = data[ i ]; 
-				}
-				
-				if(!eof){
-					var _,len = ..table.range(data[ i ]);
-					recordCount = ..math.max(len,recordCount);
-				}
-			} 
-			
-			if(!closed)rs.close();
-			data@.recordCount = recordCount;
-			data@.fields = fields; 
-			return data;
+			return _getRows(rs,true);
 		};
 		cmd[["getTable"]] = function(...){
-			var data,err = cmd.getRows(...);
-			if(!data) error(err,2);
-			
-        	var result = {}; 
-        	var rowCount = data@.recordCount;
-        	if(!rowCount) return result;
-        	
-        	var v; 
-        	var trim = ..string.trimright; 
-        	var fields = data@.fields;
-        	for(c=1;#data){
-            	var col = data[c];
-            	var name = fields[c];
-            	if(!#name) name = c;
-            	
-            	if(c>1){
-            		for(r=1;rowCount){
-        				v = col[r];
-        				if( type( v ) == "string" ) v = trim(v);
-        				elseif( ..time.istime(v) ) v = ..time.ole(v);
-        			
-        				result[r][name]  = v;
-        			} 
-        		}
-        		else {
-        			for(r=1;rowCount){
-        				v = col[r];
-        				if( type( v ) == "string" ) v = trim(v);
-        				elseif( ..time.istime(v) ) v = ..time.ole(v);
-        				
-        				result[r] = { [name]  = v };
-        			} 
-        		}
-        	}
-        	
-        	result.fields = fields;
-			return result;
+			var data = cmd.getRows(...);
+			if(data) return _rows2table(data);
 		};
 		cmd["stepQuery"]  = function(...){
 			return cmd.getTable(...)[[1]];
@@ -608,6 +503,91 @@ namespace access {
 	}
 	
 	formatSqlParameters = format; 
+	
+	_getRows = function(rs,rsClose){
+		var recordCount = 0;
+		
+		var closed = (rs.State == rs.AdStateClosed);
+		var eof = closed || rs.eof;
+		var data = eof ? { @{} } : rs.GetRows();  
+		
+		var fields = {};
+		var name; 
+		for( i=1;rs.Fields.Count ){
+			var name = rs.Fields(i-1).Name;
+			if(#name){
+				fields[i]  = name;
+				data[ name ] = data[ i ]; 
+			}
+			
+			if(!eof){
+				var _,len = ..table.range(data[ i ]);
+				recordCount = ..math.max(len,recordCount);
+			}
+		} 
+		
+		if(rsClose && !closed ) rs.Close();
+		
+		data@.recordCount = recordCount;
+		data@.fields = fields;
+		return data;		
+	}
+	
+	_rows2table = function(data){
+  		var result = {}; 
+        var v; 
+        var rowCount = data@.recordCount;
+        if(!rowCount) return result;
+        
+        var trim = ..string.trimright; 
+        var fields = data@.fields;
+        for(c=1;#data){
+            var col = data[c];
+            var name = fields[c];
+            if(!#name) name = c;
+            
+            if(c>1){
+            	for(r=1;rowCount){
+        			v = col[r];
+        			if( type( v ) == "string" ) v = trim(v);
+        			elseif( ..time.istime(v) ) v = ..time.ole(v);
+        		
+        			result[r][name]  = v;
+        		} 
+        	}
+        	else {
+        		for(r=1;rowCount){
+        			v = col[r];
+        			if( type( v ) == "string" ) v = trim(v);
+        			elseif( ..time.istime(v) ) v = ..time.ole(v);
+        			
+        			result[r] = { [name]  = v };
+        		} 
+        	}
+        }
+        
+        result.fields = fields;
+		return result;
+	}
+
+	_recordSet = function(rs){
+		rs[["getTable"]] = function(){
+			var data =  _getRows(rs,false);
+			if(data) return _rows2table(data); 
+			
+		};
+		
+		rs[["stepQuery"]] = function(...){
+			return rs.getTable(...)[[1]];
+		};	
+		
+		rs[["nextRecordset"]] = function(){
+			var rs = rs.NextRecordset();
+			if(rs)return _recordSet(rs);
+		} 
+		
+		return rs;
+	}	
 }
 
 /**details(相关范例)
@@ -617,7 +597,7 @@ namespace access {
 end details**/
 
 /**intellisense()
-access = 使用系统自带组件连接access数据库,可支持excel\n[数据库连接串大全](https://www.connectionstrings.com/access/)
+access = 使用系统自带组件连接 Access 数据库,可支持 Excel 。\n[使用范例](doc://example/Database/access/access.html)
 access("数据库路径") = 打开数据库连接。\n数据库路径可以指定 mdb,xls等文件格式,\n如果指定的数据库不存在将自动创建数据库文件\n\n如果在其他参数前添加一个 false 参数，则不打开连接，仅返回连接语句。
 access("数据库路径",其他连接参数) = @ access("__/*数据库路径(mdb,xls等)*/",{ \n	["Mode"]="Share Deny Read|Share Deny Write"; \n	["Jet OLEDB:Database Password"] = "123456"; \n}) 
 access("数据库连接语句",其他格式化参数) = @access("Provider=Microsoft.Jet.OleDb.4.0;Data Source=%s;Jet OLEDB:Database Password=%s;",\n	"/test.db","__/*密码*/" );
@@ -675,17 +655,20 @@ recordCount = 获取记录总数,\n如果该值为-1，请修改为静态方式�
 move(.(numRecords,start) = 移动游标位置,\n注意第一条记录游标位置为0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始
 getRows( = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值
 getRows(.(rows,start,fields) = 查询并返回包含结果数据的数组,所有参数可选,\nrows 指定获取行数，默认为-1，即获取所有剩下的行,0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始\n@ields 可选用一个字符串、或字符串数组指定要获取的列,\n也可用数值，或数值数组指定要获取的列
+getTable() = 返回查询结果集数组\n每个元素代表一行,每行由N个键值对列组成\n返回值的fields成员记录了所有数据列的字段名\n结果集为空也会返回空数组,使用#操作符获取结果集长度
+stepQuery() = 返回查询结果集第一行的数据,由键值对列组成\n无数据返回null
 end intellisense**/
 
 /**intellisense(!access_cmd)
 commandText = 要执行的SQL命令语句
 commandType = 命令类型\n普通SQL为1，存储过程为4
-execute(.(ra,parameters.option) = 执行查询,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值 
-executeStream(.(ra,parameters) = 执行查询返回流,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
-executeNoRecords(.(ra,parameters) = 执行查询不返回记录集,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+execute(.(ra,parameters.option) = 执行查询,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值 。\n返回记录集对象，execute 返回的记录集没有 getTable,stepQuery 函数。\nexecuteRecords 返回的记录集提供 getTable,stepQuery 函数。
+executeStream(.(ra,parameters) = 执行查询返回流,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+executeNoRecords(.(ra,parameters) = 执行查询不返回记录集,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+executeRecords(.(ra,parameters.option) = 执行查询,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值 。\n返回记录集对象，execute 返回的记录集没有 getTable,stepQuery 函数。\nexecuteRecords 返回的记录集提供 getTable,stepQuery 函数。
 cancel() = 取消执行
 getTable() = 执行SQL命令返回查询结果集数组\n每个元素代表一行,每行由N个键值对列组成\n返回值的fields成员记录了所有数据列的字段名\n结果集为空也会返回空数组,使用#操作符获取结果集长度
-getRows() = 查询并返回包含结果数据的SafeArray数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值,\n也可以使用 数据.字段名[列号] 获取对应的值\n\n返回数组的元表中使用recordCount记录了总行数,\n结果集为空也会返回空数组,可使用 @.recordCount判断记录集的行数\n元表中的fields字段则是记录了所有字段名的数组.\n\n所有值后面的占位空白没有去除\n可使用getTable函数获取处理过空白占位符的数据,\n或参考该函数源码自行处理尾部空白
+getRows() = 查询并返回包含结果数据的 SafeArray 数组\n此函数返回的数据是先列后行,与 getTable 相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值,\n也可以使用 数据.字段名[列号] 获取对应的值\n\n返回数组的元表中使用recordCount记录了总行数,\n结果集为空也会返回空数组,可使用 @.recordCount判断记录集的行数\n元表中的fields字段则是记录了所有字段名的数组.\n\n所有值后面的占位空白没有去除\n可使用getTable函数获取处理过空白占位符的数据,\n或参考该函数源码自行处理尾部空白
 stepQuery() = 执行SQL命令\n返回查询结果集第一行的数据,由键值对列组成\n无数据返回null
 each() = @for(rs in ??.each() ){ 
 	io.print( rs(0).value );__/*执行SQL命令并遍历结果集*/

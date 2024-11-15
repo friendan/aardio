@@ -1,4 +1,4 @@
-﻿//WebService
+﻿//aardio 调用 .NET 创建 WebService 客户端
 import console;
 import dotNet; 
 

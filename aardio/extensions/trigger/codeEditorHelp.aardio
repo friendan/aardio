@@ -2,6 +2,12 @@
 import ide;
 import inet.url;
 import fsys;
+import key;
+ 
+if(key.getStateX("SHIFT")){ 
+	ide.createProcess("~\example\Web\REST\aiChat.aardio");
+	return; 
+} 
 
 var hwnd = ...;
 
@@ -12,6 +18,61 @@ edit.hwnd = hwnd;
 var text = edit.selText
 if(#text){
 	text = string.trim(text);
+	
+	var op = string.match(text,"^\s*(<\p+>|<@/*DSG{{*/@>|<DSG>|<%\[\]>)\s*$");
+	if(op){
+		 
+		var url = "doc://guide/language/special-characters.html"
+		if(op==">>" || op=="<<" || op==">>>"){ 
+			url = "doc://language-reference/operator/bitwise.html"
+		}
+		elseif(op == "===" || op == "!==" || op == "==" || op == "!="){
+			url = "doc://language-reference/operator/equality.html"
+		}
+		elseif(op == "+" || op == "/" || op == "%" || op == "**"){
+			url = "doc://language-reference/operator/arithmetic.html"
+		}
+		elseif(op == ">" || op == "<" || op == ">=" || op == "<="){
+			url = "doc://language-reference/operator/comparison.html"
+		}
+		elseif(op == "!" || op == "||" || op == "&&"){
+			url = "doc://language-reference/operator/logical.html"
+		}
+		elseif(op == "#"){
+			url = "doc://language-reference/operator/len.html"
+		}
+		elseif(op[1] == '['#){
+			url = "doc://language-reference/operator/member-access.html"
+		}
+		elseif(string.match(op,"^/\*+$")) {
+			op = "/*";
+			url="doc://language-reference/basic-syntax.html"
+		}
+		elseif(string.match(op,"^\*+/$")) {
+			op = "*/";
+			url="doc://language-reference/basic-syntax.html"
+		}
+		elseif(op=="//"){
+			url="doc://language-reference/basic-syntax.html"
+		}
+		elseif(op=="?=" || op=="?!"){
+			url="doc://library-guide/builtin/string/patterns.html#lookahead"
+		}
+		
+		if(!string.indexOf(url,"#")){
+			url = inet.url.appendExtraInfo(url,{q=op}); 
+		}
+		
+		ide.openDocument(url);
+		return; 
+	}
+	
+	if(string.find(text,"^\\\w$")){
+		ide.openDocument("doc://library-guide/builtin/string/patterns.html"+"#classes");
+		return;
+	}
+	
+	
 	text = string.trim(text,".");
 	var libPath = string.match(text,"^!\w(\w[\.\w]+)\.[^\.\s]+!\W$");
 	var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1;ide=1};
@@ -54,4 +115,4 @@ if(#text){
 	return;
 }
 
-ide.openDocument("doc://index.md");
+ide.openDocument("doc://main.md");

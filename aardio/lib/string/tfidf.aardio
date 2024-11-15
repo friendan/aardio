@@ -2,7 +2,7 @@
 class string.tfidf{
 
 	ctor( keywords ){
-		this.documents = {@{_readonly=false}}
+		this.documentLength = {@{_readonly=false}}
 		this.documentsWithKeyword = {@{_readonly=false}}
 		this.tfData = {@{_readonly=false}}
 		this.tfidfData = {@{_readonly=false}}
@@ -40,10 +40,10 @@ class string.tfidf{
 			documentsWithKeyword[k] = (documentsWithKeyword[k]:0)+1; 
 		}
 		
-		this.documents[idOrPath] = #words;
+		this.documentLength[idOrPath] = #words;
 		this.tfData[idOrPath] = tfData;  
 	} 
-	tfidf = function(lengthNormFactor = 1,tfLogBase, minDocLength = 0){
+	calc = function(lengthNormFactor = 1,tfLogBase, minDocLength = 0){
 		var tf,idf;
 		var keywords = this.keywords;
 		var documentsWithKeyword = this.documentsWithKeyword;
@@ -51,14 +51,14 @@ class string.tfidf{
 		
 		var totalDocuments = 0;
 		var tatalDocLength = 0; 
-		for(idOrPath,docLength in this.documents){
+		for(idOrPath,docLength in this.documentLength){
 			tatalDocLength = tatalDocLength + docLength;
 			totalDocuments++;
 		} 
 		var avgDocLength = tatalDocLength / totalDocuments; 
 
 		for(idOrPath,tfData in this.tfData){ 
-		 	var docLength = this.documents[idOrPath];
+		 	var docLength = this.documentLength[idOrPath];
 		 	
 			var keywordToTfidf = {};
 			for(kw in keywords){
@@ -77,7 +77,7 @@ class string.tfidf{
 			this.tfidfData[idOrPath] = keywordToTfidf; 
 		}  
 	};
-	getKeywords = function(idOrPath,len,excludePatterns,excludeWords){
+	getKeywords = function(idOrPath,topN,excludePatterns,excludeWords){
 		var keywordToTfidf = this.tfidfData[idOrPath]
 		if(keywordToTfidf){
 			var kw = {};
@@ -99,11 +99,11 @@ class string.tfidf{
 			} 
 			
 			..table.sort(kw,lambda(b)keywordToTfidf[owner] > keywordToTfidf[b] );
-			if(len) return ..table.slice(kw,1,len);
+			if(topN) return ..table.slice(kw,1,topN);
 			return kw; 
 		}
 	};
-	calc = function(keywords,idOrPath,decimals) {
+	getScore = function(keywords,idOrPath,decimals) {
     	var score = 0; 
     	var keywordToTfidf = this.tfidfData[idOrPath]
     	var tfidf = {}
@@ -117,7 +117,7 @@ class string.tfidf{
     	 
     	return score,tfidf;
 	};
-	search = function(keywords){
+	search = function(keywords,topN){
 	
 		var tfidf;
 		var scores = {};
@@ -138,8 +138,10 @@ class string.tfidf{
 		}
 		
 		..table.sort(scores, lambda(b) owner[2] > b[2]);
+		
+		if(topN) return ..table.slice(scores,1,topN);
     	return scores;
-	} 
+	};
 } 
 
 namespace string.tfidf{
@@ -148,7 +150,7 @@ namespace string.tfidf{
 
 
 /*****intellisense()
-string.tfidf = 用于计算 TF-IDF 词频
+string.tfidf = 用于计算 TF-IDF 词频。\n相关库： string.bm25
 string.tfidf( = 创建 TF-IDF 对象
 string.tfidf(.(keywords) = 创建 TF-IDF 对象。\n可选用一个字符串数组限定要计数的全部关键词。\n不指定则计算所有出现的分词
 string.tfidf() = !stringTfidf.
@@ -157,12 +159,12 @@ end intellisense*****/
 /*****intellisense(!stringTfidf)
 addDocument( = 添加文档数据
 addDocument(.(idOrPath,words) = 添加文档数据。\nidOrPath可指定任何可作为键名的标识，可指定文档路径。\nwords 指定文档内容分词后的字符串数组，\n可用 mmseg 扩展库分词。
-tfidf( = 计算或重新计算 TF-IDF 值
-tfidf(.(lengthNormFactor,tfLogBase,minDocLength) = 在添加所有文档后可调用此函数计算或重新计算 TF-IDF 值。\nlengthNormFactor 用来调整文档长度归一化的影响程度，默认为 1。\nlengthNormFactor 越小文档长度归一化的影响就越小。\n简单说 lengthNormFactor 越低，短文档的权重和价值就越低。\ntfLogBase 用于控制 TF 计算中对数变换的底数，默认为 math.e，\n较小的底数会使得高频词的权重增长更加缓慢。 \n它的作用是减少单个文档中频繁出现的词的影响。\n避免某些常见词在文档中的过度表示，\n使得更有意义的、但出现频率较低的词也能得到合理的权重。\nminDocLength 可选用于指定最小文档长度（分词数目，非字数）。\n默认值为 0，小于 minDocLength 的过短文档将会抑制其权重。
-calc( =  计算关键词在指定文档中的权重。
-calc(.(keywords, idOrPath,decimals) =  计算关键词在指定文档中的权重。\nkeywords 参数指定关键词数组。\nidOrPath 参数指定文档标志，通常为路径。\n第一个返回值为计算得到的总权重，\n第二个返回值为对应关键词顺序的权重数组。\n可选用 decimals 参数限定返回数组中权重的小数位数
+calc( = 计算或重新计算 TF-IDF 值
+calc(.(lengthNormFactor,tfLogBase,minDocLength) = 在添加所有文档后可调用此函数计算或重新计算 TF-IDF 值。\nlengthNormFactor 用来调整文档长度归一化的影响程度，默认为 1。\nlengthNormFactor 越小文档长度归一化的影响就越小。\n简单说 lengthNormFactor 越低，短文档的权重和价值就越低。\ntfLogBase 用于控制 TF 计算中对数变换的底数，默认为 math.e，\n较小的底数会使得高频词的权重增长更加缓慢。 \n它的作用是减少单个文档中频繁出现的词的影响。\n避免某些常见词在文档中的过度表示，\n使得更有意义的、但出现频率较低的词也能得到合理的权重。\nminDocLength 可选用于指定最小文档长度（分词数目，非字数）。\n默认值为 0，小于 minDocLength 的过短文档将会抑制其权重。
+getScore( = 计算关键词在指定文档中的权重。
+getScore(.(keywords, idOrPath,decimals) =  计算关键词在指定文档中的权重。\nkeywords 参数指定关键词数组。\nidOrPath 参数指定文档标志，通常为路径。\n第一个返回值为计算得到的总权重，\n第二个返回值为对应关键词顺序的权重数组。\n可选用 decimals 参数限定返回数组中权重的小数位数
 search( = 搜索文档
-search(.(keywords,) = 搜索文档。\nkeywords 指定要搜索的关键词数组。\n返回的到的文档数组，按权重排序。
-getKeywords( = 调用 tfidf 函数后可获取文档统计的关键字数组，按  TF-IDF 值排序。
-getKeywords(.(idOrPath,len,excludePatterns,excludeWords) = idOrPath 参数指定文档标记（例如路径）。\n数组按 TF-IDF 值 排序，TF-IDF 值较高的在前。\n可选用 len 参数限定返回数组长度。\n可选通过 excludePatterns 参数使用一个模式串数组指定要排除的词。\n可选用 excludeWords 参数指定一个要排除的关键词表，键为要排除的词
+search(.(keywords,topN) = 搜索文档。\nkeywords 指定要搜索的关键词数组。\n可选用 topN 参数限定返回的文档数目上限。\n返回的到的文档数组，按权重排序。
+getKeywords( = 调用 tfidf 函数后获取文档统计的关键词数组，按  TF-IDF 值排序。
+getKeywords(.(idOrPath,topN,excludePatterns,excludeWords) = idOrPath 参数指定文档标记（例如路径）。\n数组按 TF-IDF 值 排序，TF-IDF 值较高的在前。\n可选用 topN 参数限定返回数组长度。\n可选通过 excludePatterns 参数使用一个模式串数组指定要排除的词。\n可选用 excludeWords 参数指定一个要排除的关键词表，键为要排除的词
 end intellisense*****/

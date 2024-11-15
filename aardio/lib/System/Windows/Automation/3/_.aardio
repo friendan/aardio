@@ -60,7 +60,20 @@ namespace System.Windows.Automation{
 			..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
 		}
 		 
-		return isNot? NotCondition(AndCondition(arr))  : AndCondition(arr);
+		var cond;
+		if(#arr>1){
+			cond = AndCondition(arr)
+		}
+		else {
+			cond = arr[1]
+		}
+		
+		if(isNot){
+			cond = NotCondition(cond);
+		}
+		
+		
+		return cond;
 	}
 	
 	Or = function(cond,isNot){
@@ -87,7 +100,20 @@ namespace System.Windows.Automation{
 			} 
 		}
 		
-		return isNot? NotCondition(OrCondition(arr))  : OrCondition(arr);
+		var cond;
+		if(#arr>1){
+			cond = OrCondition(arr)
+		}
+		else {
+			cond = arr[1]
+		}
+		
+		if(isNot){
+			cond = NotCondition(cond);
+		}
+		
+		
+		return cond;
 	}
 	
 	FindByAnd = function(cond,root){

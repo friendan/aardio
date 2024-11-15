@@ -1,4 +1,4 @@
-//C 调用 aardio
+//C 语言调用 aardio
 
 import tcc;  
 var c = tcc();  

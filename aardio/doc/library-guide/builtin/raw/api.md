@@ -66,7 +66,7 @@ aardio 已默认加载以下 DLL 模块
 
 	定义了一个函数原型,有一个 int 类型的参数a,一个 int 类型的参数 b,返回值为 int 类型。
 	
-	请参考: [原生原生数据类型](datatype.md)
+	请参考: [原生数据类型](datatype.md)
 
 3. UTF-16 API 与尾标 <a id="api-name-suffix" href="#api-name-suffix">&#x23;</a>
 
@@ -128,7 +128,7 @@ var dll = raw.loadDll();
 var func = dll.api( 内部指针地址,函数原型 ) 
 ```
 
-如果调用 raw.loadDll() 时未使用任何参数，则 dll.api 的的第一个参数应当是一个内部函数指针。
+如果调用 raw.loadDll() 时未使用任何参数，则 dll.api 的第一个参数应当是一个内部函数指针。
 
 实际上 aardio 已经用以下的代码默认加载了 raw.main 模块：
 

@@ -1,0 +1,20 @@
+import console; 
+import string.words;
+ 
+/*
+《模匹匹配快速入门》
+doc://guide/language/pattern-matching.html
+*/
+
+for(k,v in string.words){
+	
+	//查找 r 开头，与“人”有关的名词
+	if( string.find(k,"^r")
+		&& string.find(v,"!\wn\..*人.*") 
+	){
+		console.log(k,v);
+		console.more(20);
+	}
+}
+
+console.pause(true);

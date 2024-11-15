@@ -1,4 +1,4 @@
-//创建对象
+//COM 接口 - 创建对象
 import com;
 import console;
 

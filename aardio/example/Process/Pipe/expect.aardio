@@ -1,4 +1,4 @@
-//模式匹配
+//aardio 调用进程管道 - 模式匹配
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="进程管道读写";right=759;bottom=469)

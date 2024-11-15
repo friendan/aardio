@@ -1,4 +1,4 @@
-//构建泛型 / 异步
+//在 aardio 中显式构建 .NET 泛型 - 异步任务示例
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="泛型 / 异步任务";right=759;bottom=469)

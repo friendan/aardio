@@ -1,4 +1,4 @@
-//HTML 抓取
+//web.rest 客户端 - web.rest.htmlClient
 import console.int; 
 import web.rest.htmlClient;
  

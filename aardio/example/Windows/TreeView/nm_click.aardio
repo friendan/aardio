@@ -1,4 +1,4 @@
-//鼠标单击取当前节点
+//树视图（treeview）控件 - 鼠标单击取当前节点
 import win.ui;
 import win.ui.menu
 /*DSG{{*/

@@ -1,4 +1,4 @@
-//用剪贴板发送文本
+//自动化 - 用剪贴板发送文本
 import key;
 import win.clip;
 import process;

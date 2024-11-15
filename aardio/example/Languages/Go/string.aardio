@@ -1,4 +1,4 @@
-//字符串
+//aardio 调用 Go 语言之字符串操作
 import golang;
 var go = golang();  
  

@@ -1,4 +1,4 @@
-﻿//mDNS 发现设备
+﻿//aardio 调用 Go 语言 - mDNS 发现设备
 /*
 请参考：范例 > 网络应用 > wsock > udp > SSDP 发现设备，
 以及 process.adb 扩展库范例。

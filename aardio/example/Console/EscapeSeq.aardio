@@ -1,4 +1,4 @@
-﻿//ANSI 转义
+﻿//控制台程序范例 - ANSI 转义
 import console.ansion;
  
 console.log('

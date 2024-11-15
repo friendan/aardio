@@ -1,4 +1,4 @@
-//增、删、改、查
+//sqlServer 库 -  MSSQL 增、删、改、查
 
 import console;
 import sqlServer;

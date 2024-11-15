@@ -1,4 +1,4 @@
-//Listbox控件演示 
+//列表框控件（listbox）基本操作 
 //感谢 xYe 编写该范例
 import win.ui;
 /*DSG{{*/

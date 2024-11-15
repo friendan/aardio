@@ -1,4 +1,4 @@
-//扩展 .NET 对象
+//在 aardio 中扩展 .NET 对象
 import console.int;
 import dotNet;
 

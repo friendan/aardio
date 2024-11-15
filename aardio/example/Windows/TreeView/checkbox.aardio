@@ -1,4 +1,4 @@
-//动态显示复选框
+//树视图（treeview）控件 - 动态显示复选框
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="树形控件启用复选框：试试勾选有子节点的节点";right=471;bottom=497)

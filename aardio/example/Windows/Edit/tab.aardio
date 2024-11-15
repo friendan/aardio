@@ -1,4 +1,4 @@
-﻿//tab 键
+//文本框 - tab 键
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="适用于 edit / richedit";right=727;bottom=357;bgcolor=16777215)

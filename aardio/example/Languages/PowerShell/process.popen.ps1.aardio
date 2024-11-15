@@ -1,4 +1,4 @@
-﻿//运行 ps1 文件
+﻿//aardio 运行 ps1 文件
 import console;
 console.open();
 

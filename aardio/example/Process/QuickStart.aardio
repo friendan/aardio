@@ -1,4 +1,4 @@
-//入门
+//进程操作入门
 import console;
 import process; 
 

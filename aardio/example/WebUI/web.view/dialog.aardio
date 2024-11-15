@@ -1,4 +1,4 @@
-//调用页面元素
+//web.view( WebView2 浏览器控件) - 调用页面元素
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="调用页面元素 - dialog";right=759;bottom=469)

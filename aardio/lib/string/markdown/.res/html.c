@@ -141,7 +141,27 @@ rndr_blockcode(struct buf *ob, const struct buf *text, const struct buf *lang, v
 			}
 		}
 
+		BUFPUTSL(ob, " language-");
+
+		for (i = 0, cls = 0; i < lang->size; ++i, ++cls) {
+			while (i < lang->size && isspace(lang->data[i]))
+				i++;
+
+			if (i < lang->size) {
+				size_t org = i;
+				while (i < lang->size && !isspace(lang->data[i]))
+					i++;
+
+				if (lang->data[org] == '.')
+					org++;
+
+				if (cls) bufputc(ob, ' ');
+				escape_html(ob, lang->data + org, i - org);
+			}
+		}
+
 		BUFPUTSL(ob, "\">");
+
 	} else
 		BUFPUTSL(ob, "<pre><code>");
 
@@ -444,15 +464,15 @@ rndr_tablecell(struct buf *ob, const struct buf *text, int flags, void *opaque)
 
 	switch (flags & MKD_TABLE_ALIGNMASK) {
 	case MKD_TABLE_ALIGN_CENTER:
-		BUFPUTSL(ob, " align=\"center\">");
+		BUFPUTSL(ob, " style=\"text-align:center;\">");
 		break;
 
 	case MKD_TABLE_ALIGN_L:
-		BUFPUTSL(ob, " align=\"left\">");
+		BUFPUTSL(ob, " style=\"text-align:left;\">");
 		break;
 
 	case MKD_TABLE_ALIGN_R:
-		BUFPUTSL(ob, " align=\"right\">");
+		BUFPUTSL(ob, " style=\"text-align:right;\">");
 		break;
 
 	default:

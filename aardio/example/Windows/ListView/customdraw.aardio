@@ -1,4 +1,4 @@
-//自绘
+//列表视图（listview）控件 - 自绘
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="listview custom draw";right=627;bottom=294;bgcolor=128)

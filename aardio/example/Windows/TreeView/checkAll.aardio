@@ -1,4 +1,4 @@
-//复选框多级同步
+//树视图（treeview）控件 - 复选框多级同步
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=349;bottom=249)

@@ -1,4 +1,4 @@
-//扫描仪
+//COM 接口 - 扫描仪
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

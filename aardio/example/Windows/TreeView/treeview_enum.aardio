@@ -1,4 +1,4 @@
-//遍历树形控件
+//遍历树形视图（treeview）控件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="treeview控件遍的节点";right=349;bottom=249;parent=...)

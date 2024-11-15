@@ -1,4 +1,4 @@
-//自动完成1
+//下拉框控件 - 自动完成效果 1
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="自动完成( 调用百度接口 )";right=600;bottom=400)

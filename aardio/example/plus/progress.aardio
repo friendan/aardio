@@ -1,4 +1,4 @@
-//进度条动画
+//用 plus 控件创建进度条动画
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="plus控件 - 进度条动画";right=759;bottom=469)

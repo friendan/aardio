@@ -4,15 +4,15 @@ import win.ui;
 /*DSG{{*/
 var winform = win.form(text="CSS 弹性盒布局工具";right=992;bottom=623;bgcolor=16777215)
 winform.add(
-custom={cls="~\example\WebUI\HTMLayout\flex.aardio";left=0;top=0;right=991;bottom=570;db=1;dl=1;dr=1;dt=1;hide=1;transparent=1;z=3};
-nav0={cls="plus";text="教程";left=463;top=573;right=550;bottom=603;border={top=1;color=-16744448};db=1;dr=1;z=5};
-nav1={cls="plus";text="语法速览";left=549;top=573;right=636;bottom=605;border={top=1;color=-16744448};db=1;dr=1;z=6};
-nav2={cls="plus";text="Flexo";left=636;top=573;right=735;bottom=605;border={top=1;color=-16744448};db=1;dr=1;z=7};
-nav3={cls="plus";text="问 AI";left=735;top=573;right=834;bottom=605;border={top=1;color=-16744448};db=1;dr=1;z=8};
-nav4={cls="plus";text="HTMLayout / Sciter";left=834;top=573;right=978;bottom=605;border={top=1;color=-16744448};db=1;dr=1;z=9};
-navBegin={cls="plus";left=203;top=573;right=463;bottom=574;bgcolor=32768;border={color=-16744448};db=1;dl=1;dr=1;forecolor=16777215;linearGradient=180;z=1};
+nav0={cls="plus";text="教程";left=524;top=573;right=599;bottom=603;align="left";border={top=1;color=-16744448};db=1;dr=1;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=11}};iconText='\uF02D';textPadding={left=28;bottom=1};z=5};
+nav1={cls="plus";text="语法速览";left=598;top=573;right=692;bottom=605;align="left";border={top=1;color=-16744448};db=1;dr=1;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=11}};iconText='\uF008';textPadding={left=28;bottom=1};z=6};
+nav2={cls="plus";text="Flexo";left=691;top=573;right=768;bottom=605;align="left";border={top=1;color=-16744448};db=1;dr=1;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=11}};iconText='\uF0C9';textPadding={left=28;bottom=1};z=7};
+nav3={cls="plus";text="问 AI";left=768;top=573;right=850;bottom=605;align="left";border={top=1;color=-16744448};db=1;dr=1;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=11}};iconText='\uF007';textPadding={left=28;bottom=1};z=8};
+nav4={cls="plus";text="HTMLayout / Sciter";left=850;top=573;right=994;bottom=606;align="left";border={top=1;color=-16744448};db=1;dr=1;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=11}};iconText='\uF0FD';textPadding={left=28;bottom=1};z=9};
+navBegin={cls="plus";left=202;top=573;right=524;bottom=574;bgcolor=32768;border={color=-16744448};db=1;dl=1;dr=1;forecolor=16777215;linearGradient=180;z=1};
 navEnd={cls="plus";left=978;top=573;right=988;bottom=605;border={top=1;color=-16744448};db=1;dr=1;z=2};
-static={cls="static";left=0;top=0;right=991;bottom=570;db=1;dl=1;dr=1;dt=1;transparent=1;z=4}
+static={cls="static";left=17;top=36;right=977;bottom=570;db=1;dl=1;dr=1;dt=1;transparent=1;z=4};
+tabPanel={cls="~\example\WebUI\HTMLayout\flex.aardio";left=0;top=0;right=991;bottom=570;db=1;dl=1;dr=1;dt=1;hide=1;transparent=1;z=3}
 )
 /*}}*/
 
@@ -94,20 +94,20 @@ var urls = {
 	"https://metaso.cn/?q=介绍%20css%20flexbox"; 
 }
 
-tbs.onSelchange = function(idx,strip,form){
+tbs.onSelchange = function(idx,tab,form){
 	var url = urls[idx]
 	if(url){ 
-		winform.custom.show(false);
+		winform.tabPanel.show(false);
 		winform.static.show(true)
 		
-		strip.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+		tab.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
 		wb.go(url);
 		
-		win.delay(500);
-		strip.disabledText = null;
+		thread.delay(500);
+		tab.disabledText = null;
 	}
 	else {
-		winform.custom.show(true);
+		winform.tabPanel.show(true);
 		winform.static.show(false)
 	}
 }

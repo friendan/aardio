@@ -4,3 +4,4 @@
 理解字符串与编码=string.md
 多线程开发入门=thread.md
 理解迭代器=iterator.md
+常见陷阱=gotchas.md

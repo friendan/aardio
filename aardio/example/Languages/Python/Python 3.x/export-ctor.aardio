@@ -1,4 +1,4 @@
-//调用 aardio 对象  
+//Python 回调 aardio 对象  
 import winex;
 import console.int; 
 import py3;

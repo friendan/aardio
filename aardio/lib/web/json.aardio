@@ -413,7 +413,7 @@ tryParse = function(s,unescape=true,inputCodepage){
 	return data;
 }
 
-ndParse = function(s,unescape){
+ndParse = function(s,unescape=true){
 	var r = {}
 	var s = ..string.splitEx(s,'<\\r*\\n>|\\r|\x1E');//ndjson,json-seq
 	for i,j in s {

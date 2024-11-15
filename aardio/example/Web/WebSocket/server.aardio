@@ -1,4 +1,4 @@
-//异步服务端
+//WebSocket 异步服务端（ WSS 服务端）
 
 import win.ui;
 /*DSG{{*/

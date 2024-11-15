@@ -1,4 +1,4 @@
-//调用 LISP 函数
+//aardio 调用 AutoCAD LISP 函数
 import win;
 import com.cad;
 

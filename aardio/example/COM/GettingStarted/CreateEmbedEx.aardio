@@ -1,4 +1,4 @@
-//嵌入控件
+//COM 接口 - 嵌入控件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="嵌入COM控件";right=759;bottom=469)

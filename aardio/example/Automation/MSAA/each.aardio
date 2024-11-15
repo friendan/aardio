@@ -1,4 +1,4 @@
-﻿//遍历元素
+﻿//MSAA 自动化 - 遍历元素
 import winex; 
 import winex.accObject;
 import console;

@@ -20,21 +20,23 @@ for(i = initialValue;finalValue;incrementValue){
 
 循环变量：  
 
-- 循环变量 `i` 的值从 `initialValue` 开始，到 `finalValue` 结束，每次递增 `incrementValue`。
+- 循环变量 `i` 的值从 `initialValue` 开始，到 `finalValue` 结束（包含 `finalValue` ），每次递增 `incrementValue`。
 - 循环变量 `i` 是一个作用域限于循环体内部的局部变量，前面不需要写 var 关键字，写了也会被忽略。
 - 允许在循环体内部修改循环变量 `i` 为一个合法数值。如果循环变量被修改为非数值，则下次循环前自动恢复为修改前的值。 
 
 循环参数：
 
-- 全部循环参数都必须是数值表达式。
-- `initialValue` 指定起始数值，`finalValue` 指定结束数值，`incrementValue` 指定循环增量。
+- **aardio 使用基于数值范围的 `for` 循环，全部循环参数都必须是数值表达式，没有`条件（condition-expression）`与`迭代（iteration-expression）`部分。** 
+- `initialValue` 指定循环范围的起始数值，`finalValue` 指定结束数值。
 - 循环增量 `incrementValue` 可使用负数表示递减循环，省略循环增量则默认为 1。
 -  可以用 `;` 或者 `,` 号分隔所有循环参数，但是同一语句分隔循环参数的分隔符必须相同。允许改用任何非大写的标识符分隔循环参数，但不能使用语法关键字、保留函数名、全局常量作为分隔符。
-- 所有循环参数都仅在循环开始前计算一次以确定循环范围与增量，循环过程中不会重新计算。
+- 所有循环参数都仅在循环开始前计算一次，循环过程中不会重新计算。
 
-aardio 虽然使用类 C 语法并且也使用  `{}` 包含循环体，但是 for 循环的条件部分与其他类 C 风格编程语言完全不同。aardio 使用基于数值范围的 for 循环语法（Range-based for）， for 循环范围的终止值 `finalValue`  是一个纯数值表达式而不是需要循环计算的条件表达式，循环增量 `incrementValue` 也是一个纯数值表达式而不是一个需要迭代执行的语句（例如自增自减语句）。
+要点：
 
-实际上在 aardio 中 [while var](#while-var) 语句才支持循环检测条件与迭代执行增量语句，基于迭代器的 [for in](#for-in) 语句也可以循环调用迭代器函数，而基于数值范围的普通 [for](#for) 循环（Range-based for）则仅在循环开始计算循环参数并一次性确定循环范围与增量。
+aardio 使用基于数值范围的 for 循环语法（Range-based for）。 for 循环范围的终止值 `finalValue`  是一个确定的数值而不是需要循环计算的条件表达式（condition-expression），循环增量 `incrementValue` 也是一个纯数值而不是一个需要重复执行的迭代表达式（iteration-expression）。这一点与其他类 C 风格编程语言完全不同，aardio 使用更简单的 `for` 循环语法。
+
+在 aardio 中只有 [while var](#while-var) 循环语句可以同时指定条件表达式（condition-expression）与迭代表达式（iteration-expression） 。
 
 示例：  
 

@@ -1,4 +1,4 @@
-# try catch容错语句
+# try catch 容错语句
 
 相关链接：
 
@@ -47,12 +47,17 @@ catch(e){ //catch部分可以省略
 }
 ```  
 
+容错语句是允许多重嵌套的，一个容错语句允许包含另一个容错语句。为了清晰地表示嵌套的层次，建议根据嵌套的层次使用 tab 制表符缩进代码。  
+
 try catch 语句需要遵守以下规则：
 
-1. 只能使用 return 语句退出 try ... catch 语句。  
-2. try catch 语句块内不能使用语句块外部的 ... 参数，可提前使用 var args = {...} 将不定参数转换为数组，然后在 try catch 语句块内用 table.unpackArgs() 函数展开。  
+1. 在 aardio 中 `try catch` 的行为更像一个立即执行的匿名函数。
+
+	- 在 `try ... catch` 语句内部使用 `return` 语句将会中断并退出 `try ... catch` 语句自身（并非退出包含 `try ... catch` 语句的函数）。
+	- 不能在 `try ... catch` 语句内部对包含 `try ... catch` 语句的外部循环使用 `break` 或 `continue` 语句 。  
+	- try catch 语句块内可以使用语句外部的 owner 参数，但是不能使用语句外部的  `...` 参数。可以提前使用 `var args = {...}` 将不定参数转换为数组，在 try catch 语句块内用 `table.unpackArgs( args )` 函数展开。  
+
 3. 禁止在 catch 语句中再次调用 error 语句，  
 如果需要在抛出异常前插入一些代码，在执行这些插入的代码以后继续抛出异常，那么更好的选择在 global.onError 事件中添加代码。  
 层。
 
-容错语句是允许多重嵌套的，一个容错语句允许包含另一个容错语句。为了清晰地表示嵌套的层次，建议根据嵌套的层次使用 tab 制表符缩进代码。  

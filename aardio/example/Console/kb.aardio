@@ -1,4 +1,4 @@
-//响应按键
+//控制台程序 - 响应按键
 
 import key;
 import console;

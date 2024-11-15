@@ -1,14 +1,14 @@
-//定时管理器
+//窗口程序 - 定时管理器
 import win.ui;
 /*DSG{{*/
-var winform = win.form(parent=...; text="可启用、禁用、调整时间隔的定时管理器";right=412;bottom=198 )
-winform.add( 
-trackbar={ bottom=166;max=1000;right=383;left=26;top=136;z=4;min=1;cls="trackbar" };
-lbIntervalMax={ bottom=135;align="right";right=373;left=286;top=121;z=6;text="间隔1000毫秒";transparent=1;cls="static" };
-btnDisable={ bottom=97;text="禁用定时器";left=221;top=62;z=3;right=375;cls="button" };
-static={ right=375;bottom=50;nWrap=1;left=39;top=19;center=1;transparent=1;z=2;text="...........";cls="static" };
-lbIntervalMin={ bottom=135;right=103;left=40;top=120;transparent=1;z=5;text="间隔1毫秒";cls="static" };
-btnEnable={ bottom=98;text="启用定时器";left=36;top=63;z=1;right=190;cls="button" }
+var winform = win.form(text="可启用、禁用、调整时间隔的定时管理器";right=412;bottom=198;parent=...)
+winform.add(
+btnDisable={cls="button";text="禁用定时器";left=221;top=62;right=375;bottom=97;z=3};
+btnEnable={cls="button";text="启用定时器";left=36;top=63;right=190;bottom=98;z=1};
+lbIntervalMax={cls="static";text="间隔1000毫秒";left=286;top=121;right=373;bottom=135;align="right";transparent=1;z=6};
+lbIntervalMin={cls="static";text="间隔1毫秒";left=40;top=120;right=103;bottom=135;transparent=1;z=5};
+static={cls="static";text="...........";left=39;top=19;right=375;bottom=50;center=1;nWrap=1;transparent=1;z=2};
+trackbar={cls="trackbar";left=26;top=136;right=383;bottom=166;max=1000;min=1;z=4}
 )
 /*}}*/
 

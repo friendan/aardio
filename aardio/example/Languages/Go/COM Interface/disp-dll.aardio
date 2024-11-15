@@ -1,4 +1,4 @@
-//生成 DLL
+//aardio 调用 Go 语言 - 生成 COM 接口 DLL
 import console.int; 
 import golang;
 

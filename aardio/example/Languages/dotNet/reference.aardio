@@ -1,4 +1,4 @@
-//内存加载 DLL
+//aardio 内存加载 .NET 程序集（DLL）
 import console.int;
 import dotNet;
 

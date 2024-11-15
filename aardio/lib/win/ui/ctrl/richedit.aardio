@@ -755,9 +755,9 @@ richedit._metaProperty =  metaProperty(
 
 /**details(必读文档)
 
-# 设置文本样式
+## 设置文本样式
 
-## 使用 COM 接口实现的 TOM 文本对象设置样式
+### 使用 COM 接口实现的 TOM 文本对象设置样式
 
 以下是一个简单示例：
 
@@ -768,7 +768,7 @@ richedit._metaProperty =  metaProperty(
 	
 [TOM 文档](https://learn.microsoft.com/zh-cn/windows/win32/controls/text-object-model?redirectedfrom=MSDN)
 
-## 使用 CHARFORMAT2 结构体设置样式
+### 使用 CHARFORMAT2 结构体设置样式
 
 以下函数会用到 CHARFORMAT2（这里指的是 win.ui.ctrl.CHARFORMAT2 类） 结构体。
 
@@ -813,15 +813,13 @@ CHARFORMAT2 有以下字段
 注意修改字体大小请在窗体显示并且 DPI 初始化缩放完成以后再设置，不然会被重复放大。
 如果要在窗体显示前设置，请在设置字体大小前主动调用 winform.enableDpiScaling("init");
 
-# 参考文档：
+## 参考文档：
 https://learn.microsoft.com/en-us/windows/win32/controls/about-rich-edit-controls
 https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/Controls/about-rich-edit-controls.md
 https://learn.microsoft.com/zh-cn/windows/win32/api/richedit/ns-richedit-charformatw
 https://learn.microsoft.com/zh-cn/windows/win32/api/richedit/ns-richedit-charformat2w
 
 API 常量在 aardio 里需要在前面加一个下划线，然后利用 IDE 的自动完成可自动转换为实际的常量值。
-
-
 end details**/
  
 /***intellisense()
@@ -933,7 +931,7 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit.hScroll(_SB__) = 滚动横向滚动条
 !richedit.selectAll() = 全选
 !richedit.popMenu() = 弹出右键菜单
-!richedit.enablePopMenu() = 启用右键菜单\n\n可选在参数中使用一个表指定要添加的菜单项数组,\n参数将传递给win.ui.popmenu对象的addTable函数\n参数也可以是返回菜单项数组的函数
+!richedit.enablePopMenu() = @.enablePopMenu(function(){\n	return { \n		{ /*分隔线*/ }; \n		{ "自定义菜单项";  function(id){\n			__/*enablePopMenu 用于启用文本框的右键菜单。\n可选指定要增加的菜单配置表（或返回菜单配置表的函数）作为参数。\n菜单配置表将作为参数传给 win.ui.popmenu 对象的 addTable 函数。\n格式请查看该函数说明*/\n		}; !owner.canCopy() ? 1/*_MF_GRAYED*/ : 0}; 	\n	}\n})
 !richedit.redo() = 重做
 !richedit.undo() = 撤消
 !richedit.clear() = 清除选中文本

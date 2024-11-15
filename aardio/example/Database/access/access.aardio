@@ -1,4 +1,4 @@
-//mdb数据库
+//access 库 - mdb 数据库
 //下面的代码仅使用系统组件,不需要安装 Access 软件
 
 import access;

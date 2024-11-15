@@ -1,4 +1,4 @@
-//waitEle
+//web.view( WebView2 浏览器控件) - 调用 waitEle 等待节点
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="Edge 浏览器控件 - web.view";right=1097;bottom=690;bgcolor=16777215)

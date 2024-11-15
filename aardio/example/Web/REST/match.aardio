@@ -1,4 +1,4 @@
-﻿//自动模式匹配
+﻿//用 web.rest 客户端调用 HTTP API - 自动模式匹配
 import console; 
 console.showLoading("获取外网IP");
 

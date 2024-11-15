@@ -1,5 +1,4 @@
-//aardio 调用 C
-import win;
+//aardio 调用 C 语言函数
 import console;
 import tcc;  
 

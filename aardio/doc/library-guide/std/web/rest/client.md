@@ -1,4 +1,4 @@
-# web.res 魔法：任意 HTTP 接口自动转换为 aardio 函数
+# 用 web.rest 快速开发 HTTP 客户端
 
 aardio 里的 web.rest 设计了一种简单的 HTTP 接口描述规则 —— 可将指定的网址（可选指定模板参数）自动转换为本地函数对象。用法极其简单（ web.rest 本身的实现也非常简单 ）。
 

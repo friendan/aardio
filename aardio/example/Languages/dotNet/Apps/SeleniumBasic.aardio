@@ -1,4 +1,4 @@
- //Selenium 网页自动化
+ //aardio 调用 Selenium .NET 实现网页自动化
 import console;
 console.showLoading(" 正在启动 Selenium .NET ");
  

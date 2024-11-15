@@ -2,7 +2,7 @@ import win.ui;
 import win.ui.menu;
 import win.ui.toolbar;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=540;bottom=330;parent=...)
+var winform = win.form(text="工具条（win.ui.toolbar）示例";right=540;bottom=330)
 winform.add(
 edit={cls="edit";text='请右键点窗体设计器，\r\n然后点『九宫格缩放布局』以固定文本框四侧边距。\r\n\r\n窗体中的每一小块都可以用 custom 控件加载另一个子窗口，\r\n在子窗口里又可以继续做九宫格布局，这样就可以分而冶之，化繁为简。';left=0;top=22;right=541;bottom=308;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;vscroll=1;z=1}
 )

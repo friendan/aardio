@@ -1,4 +1,4 @@
-//自动泛型 / ValueTuple 
+//在 aardio 中自动支持 .NET 泛型 - ValueTuple 示例
 import console;
 import dotNet; 
 

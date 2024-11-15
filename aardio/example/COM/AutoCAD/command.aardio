@@ -1,4 +1,4 @@
-﻿//加载 LISP 代码
+﻿//aardio 调用 AutoCAD - 加载 LISP 代码
 import com.cad;
 var cad = com.cad();
 cad.ShowForeground();//前置并显示窗口

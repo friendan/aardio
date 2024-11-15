@@ -1,4 +1,4 @@
-//入门
+//窗口自动化 - 入门
 import winex.key;
 import process;
 

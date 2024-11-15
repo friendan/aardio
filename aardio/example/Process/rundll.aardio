@@ -1,4 +1,4 @@
-//运行 DLL
+//创建进程运行 DLL
 error("直接运行此范例将会导致打开太多窗口") 
 
 import process.rundll;

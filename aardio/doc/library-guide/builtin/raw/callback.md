@@ -2,7 +2,7 @@
 
 本节介绍如何将 aardio 动态函数转换为原生回调函数指针。
 
-请参考：[raw库](api.md) 、[原生类型类型](datatype.md)
+请参考：[raw库](api.md) 、[原生类型](datatype.md)
 
 ## 一、stdcall,cdecl 调用约定 
 
@@ -22,7 +22,7 @@ WinAPI 回调函数使用 stdcall 约定,stdcall 是调用外部函数时使用�
   
 ```aardio
 var func = function(a,b,c) {  
-    io.print(owner,a,b,c) 
+    print(owner,a,b,c) 
 }
 
 

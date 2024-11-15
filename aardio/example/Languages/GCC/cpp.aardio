@@ -1,4 +1,4 @@
-//C++
+//aardio 调用 GCC 之 C++
 import process.gcc;
 
 //创建 GCC 环境，参数指定 C/C++ 源码目录

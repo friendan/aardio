@@ -118,6 +118,7 @@ setConversionMode = function(convMode,hwnd){
 conversionLangIds =  {[0x804] = 0x409;[0x404] = 0x409;[0xC04] = 0x409;[0x1404] = 0x409;[0x412] = 0x409;[0x0411] = 0x409} ;
 var conversionLangIds = conversionLangIds;// CJK 键盘
 
+//[输入法状态检测规则与原理](doc://library-guide/std/key/imeState.md)
 state = function(hwnd){
 	if(!hwnd) {
 		hwnd = ::User32.GetForegroundWindow();
@@ -130,24 +131,6 @@ state = function(hwnd){
 
 	if (opened && langId==0x409) opened = false;
 
-	/*
-	输入法如何正确返回状态：
-	输入法打开状态应当 opened 应返回 true ，关闭应当返回 false。
-	输入法打开但切换到英文 opened 仍然应当返回 true，但 convMode 应当等于 0 （_IME_CMODE_ALPHANUMERIC）
-	
-	输入法关闭时，默认键盘的 opened 值为 0，
-	但 convMode 可能等于 1（IME_CMODE_NATIVE），也可能等于 0（_IME_CMODE_ALPHANUMERIC）。
-	只有 opened 为 true，IME_CMODE_NATIVE 才表示中文输入。 
-	
-	中文输入法打开以后，无论中英输入模式，HKL 语言 ID 都应是 0x804， 
-	这对应于系统输入法设置，中文输入法只能自中文键盘中添加。
-	
-	有些输入法会强行添加「简体中文美式键盘」，这是不妥的，会导致状态错乱。
-	实际上 Win10 开始已经移除了这个键盘，应改为「英文美式键盘」
-	
-	微软输入法完全符合上面的规则，
-	但第三方输入法返回状态较乱，于是下面我们尽一切可能纠正：
-	*/
 	if(convMode === null) return false,,langId;
 
 	var symbolMode = 1/*_IME_SYMBOLMODE_HALFSHAPE*/; 
@@ -172,8 +155,8 @@ getOpenStatus(.(hwnd) = 当前输入法是否打开中文输入\n@hwnd参数指�
 setOpenStatus(.(status,hwnd) = status设为0关闭中文输入\n@hwnd参数指定目标窗口句柄，省略则默认设为前景窗口
 getConversionMode(.(hwnd) = 返回输入法打开状态,\n返回值为数值，可用 _IME_CMODE_ 前缀的常量按位取值。\n@hwnd参数指定要检测的窗口句柄，省略则默认设为前景窗口
 setConversionMode(.(convMode,hwnd) = 设置输入法打开状态，\n参数为 _IME_CMODE_ 前缀的常量按位或运算的数值。\n@hwnd参数指定目标窗口句柄，省略则默认设为前景窗口
-state( = 返回输入法状态，\n用法请参考 key.ime.stateBar
-state(.(hwnd) = 返回输入法状态，\n@hwnd 参数指定要检测的窗口句柄，省略则默认设为前景窗口。\n\n首个返回值为是否启用输入转换（例如输入中、日、韩等文字），false 为英文输入状态，\n第二个返回值用一个数值表示标点模式：\n    1 英文半角标点\n    2 英文全角标点\n    3 中文标点\n    0 已关闭输入转换\n    null 已关闭输入转换\n第三个返回值为键盘语言 ID，\n第四个返回值为原始 Conversion Mode
+state( = 返回输入法状态，\n请参考:\n[输入法状态检测规则与原理](doc://library-guide/std/key/imeState.md)\n[key.ime.stateBar](doc://library-reference/key/ime.stateBar.md)
+state(.(hwnd) = 返回输入法状态，\n@hwnd 参数指定要检测的窗口句柄，省略则默认设为前景窗口。\n建议使用 winex.caret 取到光标所有窗口句柄作为参数，参考 key.ime.stateBar。\n\n首个返回值为是否启用输入转换（例如输入中、日、韩等文字），false 为英文输入状态，\n第二个返回值用一个数值表示标点模式：\n    1 英文半角标点\n    2 英文全角标点\n    3 中文标点\n    0 已关闭输入转换\n    null 已关闭输入转换\n第三个返回值为键盘语言 ID，\n第四个返回值为原始 Conversion Mode
 capital() = 是否大写状态
 changeRequest(.(hkl,hwnd,wParam) = 发送_WM_INPUTLANGCHANGEREQUEST消息通知窗口改变输入法,\nhkl可用数值或指针指定键盘布局,\n@hwnd参数指定要检测的窗口句柄，省略则默认设为前景窗口\n其他参数可省略
 changeRequest(.(0x4090409) = 切换为英文键盘布局

@@ -1,4 +1,4 @@
-//命名参数
+//aardio 调用 Python 如何指定命名参数
 import console;
 import py3;
 

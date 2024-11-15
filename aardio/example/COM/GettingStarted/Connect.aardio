@@ -1,4 +1,4 @@
-//响应事件
+//COM 接口 - 响应事件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="响应COM事件";right=759;bottom=469)

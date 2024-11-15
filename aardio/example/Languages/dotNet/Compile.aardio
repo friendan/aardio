@@ -1,4 +1,4 @@
-//编译 / 类型检测
+//aardio 编译运行 C# 代码，.NET 类型检测
 /*点开这里查看编译程序集代码{{*/
 import dotNet; 
 import console.int; 

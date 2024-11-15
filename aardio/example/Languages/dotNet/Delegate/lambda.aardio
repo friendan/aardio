@@ -1,4 +1,4 @@
-//lambda
+//aardio 调用 .NET(C#) 之 lambda 函数
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");  
 compiler.Source = /****** 

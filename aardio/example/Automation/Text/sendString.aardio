@@ -1,4 +1,4 @@
-//发送字符串
+//自动化 - 发送字符串
 import process;
 import key;
 

@@ -1,4 +1,4 @@
-//窗口绘图
+//aardio 调用 R 语言 - 窗口绘图
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio 窗口显示 R 绘图";right=759;bottom=469;border="dialog frame";max=false;min=false)

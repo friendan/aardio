@@ -1,5 +1,5 @@
 调用 JS 函数=startRpc.aardio
-startEnviron=start.aardio
+startEnviron=QuickStart.aardio
 JS 调用 aardio=external.aardio
 JSON-RPC-HTTP=jsonRpc.aardio
 JSON-RPC-WS=WebSocketRpc.aardio

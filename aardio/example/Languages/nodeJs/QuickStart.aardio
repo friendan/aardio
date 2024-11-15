@@ -1,4 +1,4 @@
-//startEnviron
+//aardio 调用 Node.js - 设置 startEnviron
 import console;  
 import nodeJs;
 

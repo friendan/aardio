@@ -1,4 +1,4 @@
-//OCR 图文识别
+//aardio 调用 .NET 之 OCR 图文识别
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="dotNet.ocr 简单演示";right=498;bottom=465)

@@ -1,4 +1,4 @@
-//md5 示例
+//aardio 调用 Python 计算 MD5
 import console;
 import py3; 
 

@@ -97,74 +97,18 @@ class sqlServer {
 		if( ... )sql = format(sql,...);
 		var ok,err = call(rs.Open,rs,sql,this.connection,cursorType,lockType);
 		if(!ok) return null,err;
-		
-		return rs;
+	
+		return _recordSet(rs);
 	};
 	getRows = function(sql,...){
 		var rs,err = owner.openRecordSet(sql,,,...);
 		if(!rs) error(err,2);
-		 
-		var recordCount = 0;
-		var eof = rs.eof;
-		var data = eof ? { @{} } : rs.GetRows();  
-		
-		var fields = {};
-		var name; 
-		for( i=1;rs.Fields.Count ){
-			var name = rs.Fields(i-1).Name;
-			if(#name){
-				fields[i]  = name;
-				data[ name ] = data[ i ]; 
-			}
-			
-			if(!eof){
-				var _,len = ..table.range(data[ i ]);
-				recordCount = ..math.max(len,recordCount);
-			}
-		} 
-		
-		rs.close();
-		
-		data@.recordCount = recordCount;
-		data@.fields = fields; 
-		return data;
+  
+		return _getRows(rs,true);
 	};
 	getTable = function(sql,...){
-		var data,err = this.getRows(sql,...);
-		if(!data) error(err,2);
-		
-        var result = {}; 
-        var v; 
-        var rowCount = data@.recordCount;
-        var trim = ..string.trimright; 
-        var fields = data@.fields;
-        for(c=1;#data){
-            var col = data[c];
-            var name = fields[c];
-            if(!#name) name = c;
-            
-            if(c>1){
-            	for(r=1;rowCount){
-        			v = col[r];
-        			if( type( v ) == "string" ) v = trim(v);
-        			elseif( ..time.istime(v) ) v = ..time.ole(v);
-        		
-        			result[r][name]  = v;
-        		} 
-        	}
-        	else {
-        		for(r=1;rowCount){
-        			v = col[r];
-        			if( type( v ) == "string" ) v = trim(v);
-        			elseif( ..time.istime(v) ) v = ..time.ole(v);
-        			
-        			result[r] = { [name]  = v };
-        		} 
-        	}
-        }
-        
-        result.fields = fields;
-		return result;
+		var data = this.getRows(sql,...);
+		if(data) return _rows2table(data);
 	};
 	stepQuery = function(...){
 		return this.getTable(...)[[1]];
@@ -300,74 +244,25 @@ class sqlServer {
 			cmd.execute(ra,parameters,cmd.adExecuteNoRecords);
 		};
 		
+		cmd[["executeRecords"]] = function(ra,parameters){
+			var rs = cmd.execute(ra,parameters);
+			if(rs){
+				return _recordSet(rs);
+			} 
+		};
+		
 		cmd["executeStream"] = function(ra,parameters){
 			cmd.execute(ra,parameters,cmd.adExecuteStream);
 		};
 		cmd[["getRows"]] = function(...){
 			var rs,err = cmd.execute(...); 
 			if(!rs) error(err,2);
-		 	
-			var recordCount = 0;
-			var closed = (rs.State == rs.AdStateClosed);
-			var eof = closed || rs.eof;
-			var data = eof ? { @{} } : rs.GetRows();  
 			
-			var fields = {};
-			var name; 
-			for( i=1;rs.Fields.Count ){
-				var name = rs.Fields(i-1).Name;
-				if(#name){
-					fields[i]  = name;
-					data[ name ] = data[ i ]; 
-				}
-				
-				if(!eof){
-					var _,len = ..table.range(data[ i ]);
-					recordCount = ..math.max(len,recordCount);
-				}
-			} 
-			
-			if(!closed)rs.close();
-			data@.recordCount = recordCount;
-			data@.fields = fields; 
-			return data;
+			return _getRows(rs,true);
 		};
 		cmd[["getTable"]] = function(...){
-			var data,err = cmd.getRows(...);
-			if(!data) error(err,2);
-			
-        	var result = {}; 
-        	var v; 
-        	var rowCount = data@.recordCount;
-        	var trim = ..string.trimright; 
-        	var fields = data@.fields;
-        	for(c=1;#data){
-            	var col = data[c];
-            	var name = fields[c];
-            	if(!#name) name = c;
-            	
-            	if(c>1){
-            		for(r=1;rowCount){
-        				v = col[r];
-        				if( type( v ) == "string" ) v = trim(v);
-        				elseif( ..time.istime(v) ) v = ..time.ole(v);
-        			
-        				result[r][name]  = v;
-        			} 
-        		}
-        		else {
-        			for(r=1;rowCount){
-        				v = col[r];
-        				if( type( v ) == "string" ) v = trim(v);
-        				elseif( ..time.istime(v) ) v = ..time.ole(v);
-        				
-        				result[r] = { [name]  = v };
-        			} 
-        		}
-        	}
-        	
-        	result.fields = fields;
-			return result;
+			var data = cmd.getRows(...);
+			if(data) return _rows2table(data);
 		};
 		cmd[["stepQuery"]] = function(...){
 			return cmd.getTable(...)[[1]];
@@ -513,6 +408,92 @@ namespace sqlServer {
 	}
 	
 	formatSqlParameters =  format;
+	
+	_getRows = function(rs,rsClose){
+		var recordCount = 0;
+		
+		var closed = (rs.State == rs.AdStateClosed);
+		var eof = closed || rs.eof;
+		var data = eof ? { @{} } : rs.GetRows();  
+		
+		var fields = {};
+		var name; 
+		for( i=1;rs.Fields.Count ){
+			var name = rs.Fields(i-1).Name;
+			if(#name){
+				fields[i]  = name;
+				data[ name ] = data[ i ]; 
+			}
+			
+			if(!eof){
+				var _,len = ..table.range(data[ i ]);
+				recordCount = ..math.max(len,recordCount);
+			}
+		} 
+		
+		if(rsClose && !closed ) rs.Close();
+		
+		data@.recordCount = recordCount;
+		data@.fields = fields;
+		return data;		
+	}
+	
+	_rows2table = function(data){
+  		var result = {}; 
+        var v; 
+        var rowCount = data@.recordCount;
+        if(!rowCount) return result;
+        
+        var trim = ..string.trimright; 
+        var fields = data@.fields;
+        for(c=1;#data){
+            var col = data[c];
+            var name = fields[c];
+            if(!#name) name = c;
+            
+            if(c>1){
+            	for(r=1;rowCount){
+        			v = col[r];
+        			if( type( v ) == "string" ) v = trim(v);
+        			elseif( ..time.istime(v) ) v = ..time.ole(v);
+        		
+        			result[r][name]  = v;
+        		} 
+        	}
+        	else {
+        		for(r=1;rowCount){
+        			v = col[r];
+        			if( type( v ) == "string" ) v = trim(v);
+        			elseif( ..time.istime(v) ) v = ..time.ole(v);
+        			
+        			result[r] = { [name]  = v };
+        		} 
+        	}
+        }
+        
+        result.fields = fields;
+		return result;
+	}
+	
+	_recordSet = function(rs){
+		rs[["getTable"]] = function(){
+			var data =  _getRows(rs,false);
+			if(data) return _rows2table(data); 
+			
+		};
+		
+		rs[["stepQuery"]] = function(...){
+			return rs.getTable(...)[[1]];
+		};	
+		
+		rs[["nextRecordset"]] = function(){
+			var rs = rs.NextRecordset();
+			if(rs)return _recordSet(rs);
+		} 
+		
+		return rs;
+	}
+	
 }
 
 /**intellisense()
@@ -570,16 +551,20 @@ eof = 是否移动到记录集尾部，没有更多数据了
 bof = 是否已经到记录集开始，没有更多数据了
 recordCount = 获取记录总数,\n如果该值为-1，请修改为静态方式打开记录集
 move(.(numRecords,start) = 移动游标位置,\n注意第一条记录游标位置为0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始
-getRows( = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值
-getRows(.(rows,start,fields) = 查询并返回包含结果数据的数组,所有参数可选,\nrows 指定获取行数，默认为-1，即获取所有剩下的行,0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始\n@ields 可选用一个字符串、或字符串数组指定要获取的列,\n也可用数值，或数值数组指定要获取的列 
+GetRows( = 查询并返回包含结果数据的数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值
+GetRows(.(rows,start,fields) = 查询并返回包含结果数据的数组,所有参数可选,\nrows 指定获取行数，默认为-1，即获取所有剩下的行,0,\n@start为可选参数,可选使用以下数值：\n    _adBookmarkCurrent 0 自当前记录开始\n    _adBookmarkFirst 1 自首条记录开始\n    _adBookmarkLast 2 自最后一条记录开始\n@ields 可选用一个字符串、或字符串数组指定要获取的列,\n也可用数值，或数值数组指定要获取的列 
+nextRecordset() = 关闭当前结果集并打开下一个结果集。\n注意要小写函数名的第一个字母。\nnextRecordset 封装了大写首字母的 COM 函数 NextRecordset，\n对返回的记录集对象添加了 getTable,stepQuery 等函数。\n!sqlServer_rs.
+getTable() = 执行SQL命令返回查询结果集数组\n每个元素代表一行,每行由N个键值对列组成\n返回值的fields成员记录了所有数据列的字段名\n结果集为空也会返回空数组,使用#操作符获取结果集长度
+stepQuery() = 执行SQL命令\n返回查询结果集第一行的数据,由键值对列组成\n无数据返回null
 end intellisense**/
 
 /**intellisense(!sqlServer_cmd)
 commandText = 要执行的SQL命令语句
 commandType = 命令类型\n普通SQL为1，存储过程为4
-execute(.(ra,parameters.option) = 执行查询,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值 
-executeStream(.(ra,parameters) = 执行查询返回流,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
-executeNoRecords(.(ra,parameters) = 执行查询不返回记录集,所有参数可选\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+execute(.(ra,parameters.option) = 执行查询,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值。\n返回记录集对象，execute 返回的记录集没有 getTable,stepQuery 函数。\nexecuteRecords 返回的记录集提供 getTable,stepQuery 函数。 
+executeStream(.(ra,parameters) = 执行查询返回流,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+executeNoRecords(.(ra,parameters) = 执行查询不返回记录集,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值
+executeRecords(.(ra,parameters.option) = 执行查询,所有参数可选。\n参数ra 返回受查询影响的记录的数目 \n参数parameters 用 SQL 语句传递的参数值 \n参数options 一个或者多个 CommandTypeEnum 或 ExecuteOptionEnum 值。\n返回记录集对象，execute 返回的记录集没有 getTable,stepQuery 函数。\nexecuteRecords 返回的记录集提供 getTable,stepQuery 函数。
 cancel() = 取消执行
 getTable() = 执行SQL命令返回查询结果集数组\n每个元素代表一行,每行由N个键值对列组成\n返回值的fields成员记录了所有数据列的字段名\n结果集为空也会返回空数组,使用#操作符获取结果集长度
 getRows() = 查询并返回包含结果数据的SafeArray数组\n此函数返回的数据是先列后行,与getTable相反,\n数组由所有列的数据组成,每个列都是由多个行组成的数组\n可以使用 返回数据[ 列号 ][ 行号 ] 获取对应的值,\n也可以使用 数据.字段名[列号] 获取对应的值\n\n返回数组的元表中使用recordCount记录了总行数,\n结果集为空也会返回空数组,可使用 @.recordCount判断记录集的行数\n元表中的fields字段则是记录了所有字段名的数组.\n\n所有值后面的占位空白没有去除\n可使用getTable函数获取处理过空白占位符的数据,\n或参考该函数源码自行处理尾部空白
@@ -601,6 +586,8 @@ addParameter(.(名字,值,参数类型,字段类型,字段大小) = 直接添加
 bind() = !sqlServer_cmd.
 addParameter() = !sqlServer_parameter.
 parameters() = !sqlServer_parameter.
+execute() = !sqlServer_rs.
+executeRecords() = !sqlServer_rs.
 end intellisense**/
 
 /**intellisense(!sqlServer_parameter) 

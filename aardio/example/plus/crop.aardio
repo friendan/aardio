@@ -1,4 +1,4 @@
-//裁剪图像
+//plus 控件 - 裁剪图像
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="plus - 裁剪图像";right=759;bottom=469)

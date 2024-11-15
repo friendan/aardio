@@ -1,7 +1,7 @@
 ﻿
 namespace style.main;
 
-strip = {
+tabs = {
 	background = { 
 		hover = "/res/images/main-nav-bg-hover.png"; 
 		active = "/res/images/main-nav-bg-active.png"; 

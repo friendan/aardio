@@ -1,4 +1,4 @@
-//自适应缩放事件
+//窗口程序 - 自适应缩放事件
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=759;bottom=469)

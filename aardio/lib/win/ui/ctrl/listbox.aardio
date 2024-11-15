@@ -122,14 +122,15 @@ namespace listbox{
     		if (!i) i = owner.selIndex;
        		::SendMessageInt(owner.hwnd , 0x182/*_LB_DELETESTRING*/,i-1,0)
     	};
-    	add = function( str,ind=-1){
-    		if(ind<0) ind = owner.count + ind +1;
+    	add = function(str,ind=-1){
+    		if(ind<0) ind = owner.count + ind + 1;
     		else ind--;
     		
     		if(!str) error("参数不能为空",2); 
         	::User32.SendMessage(owner.hwnd,0x181/*_LB_INSERTSTRING*/,ind,tostring(str));
+        	return ind+1;
     	};
-		addfile = function( str){
+		addfile = function(str){
 			::User32.SendMessage(owner.hwnd, 0x196/*_LB_ADDFILE*/, ,str)
 		};
 		find = function( str ){
@@ -170,9 +171,9 @@ win.ui.ctrl.listbox() = 列表框\nlistbox 默认会自动调整高度以对齐�
 !listbox.getItemText(__/*项索引*/) = 获取指定项文本
 !listbox.getItemRect(__/*项索引*/) = 获取指定项区块位置\n返回::RECT() 结构体
 !listbox.hitTest(x,y) = 返回指定客户区坐标所在的项索引.
-!listbox.add(__/*请输入文本*/) = 添加列表项到尾部
-!listbox.add(__/*请输入文本*/,-1) = 添加列表项到尾部
-!listbox.add(__/*请输入文本*/,1) = 添加列表项到头部
+!listbox.add(__/*请输入文本*/) = 添加列表项到尾部，返回新项目索引。
+!listbox.add(__/*请输入文本*/,-1) = 添加列表项到尾部，返回新项目索引。
+!listbox.add(__/*请输入文本*/,1) = 添加列表项到头部，返回新项目索引。
 !listbox.selIndex = 获取或设置列表框当前选中项\n仅在单选模式下有效,多选模式下请使用 selected 获取所有获中项
 !listbox.selText = 获取当前选项的文本\n或根据指定的文本查找并改变选项
 !listbox.hwnd = 控件句柄

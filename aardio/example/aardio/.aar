@@ -1,7 +1,7 @@
 ﻿多线程=Thread
 协同程序=Coroutine
 日期时间=DateTime
-数组排序=ArraySorting
+数组=Array
 调试技术=Debug
 语言扩展=Util
 原生接口=Raw

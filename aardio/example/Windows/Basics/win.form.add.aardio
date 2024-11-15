@@ -1,4 +1,4 @@
-//动态创建窗口控件
+//窗口程序 - 动态创建窗口控件
 //入门教程: doc://library-guide/std/win/ui/create-winform.html
 
 import win.ui;

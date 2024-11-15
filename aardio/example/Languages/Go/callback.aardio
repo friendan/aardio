@@ -1,4 +1,4 @@
-//回调
+//aardio 调用 Go 语言 - 回调函数
 import golang;
 var go = golang();
 

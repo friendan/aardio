@@ -1,4 +1,4 @@
-//React hooks
+//web.view( WebView2 浏览器控件) - 调用 React hooks
 import sys.device;
 import win.ui;
 /*DSG{{*/
@@ -13,8 +13,11 @@ import web.view;
 var wb = web.view(winform.static);
 
 /*
-wb.export 导出函数返回的 aardio 对象在 JS 中会用 JSON 转换为纯 JS 对象，
-而 wb.external 导出的函数返回的 aardio 对象在 JS 中会转换为 Proxy 代理对象，表的成员也会转换为 Proxy 对象。 
+wb.export 导出 aardio 函数为 Javascript 全局对象（ Promise 对象 ）, 
+JavaScript 调用这些 aardio 函数时将会使用 JSON 自动转换跨编程语言的参数和返回值。
+这种经由 JSON 转换的对象与 JavaScript 完全兼容，例如下面返回的 result 可以直接作为 JavaScript 表格的数据源使用。
+
+而通过 wb.external 导出的 aardio 函数则只能返回 COM 代理对象，返回的 aardio 对象不能作为 JavaScript 表格的数据源使用。
 */	
 wb.export(
 	getData = function(){

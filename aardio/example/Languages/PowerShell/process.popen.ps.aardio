@@ -1,4 +1,4 @@
-﻿//管道调用
+﻿//aardio 通过进程管道调用 PowerShell
 import console.int;
 import process.popen;
 

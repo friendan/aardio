@@ -10,7 +10,15 @@ namespace web.rest;
 class client{
 
 	ctor(...) { 
-		this._http = ..inet.http(...)
+		if(type(...)==="table"){
+			var cfg = ...;
+			this._http = ..inet.http(cfg.userAgent,cfg.proxy,cfg.proxyBypass,cfg.httpFlags);
+			this.config = cfg;
+		}
+		else {
+			this._http = ..inet.http(...)
+		} 
+		
 		this._http.disableCache();	
 		this._userAgent = this._http._userAgent;
 		this.stringifyRequestParameters = ..inet.url.stringifyParameters;
@@ -78,15 +86,12 @@ class client{
 			}
 		};
 		
-		var headers;
-		if(this.beforeRequestHeaders){
-			headers = this.beforeRequestHeaders(params);
-		}
 		
 		if( this.beforeStringifyRequestParameters ){
 			params = this.beforeStringifyRequestParameters(params,codepage);
 		}
 		
+		var tParams = params;
 		if(params && (type(params)!=type.string)  ){ 
 			if( httpMethod == "GET" ){
 				params = ..inet.url.stringifyParameters(params,codepage);
@@ -94,10 +99,17 @@ class client{
 			else{
 				params = this.stringifyRequestParameters( params,codepage);  
 			}
-		}; 
+		};
 		
 		if( this.afterStringifyRequestParameters  ){
 			params = this.afterStringifyRequestParameters(params,codepage);
+		}
+		
+		var contentType = this.contentType || this.defaultContentType;
+		
+		var headers;
+		if(this.beforeRequestHeaders){
+			headers = this.beforeRequestHeaders(tParams,params,this.lastRequestUrl,httpMethod,contentType);
 		}
 
 		this.lastResponseData = null;
@@ -106,9 +118,7 @@ class client{
 		
 		this._http.beforeSend = this.beforeSend;
 		this._http.afterSend = this.afterSend;
-		this._http.addHeaders = this.addHeaders;
-
-		var contentType = this.contentType || this.defaultContentType;
+		this._http.addHeaders = this.addHeaders; 
 		
 		if(receiveCallback){
 			if( fileReceive ){
@@ -544,7 +554,10 @@ namespace client {
 web.rest.client = REST客户端
 web.rest.client() = !web_restClient.
 web.rest.client( = 创建 REST 客户端。
-web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 REST 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
+userAgent,cfg.proxy,cfg.proxyBypass,cfg.flags
+web.rest.client(.(userAgent,proxy,proxyBypass,httpFlags) = 创建 REST 客户端，所有参数可选。\nuserAgent 参数用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\nproxy 参数指定代理，proxyBypass 参数指定绕过代理的主机。\n└──  [代理参数格式说明](doc://library-guide/std/inet/proxy.md)\nhttpFlags 可选用一个数值指定 HTTP 连接选项，一般不需要指定。 \n\n可选传入一个表指定以上参数以及其他 API 自定义设置。\n如果传入表参数则存为对象的 config 属性。
+web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数指定 API 自定义的配置项。\n参数存为对象的 config 属性。
+!web_restClient.config = 自定义的 API 配置表。\n默认指向创建对象时指定的表参数。\n如果构造对象未指定表参数，此配置默认为 null 值。
 !web_restClient.stringifyRequestParameters(提交参数表,代码页) = @.stringifyRequestParameters = function(params,codepage){
 	__/*参数是表对象时调用此函数转换为字符串\n此函数一般由库文件定义，一般调用不应修改此函数\n注意返回的文本格式应与 owner.contentType 一致\n在该函数中可获取或修改对象的 lastRequestUrl, lastRequestMethod 属性*/
 	return params;
@@ -557,12 +570,12 @@ web.rest.client(.("UserAgent","代理服务器","绕过代理的主机",连接�
 	__/*可以在该函数中修改提交提交参数表,或在此添加默认参数\n此函数在stringifyRequestParameters之前调用\n参数可能是字符串或者表*/
 	return params; 
 }
-!web_restClient.beforeRequestHeaders(提交参数) = @.beforeRequestHeaders = function(params){
-	__/*每次请求前触发此函数,\nparams参数为本次请求的提交参数,\n可选返回字符串、数组、键值等web.joinHeaders函数支持的HTTP头\n*/
+!web_restClient.beforeRequestHeaders(提交参数,提交数据,请求网址,请求方法,请求类型) = @.beforeRequestHeaders = function(params,payload,url,httpMethod,contentType){
+	__/*每次请求前触发此函数。\nparams 参数为本次请求的提交参数，\npayload 为转换为字符串格式的提交数据\nurl 参数为本次请求网址。\nhttpMethod 参数为 HTTP 方法（大写）。\ncontentType 参数为请求内容类型。\n可选以字符串、数组、键值等 web.joinHeaders 函数支持的格式返回 HTTP 头。\n*/
 	return {}; 
 }
 !web_restClient.afterStringifyRequestParameters(提交参数,代码页) = @.afterStringifyRequestParameters = function(params,codepage){
-	__/*此时参数已转换为字符串并准备提交到服务器*/
+	__/*此时参数 params 已转换为字符串并准备提交到服务器。\ncodepage 参数为请求数据使用的代码页。\n必须用第一个返回值返回新的 params 。*/
 	return params; 
 }
 !web_restClient.encodeKey = 自定义替换 API 网址变量值使用的编码函数,\n此函数接收一个资源名参数,返回编码后的资源名,\n必须在定义 API 对象之前指定,\n默认已指定为 inet.url.encodeMbcs 函数

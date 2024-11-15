@@ -1,4 +1,4 @@
-//登录插件
+//mysql.client 库 - 登录插件
 import console;
 import mysql.client;
 //导入 caching_sha2_password 插件（MySQL 8.0 默认登录认证方式），

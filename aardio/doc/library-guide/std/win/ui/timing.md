@@ -33,8 +33,8 @@
 	win.loopMessage();
 	```
 
-	没有悬念,上面的用法与 Javascript 的用法基本一样.  
-	不过不同的是,winform.setTimeout() 还可以传递参数给延时函数, 下面是一个简单的例子  
+	winform.setTimeout 的用法与 Javascript 的 setTimeout 用法基本一样.  
+	区别是，winform.setTimeout() 还可以传递参数给延时函数, 示例： 
 
 
 	```aardio
@@ -42,9 +42,8 @@
 	
 	var winform = win.form(text="aardio Form";right=349;bottom=249 )    
 	
-	io.open()  
 	winform.setTimeout(  
-		io.print ,1000 , "测试","传参数给io.print"  
+		print ,1000 , "测试","传参数给 print"  
 	)  
 		    
 	winform.show()  
@@ -221,7 +220,7 @@ winform.setTimeout() 是异步非阻塞的，所以后面的 "定时器已启动
   
 3. winform.setTimeout() 的回调函数可以是一段代码(也就是字符串) ，例如：  
 
-winform.setTimeout("io.open();io.print(1,2,3);");
+winform.setTimeout("print(1,2,3);");
 
 ### 如果想让定时器暂停，再继续执行应该怎么做？
 

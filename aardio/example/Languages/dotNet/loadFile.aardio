@@ -1,4 +1,4 @@
-﻿//加载 DLL
+﻿//aardio 加载 .NET 程序集（DLL）
 import console;
 import dotNet;
 

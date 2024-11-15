@@ -1,4 +1,4 @@
-//简单数据视图 
+//列表视图（listview）控件 - 简单数据视图 
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="简单数据视图 - 双击编辑单元格(可指定只读列)";right=1031;bottom=712)

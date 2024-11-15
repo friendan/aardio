@@ -1,4 +1,4 @@
-//打包 Java 程序
+//aardio 打包 Java 程序示例
 import fsys.dlg;
 //import java.jre.v8; //可选导入指定版本的 Java 运行时
 import java.ffdec;

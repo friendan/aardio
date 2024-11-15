@@ -1,0 +1,20 @@
+LIBRARY sundown.dll
+
+EXPORTS
+bufcstr
+bufdata
+bufgrow
+bufnew
+bufprefix
+bufput
+bufputc
+bufrelease
+bufsize
+sd_markdown_free
+sd_markdown_new
+sd_markdown_render
+sd_version
+sdhtml_is_tag
+sdhtml_renderer
+sdhtml_smartypants
+sdhtml_toc_renderer

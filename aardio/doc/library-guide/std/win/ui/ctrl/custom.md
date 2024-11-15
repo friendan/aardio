@@ -207,7 +207,7 @@ winform.myCtrl2.plus.background = "http://download.aardio.com/v10.files/demo/ima
 win.loopMessage();
 ```
 
-## 使用自定义控件加载加载扩展控件 <a id="extension" href="#extension">&#x23;</a>
+## 使用自定义控件加载扩展控件 <a id="extension" href="#extension">&#x23;</a>
 
 
 在 aardio 中我们还可以对任何一个窗口、或窗口上的子窗件进行扩展，这种用法在 aardio 中被大量使用，例如让窗口嵌入浏览器控件，以增加显示网页的功能。

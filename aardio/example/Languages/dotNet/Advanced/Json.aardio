@@ -1,4 +1,4 @@
-﻿//JSON 转换
+﻿//aardio 调用 .NET 之 JSON 转换
 import console; 
 import web.json;
 import dotNet.json;

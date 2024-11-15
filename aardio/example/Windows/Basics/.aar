@@ -1,4 +1,4 @@
-﻿绘图基础=start.aardio
+﻿绘图基础=QuickStart.aardio
 创建窗口隐藏参数=win.form.aardio
 动态创建控件=win.form.add.aardio
 消息回调=wndproc..aardio

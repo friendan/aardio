@@ -1,4 +1,4 @@
-//web.view
+//使用 web.view 实现网页自动化操作
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="自动化 / CDP 协议";right=759;bottom=469;bgcolor=16777215)

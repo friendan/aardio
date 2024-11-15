@@ -6,8 +6,11 @@
 正则表达式( preg )=regex.aardio
 多字节字符=wchar.aardio
 中文分词=mmseg.aardio
+文本分句=sentences.aardio
 中文数值=chineseNumber.aardio
+英文单词表=words.aardio
 字符串列表 =list.aardio
 进制转换=radix-convert.aardio
 快速关键字搜索=string.keywords.aardio
 哈希加密=Hash
+Markdown=Markdown

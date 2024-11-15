@@ -1,4 +1,4 @@
-//系统搜索路径
+//注册表操作 - 添加系统搜索路径
 import win.ui;
 import win.dlg.message;
 /*DSG{{*/

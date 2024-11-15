@@ -1,4 +1,4 @@
-//预处理通知消息
+//窗口程序 - 预处理通知消息
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=759;bottom=469)

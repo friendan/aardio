@@ -1,4 +1,4 @@
-//Web 交互界面
+//aardio 调用 R 语言 - Web 交互界面
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio + R 语言 （Shiny）+ WebView2 界面";right=759;bottom=469)

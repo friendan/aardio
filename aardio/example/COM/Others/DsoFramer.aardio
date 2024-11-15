@@ -1,4 +1,4 @@
-//嵌入Office文档
+//dsoFramer 嵌入 Office 文档
 /* 
 DsoFramer 是微软开源的控件用于嵌入 Word、 Excel、 PPT 文档，
 这个控件是开源的，一般还是够用的。并且这个扩展库已经实现了免注册调用，支持生成独立EXE文件。

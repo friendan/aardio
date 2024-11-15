@@ -1,6 +1,6 @@
 # 文件路径
 
-# 应用程序根目录与 EXE 根目录  <a id="app-path" href="#app-path">&#x23;</a>
+## 应用程序根目录与 EXE 根目录  <a id="app-path" href="#app-path">&#x23;</a>
 
 aardio 应用程序根目录指的是：
 

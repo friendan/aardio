@@ -1,4 +1,4 @@
-//共享应用域 
+//aardio 调用 PowerShell 之共享应用域 
 import win;
 import console;
 import dotNet.ps;

@@ -1,4 +1,4 @@
-//入门
+//mysql.client 库 - 入门
 import console;
 import mysql.client;
 

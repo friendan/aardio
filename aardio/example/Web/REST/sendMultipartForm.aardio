@@ -1,4 +1,4 @@
-﻿//上传文件表单
+﻿//用 web.rest 客户端调用 HTTP API - 上传文件表单
 import console; 
 import web.rest.jsonLiteClient;
 

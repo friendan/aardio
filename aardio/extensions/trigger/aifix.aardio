@@ -16,14 +16,27 @@ onIdePaste = function(hwnd){
 	var text = win.clip.read(); 
 
 	var output = {}
-	var text,count = string.replace(text,"```<aardio>(.+?)```",function(c){ 
-		var indent = string.match(c,"^<\r?\n>?([ \t]+)")
+	var text,count = string.replace(text,"!\N(```+)<aardio>(.+?)!\N\1![^`\S]",function(tag,c){ 
+		var indent = string.match(text,"^<\r?\n>?([ \t]+)")
 		if(#indent){ 
 			c = string.replace(c,"\n+"+indent,'\n');
 		}
 		
 		table.push(output,c);
 	})
+	
+	if(!#output){
+		//如果没有无缩进的代码块，则取已缩进的代码块。
+		var text,count = string.replace(text,"!\N([ \t]*)(```+)<aardio>(.+?)!\N\s*\2![^`\S]",function(indent,tag,c){
+			
+			if(#indent){ 
+				c = string.replace(c,"\n+"+indent,'\n');
+			}
+			
+			table.push(output,c);
+		})		
+	}
+
 	
 	if(#output){
 		text = string.join(output,'\r\n');
@@ -37,21 +50,25 @@ onIdePaste = function(hwnd){
 	
 	var c = ide.aifix(string.trim(text));
 	
-	if(string.find(oldCode,"import\s+console")){ 
+	if(string.find(oldCode,"![\w._$]import\s+console![^\w._$]")){ 
 		c = string.replace(c,"import\s+console\;\s+",""); 
 	}
 	
-	if(string.find(oldCode,"console.pause")){
-		c = string.replace(c,"console.pause\(.+?\);\s*",""); 
+	if(string.find(oldCode,"![\w._$]console\.pause![^\w._$]")){
+		c = string.replace(c,"console\.pause%();?\s*",""); 
 		c = string.replace(c,"//\s*暂停并等待按键\s*","");  
 	}
 	
-	if(string.find(oldCode,"import\s+win.ui![^\w\.]")){ 
-		c = string.replace(c,"import\s+win\.ui\;\s+","");
+	if(string.find(oldCode,"![\w._$]import\s+win.ui![^\w._$]")){ 
+		c = string.replace(c,"import\s+win\.ui![^\w._$]\;?\s+","");
 	}
 	
-	if(string.find(oldCode,"!\wwin\.loopMessage!\W")){
-		c = string.replace(c,"win.loopMessage\();\s*",""); 
+	if(string.find(oldCode,"![\w._$]win\.loopMessage![^\w._$]")){
+		c = string.replace(c,"win.loopMessage%();?\s*",""); 
+	}
+	
+	for lib in string.gmatch(oldCode,"![\w._$]import\s+([\w\.]+)![^\w._$]") { 
+		c = string.replace(c,"![\w._$]import\s+"+(string.repline(lib,"\.","\\."))+"![^\w._$];?\s*","");
 	}
 	
 	edit.selText = string.trim(c);

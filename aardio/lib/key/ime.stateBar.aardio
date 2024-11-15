@@ -14,8 +14,9 @@ class stateBar{
 		this.offsetX = 30;
 		this.timeout = 2;
 		this.lineHeight = 50;
+		this.quirksMode = 0;
 		this.editorClasses = {
-			["AVL_AVView"]=1;["ConsoleWindowClass"]=1;
+			["AVL_AVView"]=1;["ConsoleWindowClass"]=1;["@WeChatMainWndForPC"]=1;["@ChatWnd"]=1;["#EXCEL6"]=1;
 		};
 		
 		this.closedModeLangId = {[0x804] = 0x409;[0x404] = 0x409;[0xC04] = 0x409;[0x1404] = 0x409;[0x412] = 0x409;[0x0411] = 0x409} 
@@ -37,7 +38,7 @@ class stateBar{
 			var caret,hFocus = getCaret(hForeground);
 			var prev = this.imePrevState;
 			var topChanged = 0; 
-			
+		 
 			if(!caret) {
 				if(!prev) prev = {};
 				hFocus = hFocus : hForeground;
@@ -50,19 +51,55 @@ class stateBar{
 					lastFocusWnd = hFocus;
 				}
 			 
-				if(this.editorClasses[cls]){
-					caret = ::RECT();
-					::User32.GetCursorPos(caret);
-					
+			 	if( this.editorClasses["@"+cls] ){ 
+					var focus = ..winex.accObject.focus(hFocus);
+					if(focus){
+						if(focus.role() == 0x2a){
+							var x1,y1,cx1,cy1 = ..win.getPos(hFocus,true); 
+							var x,y,cx,cy = focus.location();
+							
+							if(y-y1>200*( this.dpiScaleX : 1)){
+								caret = ::RECT(x,y-32*( this.dpiScaleX : 1),0,0);
+							}
+							else {
+								caret = ::RECT(x,y,0,0);
+							}
+							
+							caret.hwnd = hFocus; 
+							
+							if(prev.top){
+								topChanged = ..math.abs(caret.top - prev.top)	
+							}
+						} 
+						
+						focus.release();
+					}
+				}
+				elseif( this.editorClasses["#"+cls] ){  
 					var x,y,cx,cy = ..win.getPos(hFocus,true); 
-					if(!(cx&&cy)) x,y,cx,cy = ..win.getPos(hForeground,true); 
-					if( (caret.left>=x) && (caret.left<=x+cx) && (caret.top>=y) && (caret.top<=y+cy) ){
-						caret.hwnd = hFocus; 
+					
+					caret = ::RECT(x,y,0,0);
+					caret.hwnd = hFocus; 
+					
+					if(prev.top){
+						topChanged = ..math.abs(caret.top - prev.top)	
+					} 
+				}
+				elseif(!caret ){
+					if( this.editorClasses[cls] ){
+						caret = ::RECT();
+						::User32.GetCursorPos(caret);
+						
+						var x,y,cx,cy = ..win.getPos(hFocus,true); 
+						if(!(cx&&cy)) x,y,cx,cy = ..win.getPos(hForeground,true); 
+						if( (caret.left>=x) && (caret.left<=x+cx) && (caret.top>=y) && (caret.top<=y+cy) ){
+							caret.hwnd = hFocus; 
+						}
+						else {
+							caret = null;
+						}
 					}
-					else {
-						caret = null;
-					}
-				} 
+				}
 					
 				if(!caret){
 					if(!this.hide){
@@ -105,13 +142,30 @@ class stateBar{
 			}
 
 			var cap = getCapital();
-			var openNative,symbolMode,langId,convMode = getImeState(hFocus : hForeground);
+			var openNative,symbolMode,langId,convMode;
+
+			hFocus =  hFocus || hForeground;
+			if(this.quirksMode<2) openNative,symbolMode,langId,convMode = getImeState(hFocus);
+			else {
+				//WX
+				openNative = ..key.ime.control(hFocus,5/*_IMC_GETOPENSTATUS*/);
+
+				//XF
+				if(this.quirksMode==2){
+					openNative = openNative = 2;
+				}
+				
+				symbolMode = openNative ? 3 : 1;
+				langId = 0x804;
+			}
 			
 			var dispLangId = langId;
 			if(!openNative){
 				dispLangId = this.closedModeLangId[langId] : langId;
 			}
-			elseif((!symbolMode) || ( this.quirksMode && (symbolMode != 3) && (langId == 0x804) ) ) {
+			elseif((!symbolMode) || 
+				( this.quirksMode == 1  && (symbolMode != 3) && (langId == 0x804) ) 
+				) {
 				if(this.closedModeLangId[langId]){
 					dispLangId = this.closedModeLangId[langId];
 					openNative = false;
@@ -147,7 +201,9 @@ class stateBar{
 					}
 					
 					prev.lbDownBeginTime = null;
-					if(this.ignoredWindow == caret.hwnd ) return;
+					if(this.ignoredWindow == caret.hwnd ) {
+						return;
+					}
 					
 					swp = swp | 0x40/*_SWP_SHOWWINDOW*/;
 					prev.showTime  = tick(); 
@@ -158,6 +214,7 @@ class stateBar{
 						elseif(prev.lbDownBeginTime && ( tick() - prev.lbDownBeginTime > 400 ) ){
 							if(!this.hide) this.hide = true;  
 						} 
+						
 						return;
 					}
 					
@@ -166,6 +223,7 @@ class stateBar{
 					
 					if( this.timeout  && ((tick() - prev.showTime ) > ( this.timeout * 1000) ) ){
 						this.hide = true; 
+						
 						return;
 					} 
 				} 
@@ -204,6 +262,12 @@ class stateBar{
 					if(this.tipChars.katakana) text = this.tipChars.katakana;
 				}
 			}
+			elseif(dispLangId==0x412){
+				if(convMode && (convMode & 0x40/*_IME_CMODE_HANJACONVERT*/) ){
+					if(this.tipChars.hanja) text = this.tipChars.hanja;
+				}
+			}
+			 
 			 
 			var iconText;
 			if(cap) iconText = this.tipChars.capital;
@@ -344,3 +408,5 @@ key.ime.stateBar( = 创建输入法状态栏，返回 plus 控件
 key.ime.stateBar(.(winform) = 参数 @winform 指定所有者窗体，不可省略
 key.ime.stateBar() = !ui_ctrl_plus.
 end intellisense**/
+
+//@guide [输入法状态检测规则与原理](doc://library-guide/std/key/imeState.md)

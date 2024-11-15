@@ -473,7 +473,7 @@ winex 库主要扩展 win 库的功能，并提供管理外部进程窗口的函
 	
 	通常，系统内的每个线程都有自己的输入队列。winex.attach 允许当前线程与目标窗口共享输入队列。连接了线程后，输入焦点、窗口激活、鼠标捕获、键盘状态以及输入队列状态都会进入共享状态 返回值 Long，非零表示成功，零表示失败。
 	
-	调用 winex.attach 以后,可以在附加的目标窗口使用 win.getFocus() win.setFocus() 等函数,也可以方便的使用winex.key winex.mouse等函数库提供的后台模拟函数.
+	调用 winex.attach 以后,可以在附加的目标窗口使用 win.getFocus() win.setFocus() 等函数,也可以方便地使用winex.key winex.mouse等函数库提供的后台模拟函数.
 
 	
 	附加与解除应配对使用,例如调用 winex.attach(hwnd)附加成功以后,在不再需要附加时应调用winex.attach(hwnd,false)解除.

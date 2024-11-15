@@ -1,4 +1,4 @@
-//自定义控件
+//aardio 调用 .NET 创建自定义控件
 import dotNet;  
 var compiler = dotNet.createCompiler("C#");
 compiler.Reference("System.Drawing.dll","System.Data.dll","System.Windows.Forms.dll");

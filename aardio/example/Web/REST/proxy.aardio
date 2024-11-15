@@ -1,4 +1,4 @@
-//设置代理服务器
+//用 web.rest 客户端调用 HTTP API - 设置代理服务器
 import console; 
 import inet.ipdata;
 import web.rest.jsonClient;

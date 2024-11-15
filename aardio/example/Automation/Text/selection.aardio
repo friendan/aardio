@@ -1,4 +1,4 @@
-//获取选区文本
+//自动化 - 获取选区文本
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="当前焦点窗口选区文本";left=-2;right=448;bottom=354)

@@ -141,32 +141,38 @@ subscribe = function(name,proc,before){
 	}
 }
 
-var wb;
+var wbp;
+var conPause;
 print = function(s,...){ 
-	if( s!==null ){  
-		if(!wb) {
-			if(_STUDIO_INVOKED && wb === null && type(s)=="string" && s[1]=='<'# ){ 
+	if( s!==null ){
+		if(!wbp) {
+			if(_STUDIO_INVOKED && !conPause && wbp === null && type(s)=="string" && s[1]=='<'# ){ 
 				global.import("web.form");
-				wb = web.form( win.form(text="aardio - webform";right=759;bottom=469;maxmize=1),,,,true );
-				wb.external = wb._form;
-				wb.go("about:blank");
-				wb.TitleChange = function( text ) { wb._form.text = text; };
-				wb.document.open();
+				wbp = web.form( win.form(text="aardio - webform";right=759;bottom=469;maxmize=1),,,,true );
+				wbp.external = wbp._form;
+				wbp.go("about:blank");
+				wbp.TitleChange = function( text ) { wbp._form.text = text; };
+				wbp.document.open();
 			}
 			else {
+				conPause = true;
 				if(..console) ..console.open();
-				else ..io.open();
+				else{
+					var h = ::Kernel32.GetConsoleWindow();
+					if(!(h?::User32.IsWindowVisible(h))) ..io.open();
+				}
 				..io.print(s,...);
 				return;
 			} 
 		}
-		wb.document.write( tostring(s) ); 
+		wbp.document.write( tostring(s) ); 
 		if(...!==null) return print(...);
 	}
-	elseif(wb){ wb.document.close(); wb._form.doModal(); wb = null };
 }
 
 __beforeUnload =  function(){
+	if(wbp){ wbp.document.close(); wbp._form.doModal(); wbp = null };
+	
 	publish("beforeUnload");
 	if(beforeUnload) beforeUnload();
 	
@@ -175,6 +181,7 @@ __beforeUnload =  function(){
 			::DestroyWindow(hwnd); 
 		}; 
 	}
+	elseif(conPause) execute("pause");
 }
 
 time.gmt = function(t,f){

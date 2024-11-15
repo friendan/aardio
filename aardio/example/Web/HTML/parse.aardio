@@ -1,4 +1,4 @@
-//简单解析
+//简单 HTML 解析
 
 /*
 string.html基于string.xml，更适合用来解析HTML,

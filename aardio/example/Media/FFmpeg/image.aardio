@@ -1,4 +1,4 @@
-﻿//转换图像格式
+﻿//FFmpeg - 转换图像格式
 import console.int;
 import process.ffmpeg;
 

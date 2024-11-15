@@ -1,4 +1,4 @@
-//客户端
+//aardio 调用 Go 语言 - RPC（TCP） 客户端
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio / Go 通过 TCP 连接使用 JSON-RPC 交互";right=759;bottom=469)

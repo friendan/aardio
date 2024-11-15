@@ -1,4 +1,4 @@
-﻿//旋转动画
+//plus 控件 - 旋转动画
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="鼠标放到图像上显示动画";right=234;bottom=214;bgcolor=16711680)

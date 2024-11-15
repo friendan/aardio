@@ -1,4 +1,4 @@
-﻿
+﻿//eventStream SSE 事件流
 class string.eventStream{
 	ctor( tab ){
 		

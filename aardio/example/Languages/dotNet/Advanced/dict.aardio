@@ -1,4 +1,4 @@
-//Dictionary
+//aardio 操作 .NET 字典（Dictionary）
 import dotNet; 
 
 //.NET 字典（Dictionary）是泛型类，可以像下面这样创建 Dictionary。

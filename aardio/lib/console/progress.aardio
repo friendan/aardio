@@ -115,7 +115,7 @@ console.progress.singleLine = function(width,backText,foreText){
 
 
 /**intellisense()
-console.progress = 控制台简单进度条
+console.progress = 控制台简单进度条。\n[使用范例](doc://example/Console/loading.html)
 console.progress( = 创建控制台简单进度条
 console.progress(.(背景字符,前景字符) = 所有参数可选，默认值都设为"─"字符
 console.progress.singleLine( = 创建控制台简单进度条,\n进度条与文本显示在同一行

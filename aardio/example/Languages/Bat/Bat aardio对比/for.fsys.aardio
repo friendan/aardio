@@ -1,4 +1,4 @@
-//for:遍历文件
+//批处理与 aardio 对比 - for 命令之遍历文件
 import console;
 import process.batch;
 

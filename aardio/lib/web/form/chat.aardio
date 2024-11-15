@@ -8,6 +8,7 @@ class chat{
 	ctor( ... ){
 		this = ..web.form.simpleMarkdown(...)
 		this.chatMessage = ..table.array();
+		this.limit = 15;
 	};
 	system = function(content){
 		this.pushMessage(
@@ -25,13 +26,8 @@ class chat{
     		}
 		);
 	};
-	assistant = function(choices){
-		if(choices){ 
-            this.pushMessage(choices[1].delta.content);
-        } 
-        else {
-            this.pushMessage(null);
-        }
+	assistant = function(content){
+		this.pushMessage(content);
 	};
 	pushMessage = function(msg){ 
 		var chatMessage = this.chatMessage;
@@ -40,7 +36,7 @@ class chat{
 		if(msg){
 			
 			if(type.isString(msg)){
-				this.write(msg);
+				this.writeDelta(msg);
 				
 				var lastMsg = chatMessage[#chatMessage]
 				if(lastMsg[["role"]]!="assistant"){
@@ -57,21 +53,38 @@ class chat{
 				} 
 			}
 			else {
+				
+				//保留消息队列第一个与最后一个系统提示词 
+				if(this.limit && (#chatMessage-2)>=this.limit ){ 
+	
+					while( var i = 1; i++ ; i < #chatMessage/*保留最后一个 system 知识库*/ ) {  
+						var msg = chatMessage[i];
+						 
+						if(msg.role=="system" ){
+							//优先移除插入的知识库
+							..table.remove(chatMessage,i);
+							console.log("remove",i)
+							i--;
+						}
+						 
+					}
+					
+					if( (#chatMessage-2)>=this.limit ){
+						..table.splice(chatMessage,2,(#chatMessage-2)-this.limit)
+					}  
+				}
+				
 				//加入聊天消息
 				..table.push(chatMessage,msg);
-				
-				if(this.limit && #chatMessage>=this.limit ){
-					..table.shift(chatMessage,#chatMessage-this.limit);	
-				}
 				
 				if(msg.role=="user"){ 
 					
 					if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
-						this.write('\n\n<span class="chat-role user">我</span>\n
+						this.writeDelta('\n\n<span class="chat-role user">我</span>\n
     					<div class="chat-prompt">\n'+msg.content + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
 					}
 					else{
-    					this.write('\n\n<span class="chat-role user">我</span>\n
+    					this.writeDelta('\n\n<span class="chat-role user">我</span>\n
     					<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
     				}
     				 
@@ -80,22 +93,37 @@ class chat{
 			} 
 		}
 		else{
-			this.write(null);  
+			this.writeDelta(null);  
 		} 
 	}; 
 	lastMarkdown = function(){
 		var chatMessage = this.chatMessage;
 		var lastMsg = chatMessage[#chatMessage]
-		if(lastMsg[["role"]]!="assistant"){
+		if(lastMsg[["role"]]=="assistant"){
 			return  lastMsg.content; 
+		}
+	}; 
+	lastAssistantMessage = function(){
+		var chatMessage = this.chatMessage;
+		var lastMsg = chatMessage[#chatMessage]
+		if(lastMsg[["role"]]=="assistant"){
+			return  lastMsg; 
 		}
 	}; 
 	errorMessage = function(msg){
 		this.showError(msg);
 	}; 
 	clear = function(){
-		this.write("",true);
+		this.setMarkdown("");
 		this.chatMessage = ..table.array();
+	};
+	started = function(){
+		var chatMessage = this.chatMessage;
+		for(i,msg in chatMessage){
+			if(msg[["role"]]!="system"){
+				return true;
+			} 
+		} 
 	};
 }
 
@@ -107,19 +135,25 @@ web.form.chat() = !stringChatMessageForm.
 end intellisense*****/
 
 /*****intellisense(!stringChatMessageForm)
+started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
 clear() = 清除会话记录
 errorMessage(__/*错误信息*/) = 显示错误信息
-assistant(__/*错误信息*/) = 显示并记录 AI 接口返回的 result.data.choices 。
+assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
 prompt(__/*提示词*/) = 添加并显示用户提示词
 system(__/*提示词*/) = 添加并显示系统提示词
 chatMessage = 消息队列，用于发送到 chat/completions 聊天接口。
-chatMessage.limit = 可选指定一个限制队列大小的数值
-lastMarkdown() = 获取最后一次 AI 回复的 Markdown 格式内容
+chatMessage.limit = 可选指定一个限制消息队列大小的数值。\nlimit 限制的队列大小不包含第一个系统提示词与最后一次抓取网址后发送的知识库。\n但其他通过抓取网址发送的知识库消息会计算在内（在页面上不显示）。
+lastMarkdown() = 获取最后一次 AI 回复的原始 Markdown 格式内容。
+lastAssistantMessage() = AI 最后一次返回的消息，如果没有则返回 null。
 getMarkdown() = 返回输出到页面的所有 Markdown 格式内容。
+setMarkdown(__) = 输出 Markdown 格式内容到页面，覆盖控件存储的 Markdown。
+write(__) = 清空页面内容，解析并显示参数 @1 指定的 Markdown 为网页。\n控件仅解析与显示 Markdown，不会存储此 Markdown，\n也不会改变  getMarkdown 函数的返回值。
+writeDelta(__) = 向页面追加 Markdown 格式内容。\n解析、显示、并存储写入的 Markdown。
 onWriteEnd = @.onWriteEnd = function(){
 	__/*发出问题以后，AI 回复完成或出现错误回调此事件*/
 }
 beforerWriteEnd = @.beforerWriteEnd = function(markdown){
 	__/*在输出完整回复以前，可在此回调中修改返回输出的全部 Markdown。\n错误输出不会触发此函数。*/
 }
+showLoading(.(title) = 显示加载动画，可选用 title 指定标题。
 end intellisense*****/

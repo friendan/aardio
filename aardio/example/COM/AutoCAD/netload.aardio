@@ -1,4 +1,4 @@
-//.NET 接口
+//aardio 调用 AutoCAD - .NET 接口
 import console;
 console.showLoading("正在编译 .NET DLL");
 

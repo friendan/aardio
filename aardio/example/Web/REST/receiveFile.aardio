@@ -1,4 +1,4 @@
-﻿//下载文件
+﻿//用 web.rest 客户端调用 HTTP API - 下载文件
 import console; 
 import web.rest.jsonLiteClient;
 

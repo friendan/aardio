@@ -34,4 +34,4 @@ process.python 的主要特点：
 - 兼容 32位/64位 Python 运行时。
 - 可自带 Python 运行时，也可以支持系统安装的 Python 运行时。
 
-请参考范例：[调用 Python 任意版本](../../../example/Languages/Python/Python%20AnyVersion/start.md)
+请参考范例：[调用 Python 任意版本](../../../example/Languages/Python/Python%20AnyVersion/QuickStart.md)

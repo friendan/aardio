@@ -1,4 +1,4 @@
-//CGI 调用
+//aardio 调用 PHP - CGI
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="Hello World / PHP_CGI 服务器";right=759;bottom=469)

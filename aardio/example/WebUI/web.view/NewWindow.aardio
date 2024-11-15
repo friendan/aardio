@@ -1,4 +1,4 @@
-//禁止弹窗
+//web.view( WebView2 浏览器控件) - 禁止弹窗
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="禁止弹窗";right=818;bottom=507)

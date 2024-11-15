@@ -1,4 +1,4 @@
-//资源名编码
+//用 web.rest 客户端调用 HTTP API - 资源名编码
 import console;
 import web.rest.jsonLiteClient;
 import crypt.bin;

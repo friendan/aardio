@@ -1,4 +1,4 @@
-//复选框、单选框
+//用 plus 控件创建复选框、单选框
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

@@ -1,4 +1,4 @@
-//消息回调
+//窗口程序 - 消息回调
 import win.ui;
 import win.ui.atom;
 /*DSG{{*/

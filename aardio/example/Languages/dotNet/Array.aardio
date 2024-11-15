@@ -1,4 +1,4 @@
-//数组
+//在 aardio 中使用 .NET 数组
 import console;
 import dotNet; 
 var compiler = dotNet.createCompiler("C#");

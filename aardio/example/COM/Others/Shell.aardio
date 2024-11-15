@@ -1,4 +1,4 @@
-//shell 外壳
+//COM 接口 - shell 外壳
 //外壳指的是操作系统与用户交互的界面，主要指资源管理器、桌面等。
 
 import com.shell;

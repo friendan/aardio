@@ -1,4 +1,4 @@
-//Color
+//在 aardio 中使用 .NET 颜色值 System.Drawing.Color 
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="System.Drawing.Color";right=757;bottom=467)

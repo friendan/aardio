@@ -1,4 +1,4 @@
-//淡入淡出效果
+//窗口程序 - 淡入淡出效果
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio form";right=602;bottom=411;parent=...)

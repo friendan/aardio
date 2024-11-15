@@ -1,4 +1,4 @@
-//任务栏显示进度
+//窗口程序 - 在系统任务栏显示进度
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="系统任务栏显示进度( 调用ITaskbarList3接口 )";right=599;bottom=399)

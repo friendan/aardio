@@ -4,8 +4,8 @@ var winform = win.form(text="aardio form";right=939;bottom=772;bgcolor=16777215)
 winform.add(
 custom={cls="custom";left=148;top=11;right=921;bottom=751;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=4};
 static={cls="static";left=139;top=7;right=140;bottom=757;bgcolor=16752414;clip=1;db=1;dl=1;dt=1;z=3};
-strip1={cls="plus";text="模板控件";left=1;top=34;right=139;bottom=63;align="right";bgcolor=16752414;clip=1;dl=1;dt=1;font=LOGFONT(h=-14);paddingRight=21;z=1};
-strip2={cls="plus";text="模板控件";left=1;top=63;right=139;bottom=92;align="right";bgcolor=16752414;clip=1;dl=1;dt=1;font=LOGFONT(h=-14);paddingRight=21;z=2}
+tabPlus1={cls="plus";text="模板控件";left=1;top=34;right=139;bottom=63;align="right";bgcolor=16752414;clip=1;dl=1;dt=1;font=LOGFONT(h=-14);paddingRight=21;z=1};
+tabPlus2={cls="plus";text="模板控件";left=1;top=63;right=139;bottom=92;align="right";bgcolor=16752414;clip=1;dl=1;dt=1;font=LOGFONT(h=-14);paddingRight=21;z=2}
 )
 /*}}*/
 
@@ -13,10 +13,10 @@ strip2={cls="plus";text="模板控件";left=1;top=63;right=139;bottom=92;align="
 import win.ui.tabs;
 
 //至少要添加2个创建好的选项卡(作为设计模板,创建成功后可清除)
-var tbs = win.ui.tabs(winform.strip2,winform.strip1);
+var tabs = win.ui.tabs(winform.tabPlus2,winform.tabPlus1);
 
 //指定选项卡的外观样式,用法请参考plus控件说明
-tbs.skin(
+tabs.skin(
     background = {  //背景
         default = 0xFFFFFFFF;
     }
@@ -45,32 +45,32 @@ tbs.skin(
     }
 )
 
-tbs.clear();
+tabs.clear();
 
-tbs.add({
+tabs.add({
     text="竖版导航"; 
 },"\forms\plus\icon.aardio")
 
-tbs.add({
+tabs.add({
     text="横版导航"; 
 },"\forms\plus\tabs.aardio")
 
 
-tbs.add({
+tabs.add({
     text="横版大图标"; 
 },"\forms\plus\first.aardio")
 
-tbs.add({
+tabs.add({
     text="自解压"; 
 },"\forms\plus\sfx.aardio")
 
-tbs.add({
+tabs.add({
     text="批处理"; 
 },"\forms\plus\bat.aardio")
 
-tbs.selIndex = 1;
+tabs.selIndex = 1;
 
-tbs.closeButton.skin(
+tabs.closeButton.skin(
     background = { 
         hover = 0xFFe35c51; 
         active = 0xFF8f241b;
@@ -83,23 +83,23 @@ tbs.closeButton.skin(
     } 
 )
 
-tbs.beforeShowCloseButton = function(strip,rcStrip,rcCloseButton){
-    return rcStrip.right - rcCloseButton.width() - 5, rcStrip.top + ( rcStrip.height() - rcCloseButton.height() )/2;
+tabs.beforeShowCloseButton = function(tab,rcTab,rcCloseButton){
+    return rcTab.right - rcCloseButton.width() - 5, rcTab.top + ( rcTab.height() - rcCloseButton.height() )/2;
 }
 
 winform.getTemplatePath = function(){
-    return tbs.selForm.getTemplatePath();
+    return tabs.selForm.getTemplatePath();
 }
 
 winform.getTemplateConfig = function(){
-    if(tbs.selForm.getTemplateConfig){
-    	return tbs.selForm.getTemplateConfig();
+    if(tabs.selForm.getTemplateConfig){
+    	return tabs.selForm.getTemplateConfig();
     } 
 }
 
 winform.onProjectCreated = function(projectDir,pathMain){
-    if(tbs.selForm.onProjectCreated){
-    	return tbs.selForm.onProjectCreated(projectDir,pathMain);
+    if(tabs.selForm.onProjectCreated){
+    	return tabs.selForm.onProjectCreated(projectDir,pathMain);
     } 	
 }
 

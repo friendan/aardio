@@ -1,4 +1,4 @@
-//调用 JS 函数
+//aardio 调用 Node.js 函数
 import console.int;  
 import nodeJs;
 
@@ -28,7 +28,7 @@ var node = nodeJs.startRpc(js,//指定 JS 代码或文件路径，这种方式�
 调用 JS 函数，要点：
 - 被调用的 JS 对象必须是全局对象 global 的成员对象.
 - 被调用的函数应当是同步函数，不能是异步函数。
-*/。
+*/
 var ret,err = node.Calculator.add(2,3);
 
 //调用 JS 全局函数。

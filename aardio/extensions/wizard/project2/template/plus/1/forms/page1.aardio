@@ -4,8 +4,8 @@ var winform = win.form(text="aardio form";right=939;bottom=772;bgcolor=16777215)
 winform.add(
 custom={cls="custom";left=148;top=11;right=921;bottom=751;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=4};
 static={cls="static";left=139;top=7;right=140;bottom=757;bgcolor=16752414;clip=1;db=1;dl=1;dt=1;z=3};
-strip1={cls="plus";text="测试文本";left=31;top=34;right=139;bottom=63;bgcolor=16752414;clip=1;dl=1;dt=1;z=1};
-strip2={cls="plus";text="测试文本";left=31;top=63;right=139;bottom=92;bgcolor=16752414;clip=1;dl=1;dt=1;z=2}
+tabPlus1={cls="plus";text="测试文本";left=31;top=34;right=139;bottom=63;bgcolor=16752414;clip=1;dl=1;dt=1;z=1};
+tabPlus2={cls="plus";text="测试文本";left=31;top=63;right=139;bottom=92;bgcolor=16752414;clip=1;dl=1;dt=1;z=2}
 )
 /*}}*/
 
@@ -13,10 +13,10 @@ strip2={cls="plus";text="测试文本";left=31;top=63;right=139;bottom=92;bgcolo
 import win.ui.tabs;
 
 // 至少要添加2个创建好的选项卡(作为设计模板,创建成功后可清除)
-var tbs = win.ui.tabs(winform.strip2,winform.strip1);
+var tabs = win.ui.tabs(winform.tabPlus2,winform.tabPlus1);
 
 // 指定选项卡的外观样式,用法请参考plus控件说明
-tbs.skin(
+tabs.skin(
     background = {  // 背景
         default = 0xFFFFFFFF;
     }
@@ -46,11 +46,11 @@ tbs.skin(
 )
 
 // 动态添加更多选项卡
-tbs.add({
+tabs.add({
     text="标题文本"; 
 })
 
-tbs.add({
+tabs.add({
     text="标题文本"; 
 })
 
@@ -60,13 +60,13 @@ wb.noScriptErr = true;
 wb.go("http://bbs.aardio.com/forum.php?mod=viewthread&tid=22149&from=portal");
 
 // 动态添加更多选项卡
-tbs.add({
+tabs.add({
     text="打开网站";  
     hasCloseButton = true; // 允许显示关闭按钮
 },wb._form)
 
 // 也可以用下面的代码自定义关闭按钮的外观样式
-tbs.closeButton.skin(
+tabs.closeButton.skin(
     background = { 
         hover = 0xFFe35c51; 
         active = 0xFF8f241b;
@@ -80,8 +80,8 @@ tbs.closeButton.skin(
 )
 
 // 可以自定义关闭按钮在选项卡上的显示位
-tbs.beforeShowCloseButton = function(strip,rcStrip,rcCloseButton){
-    return rcStrip.right - rcCloseButton.width() - 5, rcStrip.top + ( rcStrip.height() - rcCloseButton.height() )/2;
+tabs.beforeShowCloseButton = function(tab,rcTab,rcCloseButton){
+    return rcTab.right - rcCloseButton.width() - 5, rcTab.top + ( rcTab.height() - rcCloseButton.height() )/2;
 }
 
 winform.show();

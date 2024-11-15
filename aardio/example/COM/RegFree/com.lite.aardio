@@ -1,4 +1,4 @@
-//免注册
+//免注册调用 COM 控件
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

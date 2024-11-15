@@ -1,4 +1,4 @@
-//简单提示框
+//基于 plus 控件的简单提示框 win.dlg.message
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="简单提示框演示";right=759;bottom=469;bgcolor=8421504)
@@ -9,8 +9,8 @@ plus={cls="plus";text="显示简单提示框";left=451;top=378;right=576;bottom=
 
 import win.dlg.message;
 var msgDlg = win.dlg.message(winform); 
-msgDlg.okLabel = '\uF087 很好'
-msgDlg.cancelLabel = '\uF088 不好'
+msgDlg.okLabel = '\uF164 很好'
+msgDlg.cancelLabel = '\uF165 不好'
 
 winform.plus.skin(msgDlg.buttonStyle)
 winform.plus.oncommand = function(id,event){

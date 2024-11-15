@@ -1,4 +1,4 @@
-//输出与引用参数
+//COM 接口 - 输出与引用参数
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/

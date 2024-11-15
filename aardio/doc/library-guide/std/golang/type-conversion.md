@@ -1,6 +1,6 @@
 # Go / aardio 原生类型转换
 
-aardio 可以使用 table 定义结构体(struct)，在结构体中可以定义原生类型类型。
+aardio 可以使用 table 定义结构体(struct)，在结构体中可以定义原生类型。
 
 请参考：
 
@@ -92,7 +92,7 @@ go.buildShared("/.go/testStruct.go");
 import console.int;
 //加载 Go 编译的 DLL，注意要指定 cdecl 调用约定。 
 var goDll = raw.loadDll($"/.go/testStruct.dll",,"cdecl");
-//如果已经生成 DLL，用$操符符可以嵌入 DLL 到代码中实现内存加载（发布后不需要带 DLL 文件）。
+//如果已经生成 DLL，用$操作符可以嵌入 DLL 到代码中实现内存加载（发布后不需要带 DLL 文件）。
 //声明结构体
 class myStruct {
     byte Int8Field;//Go类型 int8

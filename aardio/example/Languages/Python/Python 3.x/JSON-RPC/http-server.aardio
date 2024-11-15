@@ -1,4 +1,4 @@
-//HTTP 服务端
+//aardio 调用 Python 创建 JSON RPC 服务端
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="JSON-RPC";right=759;bottom=469)

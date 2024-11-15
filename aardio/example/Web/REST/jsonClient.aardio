@@ -1,4 +1,4 @@
-﻿//jsonClient
+﻿//web.rest 客户端 - web.rest.jsonClient
 import console;
 import web.rest.jsonClient;
 

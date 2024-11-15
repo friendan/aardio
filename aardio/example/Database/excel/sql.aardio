@@ -1,4 +1,4 @@
-//SQL 操作 
+//access 库 - SQL 操作 Excel
 import access;//仅使用系统组件,不需要安装 Access / Excel
 //import access.oleDb; //导入此库支持 *.xlsx ，可按需安装 Microsoft.Ace.OLEDB.16 驱动。
 

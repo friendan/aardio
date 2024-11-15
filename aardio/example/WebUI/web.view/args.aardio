@@ -1,4 +1,4 @@
-//启动参数 / 代理
+//web.view( WebView2 浏览器控件) - 启动参数 / 代理
 import web.view;
 import win.ui;
 /*DSG{{*/

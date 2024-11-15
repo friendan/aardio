@@ -1,4 +1,4 @@
-//HTTP 客户端
+//用 web.rest 创建 HTTP 客户端
 import console;
 import web.rest.jsonClient;
 console.showLoading("正在连接服务器")

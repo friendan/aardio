@@ -1,4 +1,4 @@
-//批处理+aardio
+//aardio 调用批处理入门
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
@@ -10,6 +10,7 @@ plus={cls="plus";text="执行批处理";left=606;top=326;right=778;bottom=371;al
 )
 /*}}*/
 
+//批处理混合编程指南 doc://library-guide/std/process/batch.md
 import process.batch;
 winform.plus.oncommand = function(id,event){
  

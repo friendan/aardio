@@ -1,4 +1,4 @@
-//圆环进度条
+//用 plus 控件创建圆环进度条
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="圆形进度条";right=759;bottom=469)

@@ -1,4 +1,4 @@
-//动态GIF
+//plus 控件 - 动态 GIF
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="plus - GIF 动画";right=759;bottom=469;bgcolor=16777215)

@@ -1,4 +1,4 @@
-//合并程序集
+//合并 .NET 程序集工具源码
 //请改用 dotNet.reference
 import fonts.fontAwesome;
 import win.ui;

@@ -1,4 +1,4 @@
-//HTTP 客户端
+//aardio 调用 Python 创建 JSON RPC 客户端
 import py3;
 import py3.lib.jsonrpclib;//这个扩展库是自动安装 Python 扩展模块的一个演示
 

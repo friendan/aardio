@@ -1,4 +1,4 @@
-//快速定位
+//注册表操作 - 快速定位
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="注册表快速定位 www.aardio.com";right=512;bottom=131;parent=...)

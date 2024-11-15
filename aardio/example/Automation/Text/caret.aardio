@@ -1,4 +1,4 @@
-//光标位置
+//自动化 - 获取输入光标位置
 import mouse;
 import winex.caret;
 

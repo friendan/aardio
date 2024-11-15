@@ -1,4 +1,4 @@
-//读写系统变量
+//aardio 调用 AutoCAD - 读写系统变量
 import com.cad;
 var cad = com.cad();
 cad.Visible = true; //是否显示 AutoCAD 窗口

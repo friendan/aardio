@@ -1,4 +1,4 @@
-//PowerShell
+//通过 PowerShell 调用 FlaUI
 import FlaUI;
 import FlaUI.UIA3;
 

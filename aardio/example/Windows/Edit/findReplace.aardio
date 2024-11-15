@@ -1,4 +1,4 @@
-//查找替换
+//富文本框（richedit） - 查找替换
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="richedit - 使用查找替换对话框";right=1071;bottom=815)

@@ -58,9 +58,9 @@ namespace process{
 	
 	batch.wow64 = function(...){
 		return ..fsys.wow64.disableRedirection(lambda(...) batch(...),...)
-	}
-	
+	}	
 }
+
 /**intellisense()
 process.batch = 用于加载批处理代码，支持使用 aardio 模板语法嵌入 aardio 代码
 process.batch( = 创建批处理管道进程,\n用于加载批处理代码，支持使用 aardio 模板语法嵌入 aardio 代码\n优先调用 64 位命令请改为 process.batch.wow64 
@@ -71,8 +71,12 @@ process.batch() = !process_popen.
 process.batch.wow64() = !process_popen.
 end intellisense**/
 
+//@guide [aardio + 批处理混合编程指南](doc://library-guide/std/process/batch.md)
+
 /**details(aardio批处理模板语法)
-批处理代码中aardio代码必须置于 <? ..... ?> 内部，类似PHP的模板语法,
+[aardio 模板语法](doc://language-reference/templating/syntax.md)
+
+批处理代码中aardio代码必须置于 <? ..... ?> 内部，类似 PHP 的模板语法,
 但是要注意与PHP的区别是，aardio规定开始标记  <? 必须独立不能紧跟英文字母，
 例如 <?xml.....  不是合法的aardio代码段开始标记(aardio会认为这是一个XML标记)。 
 另外，aardio总是忽略文件开始的空白字符（包含空格、制表符，换行）。

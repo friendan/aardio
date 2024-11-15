@@ -1,4 +1,4 @@
-//查看对象
+//COM 接口 - 查看对象
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="获取COM对象成员列表";right=759;bottom=469)

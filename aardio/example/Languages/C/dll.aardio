@@ -1,4 +1,4 @@
-//生成 DLL 
+//aardio 调用 C 语言生成 DLL 
 import tcc; 
 var c = tcc();
 

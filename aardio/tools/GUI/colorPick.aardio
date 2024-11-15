@@ -215,9 +215,6 @@ winform.updateFromIde = function(){
 	winform.ideCtrlName = ctrlName;
 }
 
-var x,y,cx,cy = winform.colorPick.btnColorPick.getPos(true);
-::User32.SetCursorPos(x+cx/2,y+cy/2);
-
 winform.radioTextColor.oncommand = function(id,event){
 	winform.lbTip.text = winform.lbTip.text == "设计时使用 RGB 值" ? "ARGB 为 0 表示默认值" : "设计时使用 RGB 值";
 	

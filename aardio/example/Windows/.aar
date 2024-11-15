@@ -1,5 +1,5 @@
 ﻿基础知识=Basics
-入门=start.aardio
+入门=QuickStart.aardio
 自定义控件=Custom
 定时器=Timer
 菜单=Menu
@@ -14,7 +14,7 @@
 树形视图控件=TreeView
 下拉框控件=Dropdown
 选项卡控件=Tab
-工具栏控件=Toolbar
+工具条=Toolbar
 状态栏=StatusBar
 剪贴板=Clipboard
 应用程序=Application

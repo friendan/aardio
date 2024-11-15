@@ -1,4 +1,4 @@
-//进程参数
+//aardio 调用 Go 语言 - 进程启动参数
 import golang;
 var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 EXE 不需要 ）
 

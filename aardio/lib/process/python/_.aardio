@@ -349,7 +349,7 @@ https://www.python.org/ftp/python
 end details**/
 
 /**intellisense()
-process.python = 用于调用任意版本 python.exe，支持 32 位、64位 Python\n\n此支持库已导入 web.json，\n可直接使用返回 Python 进程的 json,jsonAll,jsonWite 等函数
+process.python = 用于调用任意版本 python.exe，支持 32 位、64位 Python\n\n此支持库已导入 web.json，\n可直接使用返回 Python 进程的 json,jsonAll,ndjsonAll,jsonWite 等函数
 process.python(__) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。\n可以用一个字符串参数指定多个启动参数，用空格分隔多个参数，\n也可以传入多个参数由 aardio 自动合并（空格分隔参数），\n合并多参数时，单参数含空格或需转义时自动加双引号并自动转义
 end intellisense**/
 
@@ -367,7 +367,7 @@ exec( = 创建 Python 进程运行 Python 代码。\n此函数在写入 Python �
 exec(.(code,->->->) = 创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。\n@code 指定要执行的 Python 代码，用进程的标准输入写入代码。\n如果代码开始为 aardio 模板标记，则启用[模板语法](doc://language-reference/templating/syntax.md) 。\n@code 也可以指定一个包含 *.aardio 代码文件，支持模板语法。\n@code 也可以指定指定 *.py 文件。\n@code 可指定资源文件，注意这是内存加载 Python 代码，\nPython 并不知道文件路径。\n如果希望 Python 直接加载文件，请改用 execfile 函数。\n参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
 github( = 调用 exec 函数运行 GitHub 上的 Python 代码。
 github(.(url,->->->) = url 指定包含 blob,raw 的GitHub网址时可以省略域名。\n创建 Python 进程，当前进程退出时 Python 会自动退出。\n返回进程管道（ process.popen ）对象。并已关闭标准输入管道。参数 @2 开始可以指定一个或多个启动参数。\n参数可以是字符串、数组、参数表，由 process.joinArguments 自动合并并处理转义
-jsonRpc( = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象
+jsonRpc( = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象。\n多次RPC 调用不需要重新创建 Python 进程，运行速度比直接调用 process.python 快很多。
 jsonRpc(.(code,->->->) = 创建 Python 进程运行 Python 代码，返回 JSON-RPC 客户端对象。\n@code 参数可以指定 *.py 文件路径、Python 模块名称、Python 代码都行。\n如果指定 *.aardio 路径，则以模板语法解析并内存执行返回的 Python 代码。\n\n函数执行成功返回 process.rpc.jsonClient 对象
 jsonRpc() = !process_rpcJsonClient.
 command() = !process_popen.

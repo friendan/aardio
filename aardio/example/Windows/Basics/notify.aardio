@@ -1,4 +1,4 @@
-//响应控件通知
+//窗口程序 - 响应控件通知
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="WM_NOTIFY 消息与 onnotify 事件";right=634;bottom=382;parent=...)

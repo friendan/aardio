@@ -1,4 +1,4 @@
-//数值
+//aardio 中使用 Python 数值
 import console; 
 import py3;
 

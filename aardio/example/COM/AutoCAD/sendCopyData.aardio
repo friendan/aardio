@@ -1,4 +1,4 @@
-//窗口命令+模板语法
+//aardio 调用 AutoCAD - 窗口命令+模板语法
 import process;
 import com.cad;
 import win;

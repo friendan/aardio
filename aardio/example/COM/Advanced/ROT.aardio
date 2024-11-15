@@ -1,4 +1,4 @@
-﻿//ROT 运行对象表
+﻿//COM 接口 - ROT 运行对象表
 import console; 
 import com;
 

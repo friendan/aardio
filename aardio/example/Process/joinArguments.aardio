@@ -1,4 +1,4 @@
-//必读：参数转义
+//必读：进程启动命令行转义规则
 import console.int;
 import string.cmdline;
 import process;

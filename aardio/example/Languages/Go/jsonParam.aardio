@@ -1,4 +1,4 @@
-//JSON 自动同步
+//aardio 调用 Go 语言 - JSON 自动同步
 import golang;
 var go = golang();
   

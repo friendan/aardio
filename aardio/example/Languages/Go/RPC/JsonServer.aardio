@@ -1,4 +1,4 @@
-//服务端
+//aardio 调用 Go 语言 -  RPC 服务端
 import golang;
 var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 EXE 不需要 ）
 

@@ -14,12 +14,12 @@ titleBar={cls="bkplus";left=0;top=0;right=1022;bottom=38;bgcolor=6318930;dl=1;dr
 /*}}*/
 
 import win.ui.tabs;
-var tbs = win.ui.tabs( 
+var tabs = win.ui.tabs( 
 	frmIconText.nav1,
 	frmIconText.nav2,
 );
 
-tbs.skin({
+tabs.skin({
 	background={
 		active=0xFFFFFFFF;
 		default=0x00FFFFFF;
@@ -35,7 +35,7 @@ tbs.skin({
 })
 
 
-tbs.add({
+tabs.add({
 	text="反馈";
 	iconText='\uF0E0';
 })
@@ -54,7 +54,7 @@ for(hwnd,ctrl in frmPage1.eachControlEx("plus") ){
 } 
 
 frmPage1.show() 
-tbs.loadForm(1,frmPage1); 
+tabs.loadForm(1,frmPage1); 
 
 var templateConfig = {
 	templateColor_logo_color = "6450008";
@@ -82,12 +82,12 @@ frmPage1.btnSetLogoColor.oncommand = function(id,event){
 frmPage1.btnSetNavIconColor.oncommand = function(id,event){
 	import win.ui.ctrl.pick;
 	var picker = win.ui.ctrl.pick(frmIconText);
-	picker.setColor(tbs.selStrip.color) 
+	picker.setColor(tabs.selTab.color) 
 	
 	picker.onColorChange = function(argb){
 		templateConfig.templateColor_navButton_color = string.format("0x%08x", argb)  
 		
-		tbs.skin({
+		tabs.skin({
 			background={
 				active=0xFFFFFFFF;
 				default=0x00FFFFFF;
@@ -105,7 +105,7 @@ frmPage1.btnSetNavIconColor.oncommand = function(id,event){
 	picker.doModal(frmIconText) 
 }
 
-tbs.selIndex = 1;
+tabs.selIndex = 1;
  
 frmIconText.getTemplatePath = function(){
 	return io.fullpath("/template/plus/icon/") 
