@@ -3,7 +3,7 @@
 import winex;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="桌面图标排圆圈";right=333;bottom=93;parent=...)
+var winform = win.form(text="桌面图标排圆圈";right=333;bottom=93;)
 winform.add(
 autoOrder={cls="button";text="恢复自动排列";left=203;top=46;right=316;bottom=72;font=LOGFONT(name='宋体');z=2};
 button={cls="button";text="桌面图标排个圈圈";left=202;top=10;right=315;bottom=36;font=LOGFONT(name='宋体');z=1};

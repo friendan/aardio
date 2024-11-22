@@ -133,18 +133,7 @@ winform.editMessage.enablePopMenu(
 		
 		return { 
 			{ /*---分隔线---*/ };  
-			
-			{ "插入剪贴板图像";
-				function(id){
-					
-					var md = win.clip.bitmap.readMarkdown();
-					if(md){
-						winform.editMessage.selText = md;
-					} 
-					
-				} ; lambda()!canPaste ? 1/*_MF_GRAYED*/ : 0
-			};
-			
+
 				{ "一级标题";  function(id){
 					winform.editMessage.selText = '\r\n# 标题\r\n\r\n'
 				} };

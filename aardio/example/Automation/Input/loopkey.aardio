@@ -3,7 +3,7 @@ import key;
 import winex;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="可设定循环按键 ";right=408;bottom=203;parent=...)
+var winform = win.form(text="可设定循环按键 ";right=408;bottom=203;)
 winform.add(
 btnLoop={cls="button";text="开始循环";left=142;top=135;right=247;bottom=167;z=1};
 btnQuit={cls="button";text="退出程序";left=261;top=134;right=366;bottom=166;z=2};

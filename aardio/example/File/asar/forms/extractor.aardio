@@ -1,7 +1,7 @@
 import win.ui;
 import fonts.fontAwesome;
 /*DSG{{*/
-var winform = win.form(text="WinAsar - 解包工具";right=1075;bottom=736;acceptfiles=1;bgcolor=16777215;parent=...)
+var winform = win.form(text="WinAsar - 解包工具";right=1075;bottom=736;acceptfiles=1;bgcolor=16777215;)
 winform.add(
 btnExtract={cls="plus";text="提取全部文件";left=805;top=666;right=973;bottom=699;align="left";db=1;dr=1;font=LOGFONT(h=-15);notify=1;textPadding={left=35};z=3};
 btnOpen={cls="plus";text="选择asar文件";left=623;top=4;right=868;bottom=37;align="left";dr=1;dt=1;font=LOGFONT(h=-15);textPadding={left=35};z=6};

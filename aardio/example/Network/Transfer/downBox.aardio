@@ -1,7 +1,7 @@
 //下载对话框
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=425;bottom=110;parent=...)
+var winform = win.form(text="aardio form";right=425;bottom=110;)
 winform.add(
 button={cls="button";text="下载";left=191;top=38;right=350;bottom=76;z=1}
 )

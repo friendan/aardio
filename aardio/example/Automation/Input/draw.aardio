@@ -1,7 +1,7 @@
 //鼠标画渐开线
 import win.ui;
 /*DSG{{*/
-var winform = ..win.form(text="鼠标画线";right=349;bottom=249;parent=...)
+var winform = ..win.form(text="鼠标画线";right=349;bottom=249;)
 winform.add(
 button={cls="button";text="运行范例";left=33;top=55;right=312;bottom=108;z=1}
 )

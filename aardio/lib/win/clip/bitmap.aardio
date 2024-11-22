@@ -64,9 +64,9 @@ write = function(bmp,...){
 	}
 	
 	var hbmp = bmp.copyHandle();
-	win.clip.writeBitmap(hbmp); 
-	
+	..win.clip.writeBitmap(hbmp,false); 
 	::DeleteObject(hbmp);
+
 	bmp.dispose();
 }
 
@@ -97,7 +97,7 @@ readMarkdown = function(){
 }
 
 /*****intellisense()
-win.clip.bitmap = 剪贴板图像操作增强库
+win.clip.bitmap = 剪贴板图像操作函数库
 end intellisense*****/
 
 /*****intellisense(win.clip.bitmap)
@@ -105,12 +105,12 @@ test() = 如果剪贴板图像有可读取的图像则返回 true;
 read() = 读取剪贴板图像并返回 gdip.bitmap 对象。\n可读取剪贴板中的位图、png、非远程 HTML 图像。\n!gdipbitmap.
 write( = 写入位图到剪贴板。
 write(.(bmp) = 参数 @bmp 指定 gdip.bitmap 对象。
+write(.(图像文件路径或数据) = 复制位图到剪贴板。\n如果事先导入标准库 inet.http,这里也可以直接传入图像网址。
 write(.(->->) = 用一个或多个参数指定 gdip.bitmap 构造参数。\n支持的参数与 gdip.bitmap 相同，请参考 gdip.bitmap 文档。
 writePng( = 写入 PNG 图像到剪贴板。
 writePng(.(bmp) = 参数 @bmp 指定 gdip.bitmap 对象。
+writePng(.(图像文件路径或数据) = 复制位图到剪贴板。\n如果事先导入标准库 inet.http,这里也可以直接传入图像网址。
 writePng(.(->->) = 用一个或多个参数指定 gdip.bitmap 构造参数。\n支持的参数与 gdip.bitmap 相同，请参考 gdip.bitmap 文档。
 readDataUrl() = 读取剪贴板图像并转换并返回为 Data URL 格式字符串。
 readMarkdown() = 读取剪贴板图像并转换为 Data URL，\n然后再转换并返回为 Markdown 格式字符串 。
 end intellisense*****/
-
-

@@ -3,7 +3,7 @@ import win.ui;
 import win.ui.menu;
 import fonts.fontAwesome;
 /*DSG{{*/
-var winform = win.form(text="系统已注册 COM 类名列表（ 点列标题排序，双击列显示编辑框，右键菜单查看对象文档 ）";right=1109;bottom=656;bgcolor=16777215;parent=...)
+var winform = win.form(text="系统已注册 COM 类名列表（ 点列标题排序，双击列显示编辑框，右键菜单查看对象文档 ）";right=1109;bottom=656;bgcolor=16777215;)
 winform.add(
 listview={cls="listview";left=17;top=40;right=1094;bottom=640;acceptfiles=1;asel=false;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;font=LOGFONT(name='SimSun');fullRow=1;gridLines=1;hide=1;msel=false;z=1};
 plusLoading={cls="plus";left=372;top=188;right=743;bottom=450;color=15780518;db=1;dl=1;dr=1;dt=1;font=LOGFONT(h=-96;name='FontAwesome');iconStyle={font=LOGFONT(h=-96;name='FontAwesome')};iconText='\uF254';z=2};

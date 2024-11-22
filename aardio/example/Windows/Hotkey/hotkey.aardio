@@ -1,7 +1,7 @@
 //系统热键
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=759;bottom=469;parent=...)
+var winform = win.form(text="aardio form";right=759;bottom=469;)
 winform.add(
 button={cls="button";text="设置为系统热键";left=281;top=32;right=517;bottom=63;z=2};
 hotkey={cls="hotkey";left=49;top=35;right=268;bottom=55;edge=1;z=1};

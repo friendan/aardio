@@ -1,7 +1,7 @@
 //编辑listbox
 import win.ui;
 /*DSG{{*/
-var winform = win.form(parent=...; text="aardio form";right=349;bottom=249 )
+var winform = win.form(text="aardio form";right=349;bottom=249 )
 winform.add( 
 listbox={ bgcolor=16777215;bottom=192;right=284;left=75;top=36;
 items={ "ddddddddddd";"cccc";"双击编辑" };z=1;text="listbox";edge=1;cls="listbox" }

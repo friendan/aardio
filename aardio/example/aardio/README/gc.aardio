@@ -32,7 +32,7 @@ for(i=1;1000;1){
 	//不必要在循环内部重复创建，
 	//inet.http，web.rest 都是共享会话 
 	
-	//http.get("http://www.baidu.com");
+	//http.get("http://www.example.com");
 }
 //http.close(); //一般没必要写
 

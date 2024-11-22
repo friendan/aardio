@@ -1385,8 +1385,8 @@ executeWait(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = �
 executeWaitInput(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待进程初始化完成并接受输入\n除参数@1以外所有参数可，所有参数用法与 process.execute 相同
 executeInvoke(.(path, parameters,operation,showCmd,workDir,hwnd) = 创建临时的后台线程运行应用程序\n在打开程序前退出主线程可能无法执行操作,\n参数与 process.execute 函数用法一样,除指定参数@1或参数@2,其他所有参数可选
 openUrl(__) = 调用默认浏览器打开网址,用于窗口程序,\n如果不用这个方法创建线程去打开网址,可能会出现界面卡顿不流畅的现象,\n在打开网址前退出主线程可能无法执行操作\n控制台程序应调用 process.execute 以避免后台线程不能阻止控制台关闭
-exploreSelect("__/*文件路径*/") = 打开资源管理器，选定参数 @1 指定的文件路径
-explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杆`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。\n\n内置函数 raw.explore 与 process.explore 用法相同
+exploreSelect("__/*文件路径*/") = 打开资源管理器，选定参数 @1 指定的文件路径。
+explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杆`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。\n\n内置函数 raw.explore 与 process.explore 用法相同。
 regAs(`__/*命令参数*/`) = 以管理权限执行 reg 命令
 findExe("__/*文件路径*/") = 查找文件关联的可执行程序
 isExe("__/*文件路径*/") = 检测目标文件是否可执行文件。\n如果是可执行文件返回"PE32"或"PE64"\n第二个返回值为子系统,GUI为2,CUI为3\n失败或参数为 null 返回 null

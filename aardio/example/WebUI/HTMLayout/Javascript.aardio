@@ -1,7 +1,7 @@
 //嵌入脚本
 import win.ui;
 /*DSG{{*/
-var winform = ..win.form(text="HTMLayout 嵌入脚本";right=599;bottom=399;parent=...)
+var winform = ..win.form(text="HTMLayout 嵌入脚本";right=599;bottom=399;)
 /*}}*/
 
 import web.layout;

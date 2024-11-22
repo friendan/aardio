@@ -2,7 +2,7 @@
 import win.ui;
 import win.ui.menu;
 /*DSG{{*/
-var winform = win.form(text="web.layout(HTMLayout) 界面范例浏览器";right=856;bottom=542;parent=...)
+var winform = win.form(text="web.layout(HTMLayout) 界面范例浏览器";right=856;bottom=542;)
 winform.add(
 tab={cls="tab";left=236;top=9;right=843;bottom=530;db=1;dl=1;dr=1;dt=1;edge=1;z=2};
 treeview={cls="treeview";left=23;top=10;right=231;bottom=527;asel=false;bgcolor=15793151;db=1;dl=1;dt=1;edge=1;hscroll=1;infoTip=1;vscroll=1;z=1}
@@ -122,7 +122,7 @@ import fsys.dlg;
 var templateLayout = /********************
 import win.ui;
 /*DSG{{*/
-var winform = win.form( bottom=399;parent=...;text="aardio form";right=599 ) 
+var winform = win.form( bottom=399;text="aardio form";right=599 ) 
 /*}}*/
 
 import web.layout;
@@ -143,7 +143,7 @@ win.loopMessage();
 var templateLayoutHtml = /********************
 import win.ui;
 /*DSG{{*/
-var winform = win.form( bottom=399;parent=...;text="aardio form";right=599 ) 
+var winform = win.form( bottom=399;text="aardio form";right=599 ) 
 /*}}*/
 
 import web.layout;

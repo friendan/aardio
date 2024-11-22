@@ -790,7 +790,7 @@ inet.http 与 inet.whttp 用法与接口基本相同，一般可相互替代。
 基于 inet.http 而封装的 web.rest.client 可能在很多应用中都是更好的选择。
 
 inet.http 入门教程：
-https://mp.weixin.qq.com/s/3Xp4c1LxsOQJsux5o8bhvA
+doc://library-guide/std/inet/http.html
 
 inet.http 错误代码请参考库 inet.errorMessage
 end details**/
@@ -798,7 +798,7 @@ end details**/
 /**intellisense()
 inet.http = WinINet 支持库\n支持进程内多对象共享会话 cookie,支持持久化 cookie\n与 web.form 浏览器控件,IE 浏览器共享 cookie 与代理设置。\n\ninet.http 错误代码请参考库 inet.errorMessage
 inet.http( = 创建HTTP会话对象,所有参数可选，\n注意提前导入zlib库，readAll 函数才能支持 gzip 自动解压。
-inet.http(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 HTTP 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
+inet.http(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 创建 HTTP 客户端，所有参数可选。\nUserAgent 用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\n代理服务器指定为""或"IE"使用系统代理设置（默认值）。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\n\nSOCKS 代理服务器请指定为 "socks=代理服务器地址:端口" 格式 \n└──  [代理格式说明](doc://library-guide/std/inet/proxy.md)\n\n"绕过代理的主机" 用法参考 inet.setProxy 源码的示例，一般不需要指定。\n连接选项可用一个数值参数指定打开会话的选项，一般不需要指定。
 inet.http(.("UserAgent",false) =  禁用代理，UserAgent 为可选参数
 inet.http.isAlive(.("UserAgent","代理服务器","绕过代理的主机",连接选项) = 当前是否能正常访问互联网,所有参数可选
 inet.http.get(.(url,headers,referer) = 用于界面线程创建线程并获取 @url 指定网址的数据,\n此函数等待下载完成但不会阻塞界面消息循环,\n可选用 @headers 指定 HTTP 头,\n可选用 @referer 指定引用网址,\n所有参数用法与 格式请参考 inet.http 对象的 get 函数相同

@@ -1,7 +1,7 @@
 //错误码检测 
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="HTTP 状态码、错误代码检测 - aardio";right=485;bottom=347;parent=...)
+var winform = win.form(text="HTTP 状态码、错误代码检测 - aardio";right=485;bottom=347;)
 winform.add(
 btnCheck={cls="button";text="检测";left=393;top=30;right=455;bottom=56;z=2};
 editResult={cls="richedit";left=10;top=62;right=473;bottom=341;edge=1;font=LOGFONT(name='Microsoft Sans Serif');hscroll=1;link=1;multiline=1;vscroll=1;wrap=1;z=3};

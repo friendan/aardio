@@ -2,9 +2,9 @@
 UIA=UIA.aardio
 调用 PowerShell=PowerShell.aardio
 OCR 图文识别=OCR.aardio
-/Xml,XPath=System.Xml.aardio
+Xml,XPath=System.Xml.aardio
 管理 IIS 服务器=IIS.aardio
 控制台=Console.aardio
 合并程序集=ILMerge.aardio
 RUNAS//硬件温度=openHardwareMonitor.aardio
-SeleniumBasic=SeleniumBasic.aardio
+Selenium.NET=Selenium.aardio

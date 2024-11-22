@@ -1,5 +1,5 @@
 ﻿app 应用 =app.aardio
-WebDriver 自动化=driver.aardio
+WebDriver 自动化=~\example\Automation\Web\driver.aardio
 Chrome 扩展查看工具=extensions.aardio
 远程调试=remote.aardio
 更多资料 ...=more.aardio

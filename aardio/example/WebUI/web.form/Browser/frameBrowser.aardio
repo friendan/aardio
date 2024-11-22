@@ -2,7 +2,7 @@
 
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="用IFrame做的浏览器";right=735;bottom=479;parent=...)
+var winform = win.form(text="用IFrame做的浏览器";right=735;bottom=479;)
 winform.add()
 /*}}*/
 

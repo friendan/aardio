@@ -1,7 +1,7 @@
 //滚动条/滑尺控件
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="滚动条、滑尺控件、微调按钮";right=438;bottom=203;max=false;parent=...)
+var winform = win.form(text="滚动条、滑尺控件、微调按钮";right=438;bottom=203;max=false;)
 winform.add(
 editScrollbar={cls="edit";text="1";left=46;top=89;right=119;bottom=114;db=1;dl=1;edge=1;multiline=1;readonly=1;z=4};
 editSpin={cls="edit";text="1";left=43;top=137;right=98;bottom=163;align="right";db=1;dl=1;edge=1;multiline=1;z=5};

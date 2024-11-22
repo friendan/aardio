@@ -35,7 +35,9 @@ var systemPrompt = /****************
 你会解答  aardio 编程问题，并且帮助用户生成或改进 aardio 代码。
 
 ## aardio 语法要求
-        
+
+- 使用 `{}` 标记语句块。
+- 使用 `{}` 构造器创建表（对象或数组），例如 `var arr = {1,2,3}`。        
 - 数组起始索引为 1 。 
 - 只能使用 var 声明局部变量。
 - 使用 `++` 连接字符串。 
@@ -171,7 +173,7 @@ wb.html = /**
 	//调用 wb.export 导出的 aardio 函数，参数与返回值通过 JSON 转换
 	var jsonObject = await getJsonObject()
 	
-	// jsonObject 是线 JS 对象可直接使用
+	// jsonObject 是纯 JavaScript 对象
 	alert( jsonObject.prop2 )
 })()
 </script>
@@ -217,7 +219,7 @@ winform.btnSend.oncommand = function(id,event){
 	var assistantMsg = wb.lastAssistantMessage();
 	if(assistantMsg && winform.chkFix.checked){
 		//Few-shot Learning
-		assistantMsg.content = ide.aifix.markdown(assistantMsg.content);
+		assistantMsg.content = ide.aifix.markdown(assistantMsg.content,true);
 	}
 	
 	var prompt = winform.editPrompt.text;
@@ -273,9 +275,9 @@ winform.btnSend.oncommand = function(id,event){
 		
 			//导入调用 HTTP 接口的 REST 客户端
 			import web.rest.jsonClient;
-			var client = web.rest.jsonClient();
+			var client = web.rest.jsonClient(,config.proxy);
 			
-			var bot = client.api(config.url); 
+			var bot = client.api(config.url);
 			var ok,err;
 	
 			/*
@@ -341,10 +343,21 @@ winform.btnSend.oncommand = function(id,event){
 					stream = true,//启用 SSE 事件流（ text/event-stream ）
 					[paramMaxTokens] = maxTokens,//限制 AI 生成的  token 数
 				},function(eventStream){ //如果不是流式推送则不需要用回调函数接收
+				
 					var choices = eventStream.data[["choices"]]; 
-					
-					//输出 AI 应答( 以打字效果输出到 Web 窗口 ) 
-					wb.assistant(choices[[1]][["delta"]][["content"]]);
+					if(choices){
+						var content = choices[[1]][["delta"]][["content"]];
+						if(#content){ 
+							wb.assistant(content); 
+						}
+						
+						if(choices.finish_reason){
+							wb.assistant(null);
+						} 
+					}
+					elseif(eventStream.data[[1]]=="DONE") {
+						wb.assistant(null);
+					} 
 				} ) 
 			} 
 			
@@ -374,7 +387,7 @@ wb.onWriteEnd = function(){
 //在 AI 回复结束以前回调此函数，自动修正 aardio 代码块中的常见幻觉错误
 import ide.aifix;
 wb.beforerWriteEnd = function(markdown){
-	if(winform.chkFix.checked) return ide.aifix.markdown(markdown);
+	if(winform.chkFix.checked) return ide.aifix.markdown(markdown,true);
 	return markdown;
 }
 
@@ -400,7 +413,7 @@ winform.btnCopy.oncommand = function(id,event){
 				text = string.replace(text,"\n+"+indent,'\n');
 			}	
 		
-			if(winform.chkFix.checked) code = ide.aifix(code);
+			if(winform.chkFix.checked) code = ide.aifix(code,true);
 		    win.clip.write( code );
 		    found = true;
 		}
@@ -410,7 +423,7 @@ winform.btnCopy.oncommand = function(id,event){
 		} 
 	}
 	else{
-		if(winform.chkFix.checked) md = ide.aifix.markdown(md);
+		if(winform.chkFix.checked) md = ide.aifix.markdown(md,true);
 		win.clip.write( md )
 	}
 	
@@ -427,23 +440,27 @@ winform.btnSetting.oncommand = function(id,event){
 		btnEdit={cls="plus";left=93;top=235;right=127;bottom=265;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF044';notify=1;textPadding={left=25};z=14};
 		btnRemove={cls="plus";left=56;top=235;right=90;bottom=265;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF1F8';notify=1;textPadding={left=25};z=13};
 		btnSave={cls="button";text="更新配置";left=458;top=298;right=628;bottom=343;z=5};
-		chkQuickRef={cls="checkbox";text="新建会话自动发送语法速览（24KB）";left=18;top=287;right=232;bottom=309;z=15};
-		editApiKey={cls="edit";left=284;top=104;right=662;bottom=131;edge=1;multiline=1;password=1;z=2};
-		editApiUrl={cls="combobox";left=284;top=32;right=662;bottom=58;edge=1;items={};mode="dropdown";z=20};
-		editModel={cls="edit";left=284;top=68;right=662;bottom=95;edge=1;multiline=1;z=7};
+		chkQuickRef={cls="checkbox";text="新建会话自动发送语法速览（约 8k tokens）";left=18;top=287;right=272;bottom=309;z=15};
+		editApiKey={cls="edit";left=284;top=104;right=662;bottom=131;edge=1;password=1;z=2};
+		editApiUrl={cls="combobox";left=284;top=31;right=662;bottom=57;edge=1;items={};mode="dropdown";z=20};
+		editModel={cls="edit";left=284;top=68;right=662;bottom=95;edge=1;z=7};
+		editProxy={cls="edit";left=283;top=223;right=661;bottom=250;edge=1;z=21};
 		groupbox={cls="groupbox";text="选择当前配置：";left=9;top=6;right=675;bottom=270;edge=1;z=1};
 		lbMsgLimit={cls="static";left=390;top=315;right=418;bottom=335;transparent=1;z=18};
 		lbTemperature={cls="static";left=633;top=140;right=659;bottom=160;transparent=1;z=19};
 		lstConfig={cls="listbox";left=18;top=34;right=187;bottom=235;edge=1;hscroll=1;items={};vscroll=1;z=11};
 		static={cls="static";text="模型 ID：";left=196;top=72;right=279;bottom=93;align="right";transparent=1;z=3};
 		static2={cls="static";text="API key：";left=196;top=107;right=279;bottom=128;align="right";transparent=1;z=4};
-		static3={cls="syslink";text='推荐使用 Claude 3.5 Sonnet 或 <a href="https://platform.deepseek.com">DeepSeek</a> 。\n模型 ID 前加 @ 使用 Anthropic 接口，否则使用 OpenAI 接口（支持 Gemini 接口）。';left=283;top=176;right=653;bottom=224;transparent=1;z=6};
+		static3={cls="syslink";text='推荐使用 Claude 3.5 Sonnet 或 <a href="https://platform.deepseek.com">DeepSeek</a> 。\n模型 ID 前加 @ 使用 Anthropic 接口，否则使用 OpenAI 接口。';left=283;top=176;right=653;bottom=224;transparent=1;z=6};
 		static4={cls="static";text="接口地址：";left=196;top=38;right=279;bottom=59;align="right";transparent=1;z=8};
 		static5={cls="static";text="temperature：";left=196;top=141;right=279;bottom=162;align="right";transparent=1;z=10};
 		static6={cls="static";text="上下文轮数：";left=0;top=321;right=95;bottom=353;align="right";transparent=1;z=17};
+		static7={cls="static";text="代理服务器：";left=196;top=227;right=279;bottom=248;align="right";transparent=1;z=22};
 		tbMsgLimit={cls="trackbar";left=99;top=313;right=382;bottom=343;max=100;min=0;z=16};
 		tbTemperature={cls="trackbar";left=283;top=137;right=633;bottom=167;max=100;min=0;z=9}
 	)
+	
+	frmSetting.editProxy.setCueBannerText("socks=127.0.0.1:1081")
 	
 	frmSetting.editApiUrl.items = {
 		"https://api.deepseek.com/v1",
@@ -462,7 +479,7 @@ winform.btnSetting.oncommand = function(id,event){
 			frmSetting.editModel.text = "@claude-3-5-sonnet-latest"
 		}
 		elseif(url=="https://generativelanguage.googleapis.com/v1beta"){
-			frmSetting.editModel.text = "gemini-1.5-pro-002"
+			frmSetting.editModel.text = "gemini-exp-1121"
 		}
 		elseif(url=="https://api.x.ai/v1"){
 			frmSetting.editModel.text = "grok-beta"
@@ -511,7 +528,9 @@ winform.btnSetting.oncommand = function(id,event){
 				model = frmSetting.editModel.text;
 				temperature = frmSetting.tbTemperature.pos / 10;
 				msgLimit = frmSetting.tbMsgLimit.pos;
-			} 
+				proxy = string.trim(frmSetting.editProxy.text);
+			}  
+		
 			config.itemData[config.selItem] = configItem; 		
 		} 
 		
@@ -521,6 +540,7 @@ winform.btnSetting.oncommand = function(id,event){
 		
 		frmSetting.editApiUrl.text = configItem.url;
 		frmSetting.editApiKey.text = configItem.key;
+		frmSetting.editProxy.text = configItem.proxy;
 		
 		if(configItem.temperature===null) configItem.temperature = 0.1; 
 		frmSetting.tbTemperature.pos = configItem.temperature * 10;
@@ -532,10 +552,14 @@ winform.btnSetting.oncommand = function(id,event){
 		
 		frmSetting.editModel.text = configItem.model; 
 		
+		config.proxy = null;
+		table.assign(config,configItem);
+		
 		config.itemData[selIndex] = configItem;
 		config.itemNames = frmSetting.lstConfig.items; 
 		config.itemData = table.slice(config.itemData,1,#config.itemNames);
 		config.selItem = selIndex; 
+		  
 		config.save();	
 	}
 	
@@ -560,6 +584,11 @@ winform.btnSetting.oncommand = function(id,event){
 			model = frmSetting.editModel.text;
 			temperature = frmSetting.tbTemperature.pos / 10;
 			msgLimit = frmSetting.tbMsgLimit.pos;
+			proxy = string.trim(frmSetting.editProxy.text);
+		}
+		
+		if(!#configItem.proxy){
+			configItem.proxy = null;
 		}
 		
 		var tUrl = inet.url.split(configItem.url); 
@@ -575,6 +604,8 @@ winform.btnSetting.oncommand = function(id,event){
 		var selIndex = frmSetting.lstConfig.selIndex;
 		config.selItem = selIndex; 
 		config.itemData[selIndex] = configItem;
+		
+		config.proxy = null;
 		table.assign(config,configItem);  
 		
 		config.quickRef = frmSetting.chkQuickRef.checked;
@@ -653,7 +684,7 @@ winform.chkFix.checked = true;
 winform.chkFix.oncommand = function(id,event){
 	var md = wb.getMarkdown();
 	if(owner.checked){
-		md = ide.aifix.markdown(md)
+		md = ide.aifix.markdown(md,true)
 	}
 	
 	wb.write(md);

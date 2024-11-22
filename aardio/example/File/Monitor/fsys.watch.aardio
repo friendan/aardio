@@ -1,7 +1,7 @@
 //仅监视目录 fsys.watch
 import win.ui;
 /*DSG{{*/
-var winform = ..win.form(text="请拖动需要监视的目录到下面的文件列表内";right=599;bottom=387;max=false;parent=...)
+var winform = ..win.form(text="请拖动需要监视的目录到下面的文件列表内";right=599;bottom=387;max=false;)
 winform.add(
 btnWatch={cls="button";text="开始监视";left=377;top=342;right=529;bottom=379;z=1};
 lvChange={cls="listview";left=7;top=6;right=587;bottom=334;acceptfiles=1;bgcolor=16777215;edge=1;z=2}

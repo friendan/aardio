@@ -145,8 +145,7 @@ execute( = 运行外部程序，成功返回 true。\n process.execute 函数提
 execute(.(file,param,operation,showCmd,workDir,hwnd) = 运行外部程序，成功返回 true。\n@file 指定要运行的程序路径，其他所有参数可省略，\n@param 字符串参数，可选指定启动参数。\n@operation 可选用一个字符串指定执行动词，省略则使用默认动词或 "open"。\n@showCmd 可选用 _SW_ 前缀常量指定显示选项，默认为 _SW_SHOW。\n@workDir 参数可选指定工作目录。\n@hwnd 可选指定所有窗口句柄，默认取当前线程活动窗口
 explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杆`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。
 join(.(buffer数组,分隔字符串,起始索引,结束索引) = 拼接字符串或 buffer 数组，返回 buffer。\n如果拼接后长度为空，此函数返回 null。\n\n参数@1指定的数组可包含字符串或buffer，\n包含 buffer 的数组只能用 raw.join 拼接，不可使用 string.join 拼接\n参数 @2 可选指定一个间隔字符串。\n起始索引与结束索引为可选参数，可传入负数表示自数组尾部倒计数
-typeOfArray(__) = 如果参数是一个包含原生数组的结构体，\n返回原生类型名，以及数组字段名字。\n如果是其他对象则返回 null
-
+typeOfArray(__) = 如果参数是一个包含原生数组的结构体，\n返回原生类型名，以及数组字段名字。\n如果是其他对象则返回 null 。
 double() = !rawNumber.
 float() = !rawNumber.
 byte() = !rawNumber.

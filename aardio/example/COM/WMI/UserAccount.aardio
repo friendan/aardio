@@ -1,7 +1,7 @@
 //RUNAS//WMI - 系统账号管理
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="账号管理";right=602;bottom=379;max=false;parent=...)
+var winform = win.form(text="账号管理";right=602;bottom=379;max=false;)
 winform.add(
 btnDisablePasswordExpires={cls="button";text="设为密码永不过期";left=241;top=322;right=387;bottom=361;z=3};
 btnEnablePasswordExpires={cls="button";text="取消密码永不过期";left=414;top=322;right=560;bottom=361;z=4};

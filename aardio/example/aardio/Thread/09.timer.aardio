@@ -2,7 +2,7 @@
 
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="使用thread.event创建定时执行任务的线程";right=349;bottom=211;parent=...)
+var winform = win.form(text="使用thread.event创建定时执行任务的线程";right=349;bottom=211;)
 winform.add(
 btnStart={cls="button";text="启动定时线程";left=61;top=113;right=181;bottom=155;z=1};
 btnStop={cls="button";text="结束定时线程";left=192;top=113;right=312;bottom=155;disabled=1;z=4};

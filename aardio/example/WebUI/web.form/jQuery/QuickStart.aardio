@@ -1,7 +1,7 @@
 //入门
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="jQuery 测试";right=461;bottom=289;parent=...;scroll=1)
+var winform = win.form(text="jQuery 测试";right=461;bottom=289;scroll=1)
 winform.add()
 /*}}*/
 

@@ -44,9 +44,15 @@ write = function(str,rep){
 writeBitmap = function(hBmp,own,rep){ 
 	if(!::User32.OpenClipboard(0)) return;
 	if(rep===null || rep) User32.EmptyClipboard(); 
-	  
-	if(!own) hBmp = ::User32.CopyImageP(hBmp,0x0/*_IMAGE_BITMAP*/,0,0,0x4/*_LR_COPYRETURNORG*/) 
-	var hdl = ::User32.SetClipboardDataP (0x2/*_CF_BITMAP*/,hBmp);
+	   
+	var hSafeBmp = ::User32.CopyImageP(hBmp,0x0/*_IMAGE_BITMAP*/,0,0,0x4/*_LR_COPYRETURNORG*/)  
+	var hdl = ::User32.SetClipboardDataP (0x2/*_CF_BITMAP*/,hSafeBmp);
+	
+	if(own){
+		import gdi;
+		::DeleteObject(hBmp);
+	}
+	
 	::User32.CloseClipboard();
 	return hdl;
 }
@@ -133,8 +139,13 @@ eachFormat = function(){
 readUtf16() = 读取剪贴板 UTF16 编码字符串
 read() = 读取剪贴板文本
 write(__) = 调用 tostring 转换参数 @1 为文本并写入剪贴板。\n可选使用参数 @2 指定在复制前是否清空剪贴板，默认清空。\n成功返回剪贴板数据句柄。
-writeBitmap( = 写入位图到剪贴板,\n成功返回剪贴板数据句柄
-writeBitmap(.(位图句柄,接管位图,清空剪贴板) = 写入位图到剪贴板\n\n除位图句柄以外其他参数为可选参数。\n└── gdip.bitmap 对象请调用 copyHandle 函数复制位图句柄\n└── com.picture 对象请调用 CopyHandle 函数复制位图句柄\n如果接管位图参数为 true，则由剪贴板负责释放参数指定的位图。\n└── 否则会复制位图到剪贴板，且不负责释放参数传入的位图句柄。\n└── 请谨慎处理位图释放责任。\n如清空剪贴板参数为 false（默认为 true），则保留剪贴板其他格式数据
+writeBitmap( = 写入位图到剪贴板，\n成功返回剪贴板数据句柄。
+writeBitmap(.(位图句柄,接管位图,清空剪贴板) = 写入位图到剪贴板\n\n除位图句柄以外其他参数为可选参数。
+\n└── gdip.bitmap 对象请调用 copyHandle 函数复制位图句柄。
+\n└── com.picture 对象请调用 CopyHandle 函数复制位图句柄。
+\n如果接管位图参数为 true（不推荐），则由剪贴板接管并负责释放参数指定的位图。
+\n└── 否则会复制位图到剪贴板（推荐），且不负责释放参数传入的位图句柄。
+\n└── 建议由此函数复制位图以避免剪贴板图像。\n如清空剪贴板参数为 false（默认为 true），则保留剪贴板其他格式数据
 readBitmap() = 读取剪贴板位图句柄，\n返回的位图句柄用完要自行销毁。\n读取失败返回 null 。\n└── 请谨慎处理位图释放责任。\n\n可使用 com.picture.fromBitmap 将位图句柄转换为 com.picture 对象。\n可使用 gdip.bitmap 构造函数将位图句柄转换为 gdip.bitmap 对象
 test(.(formats->->->) = 检测剪贴板是否存在参数指定的任意一个剪贴板类型。\n@formats 可指定数值数组，也可以指 定一个或多个表示剪贴板类型的数值
 formats() = 获取剪贴板所有可用类型。\n位置越靠前优先级越高，应优先使用。\n返回值为数组,数组元素为表示格式的数值,例如 _CF_UNICODETEXT 

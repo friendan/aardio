@@ -1,7 +1,7 @@
 //自定义 behavior
 import win.ui;
 /*DSG{{*/
-winform = win.form(text="HTMLayout behavior用法演示";right=599;bottom=399;parent=...)
+winform = win.form(text="HTMLayout behavior用法演示";right=599;bottom=399;)
 winform.add()
 /*}}*/
 

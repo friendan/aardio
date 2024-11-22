@@ -4,6 +4,8 @@ aardio 里的 web.rest 设计了一种简单的 HTTP 接口描述规则 —— �
 
 web.rest 是一种调用规则，也是 aardio 里的一个名字空间，web.rest 名字空间中的所有类都是 web.rest 的具体实现，所有 web.rest 类都继承自 web.rest.client，用法基本相同。  
 
+web.rest 名字空间的所有客户端默认都可选使用第一个构造参数指定 User Agent，可选用第二个构造参数指定代理服务器，请参考：[设置代理服务器](../../inet/proxy.md) 。
+
 ## 一、简单示例 
 
 

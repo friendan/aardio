@@ -407,6 +407,7 @@ namespace driver{
 			this.switchWindow( cur );
 		};
 		findUrl = function(str){
+			str = ..string.hex(str,"\%",'\x80');
 			var cur = this.getCurrentWindow();
 			for( index,window,title,url in this.eachWindow() ){
 				if( url ? ..string.find(url,str) ) return url;
@@ -539,7 +540,7 @@ namespace driver{
 				if( r[["status"]] === 0 ){
 					return r.value
 				}
-			};
+			}; 
 		}
 	}
 	
@@ -825,8 +826,8 @@ window.get() = 获取当前窗口\nHTTP接口：GET /session/{session id}/window
 window.delete() = 关闭当前窗口\nDELETE	/session/{session id}/window
 window(__) = 切换窗口\nHTTP接口：POST /session/{session id}/window
 window.handles.get() = 获取所有窗口句柄\nHTTP接口：GET /session/{session id}/window/handles
-frame(__) = 切换框架\nHTTP接口：POST /session/{session id}/frame
-frame.parent(__) = 切换到父框架\nHTTP接口：POST /session/{session id}/frame/parent
+frame(id="__") = 切换框架。\nid 参数可指定 string,number,null,WebElement JSON Object 等类型。\n细节请参考 WebDriver 文档。\nHTTP接口：POST /session/{session id}/frame
+frame.parent() = 切换到父框架，无参数。\n如果当前已经是顶层框架则忽略此调用。\nHTTP接口：POST /session/{session id}/frame/parent
 window.rect.get() = 获取窗口位置\nHTTP接口：GET /session/{session id}/window/rect
 window.rect(__) = 前进\POST	/session/{session id}/window/rect
 window.maximize() = 最大化\nHTTP接口：POST /session/{session id}/window/maximize
@@ -848,7 +849,7 @@ alert.accept() = 取消alert\nHTTP接口：POST /session/{session id}/alert/acce
 alert.text.get() = 获取alert文本\nHTTP接口：GET /session/{session id}/alert/text
 alert.text(__) = 发送alert文本\nHTTP接口：POST /session/{session id}/alert/text
 screenshot.get() = 截屏\nHTTP接口：GET /session/{session id}/screenshot
-sendKeys(__) = 在活动节点发送按键。\n参数可指定一个或多个键名，也要吧用一个字符串数组指定一个或多个键名。\n可用键名为 chrome.driver.KEYS 定义的键名。\n其他字符串直接发送
+sendKeys(__) = 在活动节点发送按键。\n参数可指定一个或多个键名，也可用一个字符串数组指定一个或多个键名。\n可用键名为 chrome.driver.KEYS 定义的键名。\n不是键名的其他字符串作为普通文本直接发送。
 getCurrentUrl() = 获取当前URL，成功返回字符串
 getCurrentTitle() = 获取当前网页窗口标题，成功返回字符串
 getCurrentWindow() = 获取当前网页窗口句柄标识，成功返回字符串
@@ -906,4 +907,5 @@ isEnabled(__) = 节点是否启用
 isSelected() = 节点是否选中
 clear() = 清空节点
 click() = 模拟点击
+submit() = 提交表单
 end intellisense**/

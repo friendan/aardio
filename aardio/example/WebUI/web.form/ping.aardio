@@ -52,7 +52,7 @@ wb.html = /**
 	<button  onclick="doSomething()">开始干活了</button>
     <script>
         doSomething = function(){
-  		var result = external.ping('www.baidu.com');
+  		var result = external.ping('www.example.com');
   		document.body.insertAdjacentHTML('beforeend',result);
 	};
 	</script>

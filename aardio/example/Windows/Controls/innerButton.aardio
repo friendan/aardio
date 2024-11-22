@@ -2,7 +2,7 @@
 import win.ui;
 import win.ui.menu;
 /*DSG{{*/
-var winform = win.form(text="按钮中嵌按钮";right=599;bottom=399;parent=...)
+var winform = win.form(text="按钮中嵌按钮";right=599;bottom=399;)
 winform.add(
 btnInner={cls="button";text="4";left=183;top=47;right=209;bottom=77;dr=1;dt=1;font=LOGFONT(charset=2;name='Marlett';weight=500);z=2};
 button={cls="button";text="按钮中按钮";left=53;top=43;right=213;bottom=83;dr=1;dt=1;z=1}

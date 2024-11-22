@@ -2,7 +2,7 @@
 import win.ui;
 import win.util.desktop;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=262;bottom=179;parent=...)
+var winform = win.form(text="aardio form";right=262;bottom=179;)
 winform.add(
 btnDefault={cls="button";text="切换到默认桌面";left=53;top=110;right=202;bottom=143;font=LOGFONT(name='Microsoft Sans Serif');z=3};
 btnToMyDesktop={cls="button";text="切换到myDesktop";left=53;top=64;right=202;bottom=97;font=LOGFONT(name='Microsoft Sans Serif');z=2};

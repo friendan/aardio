@@ -1,7 +1,7 @@
 //tint 函数转换
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="HTMLayout tint函数转换工具";right=599;bottom=399;border="dialog frame";max=false;parent=...)
+var winform = win.form(text="HTMLayout tint函数转换工具";right=599;bottom=399;border="dialog frame";max=false;)
 winform.add(
 btnTint={cls="button";text="计算";left=309;top=43;right=389;bottom=70;z=2};
 edit={cls="edit";text="tint(#FF0000,-0.5, 0.9)";left=30;top=43;right=306;bottom=67;edge=1;multiline=1;z=1};

@@ -44,7 +44,7 @@ wb.html = /**
 <body style="white-space: pre;"><script>
 doSomething = async() => {
 	
-  	var result = await aardio.ping('www.baidu.com');
+  	var result = await aardio.ping('www.example.com');
   	document.body.insertAdjacentHTML('beforeend',result);
 };
 </script>

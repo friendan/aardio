@@ -231,7 +231,7 @@ namespace metaProperty {
 				}  
 				
 				if( ..win.isWindow(owner.hwnd)  ){
-					::PostMessage(owner[["hwnd"]],0x10/*_WM_CLOSE*/,0,0);
+					::SendMessage(owner[["hwnd"]],0x10/*_WM_CLOSE*/);
 				}
 			};
 			autoResize = { 

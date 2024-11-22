@@ -1,7 +1,7 @@
 //绑定事件
 import win.ui;
 /*DSG{{*/
-winform = win.form(text="节点绑定事件";right=599;bottom=399;parent=...)
+winform = win.form(text="节点绑定事件";right=599;bottom=399;)
 winform.add()
 /*}}*/
 

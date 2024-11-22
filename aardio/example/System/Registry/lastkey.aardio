@@ -1,7 +1,7 @@
 //注册表操作 - 快速定位
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="注册表快速定位 www.aardio.com";right=512;bottom=131;parent=...)
+var winform = win.form(text="注册表快速定位 www.aardio.com";right=512;bottom=131;)
 winform.add(
 button={cls="button";text="快速定位";left=296;top=68;right=440;bottom=101;z=2};
 edit={cls="edit";text="HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_TABBED_BROWSING";left=39;top=32;right=482;bottom=61;edge=1;z=1}

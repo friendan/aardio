@@ -1,7 +1,7 @@
 
 # aardio 代理服务器设置指南
 
-# 在 aardio 中设置代理的常用格式
+## 一、常用格式
 
 例如有以下代理服务器:
 
@@ -15,11 +15,11 @@
 
 代理设置忽略大小写，先记住几个简单的规则就足够用了，后面再细说原理。
 
-## 在 aardio 中设置代理有哪些方法
+## 二、设置代理
 
 设置代理的方法分为以下四类
 
-### 1.设置系统全局代理服务器  
+### 1. 设置系统全局代理服务器  
 	
 例如 
 
@@ -33,7 +33,8 @@ inet.conn.setProxy( ,"socks=127.0.0.1:1081")
 第二个参数指定代理服务器。
 第三个参数是指定不走代理的 proxyBypass 参数，aardio 会自动设定，一般不需要去指定。
 	
-### 2.设置当前进程内代理服务器，不影响其他进程 。 
+### 2. 设置当前进程内代理服务器，不影响其他进程
+
  
 例如 
 
@@ -45,7 +46,8 @@ inet.setProxy("socks=127.0.0.1:1081")
 第一个参数指定代理服务器。
 第二个参数是指定不走代理的 proxyBypass 参数，aardio 会自动设定，一般不需要去指定。
 
-### 3.设置 HTTP 客户端对象的代理
+### 3. 设置 HTTP 客户端对象的代理
+
 
 aardio 以下所有类的构造参数全部是一样的：
 
@@ -55,20 +57,22 @@ aardio 以下所有类的构造参数全部是一样的：
 - web.rest.jsonLiteClient(userAgent, proxy,proxyBypass,flags)
 - 以及 web.rest 名字空间的其他 Client 类。用法都一样。
 
-所有这些类的构造函数用法都一样，其实一般我们都不必指定任何参数。
+所有这些类的构造函数用法都一样，这些参数都是可选参数，一般情况下不必指定任何参数。
 
 参数用法：
 
 - userAgent 指定 User Agent 一般没必要写，参数位置要留空占位。
-- proxy 参数指定代理服务器，格式都跟上面一样。
+- proxy 参数指定代理服务器，有三种用法：
+	* 指定为 null,"" 或 "IE" 则使用系统代理服务器设置，这是默认值，一般不需要显式指定。
+	* 指定为 false 表示禁用代理服务器。
+	* 用一个字符串指定代理服务器地址，例如 "socks=127.0.0.1:1081"。
 - proxyBypass 绕过代理的配置，不用指定，自己创建的客户端通常都是连接明确指定的地址，所以这个参数基本用不上。
 - flags 参数，打开连接的选项，数值，不用指定。
 
-web.rest 下面所有的 Client 类构造对象实例时都会调用基类，并将构造参数转发给基类。
-`web.rest.client(userAgent, proxy,proxyBypass,flags)`
+web.rest 下面所有基于 web.rest.client 的类构造对象实例时都会调用基类 web.rest.client 的构造函数 `web.rest.client(userAgent, proxy,proxyBypass,flags)`，并将构造参数转发给基类。
 
-而 web.rest.client 构造函数被调用时，又会自动调用，并将构造参数转发给 inet.http。
-`inet.http(userAgent, proxy,proxyBypass,flags)`
+而 web.rest.client 构造函数被调用时，又会自动调用 inet.http 的构造函数 `inet.http(userAgent, proxy,proxyBypass,flags)`，并将构造参数转发给 inet.http。
+
 
 下面是一个例子：
 
@@ -86,7 +90,7 @@ var api = http.api("http://myip.ipip.net",,"(\d+\.\d+\.\d+\.\d+)");
 var ret = api.get();
 ```
 
-### 4.设置浏览器或浏览器控件的代理服务器
+### 4. 设置浏览器或浏览器控件的代理服务器
 
 - web.form 与 inet.http 是一样的，支持 inet.setProxy 以及 inet.conn.setProxy 设置的代理。
 
@@ -150,7 +154,7 @@ var ret = api.get();
 
 	上面以驼峰风格写的参数名 proxyServer 会自动替换为连字符风格并在前面加上 "--" 自动转换为 "--proxy-server"，并由 aardio 自动转换为命令行参数，由 aardio 自动处理命令行转义规则。
 
-## 代理服务器格式说明
+## 二、代理服务器格式说明
 
 代理服务器的写法格式一般是 WinINet 规定的格式。
 Chromium 内核的浏览器做了一些小的改动，参考 [Proxy support in Chrome](https://chromium.googlesource.com/chromium/src/+/HEAD/net/docs/proxy.md)
@@ -176,7 +180,7 @@ Chromium 内核的浏览器做了一些小的改动，参考 [Proxy support in C
 而 web.rest.client 其实是调用 inet.http 创建 HTTP 客户端，而 inet.http,web.form 都是基本系统 WinINet 组件，
 所以设置代理的语法与限制遵守 WinINet 规则。包括操作系统的代理设置也遵守这个规则。
 
-# 绕过代理服务器参数格式说明
+## 三、绕过代理服务器参数格式说明
 
 proxyBypass 指定不走代理的目标主机 IP 或域名，支持通配符，多个地址用分号隔开。
 
@@ -200,7 +204,7 @@ proxyBypass = ..string.replace(proxyBypass,"%\<\>",{
 `<lan>` 由 aardio 替换为 局域名 IP 地址。
 
 
-## 如何用代码打开并查看系统代理服务器设置
+## 四、查看系统代理服务器设置
 
 代码如下：
 

@@ -1,5 +1,7 @@
 # aardio 创建多窗口程序
 
+参考： [使用 win.form 创建窗口](create-winform.md)
+
 ## 一. 加载并管理多个独立显示的下属窗口( owned window )
  
 ### 1. 创建窗口工程

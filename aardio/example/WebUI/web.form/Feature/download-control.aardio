@@ -1,6 +1,6 @@
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=534;bottom=402;parent=...;scroll=1)
+var winform = win.form(text="aardio form";right=534;bottom=402;scroll=1)
 winform.add(
 btnDlCtrlDefault={cls="button";text="恢复默认值";left=358;top=339;right=469;bottom=372;db=1;dr=1;z=2};
 btnDlCtrlNoImage={cls="button";text="禁止下载图片";left=246;top=339;right=357;bottom=372;db=1;dr=1;z=1}

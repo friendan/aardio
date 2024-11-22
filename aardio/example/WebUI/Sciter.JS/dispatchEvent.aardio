@@ -1,7 +1,7 @@
 //JS 触发本地事件
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="js 调用 aardio 自定义事件";right=1014;bottom=523;parent=...)
+var winform = win.form(text="js 调用 aardio 自定义事件";right=1014;bottom=523;)
 winform.add()
 /*}}*/
 

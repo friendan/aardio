@@ -36,8 +36,6 @@ for(i = initialValue;finalValue;incrementValue){
 
 aardio 使用基于数值范围的 for 循环语法（Range-based for）。 for 循环范围的终止值 `finalValue`  是一个确定的数值而不是需要循环计算的条件表达式（condition-expression），循环增量 `incrementValue` 也是一个纯数值而不是一个需要重复执行的迭代表达式（iteration-expression）。这一点与其他类 C 风格编程语言完全不同，aardio 使用更简单的 `for` 循环语法。
 
-在 aardio 中只有 [while var](#while-var) 循环语句可以同时指定条件表达式（condition-expression）与迭代表达式（iteration-expression） 。
-
 示例：  
 
 ```aardio

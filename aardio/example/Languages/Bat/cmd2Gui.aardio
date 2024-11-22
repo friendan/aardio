@@ -4,7 +4,7 @@ import win.ui;
 import win.ui.menu;
 import process.popen;
 /*DSG{{*/
-var winform = win.form(text="DOS命令行窗口化工具";right=760;bottom=595;bgcolor=16777215;parent=...)
+var winform = win.form(text="DOS命令行窗口化工具";right=760;bottom=595;bgcolor=16777215;)
 winform.add(
 btnCls={cls="button";text="清屏";left=560;top=564;right=634;bottom=588;db=1;dr=1;font=LOGFONT(name='宋体');z=5};
 button={cls="button";text="运行";left=481;top=564;right=555;bottom=588;db=1;dr=1;font=LOGFONT(name='宋体');z=1};

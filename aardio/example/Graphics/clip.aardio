@@ -1,7 +1,7 @@
 //剪贴板图像
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=637;bottom=450;parent=...)
+var winform = win.form(text="aardio form";right=637;bottom=450;)
 winform.add(
 btnRead={cls="button";text="读取剪贴板图像";left=249;top=379;right=404;bottom=419;db=1;dr=1;z=3};
 btnWrite={cls="button";text="截屏并写入剪贴板";left=428;top=379;right=598;bottom=419;db=1;dr=1;z=2};

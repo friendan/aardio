@@ -1,7 +1,7 @@
 //窗口程序 - 响应控件通知
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="WM_NOTIFY 消息与 onnotify 事件";right=634;bottom=382;parent=...)
+var winform = win.form(text="WM_NOTIFY 消息与 onnotify 事件";right=634;bottom=382;)
 winform.add(
 listview={cls="listview";left=17;top=36;right=619;bottom=360;acceptfiles=1;asel=false;bgcolor=16777215;dl=1;dr=1;edge=1;font=LOGFONT(name='SimSun');fullRow=1;gridLines=1;msel=false;z=1};
 static={cls="static";text="请使用鼠标左键点击不同的列表项";left=17;top=10;right=290;bottom=28;transparent=1;z=2}

@@ -21,7 +21,9 @@ var data = http.post("http://eu.httpbin.org/post",{
 });
 ```
 
-更多例子请参考「**aardio 自带范例 / 网络应用 / inet / http**」。  
+更多例子请参考 **「aardio 自带范例 / 网络应用 / inet / http」** 。  
+
+可选用第一个构造参数指定 User Agent，可选用第二个构造参数指定代理服务器，请参考：[设置代理服务器](proxy.md)
   
 
 ## 二、分步请求

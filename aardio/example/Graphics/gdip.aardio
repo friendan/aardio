@@ -3,7 +3,7 @@ import win.ui;
 import win.ui.menu;
 import com.picture;
 /*DSG{{*/
-var winform = win.form(text="GDI+ 绘图演示 —— gdip 库操作";right=566;bottom=424;parent=...)
+var winform = win.form(text="GDI+ 绘图演示 —— gdip 库操作";right=566;bottom=424;)
 winform.add(
 btnBmp={cls="button";text="位图修改";left=207;top=383;right=355;bottom=416;db=1;dr=1;z=5};
 btnDrawString={cls="button";text="GDI+ 输出文字";left=207;top=344;right=355;bottom=377;db=1;dr=1;z=2};

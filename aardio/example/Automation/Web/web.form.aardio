@@ -11,29 +11,29 @@ var wb = web.form( winform );
 wb.noScriptErr = true;
 
 //打开网页
-wb.go("http://www.so.com") 
+wb.go("https://www.bing.com") 
 
 //显示窗口
 winform.show();
 
 //等待节点创建成功
-wb.waitEle("input")
+wb.waitEle("sb_form_q")
 //wb.waitEle("input").value = "aardio web.form"; //这样设置值也行
 
 //改变节点的默认属性值（这里指 value 属性）,支持 React 文本框
-wb.setEle("input","aardio web.form");
+wb.setEle("sb_form_q","web.form");
 
 /* 
 调用click函数模拟点击按钮。
 wb.getEle("search-button").click() 也可以
 wb.click()多了一些模拟真实点击的代码，参考此函数源代码
 */
-wb.click("search-button")
+wb.click("search_icon")
 
 /*
 等待网页打开,
 参数可以指定期待的网址（或者网址的一部分）
 */
-wb.wait("&q=aardio"); 
+wb.wait("q=web.form");
 
 win.loopMessage();

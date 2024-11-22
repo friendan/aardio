@@ -6,7 +6,7 @@ http://www.aardio.com/thread-8503-1-1.html
 
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="HTMLayout 选项卡控件( tabs behavior应用 )";right=599;bottom=399;parent=...)
+var winform = win.form(text="HTMLayout 选项卡控件( tabs behavior应用 )";right=599;bottom=399;)
 winform.add()
 /*}}*/
 

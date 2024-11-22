@@ -17,7 +17,7 @@ import dotNet.Selenium;
 var wd = Selenium.CreateDefaultWebDriver(); 
 
 //打开网址。
-wd.Url = "https://www.baidu.com" 
+wd.Url = "https://www.aardio.com/zh-cn/doc/"
  
 //By 对象用于创建查找节点的条件对象。
 var By = Selenium.By;
@@ -26,16 +26,16 @@ var By = Selenium.By;
 查找并等待输入框节点，
 Selenium 自己提供的 WebDriverWait 不好用，这个 WaitEle 函数是用 aardio 实现的。 
 */
-var keyword = wd.WaitEle( By.Id("kw")  ) 
+var keyword = wd.WaitEle( By.Id("search-input")  ) 
 
 //清空输入框 
 keyword.Clear();
     
 //发送按键
-keyword.SendKeys("aardio");
+keyword.SendKeys("多线程");
 
 //查找按钮
-var button = wd.FindElement( By.Id("su") );
+var button = wd.FindElement( By.Id("search-button") );
 
 //点击按钮
 button.Click();

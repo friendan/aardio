@@ -1,4 +1,4 @@
-﻿自动化操作=auto.aardio
+﻿自动化操作=~\example\Automation\Web\web.form.aardio
 显示部分网页=crop.aardio
 跨域框架=crossDomain.aardio
 监听触发事件=dispatchEvent.aardio

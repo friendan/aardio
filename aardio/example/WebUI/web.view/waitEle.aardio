@@ -8,23 +8,25 @@ winform.add()
 import web.view;
 var wb = web.view(winform);
 
-wb.go("http://www.baidu.com");
+wb.go("https://www.aardio.com/zh-cn/doc/");
 
 //用法一：异步等待参数@1指定CSS选择器的节点，回调 aardio 函数
 /*
-wb.waitEle("#kw",function(ok,err){
+wb.waitEle("#search-input",function(ok,err){
 	wb.doScript("
-	document.querySelector('#kw').value='aardio 百家号';
-	document.querySelector('#su').click();
+		var searchInput = document.querySelector('#search-input');
+		searchInput.value='多线程'; 
+		searchInput.dispatchEvent(new Event('input', { bubbles: true, }));
 	")
 })
 */
 
 //用法二：同步等待参数@1指定CSS选择器的节点
-wb.waitEle("#kw");
+wb.waitEle("#search-input");
 wb.doScript("
-document.querySelector('#kw').value='aardio 百家号';
-document.querySelector('#su').click();
+var searchInput = document.querySelector('#search-input');
+searchInput.value='多线程'; 
+searchInput.dispatchEvent(new Event('input', { bubbles: true, }));
 ")
 
  

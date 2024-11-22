@@ -1,7 +1,7 @@
 //使用JS数组
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=349;bottom=249;parent=...;scroll=1)
+var winform = win.form(text="aardio form";right=349;bottom=249;scroll=1)
 winform.add()
 /*}}*/
 

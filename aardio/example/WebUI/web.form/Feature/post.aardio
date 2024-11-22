@@ -1,7 +1,7 @@
 //上传文件
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="web form 上传文件";right=717;bottom=524;parent=...;scroll=1)
+var winform = win.form(text="web form 上传文件";right=717;bottom=524;scroll=1)
 winform.add()
 /*}}*/
 

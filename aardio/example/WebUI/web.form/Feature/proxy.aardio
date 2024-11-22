@@ -1,7 +1,7 @@
 //设置代理
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=855;bottom=498;parent=...)
+var winform = win.form(text="aardio form";right=855;bottom=498;)
 winform.add()
 /*}}*/
 

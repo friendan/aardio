@@ -208,7 +208,9 @@ namespace bitmap {
 			
 			var hbmp = gdip.assert2( gdip.CreateHBITMAPFromBitmap(owner[["pBitmap"]], null,0x808080/*_CLR_DEFAULT*/) );
 			if( width || height){
-				return ::CopyImage(hbmp, 0x0/*_IMAGE_BITMAP*/, width, height, 4/*_LR_COPYRETURNORG*/ | 8/*_LR_COPYDELETEORG*/ ); 
+				var hbmp2 = ::CopyImage(hbmp, 0x0/*_IMAGE_BITMAP*/, width, height, 4/*_LR_COPYRETURNORG*/ | 8/*_LR_COPYDELETEORG*/ ); 
+				::DeleteObject(hbmp);
+				return hbmp2;
 			}
 			return hbmp;
 		};
@@ -435,8 +437,8 @@ gdip.bitmap(.(宽,高,像素格式,内存指针,行扫描宽度) = 自内存指�
 !gdipbitmap.dispose() = 释放图像\n此对象支持自动释放,不必手工调用此函数
 !gdipbitmap.getPixel(.(x__,y) = 读取位图指定坐标(x,y)的ARGB颜色值
 !gdipbitmap.setPixel(.(x__,y,argb) = 设定位图指定坐标(x,y)的ARGB颜色值  
-!gdipbitmap.copyHandle(.(宽度,高度) = 创建并返回 HBITMAP 位图句柄\n可选指定宽度、高度
-!gdipbitmap.copyHandle(.("icon") = 创建并返回 HICON 图标句柄
+!gdipbitmap.copyHandle(.(宽度,高度) = 创建并返回 HBITMAP 位图句柄。\n可选指定宽度、高度参数。\n调用者负责释放返回的位图句柄。
+!gdipbitmap.copyHandle(.("icon") = 创建并返回 HICON 图标句柄。\n调用者负责释放返回的位图句柄。
 !gdipbitmap.lockMemory( = 锁定图像内存\n返回gdip.BitmapData结构体
 !gdipbitmap.lockMemory(.(rect,_GdipPixelFormat32bppARGB,flags) = 所有参数可选，\n默认使用图像的像素格式。\n@rect 参数可用 ::RECT 结构体指定区块位置
 !gdipbitmap.lockData( = 锁定图像内存\n返回gdip.BitmapData结构体\n与lockMemory不同的是使用bits数组存储图像数据

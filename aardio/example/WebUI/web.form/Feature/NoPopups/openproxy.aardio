@@ -2,7 +2,7 @@ import win.ui;
 import web.form;
 
 /*DSG{{*/
-var winform = win.form(parent=...; scroll=1;text="aardio form";right=349;bottom=249 )
+var winform = win.form(scroll=1;text="aardio form";right=349;bottom=249 )
 winform.add(  )
 /*}}*/
 

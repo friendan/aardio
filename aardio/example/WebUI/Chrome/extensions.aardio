@@ -2,7 +2,7 @@
 import win.ui;
 import win.ui.menu;
 /*DSG{{*/
-var winform = win.form(text="Chrome扩展查看工具";right=1002;bottom=651;parent=...)
+var winform = win.form(text="Chrome扩展查看工具";right=1002;bottom=651;)
 winform.add(
 editPath={cls="edit";left=97;top=617;right=987;bottom=642;edge=1;multiline=1;z=2};
 listview={cls="listview";left=13;top=12;right=991;bottom=601;acceptfiles=1;asel=false;bgcolor=16777215;dl=1;dr=1;edge=1;font=LOGFONT(name='SimSun');fullRow=1;gridLines=1;hscroll=1;msel=false;vscroll=1;z=1};

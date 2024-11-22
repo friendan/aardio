@@ -12,10 +12,10 @@ winform.show();
 //添加网页默认加载脚本，禁止弹出新窗口
 wb.preloadScript("window.open =  function(url){ window.location.href = url; } ")
 
-wb.go("http://www.baidu.com");
+wb.go("http://www.bing.com");
  
 //CDP:使用 CSS 选择器查询节点
-var searchInput = wb.cdpWaitQuery("#kw")
+var searchInput = wb.cdpWaitQuery("#sb_form_q")
 
 //CDP:设置为输入焦点
 //CDP 文档： https://chromedevtools.github.io/devtools-protocol
@@ -24,7 +24,7 @@ wb.cdp("DOM.focus",{
 });
 
 //CDP:模拟输入文本
-wb.cdp("Input.insertText",{text="aardio 百家号"})
+wb.cdp("Input.insertText",{text="aardio site:www.aardio.com"})
 
 //CDP:模拟按键
 wb.cdp("Input.dispatchKeyEvent",{
@@ -33,7 +33,7 @@ wb.cdp("Input.dispatchKeyEvent",{
 })
 
 //点击按钮
-wb.waitEle("#su","this.click()");
+wb.waitEle("#search_icon","this.click()");
  
 winform.show();
 win.loopMessage();

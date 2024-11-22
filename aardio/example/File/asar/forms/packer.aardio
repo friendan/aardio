@@ -1,7 +1,7 @@
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="WinAsar - packer";right=1075;bottom=734;acceptfiles=1;bgcolor=16777215;parent=...)
+var winform = win.form(text="WinAsar - packer";right=1075;bottom=734;acceptfiles=1;bgcolor=16777215;)
 winform.add(
 btnBuild={cls="plus";text="生成asar文件";left=805;top=664;right=967;bottom=701;align="left";db=1;dr=1;font=LOGFONT(h=-15);iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=15}};iconText='\uF090';notify=1;textPadding={left=35};z=3};
 btnClear={cls="plus";text="清空";left=272;top=8;right=355;bottom=43;align="left";dl=1;dt=1;font=LOGFONT(h=-15);iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=15}};iconText='\uF1F8';textPadding={left=35};z=8};

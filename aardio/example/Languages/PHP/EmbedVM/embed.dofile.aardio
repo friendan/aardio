@@ -1,7 +1,7 @@
 //aardio 解析 PHP 文件
 import web.form;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=713;bottom=652;parent=...;scroll=1)
+var winform = win.form(text="aardio form";right=713;bottom=652;scroll=1)
 winform.add()
 /*}}*/
 

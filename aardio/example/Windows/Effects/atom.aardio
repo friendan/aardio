@@ -18,7 +18,7 @@ if( mutex.conflict ){
 
 import win.ui; 
 /*DSG{{*/
-var winform = win.form(parent=...; text="aardio form";right=349;bottom=249 )
+var winform = win.form( text="aardio form";right=349;bottom=249 )
 winform.add(  )
 /*}}*/
 

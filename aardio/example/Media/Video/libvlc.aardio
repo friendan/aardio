@@ -1,7 +1,7 @@
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="万能视频播放器 - 调用 libvlc";right=856;bottom=483;bgcolor=16515070;parent=...)
+var winform = win.form(text="万能视频播放器 - 调用 libvlc";right=856;bottom=483;bgcolor=16515070;)
 winform.add(
 btnFullScreen={cls="plus";text='\uF047';left=811;top=453;right=852;bottom=483;color=1938422;db=1;dr=1;font=LOGFONT(h=-16;name='FontAwesome');notify=1;repeat="center";z=4};
 btnPlay={cls="plus";text='\uF04B';left=10;top=456;right=42;bottom=479;color=1938422;db=1;dl=1;font=LOGFONT(h=-19;name='FontAwesome');notify=1;repeat="scale";z=5};
