@@ -779,8 +779,17 @@ while (i < 100) {
 ```aardio
 import console;
 
+//用法 1: 循环参数中使用 var 语句、循环前执行语句、条件判断语句
+while(
+    var i; //初始化循环变量
+    i =  console.getNumber( "请输入数值,输入100退出:" ); //每次循环前要执行的单个语句
+    i != 100  //循环条件表达式
+    ) {
+    console.log( i )
+}
 
-//用法1，while条件中使用一个var语句
+
+//用法 2: 循环参数中仅保留一个 var 语句，其他参数省略。
 while(
     var i =  console.getNumber( "请输入数值,输入0退出:" )
     ) {
@@ -788,23 +797,14 @@ while(
 }
 
 
-//用法2，while条件中使用var语句、循环前执行语句、条件判断语句
-while(
-    var i;
-    i =  console.getNumber( "请输入数值,输入100退出:" );
-    i != 100  ) {
-    console.log( i )
-}
 
-
-//用法3，省略var语句，仅使用循环前执行语句、条件判断语句
+//用法 3:  循环参数中省略 var 语句（分隔的分号不能省略），仅保留循环前执行语句、循环条件表达式
 var i = 0;
 while( ;i++; i<10 ) {
     console.log(i)
 }
 
-
-//用法4，省略var语句，循环前执行语句，仅使用条件判断语句
+//用法 4: 循环参数中省略省略 var 语句与循环前执行语句，仅保留循环条件表达式
 while(i>0){
     i--;
     console.log(i);
@@ -816,12 +816,12 @@ console.pause(true);
 
 参考：[while var 语法](../../language-reference/statements/looping.md#while-var)
 
-##  while var 模拟 for 循环
+##  while var 实现计数循环
 
 ```aardio
 import console;
 
-
+//要注意循环参数中条件表达式在后，而循环增量语句位置在前，并且增量语句在每次循环之前执行。
 while( var i = 0; i++ ; i < 5  ) {
     console.log( i )
 }

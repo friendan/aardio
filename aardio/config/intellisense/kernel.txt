@@ -110,7 +110,7 @@ namespace = @namespace __/*指定名字空间路径，打开存在的名字空�
 begin =  @begin\n    __/*语句块限定局部变量作用域*/\n\nend;\n 
 end =  @end;//表示语句块结束
 function = @function(__/*请输入函数形参*/){\n	\n}\n
-class = @class __/*输入类名字*/{\n	ctor( /*输入构造函数所需要的参数*/ ){\n	\n	};\n	type=me;\n	/*对象的所有成员必须用分号分隔*/\n}\n
+class = @class {\n	ctor(){\n		this.property = "";\n	}; \n	method = function(){ \n		return this.property;\n	};__/*类构造器内所有成员必须用分号分隔*/\n}\n
 lambdaλ = @λ(__/*lambda定义一个匿名函数，\n用于接收输入参数并返回一个表达式，\n不能使用表达式以外的其他语句或语句块，\n不能返回多个值*/)
 lambda = @lambda(__/*lambda定义一个匿名函数，\n用于接收输入参数并返回一个表达式，\n不能使用表达式以外的其他语句或语句块，\n不能返回多个值*/)
 
@@ -563,7 +563,8 @@ thread.applyCallWnd(this,wParam,lParam) = 在窗口_WM_THREAD_CALLWND消息回�
 thread.call(.("函数","owner", ) = 在线程安全模式下执行线程共享区函数\n可以指定一个线程函数，或者用thread.set预加载到共享区的函数名,\n可增加任意个调用参数
 thread.getMainId() = 返回当前进程主线程ID\n开发环境中返回IDE主线程
 thread.main() = 当前线程是否 主线程。
-thread.getId() = 返回当前线程ID
+thread.getId() = 返回当前线程ID。\n将线程句柄转换为线程 ID 请使用 ::Kernel32.GetThreadId 函数。
+thread.open( = 传入线程 ID 并返回打开的线程句柄。\n将线程句柄转换为线程 ID 请使用 ::Kernel32.GetThreadId 函数。
 thread.open(.(线程ID,权限,句柄是否可继承) = 打开线程句柄，失败请使用 ..lasterr() 获取错误信息.\n参数二可省略，默认为_THREAD_ALL_ACCESS\n参数三默认为false\n返回的句柄必须使用 raw.closehandle()关闭
 thread.getHandle() = 返回当前线程伪句柄\n该句柄仅可在当前线程使用、可复制
 thread.create(.(线程函数,调用参数) = @\n	function( ... ){\n		import win; //线程需要独立引用库\n		\n		\n	},\n	__/*传入线程函数的实参写到这里\n线程函数的 owner 参数总是为空*/\n)
@@ -600,8 +601,8 @@ subscribe(订阅消息名,触发函数,是否前置) = @subscribe("__/*要订阅
 subscribe() = !stdSubscriber.
 !stdSubscriber.remove() = 撤消本次订阅。\n\n如果在需要重复创建的窗体内订阅消息，应在 winform.onDestroy 事件内取消订阅。\n或改用 thread.command 可在窗体关闭后自动取消订阅。\n\n如果只是想调用窗体的成员函数，这本来就可以直接调用，\n不必使用 subscribe
 
-fiber.create(.(函数对象,应用程序根目录) = 创建纤程\n调用fiber.resume()函数启动纤程,\n参数2为可选参数,应用程序根目录只能设置为硬盘上实际存在的目录,\n改变应用程序根目录,会同时改变用户库目录
-fiber.resume(__/*纤程*/,) = 继续运行纤程\n成功返回true以及fiber.yield()传入的参数\n错误返回false以及错误信息.
+fiber.create(.(函数对象,应用程序根目录) = 创建纤程\n调用 fiber.resume 函数启动纤程,\n参数2为可选参数,应用程序根目录只能设置为硬盘上实际存在的目录,\n改变应用程序根目录,会同时改变用户库目录
+fiber.resume(__/*纤程函数*/,启动参数->->->) = 继续运行纤程。\n除参数@1以外的其他参数为首次启动纤程函数的调用参数。\n\n成功运行纤程则返回 true 以及纤程内调用 fiber.yield 函数时传入的参数。\n错误则返回 false 以及错误信息.
 fiber.yield(__/*一个或多个返回值*/) = 暂停纤程,\n此函数传入参数将会作为fiber.resume()的返回值。\n下次调用fiber.resume()的参数即为本次调用的返回值。
 fiber.status(__/*纤程*/) = 获取纤程状态
 fiber.status.current = 当前正在运行的纤程

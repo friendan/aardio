@@ -215,17 +215,17 @@ while var 语句类似 while 语句，但可以条件判断前添加循环变量
 while var 循环语句的基本结构如下：
 
 ```aardio
-while( var variable = expression; statement; condition ) { 
+while( var variable = expression; step; condition ) { 
     //循环体（Code block））
 }
 ```  
 要点：
 
 *   `var variable = expression` 在循环初始化时执行，其语法与声明局部变量的 var 语句相同，可以声明一个或多个仅在循环体内部有效的局部变量，多个变量用逗号分开，可用赋值语句指定这些变量的初始值。 
-*   `statement` 可指定在循环前执行的单个语句。
-*   `condition` 是条件表达式，返回值为 true 则继续循环，为 false 则停止循环。
+*   `step` 可指定需要在每次循环前执行的单个语句。
+*   `condition` 是循环条件表达式，返回值为 true 则继续循环，为 false 则停止循环。
 *   可单独省略 `var variable = expression` 部分，但要保留分号。
-*   可单独省略 `before` 部分，但要保留分号。
+*   可单独省略 `step` 部分，但要保留分号。
 *   可只保留 `condition`部分，其他部分省略（ 分号也省略 ），这等价于普通的 while 语句。
 *   可将 `while(var variable;variable=value;variable){}` 缩写为 `while(var variable=value){}`。
 
@@ -236,8 +236,8 @@ import console;
 
 while( 
     var countLoop = 0;//在循环开始前初始化局部变量
-    countLoop++;//循环前执行语句，可省略不写,但不能省略分号
-    countLoop<=10 ////循环条件表达式 
+    countLoop++;//每次循环前执行的单个语句，可省略不写,但不能省略分号
+    countLoop<=10 //循环条件表达式 
     ){ 
     
     // 在控制台显示循环变量，将输出 1 到 10 的数值。
@@ -255,18 +255,19 @@ import console;
 //用法 1: 标准 while var 语句
 while(
     var i; //初始化循环变量列表
-    i =  console.getNumber( "请输入数值,输入100退出:" );//循环前执行语句
-    i != 100  ) {
-    console.log( i ) //循环条件表达式
+    i =  console.getNumber( "请输入数值,输入100退出:" );//每次循环前要执行的单个语句
+    i != 100  //循环条件表达式
+    ) {
+    console.log( i ) 
 }
 
-//用法 2: 省略初始化循环变量列表，分号不可省略，
+//用法 2: 循环参数中省略初始化循环变量部分，用于分隔循环参数的分号不可省略，
 var i = 0;
 while( ;i++; i<10 ) {
     console.log(i)
 }
 
-//用法 3: 省略循环前执行语句，分号不可省略，
+//用法 3: 循环参数中省略循环前执行语句，用于分隔循环参数的分号不可省略
 while(  var i; ;  i != 100  ) {
         
     i =  console.getNumber( "请输入数值,输入100退出:" ); 
@@ -274,7 +275,7 @@ while(  var i; ;  i != 100  ) {
     console.log( i ) //循环条件表达式
 }
 
-//用法 4: 合并缩写法
+//用法 4: 合并缩写法,下面的循环变量赋值语句会循环执行，循环变量 i 的值同时也是循环条件表达式。
 while(
     var i =  console.getNumber( "请输入数值,输入0退出:" )
     ) {

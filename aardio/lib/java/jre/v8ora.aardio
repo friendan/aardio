@@ -5,11 +5,12 @@ import inet.installer;
 namespace java.jre.v8ora;
 
 path = ..java.path.jreHomeFromRegistry(false,"1.8") 
+
 if(!path) path = ..java.path.jreHomeFromRegistry(true,"1.8") 
 if(!path) path = ..java.path.jreHomeFromProgramFiles("1.8",false);
 if(!path) path = ..java.path.jreHomeFromProgramFiles("1.8",true); 
-if(!path){
-	path = ..java.path.jdkHomeFromRegistry(false);
+if(!path){ 
+	path = ..java.path.jdkHomeFromRegistry(false,"1.8");
 	if( path ){ 
 		if(..io.exist(..io.joinpath(path,,"/jre/"))){
 			path = ..io.joinpath(path,,"/jre/");

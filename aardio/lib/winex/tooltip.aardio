@@ -83,6 +83,17 @@ namespace tooltip{
         return default.trackPopupEx(text,x,y,timeout));
     }
     
+    var allDelta = "";
+    popupDelta = function(delta,x,y,timeout){
+        if(!delta){
+        	allDelta = "";
+        	return true; 
+        }
+        
+        allDelta = allDelta ++ delta; 
+        popup(allDelta,x,y,timeout); 
+    }
+    
     var defaultBalloon;
     balloon = function(text,x,y,timeout){
         if(!defaultBalloon) defaultBalloon = ..winex.tooltip();
@@ -109,4 +120,5 @@ popup( = 在屏幕任意坐标显示简单提示，\n在提示窗口外部点击
 popup(.(true,x,y,timeout) = 弹出简单提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
 popup(.(text,x,y,timeout) = 弹出简单提示 @text 指定文本内容的提示,\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数
 popup(.(false) = 隐藏简单提示
+popupDelta(.(delta,x,y,timeout) = 以逐步打字方式显示简单提示。\n@delta 指定要增加的文本提示，@delta 为 null 结束输出。\n可选用 @x,@y 参数指定显示坐标，\n不指定坐标则取鼠标当前坐标\n\n可选用 @timeout 参数指定超时自动关闭毫秒数。\n\n已输出所有增量文本返回 true，否则返回 null 。
 end intellisense**/

@@ -37,6 +37,9 @@ var getByEdit = function(copyText){
 			var str = ..win.clip.read();
 			if( #str && str!=orig){
 				ret = str;
+				if(ret[1]='`'#){
+					ret = ..string.match(ret,"```aardio\s+(.+)```") || ret;
+				}
 			}
 			
 			..win.clip.write(orig:""); 

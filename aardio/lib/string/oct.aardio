@@ -1,0 +1,18 @@
+﻿//oct 八进制编码
+namespace string;
+
+oct = {
+	encode = function(str){
+		return replace(str,".",lambda(c) format("\%03o",c[1]))
+	};
+	 
+	decode = function(oct){
+		return replace(oct,"\\(\d\d\d)",lambda(n) pack( (tonumber(n,8))));
+	};	
+}
+
+/*****intellisense()
+string.oct = 八进制转义序列编码与解码。\n\n注意:\naardio 用单引号包含的转义字符串支持 16 进制转义、10 进制转义、Unicode 转义，但并不支持 8 进制转义。
+string.oct.encode(__) = 将参数 1 指定的原始字符串转换为 8 进制转义字符串。
+string.oct.decode(__) = 将参数 1 指定的 8 进制转义字符串转换为原始字符串。
+end intellisense*****/

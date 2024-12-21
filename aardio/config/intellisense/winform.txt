@@ -143,13 +143,16 @@
 !winform.transparent(false) = 取消窗口透明
 !winform.transparent(true) = 启用分层窗口,不设置透明度\n设为分层窗口以后不应再改变窗口大小
 !winform.transparent(128,225) = 启用分层窗口,设置窗口透明度，\n参数(透明度,透明颜色)\n如果指定了透明颜色，透明度参数将被忽略
-!winform.close() = 关闭窗口\n注意不能在 onClose 事件内调用此函数\n\n所有非模态、非 MessageOnly 的独立窗口（ 或存为全局变量的 mainForm 窗口 ）都关闭后，\n将会自动终止 win.loopMessage 创建的消息循环（通常也就是退出界面线程）。\n如果主窗口是其他进程或线程的子窗口，则必须存为全局变量  mainForm，\n否则子窗口关闭时不能自动退出消息循环（无论还有没有其他窗口）。
+!winform.close( = 关闭窗口\n注意不能在 onClose 事件内调用此函数\n\n所有非模态、非 MessageOnly 的独立窗口（ 或存为全局变量的 mainForm 窗口 ）都关闭后，\n将会自动终止 win.loopMessage 创建的消息循环（通常也就是退出界面线程）。\n如果主窗口是其他进程或线程的子窗口，则必须存为全局变量  mainForm，\n否则子窗口关闭时不能自动退出消息循环（无论还有没有其他窗口）。
+!winform.close(.() = 立即关闭窗口。\n使用 ::SendMessage 发送关闭窗口消息，等待消息处理完成。
+!winform.close(.(true) = 异步关闭窗口。\n使用 ::PostMessage 发送关闭窗口消息，不等待消息处理完成。\n只有在关闭消息处理完成并销毁窗口后才会触发退出界面线程消息循环的规则。
 !winform.loadForm("__/*请输入aardio文件路径*/") = 自代码文件加载窗。\n如果该窗体未用 return 语句返回非 null 值则直接返回创建的窗体，\n可选增加其他参数作为调用外部窗体代码的参数\n\ncustom 控件的 loadForm 函数会将窗体加载为子窗口且自动维护子窗口队列,\n并且 custom 控件会自动维护一个子窗口队列，\n显示一个子窗口其他子窗口就会隐藏（并未关闭或销毁）,\n一个子窗口关闭就会自动移出队列
 !winform.preloadForm("__/*请输入aardio文件路径*/") = 自代码文件预加载窗体文件，返回延迟初始化的伪窗体对象。\n伪窗体对象的 fake 属性为 true，调用任何其他属性或方法则自动初始化窗口。\n调用 this 方法返回真实窗口对象自身。\n\n可选增加其他参数作为调用外部窗体代码的参数\n\ncustom 控件的 loadForm 函数会将窗体加载为子窗口且自动维护子窗口队列,\n并且 custom 控件会自动维护一个子窗口队列，\n显示一个子窗口其他子窗口就会隐藏（并未关闭或销毁）,\n一个子窗口关闭就会自动移出队列
 !winform.doModal( = 此函数弹出模态对话框，可使用 endModal 函数关闭模态对话框，\n调用 endModal 函数的参数会被设置为 doModal 函数的返回值。\n\n模态对话框会自己创建自己的消息循环，\n并阻止调用模态对话框的代码继续向后运行 - 直到模态对话框被关闭。
 !winform.doModal(.(ownerForm,showFlags) = 弹出模态对话框。\n可选用参数 @ownerForm 指定所有者窗口，\n参数 @showFlags 可选用 _SW_ 前缀常量指定显示选项。\n\n模态对话框应是独立窗口，并显示在所有者窗口前面。\n模态对话框会暂时禁用所有者窗口 - 直到模态对话框被关闭。\n注意子窗口不应该调用 doModal 函数（禁用父窗口等于禁用自己）
 !winform.dialogResult = 模态对话框返回值
 !winform.continueModal = 模态对话框是否未关闭
+!winform.autoQuitMessage = 此属性显式指定为 false ，\n则禁止在此窗口关闭时自动调用 win.quitMessage 。\n默认在关闭最后一个非模态、非 MessageOnly 的独立窗口（ 或 mainForm 窗口 ）\n时会自动调用 win.quitMessage 函数退出消息循环。
 !winform.endModal(__/*请指定模态对话框返回值*/) = 关闭模态对话框，\n调用endModal()函数的参数会被设置为 doModal()函数的返回值。
 !winform.modifyStyle(.(remove,add,swpFlags) = 修改窗口样式,所有参数都是可选参数,\n@remove 用数值指定要移除的样式,可使用 _WS_ 前缀的常量\n@add 用数值指定要添加的样式,可使用 _WS_ 前缀的常量\n@swpFlags 可选用数值指定调整窗口选项,可使用 _SWP_ 前缀的常量\n如果指定了 @swpFlag ,则使用该参数调用::SetWindowPos\n细节请参考 win.modifyStyle 函数源码 
 !winform.modifyStyleEx(.(remove,add,swpFlags) = 修改窗口扩展样式,所有参数都是可选参数,\n@remove 用数值指定要移除的样式,可使用 _WS_EX_ 前缀的常量\n@add 用数值指定要添加的样式,可使用 _WS_EX_ 前缀的常量\n@swpFlags 可选用数值指定调整窗口选项,可使用 _SWP_ 前缀的常量\n如果指定了 @swpFlag ,则使用该参数调用::SetWindowPos\n细节请参考 win.modifyStyle 函数源码

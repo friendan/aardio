@@ -18,6 +18,8 @@ class chineseNumber{
 	)
 	/*}}*/
 	
+	this.autoQuitMessage = false;
+	
 	var lcid = ::Kernel32.GetUserDefaultLCID();
 	if( lcid==0x404/*zh-TW*/ || lcid == 0x0C04/*zh-HK*/ || lcid == 0x1404/*zh-MO*/ ){
 		this.numberChars = numberChars : '零壹貳參肆伍陸柒捌玖';

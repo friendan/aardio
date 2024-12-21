@@ -1,0 +1,35 @@
+//IMAP 接收邮件
+import console;
+import dotNet.MailKit; 
+
+//创建 IMAP 客户端
+var client = MailKit.Net.Imap.ImapClient()
+
+//连接到 IMAP 服务器
+client.Connect("imap.qq.com", 993, true)
+
+//登录
+client.Authenticate("*****@qq.com", "授权码")
+
+//打开收件箱
+var inbox = client.Inbox;
+inbox.Open(MailKit.FolderAccess.ReadOnly)
+
+//获取最近 10 封邮件
+for(i=inbox.Count;math.max(1,inbox.Count-9);-1){
+    var message = inbox.GetMessage(i-1);
+    console.log("主题:", message.Subject)
+
+    console.log("发件人:", message.From)
+    console.log("日期:", message.Date)
+    console.log("------------------------")
+    
+    //HTML格式邮件内容
+    console.log("HTML:", message.HtmlBody) 
+
+}
+
+//断开连接
+client.Disconnect(true)
+
+console.pause()

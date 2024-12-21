@@ -52,6 +52,8 @@ class INPUTDATA {
 }
 
 sendString = function(str,tk=0){
+	if(!str) return;
+	
 	var d = INPUTDATA();
 	var cbSize = ..raw.sizeof(d);
 	var wstr = ..string.toUtf16(str); 

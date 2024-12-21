@@ -426,7 +426,7 @@ getText = function(s,len){
 
 writeText = function(s,...){
 	var written = {INT size}; 
-	s = tostring(s);
+	s = s!==null? tostring(s) : "";
 	if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
 		..string.setUtf(s,1);
 	}

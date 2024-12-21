@@ -1,0 +1,36 @@
+﻿import process;
+import process.cache;
+
+import string.args;
+
+namespace process;
+
+class imTip{
+	ctor(argv){
+		
+		if(_IMTIP_APP){  
+			if(_STUDIO_INVOKED){
+				..table.assign(_ARGV,argv);
+			 
+				if(_ARGV.chat){ 
+					loadcodex("\dlg\aiChat.aardio");
+					return; 
+				}
+			}
+			else {
+				..process(..io._exepath,..string.args.joinEx(true,,,argv));  
+			} 
+		}
+		else {  
+			var path  = ..process.cache.find("imtip.exe");
+			if(path){
+				..process(path,..string.args.joinEx(true,,,argv));  	
+			}
+		} 
+	};  
+}
+
+
+/*****intellisense()
+process.imTip(argv) = @.imTip(\n	chat = "__/*打开 ImTip 的 AI 聊天助手窗口\nchat 参数可为空字符或 AI 助手配置名称。\n可选用 q 参数指定需要立即发送的问题。*/",\n	q = ""\n)
+end intellisense*****/

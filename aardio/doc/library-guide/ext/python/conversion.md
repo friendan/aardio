@@ -13,7 +13,8 @@
 
     除了纯值以外的其他 Python 对象在 aardio 中存为 py3.object 对象（ 简称 pyObject ）。如果是 py2 扩展库就是 py.object ，原理与用法都相同。
 
-## 使用纯值
+## 使用纯值 <a id="primitive" href="#primitive">&#x23;</a>
+
 
 示例：
 
@@ -35,7 +36,8 @@ console.pause();
 
 非常简单。
 
-## 使用 pyObject
+## 使用 pyObject <a id="pyObject" href="#pyObject">&#x23;</a>
+
 
 pyObject 也可以在 aardio 中也可以像普通对象一样使用。
 可以调用 pyObject 的成员函数、读写其属性、通过下标读写索引项、并支持各种常用运算符。
@@ -88,4 +90,29 @@ for( pyItem in pyList.each() ){
 }
 
 console.pause();
+```
+
+## 转换 Python 集合对象 <a id="set" href="#set">&#x23;</a>
+
+示例：
+
+```aardio
+import console.int;
+import py3;
+
+// aardio 数组转换为 Python 集合
+var pySet = py3.builtin.set({
+	1,2,3 
+})
+
+//添加成员
+pySet.add(456);
+
+/*
+需要先调用 pySet.toList() 转换为 Python 列表，
+然后才能调用 parseValue() 函数转换为 aardio 数组。
+*/
+var arr = pySet.toList().parseValue();
+
+console.dumpTable(arr)
 ```

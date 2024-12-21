@@ -1,0 +1,98 @@
+﻿//message 聊天消息
+import web.rest.aiChat;
+
+namespace web.rest.aiChat;
+
+class message{
+	ctor( /*输入构造函数所需要的参数*/ ){
+		this = ..table.array();
+		this.limit = 15;
+	};
+	push = function(msg){  
+		if(type.isString(msg)){
+			 
+			var lastMsg = this[#this]
+			if(lastMsg[["role"]]!="assistant"){
+				lastMsg = {
+            		role = "assistant";
+            		content  = msg||"";
+         		};
+         		
+         		..table.push(this,lastMsg);
+         		return;
+			}
+			elseif(msg) {
+				lastMsg.content = lastMsg.content++msg;
+			} 
+		}
+		else {
+			
+			//保留消息队列第一个与最后一个系统提示词 
+			if(this.limit && (#this-2)>=this.limit ){ 
+
+				while( var i = 1; i++ ; i < #this/*保留最后一个 system 知识库*/ ) {  
+					var msg = this[i];
+						
+					if(msg.role=="system" ){
+						//优先移除插入的知识库
+						..table.remove(this,i);
+						console.log("remove",i)
+						i--;
+					}
+						
+				}
+				
+				if( (#this-2)>=this.limit ){
+					..table.splice(this,2,(#this-2)-this.limit)
+				}  
+			}
+			
+			//加入聊天消息
+			..table.push(this,msg); 
+		} 
+	}
+	system = function(content){
+		this.push(
+    		{ 
+        		role = "system"; 
+        		content  = content;
+    		}
+		);
+	};
+	prompt = function(content){
+		this.push(
+    		{ 
+        		role = "user"; 
+        		content  = content;
+    		}
+		);
+	};
+	assistant = function(content){
+		this.push(content);
+	};
+	clear = function(){  
+		for(i=#this;1;-1){
+			..table.remove(this,i);
+		}
+	};
+	started = function(){  
+		for(i=1;#this){ 
+			if(this[i][["role"]]!="system"){
+				return true;
+			} 
+		} 
+	};
+}
+
+/*****intellisense()
+web.rest.aiChat.message() = 创建 AI 聊天助手消息队列\n!webRestChatMessage.
+end intellisense*****/
+
+/*****intellisense(!webRestChatMessage)
+started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
+clear() = 清除会话记录
+assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
+prompt(__/*提示词*/) = 添加并显示用户提示词
+system(__/*提示词*/) = 添加并显示系统提示词
+limit = 可选指定一个限制消息队列大小的数值。\nlimit 限制的队列大小不包含第一个系统提示词与最后一个系统提示词。
+end intellisense*****/

@@ -961,6 +961,8 @@ namespace win.form{
 			
 			if(this._messageOnly) return;
 			
+			if( (..win.autoQuitMessage===false) || (this.autoQuitMessage===false) ) return;
+
 			for(k,f in _forms){
 				 if( ! f._messageOnly ){
 					if( f == ..mainForm ) return;

@@ -84,7 +84,53 @@ if(#text){
 	}
 	
 	var url;
-	if(filePath){
+	
+	var mapUrl = {
+		"var":"doc://language-reference/variables-and-constants.html#var",
+		"null":"doc://language-reference/datatype/datatype.html",
+		"and":"doc://language-reference/operator/logical.html", 
+		"not":"doc://language-reference/operator/logical.html", 
+		"or":"doc://language-reference/operator/logical.html",
+		"false":"doc://language-reference/datatype/datatype.html", 
+		"true":"doc://language-reference/datatype/datatype.html",
+		"if":"doc://language-reference/statements/branching.html", 
+		"else":"doc://language-reference/statements/branching.html", 
+		"elseif":"doc://language-reference/statements/branching.html",
+		"select":"doc://language-reference/statements/branching.html", 
+		"case":"doc://language-reference/statements/branching.html",
+		"for":"doc://language-reference/statements/looping.html", 
+		"in":"doc://language-reference/statements/looping.html",
+		"while":"doc://language-reference/statements/looping.html", 
+		"do":"doc://language-reference/statements/looping.html",
+		"break":"doc://language-reference/statements/looping.html", 
+		"continue":"doc://language-reference/statements/looping.html",
+		"try":"doc://language-reference/statements/try.html", 
+		"catch":"doc://language-reference/statements/try.html",
+		"class":"doc://language-reference/class/class.html", 
+		"ctor":"doc://language-reference/class/class.html",
+		"function":"doc://language-reference/function/definitions.html",
+		"lambda":"doc://language-reference/function/lambda.html",
+		"λ":"doc://language-reference/function/lambda.html",
+		"return":"doc://language-reference/function/result.html", 
+		"namespace":"doc://language-reference/namespace.html",
+		"import":"doc://library-guide/import.html",
+		"with":"doc://language-reference/namespace.html",
+		"this":"doc://language-reference/class/class.html", 
+		"owner":"doc://language-reference/function/owner.html",
+		"global":"doc://language-reference/namespace.html",
+		"self":"doc://language-reference/namespace.html",
+	}
+ 
+	if( mapUrl[text] ){
+		url = mapUrl[text] ;
+	}
+	elseif(text=="lambda"  || text = "λ"){
+		url = "doc://language-reference/function/lambda.html";
+	}
+	elseif(text=="lambda"  || text = "λ"){
+		url = "doc://language-reference/function/lambda.html";
+	}
+	elseif(filePath){
 		var filePath = fsys.path.relative(filePath,"~/lib/");
         filePath = fsys.path.replaceExt(filePath,".html");
         filePath = io.joinpath("library-reference",filePath);
@@ -99,7 +145,10 @@ if(#text){
 	}
 	
 	if(url){
-		url = ..inet.url.appendExtraInfo(url,{q=text});	
+		if(!string.indexOf(url,"#")){
+			url = ..inet.url.appendExtraInfo(url,{q=text});	
+		}
+		
 		ide.openDocument(url); 
 		return;	
 	}

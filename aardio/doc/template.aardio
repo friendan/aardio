@@ -98,9 +98,10 @@ function getSelectedText() {
  
 </script>
 <link rel="stylesheet" href="/style.css">
+<script><?=$"/index.js"?></script>
 </head>
 <body>
 <?=htmlBody?>
-<script src="/index.js"></script>
+
 </body>
 </html>	 

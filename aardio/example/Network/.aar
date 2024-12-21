@@ -1,9 +1,9 @@
 ﻿网络管理=Manage
 wsock=wsock
 inet=inet
+上传下载=Transfer
+电子邮件=email
 protobuf=protobuf
 zeromq=zeromq
-上传下载=Transfer
-smtp=smtp
 curl=curl
 adb=adb

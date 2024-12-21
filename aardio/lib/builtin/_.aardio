@@ -238,6 +238,7 @@ type.isFile = function(obj){
 ::Kernel32.SetErrorMode(0) = 显示所有系统错误对话框
 ::Kernel32.GetSystemDefaultLCID() = 返回系统默认区域 ID
 ::Kernel32.GetUserDefaultLangID() = 返回当前用户使用的默认区域语言 ID，\n这与系统设置：区域语言 / 格式 一致。\n可使用 sys.locale.setUserDefault 函数修改此设置
+::Kernel32.GetThreadId(__/*线程句柄*/) = 将参数 @1 指定的线程句柄转换为线程 ID 。\n使用 thread.open 函数可将线程 ID 转为线程句柄。
 ::Kernel32.api("__/*输入函数名字*/","void()" ) = 声明Kernel32 API函数
 ::Kernel32.GetFileAttributes(__) = 获取参数 @1 指定路径的文件属性，文件不存在返回 -1。\n参数 @1 应当使用 io.fullpath 转换为完整路径。\n\n文件属性使用 _FILE_ATTRIBUTE_ 前缀的常量表示。\n使用 fsys.attrib 函数获取或修改文件属性更方便。
 ::User32 = 默认已加载的User32.dll模块对象\nUser32.dll提供Windows用户界面相关API

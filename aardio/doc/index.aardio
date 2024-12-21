@@ -681,7 +681,7 @@ winform.btnAiSearch.oncommand = function(id,event){
 
 winform.editKeyWord.setCueBannerText("按回车键输入搜索词，支持模式匹配语法");
 
-//wb.noScriptErr = true;
+wb.noScriptErr = true;
 
 var url;
 import inet.url;

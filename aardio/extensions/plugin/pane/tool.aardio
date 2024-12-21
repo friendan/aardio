@@ -1,6 +1,7 @@
 //树形文件视图
 import fonts.fontAwesome;
 import win.ui;
+import win.ui.explorer;
 /*DSG{{*/
 mainForm = win.form(text="工具";right=270;bottom=534;bgcolor=16777215;border="none";exmode="none";mode="child";parent=...)
 mainForm.add(
@@ -10,7 +11,6 @@ treeview={cls="treeview";left=0;top=27;right=270;bottom=532;asel=false;bgcolor=1
 )
 /*}}*/
 
-import win.ui.explorer;
 var explorer = win.ui.explorer( mainForm.treeview );//自动检测顶部的 combobox 并转换为驱动器下拉列表
 explorer.dirFirst = false;
 

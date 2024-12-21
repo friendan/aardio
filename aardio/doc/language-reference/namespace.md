@@ -75,19 +75,21 @@ console.pause(true);
 - 访问非当前名字空间的成员变量，可以加上有效的名字空间前缀。
 - 访问顶层名字空间要使用 `..` 操作符。
 
-## global 与 self 名字空间
+## global 与 self 名字空间 
 
-1. global
+1. global <a id="global" href="#global">&#x23;</a>
 
-global 为默认的全局名字空间，当aardio代码文件加载时，默认都运行在global名字空间。  
+
+global 为默认的全局名字空间，当aardio代码文件加载时，默认都运行在 global 名字空间。  
   
-2. self
+2. self <a id="self" href="#self">&#x23;</a>
 
 self 表示当前名字空间。
 
 默认的名字空间为 global，也就是说 self 默认指向 global。
 
-## import语句
+## import 语句 <a id="import" href="#import">&#x23;</a>
+
 
 import 语句可以将外部名字空间导入当前名字空间（并且总是会同时导入全局名字空间）。
 
@@ -114,3 +116,25 @@ aardio 库文件的物理路径与名字空间路径保持一致，对于模块�
 注意：名字空间不能是单个下划线(可以包含下划线)! aardio 使用  `_.aardio` 文件创建库目录下的默认库，除此之外 aardio 不建议在库名字空间中使用任何下划线。如果在 IDE 中右键创建库或改动库名，aardio 将会自动移除下划线。如果您一定要在库名字中包含下划，则必须在资源管理器中手动改名。
 
 请参考: [import](../library-guide/import.md)
+
+## with 语句 <a id="with" href="#with">&#x23;</a>
+
+
+with 语句用于将一个表达式返回的 table 对象绑定为当前名字空间，with 语句执行结束释放绑定。名字空间作用域为当前函数体（以及内部函数），单个代码文件属于匿名函数。
+
+with 语句必须执行完成（没有中途跳出）才能恢复当前函数名字空间。
+
+示例：
+
+```aardio
+import console; 
+
+var tab = {}
+
+with tab{
+	name = "测试";
+	..console.log(name);
+}
+
+console.logPause( tab.name ) 
+```

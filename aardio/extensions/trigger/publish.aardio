@@ -373,12 +373,12 @@ winform.onClose = function(hwnd,message,wParam,lParam){
 }
 
 winform.buttonMakeUpdater.oncommand = function(id,event){
-    winform.close()
+    winform.close(true)
     loadcodex("~\tools\Code\maker.aardio")
 }
 
 winform.btnEvb.oncommand = function(id,event){
-	winform.close();
+	winform.close(true);
 	loadcodex("~\tools\IDE\evb.aardio")
 }
 

@@ -9,7 +9,8 @@
 窗体代码文件时会自动忽略重复启动消息循环的 win.loopMessage() 调用。
 
 2. 所有非模态、非 MessageOnly 的独立窗口（ 或 mainForm 窗口 ）都关闭后，
-将会自动调用 win.quitMessage() 终止 win.loopMessage 创建的消息循环（通常也就是退出界面线程）。
+将会自动调用 `win.quitMessage()` 终止 `win.loopMessage` 创建的消息循环（通常也就是退出界面线程）。
+如果显式指定 `win.autoQuitMessage` 的值为 `false` 则禁止当前线程在关闭上述窗口时自动调用 `win.quitMessage()` 。如果窗口对象自身的 `autoQuitMessage` 的属性值为 `false` 也会禁止在关闭该窗口时自动调用 `win.quitMessage()` 。
 
 3. 使用 winform.doModal() 创建模态窗口, 模态窗口会禁用所有者窗口（也就是背景窗口）直到模态窗口关闭。
 模态窗口不能是子窗口（禁用父窗口就是禁用自己）。模态窗口创建独立的消息循环阻塞调用代码继续向后执行

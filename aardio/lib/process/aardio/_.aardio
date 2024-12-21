@@ -1,0 +1,66 @@
+﻿import win.reg;
+import process.cache;
+import process;
+
+namespace process;
+
+class aardio{
+	ctor(codePath){
+		var path = getPath();
+		if(path){
+			return ..process(path,codePath?{..io.fullpath(codePath)});
+		}
+	};  
+}
+
+namespace aardio{
+	
+	getPath = function(){
+	
+		var path = ..win.reg.query("HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\aardio.exe")
+		if(..io.exist(path)) return path;
+		
+		path = ..process.cache.find("aardio.exe",,false);
+		if(..io.exist(path)) return path;
+		
+		path = ..io.appData("aardio/aardio/aardio.exe");
+		return ..io.exist(path);
+	}
+	
+	getDir = function(){
+		var path = getPath();
+		if(path){
+			return ..io.splitpath(path).dir;
+		}
+	}
+	
+	download = function(){
+		import sevenZip.decoder2.httpFile;
+		
+		import sevenZip.decoder2.httpFile;
+		if( sevenZip.decoder2.httpFile.download("http://api.aardio.com/cdn/aardio"
+			,"aardio 开发环境",..io.appData("aardio/"), ,"aardio.7z") ){
+			
+			return ..io.appData("aardio/aardio/aardio.exe");	
+		} 
+	}	
+	
+	run = function(func,...){
+		var appDir = getDir() || ..io.createDir( ..io.appData("aardio/aardio/") ); 
+		
+		var f = ..fiber.create( 
+			function(...){
+				func(...)
+			},appDir ); 
+		
+		return ..fiber.resume(f,...); 
+	} 
+}
+
+/*****intellisense()
+process.aardio(__) = 运行 aardio ，可用参数 @1 指定要打开的文件路径。
+process.aardio.getPath() = 返回 aardio.exe 路径。
+process.aardio.getDir() = 返回 aardio 目录路径。
+process.aardio.download() = 下载 aardio 并返回 aardio.exe 路径。
+process.aardio.run(.(func,->->->) = 以 aardio 开发环境为根目录运行 func 参数指定的函数。\n如果未找到 aardio 目录，则以 `%LocalAppData%\aardio\aardio\` 为根目录。\n可选添加不定个数的参数将作为调用 func 的参数。\n调用成功则返回 true。
+end intellisense*****/

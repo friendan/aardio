@@ -1,4 +1,7 @@
 ﻿//plus 高级图像控件
+import win.ui.ctrl.metaProperty;
+import win.ui.tracker;
+import win.ui.ctrl.richedit;
 import gdip.graphics;
 import gdip.solidBrush;
 import gdip.lineBrush;
@@ -8,9 +11,6 @@ import gdip.font;
 import gdip.path;
 import gdip.textureBrush;
 import gdip.pathGradientBrush;
-import win.ui.ctrl.metaProperty;
-import win.ui.tracker;
-import win.ui.ctrl.richedit;
 
 namespace win.ui.ctrl;
 

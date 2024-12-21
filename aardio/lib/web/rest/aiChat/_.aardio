@@ -1,0 +1,134 @@
+﻿import web.rest.jsonClient;
+
+namespace web.rest;
+
+class aiChat{
+	ctor(cfg){
+		if(cfg.model===null) error("参数必须指定 model 字段。");  
+		if(cfg.url===null) error("参数必须指定 url 字段。"); 
+		
+		this = ..web.rest.jsonClient(cfg.userAgent,cfg.proxy,cfg.proxyBypass,cfg.httpFlags);
+		this.bot = this.api(cfg.url);
+		this.config = cfg;
+		this.paramMaxTokens = "max_tokens"; 
+		
+		/*
+		一些中转接口可能会支持用 OpenAI 兼容接口调用 Anthropic 模型，
+		否则请在模型名前加 @ 字符则走 Anthropic 接口。
+		*/
+		if(cfg.model[1]== '@'#){  
+			this.anthropic = true;
+			cfg.model = ..string.right(cfg.model,-2),//移除 @ 字符。
+			
+			//调用 Claude 接口 
+			this.setHeaders({
+				"anthropic-version":"2023-06-01";
+				"x-api-key":cfg.key
+			});
+			
+			if( cfg.maxTokens === null ){
+				cfg.maxTokens = 1024;
+			} 
+		}
+		else {
+			this.setAuthToken( cfg.key );
+			 
+			if(
+				..string.startWith(cfg.url,"https://generativelanguage.googleapis.com",true)
+				|| ..string.startWith(cfg.url,"https://api.openai.com/v1",true)	
+			){
+				this.paramMaxTokens = "max_completion_tokens";
+			}
+		}
+	};
+	messages = function(chatMessage,writeDelta,newParams){ 
+		var ok,err;
+		var cfg = this.config;
+		 
+		if(this.anthropic){  
+
+			//系统提示词要单独传参数
+			var system = ""; 
+			for(i=#chatMessage;1;-1){
+				var msg = chatMessage[i];
+				if(msg.role=="system"){
+					..table.remove(chatMessage,i);
+					system ++= msg.content;
+				}
+			}  
+			
+			cfg = {  
+				model = cfg.model; 
+				temperature = cfg.temperature,//温度  
+				system = system,
+				messages = chatMessage,
+				[this.paramMaxTokens] = cfg.maxTokens
+			};
+			
+			var params = ..table.assign(cfg,newParams);
+
+			var receiveCallback;
+			if(writeDelta){
+				params.stream = true //启用 SSE 事件流（ text/event-stream ）
+				
+				receiveCallback = function(eventStream){
+					var data = eventStream.data; 
+					
+					if(data.type == "content_block_delta"){
+						writeDelta(data.delta.text)
+					}
+					elseif(data.type == "message_stop"){
+						writeDelta(null)
+					} 	
+				} 
+			}
+			
+			ok,err = this.bot.messages(params,receiveCallback); 
+		}
+		else {  
+			cfg = {  
+				model = cfg.model,
+				temperature = cfg.temperature,//温度 
+				messages = chatMessage,
+				[this.paramMaxTokens] = cfg.maxTokens
+			}; 
+			
+			var params = ..table.assign(cfg,newParams);
+
+			var receiveCallback;
+			if(writeDelta){
+				params.stream = true //启用 SSE 事件流（ text/event-stream ）
+				
+				receiveCallback = function(eventStream){
+					var choices = eventStream.data[["choices"]]; 
+					if(choices){
+						var content = choices[[1]][["delta"]][["content"]];
+						if(#content){ 
+							writeDelta(content); 
+						}
+						
+						if(choices.finish_reason){
+							writeDelta(null);
+						} 
+					}
+					elseif(eventStream.data[[1]]=="DONE") {
+						writeDelta(null);
+					} 	
+				} 
+			}
+			 
+			//调用 OpenAI 兼容接口
+			ok,err = this.bot.chat.completions(params,receiveCallback);
+		}
+		
+		return ok,err;
+	}  	
+}
+
+/*****intellisense()
+web.rest.aiChat = 用于调用 Anthropic 或 OpenAI 兼容 AI 聊天接口。\n[范例](doc://example/Web/REST/aiChatCon.aardio)。\n如果需要 Web 聊天界面可参考 web.form.chat 库源码。
+web.rest.aiChat(config) = @.aiChat(\n	proxy = proxy,\n	model = "@claude-3-5-sonnet-latest",\n	temperature = 0.1,\n	maxTokens = 1024,\n	url = ""\n)__/*创建 AI 聊天客户端。参数说明：\nurl 指定 Anthropic 或 OpenAI 兼容接口网址。\nmodel 指定模型名称，首字符为 @ 则使用 Anthropic 接口。\n可选用 proxy 指定代理服务器，代理格式: doc://library-guide/std/inet/proxy.md \ntemperature 指定温度。\nmaxTokens 限定最大回复长度。*/
+web.rest.aiChat() = !webRestAiChat.
+!webRestAiChat.messages( = 调用聊天会话接口。
+!webRestAiChat.messages(.(msg,writeDelta,params) = 调用聊天会话接口。\nmsg 参数指定 web.rest.aiChat.message 对象。\n可选用 writeDelta 指定 AI 以流式回复时接收文本的回调函数。\n└── 回调参数为文本时则应输出增量回复，回调参数为 null 时完成输出。\n└── 不指定 writeDelta 参数则禁用流式回复，函数直接返回表对象。\n参数 params 可选用一个表指定要发送的其他请求参数。
+end intellisense*****/

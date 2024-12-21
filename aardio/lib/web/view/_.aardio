@@ -174,6 +174,10 @@ class view {
 		_dll.webview_set_size(this.browser);
 	};
 	go = function(url,devPort,timeout){ 
+		if(type(devPort)=="table"){
+			url = ..inet.url.appendExtraInfo(url,devPort);
+			devPort = null;
+		}
 		
 		if(!this.browser) return; 
 		if(_STUDIO_INVOKED && devPort){
@@ -712,6 +716,7 @@ end intellisense**/
 /****intellisense(!stdWebView2) 
 go( = 打开网址或文件地址。\n如果需要用这个函数打开工程内的资源文件，\n请提前导入 wsock.tcp.simpleHttpServer 或 wsock.tcp.asynHttpServer 。\n\n如果要在打开的网页上跳转锚点（也就是跳转 # 开头的网址），\n可改用 location 属性跳转
 go(.(url,devPort,devTimeout) = 打开 @url 参数指定的网址。\n\n如果提前导入 wsock.tcp.simpleHttpServer 或 wsock.tcp.asynHttpServer \n则 io.localpath 支持的路径转换为通过嵌入 HTTP 服务器访问的网址。\n\n使用 HTTP 嵌入服务器可自动支持嵌入资源路径与 SPA 单页应用。\n如果同时文件名为 index.html 或 index.aardio。\n则上级目录设为 documentBase 根目录，后续请求路径应当以 "/" 代替 documentBase。\n\n可选使用@devPort参数指定前端项目开发环境调试端口，\n可选用@devTimeout参数指定检测调试端口超时\n@devPort,@devTimeout参数仅在开发环境中有效
+go(.(url,params) = 打开 @url 参数指定的网址。\n@params 用一个表对象（table）指定 URL 参数。\n调用 inet.url.appendExtraInfo 函数在网址后添加参数 。
 preloadScript(__/*JS 脚本*/) = 将 字符串参数@1 指定的 JS 脚本添加为网页默认加载脚本,\n在网页初始化时执行，保证在 window.onload 事件前执行,\n不会覆盖之前添加的脚本
 doScript(__/*JS 脚本*/) = 执行 字符串参数@1 指定的 JS 脚本
 html = @.html = /**\n<!doctype html>\n<html>\n<head>\n    <meta charset="utf-8">\n    <style type="text/css">\n    html,body{ height:100%; margin:0; } __/*将网页写入内存。\n支持 aardio 模板语法，模板的 owner 参数为当前 web.view 对象。\n包含 HTML 的块注释可赋值为字符串，首尾星号数目要一致。\n\nWebView2 通过 html 属性内存加载体积太大的 HTML 会卡住，改用本地文件可流畅打开。\n如果要引用其他本地文件，也必须改用 wb.go 打开 html 文件。*/\n    </style>\n    <script></script>\n</head>\n<body></body>\n</html>\n**/

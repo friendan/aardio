@@ -1,96 +1,51 @@
 ﻿//chat 聊天界面
 import web.form;
 import web.form.simpleMarkdown;
-
+import web.rest.aiChat.message;
 namespace web.form;
 
 class chat{
 	ctor( ... ){
 		this = ..web.form.simpleMarkdown(...)
-		this.chatMessage = ..table.array();
-		this.limit = 15;
+		this.chatMessage = ..web.rest.aiChat.message();
 	};
 	system = function(content){
-		this.pushMessage(
-    		{ 
-        		role = "system"; 
-        		content  = content;
-    		}
-		);
+		this.pushMessage({ 
+        	role = "system"; 
+        	content  = content;
+    	});
 	};
 	prompt = function(content){
-		this.pushMessage(
-    		{ 
-        		role = "user"; 
-        		content  = content;
-    		}
-		);
+		this.pushMessage({ 
+        	role = "user"; 
+        	content  = content;
+    	});
 	};
 	assistant = function(content){
-		this.pushMessage(content);
+		this.pushMessage(content);  
 	};
 	pushMessage = function(msg){ 
-		var chatMessage = this.chatMessage;
-		
+	 
 		//加入聊天消息 
 		if(msg){
+			this.chatMessage.push(msg);
 			
 			if(type.isString(msg)){
-				this.writeDelta(msg);
-				
-				var lastMsg = chatMessage[#chatMessage]
-				if(lastMsg[["role"]]!="assistant"){
-					lastMsg = {
-            			role = "assistant";
-            			content  = msg||"";
-         			};
-         			
-         			..table.push(chatMessage,lastMsg);
-         			return;
-				}
-				elseif(msg) {
-					lastMsg.content = lastMsg.content++msg;
-				} 
+				this.writeDelta(msg); 
 			}
-			else {
+			elseif(msg.role=="user"){ 
 				
-				//保留消息队列第一个与最后一个系统提示词 
-				if(this.limit && (#chatMessage-2)>=this.limit ){ 
-	
-					while( var i = 1; i++ ; i < #chatMessage/*保留最后一个 system 知识库*/ ) {  
-						var msg = chatMessage[i];
-						 
-						if(msg.role=="system" ){
-							//优先移除插入的知识库
-							..table.remove(chatMessage,i);
-							console.log("remove",i)
-							i--;
-						}
-						 
-					}
-					
-					if( (#chatMessage-2)>=this.limit ){
-						..table.splice(chatMessage,2,(#chatMessage-2)-this.limit)
-					}  
+				if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
+					this.writeDelta('\n\n<span class="chat-role user">我</span>\n
+    				<div class="chat-prompt">\n'+msg.content + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
 				}
-				
-				//加入聊天消息
-				..table.push(chatMessage,msg);
-				
-				if(msg.role=="user"){ 
-					
-					if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
-						this.writeDelta('\n\n<span class="chat-role user">我</span>\n
-    					<div class="chat-prompt">\n'+msg.content + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
-					}
-					else{
-    					this.writeDelta('\n\n<span class="chat-role user">我</span>\n
-    					<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
-    				}
-    				 
-    				this.showLoading("正在思考 ");
-				}
-			} 
+				else{
+    				this.writeDelta('\n\n<span class="chat-role user">我</span>\n
+    				<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+    			}
+    				
+    			this.showLoading("正在思考 ");
+    		}
 		}
 		else{
 			this.writeDelta(null);  
@@ -115,15 +70,10 @@ class chat{
 	}; 
 	clear = function(){
 		this.setMarkdown("");
-		this.chatMessage = ..table.array();
+		this.chatMessage.clear();
 	};
 	started = function(){
-		var chatMessage = this.chatMessage;
-		for(i,msg in chatMessage){
-			if(msg[["role"]]!="system"){
-				return true;
-			} 
-		} 
+		return this.chatMessage.started(); 
 	};
 }
 
@@ -131,10 +81,10 @@ class chat{
 web.form.chat = 用于显示 Markdown 生成的 HTML 的 AI 助手专用 web 窗体。\n此对象继承自 web.form.simpleMarkdown 与 web.form 对象。
 web.form.chat( = 创建用于显示 Markdown 生成的 HTML 的 AI 助手专用 web 窗体。 \n此对象继承自 web.form.simpleMarkdown 与 web.form 对象。
 web.form.chat(.(winform,hostFlags,dlControl,userAgent,securityTrusted) = 创建 Web 窗体。\nwinform 必须指定窗体或 custom 控件。\n其他参数不必指定，这些参数的用法请参考 web.form 。
-web.form.chat() = !stringChatMessageForm.
+web.form.chat() = !webFormChat.
 end intellisense*****/
 
-/*****intellisense(!stringChatMessageForm)
+/*****intellisense(!webFormChat)
 started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
 clear() = 清除会话记录
 errorMessage(__/*错误信息*/) = 显示错误信息

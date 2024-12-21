@@ -4,8 +4,8 @@ import fonts.fontAwesome;
 var winform = win.form(text="aardio - AI 聊天助手";right=759;bottom=607)
 winform.add(
 btnClear={cls="plus";text="清除";left=589;top=572;right=655;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF014';notify=1;textPadding={left=25};z=6};
-btnCopy={cls="plus";text="复制";left=202;top=572;right=269;bottom=602;align="left";color=3947580;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0EA';notify=1;textPadding={left=25};z=11};
-btnSend={cls="plus";text="问 AI";left=660;top=572;right=732;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF007';notify=1;textPadding={left=25};z=5};
+btnCopy={cls="plus";text="复制";left=202;top=572;right=269;bottom=602;align="left";color=3947580;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0C5';notify=1;textPadding={left=25};z=11};
+btnSend={cls="plus";text="问 AI";left=660;top=572;right=732;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0AA';notify=1;textPadding={left=25};z=5};
 btnSetting={cls="plus";text="设置";left=513;top=572;right=580;bottom=602;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF013';notify=1;textPadding={left=25};z=7};
 chkFix={cls="plus";text="更正";left=276;top=572;right=336;bottom=603;align="left";db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome')};iconText='\uF0C8 ';notify=1;textPadding={left=24};z=12};
 editMaxTokens={cls="edit";left=427;top=577;right=470;bottom=600;align="right";db=1;dr=1;edge=1;z=9};
@@ -207,6 +207,12 @@ winform.btnClear.oncommand = function(id,event){
 
 //响应按键事件，输入用户提示词
 winform.btnSend.oncommand = function(id,event){
+	var prompt = winform.editPrompt.text;
+	if(!#prompt){
+		winform.msgboxErr("请在上面输入问题。"); 
+		winform.editPrompt.setFocus();
+		return;
+	}
 	
 	//按钮显示等待动画
 	winform.btnSend.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
@@ -222,8 +228,6 @@ winform.btnSend.oncommand = function(id,event){
 		assistantMsg.content = ide.aifix.markdown(assistantMsg.content,true);
 	}
 	
-	var prompt = winform.editPrompt.text;
-	 
     var knowledge = ""
 	prompt = string.replace(prompt,"(https?\://<www\.>?aardio\.com/zh\-cn/doc/\S+)\.<html>|<md>",
 		function(url){
@@ -248,10 +252,13 @@ winform.btnSend.oncommand = function(id,event){
 
 	//输入 AI 提示词
 	wb.prompt( prompt );
+	winform.editPrompt.text = "";
 
+	config.maxTokens = winform.spinMaxTokens.pos;
+	
 	//创建多线程向服务端发送请求
 	thread.invoke( 
-		function(wb,config,maxTokens){
+		function(wb,config){
 		
 			for(k,v in config){ 
 				if(v=="")config[k] = null;
@@ -268,99 +275,19 @@ winform.btnSend.oncommand = function(id,event){
 				temperature = 0.1;
 			});
 			 
-			if(maxTokens>1024 && (config.key === "sk-2f729981180a45e3b28971e9a5c68c72" ) ){
+			if(config.maxTokens>1024 && (config.key === "sk-2f729981180a45e3b28971e9a5c68c72" ) ){
 				wb.errorMessage(`回复长度超过 1024 时，必须更改为您自己的 API 密钥 。<a href="https://platform.deepseek.com">点这里获取密钥</a>，&nbsp;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点这里设置新密钥</a>。`);
 				return;
 			}
 		
 			//导入调用 HTTP 接口的 REST 客户端
-			import web.rest.jsonClient;
-			var client = web.rest.jsonClient(,config.proxy);
-			
-			var bot = client.api(config.url);
-			var ok,err;
+			import web.rest.aiChat;
+			var client = web.rest.aiChat(config);
+			 
+			var ok,err = client.messages(wb.chatMessage,function(deltaText){
+				wb.assistant(deltaText);
+			} );
 	
-			/*
-			一些中转接口可能会支持用 OpenAI 兼容接口调用 Claude 模型，
-			否则请在模型名前加 @ 字符则走 Claude 接口。
-			*/
-			if(config.model[1]== '@'#){
-				
-				//移除 @ 字符。
-				config.model = string.right(config.model,-2);
-			
-				//调用 Claude 接口 
-				client.setHeaders({
-					"anthropic-version":"2023-06-01";
-					"x-api-key":config.key
-				});
-				
-				//系统提示词要单独传参数
-				var system = "";
-				var chatMessage = wb.chatMessage;
-				for(i=#chatMessage;1;-1){
-					var msg = chatMessage[i];
-					if(msg.role=="system"){
-						..table.remove(chatMessage,i);
-						system ++= msg.content;
-					}
-				}
-				
-				ok,err = bot.messages({  
-					model = config.model,
-					messages = chatMessage, 
-					temperature = config.temperature,//温度
-					stream = true,//启用 SSE 事件流（ text/event-stream ）
-					max_tokens = maxTokens,//限制 AI 生成的  token 数
-					system = system,
-				},function(eventStream){ //如果不是流式推送则不需要用回调函数接收
-					var data = eventStream.data;
-					
-					if(data.type == "content_block_delta"){
-						wb.assistant(data.delta.text)
-					}
-					elseif(data.type == "message_stop"){
-						wb.assistant(null)
-					} 
-				} ) 	
-			}
-			else {
-				client.setAuthToken( config.key ); 
-				
-				var paramMaxTokens = "max_tokens"
-				if(
-					..string.startWith(config.url,"https://generativelanguage.googleapis.com",true)
-					|| ..string.startWith(config.url,"https://api.openai.com/v1",true)	
-				){
-					paramMaxTokens = "max_completion_tokens"
-				}
-			
-				//调用 OpenAI 兼容接口
-				ok,err = bot.chat.completions({  
-					model = config.model,
-					messages = wb.chatMessage, 
-					temperature = config.temperature,//温度
-					stream = true,//启用 SSE 事件流（ text/event-stream ）
-					[paramMaxTokens] = maxTokens,//限制 AI 生成的  token 数
-				},function(eventStream){ //如果不是流式推送则不需要用回调函数接收
-				
-					var choices = eventStream.data[["choices"]]; 
-					if(choices){
-						var content = choices[[1]][["delta"]][["content"]];
-						if(#content){ 
-							wb.assistant(content); 
-						}
-						
-						if(choices.finish_reason){
-							wb.assistant(null);
-						} 
-					}
-					elseif(eventStream.data[[1]]=="DONE") {
-						wb.assistant(null);
-					} 
-				} ) 
-			} 
-			
 			if(err){
 				//获取错误对象（解析 JSON 格式的错误信息）
 				var errObject = client.lastResponseError()
@@ -372,7 +299,7 @@ winform.btnSend.oncommand = function(id,event){
 				}
 			}  
 			 
-		},wb,config,winform.spinMaxTokens.pos//将参数传入线程
+		},wb,config//将参数传入线程
 	)
 }
 
@@ -382,6 +309,7 @@ wb.onWriteEnd = function(){
 	winform.btnClear.disabled = false;
 	winform.btnCopy.disabled = false;
 	winform.chkFix.disabled = false;
+	winform.editPrompt.setFocus();
 }
 
 //在 AI 回复结束以前回调此函数，自动修正 aardio 代码块中的常见幻觉错误
@@ -479,10 +407,10 @@ winform.btnSetting.oncommand = function(id,event){
 			frmSetting.editModel.text = "@claude-3-5-sonnet-latest"
 		}
 		elseif(url=="https://generativelanguage.googleapis.com/v1beta"){
-			frmSetting.editModel.text = "gemini-exp-1121"
+			frmSetting.editModel.text = "gemini-2.0-flash-exp"
 		}
 		elseif(url=="https://api.x.ai/v1"){
-			frmSetting.editModel.text = "grok-beta"
+			frmSetting.editModel.text = "grok-2-1212"
 		}
 		elseif(url=="https://api.openai.com/v1"){
 			frmSetting.editModel.text = "chatgpt-4o-latest"
@@ -611,7 +539,7 @@ winform.btnSetting.oncommand = function(id,event){
 		config.quickRef = frmSetting.chkQuickRef.checked;
 		config.save();
 		
-		frmSetting.endModal(); 
+		frmSetting.endModal();
 		
 		if(!wb.started()){
 			resetMessages();
@@ -696,6 +624,7 @@ wb.write("
 - 按住 `Ctrl`键点 `复制` 按钮可复制 AI 最后一次输出的代码块。
 - 请注意查看下面提示词输入框的右键菜单。
 - 本工具支持联网自动读取 aardio 文档，复制 aardio 在线文档链接会自动插入提示词。
+- [点这里开通 VIP 专属技术支持服务](https://aardio.com/vip)
 ")
 
 //获取 IDE 中当前选中的代码
@@ -767,7 +696,12 @@ winform.editPrompt.enablePopMenu(function(){
 		{ "插入 自定义控件使用指南（界面模块化）";  function(id){
 			winform.editPrompt.selText = " [自定义控件使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/ctrl/custom.html) "
 		}; 0};  
-		
+		{ "插入 调用 Python 文档";  function(id){
+			winform.editPrompt.selText = " [aardio 调用 Python 入门指南](https://www.aardio.com/zh-cn/doc/library-guide/ext/python/_.html) "
+		}; 0};
+		{ "插入 超级热键文档";  function(id){
+			winform.editPrompt.selText = " [超级热键使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/key/hotkey.html) "
+		}; 0};  
 		{ "检索相关 aardio 文档";  function(id){
 			var q = winform.editPrompt.selText;
 			if(#q){

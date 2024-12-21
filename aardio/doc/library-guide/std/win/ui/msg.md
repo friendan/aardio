@@ -20,7 +20,7 @@
     
 "消息循环"实际也就是窗口程序的主循环，win.loopMessage 退出则窗口程序终止。
 
-应用程序可以通过调用 win.quitMessage() 退出消息循环。在 aardio 中当所有非模态、非 MessageOnly 的独立窗口（ 或 mainForm 窗口 ）都关闭后，将会自动调用 win.quitMessage()  并终止消息循环退出界面线程。
+应用程序可以通过调用 `win.quitMessage()` 退出消息循环。在 aardio 中当界面线程的所有非模态、非 MessageOnly 的独立窗口（ 或 mainForm 窗口 ）都关闭后，将会自动调用 `win.quitMessage()`  并终止消息循环（之后如果没有执行其他代码就会退出界面线程）。如果显式指定 `win.autoQuitMessage` 的值为 `false` 则禁止当前线程在关闭前述窗口时自动调用 `win.quitMessage()` 。如果窗口对象自身的 `autoQuitMessage` 的属性值为 `false` 也会禁止在关闭该窗口时自动调用 `win.quitMessage()` 。
 
 请参考： [启动与退出窗口消息循环](../_.md#loopMessage)
 

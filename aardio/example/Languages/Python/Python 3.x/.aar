@@ -1,4 +1,4 @@
-入门=QuickStart.aardio
+﻿入门=QuickStart.aardio
 执行 Python 代码=exec.aardio
 导入模块 =import.aardio
 安装模块=import.install.aardio
@@ -16,4 +16,5 @@ run=run.aardio
 md5 示例=md5.aardio
 matplotlib=matplotlib.aardio
 bs4=bs4.aardio
+精简字体=fontTools.aardio
 JSON-RPC=JSON-RPC

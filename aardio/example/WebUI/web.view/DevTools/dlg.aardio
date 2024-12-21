@@ -20,9 +20,12 @@ wb.cdpSubscribe("Page.javascriptDialogOpening",function(dlg){
 	dlg.type 是对话框类型
 	dlg.url 对话框所在页面网址
 	*/
-	
-	//自动关闭弹框
-	wb.cdp("Page.handleJavaScriptDialog",{accept=true})
+
+	//为避免阻塞导致某些网页出现异常，应返回异步执行的函数关闭弹框。
+	return function(){
+		//自动关闭弹框
+		wb.cdp("Page.handleJavaScriptDialog",{accept=true})
+	} 
 })
  
 wb.html = /**

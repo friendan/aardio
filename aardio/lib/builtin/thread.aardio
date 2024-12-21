@@ -117,7 +117,7 @@ setAffinity = function( cpu = 1,h){
 };
 
 stillActive = function(handle){
-    return getExitCode(handle) == 0x103/*_STILL_ACTIVE*/	
+    return !wait(handle,0); //(getExitCode(handle) == 0x103/*_STILL_ACTIVE*/) 
 };
 
 self.invoke = function(...){
@@ -338,7 +338,9 @@ thread.waitOne(.(->->->,timeout) = 等待一个或多个线程其中一个返回
 thread.wait(__) =  等待一个线程句柄返回\n可选使用第二个参数指定超时值（单位毫秒）\n成功返回true,超时返回false;
 thread.waitAll(__) = 等待一个或多个线程返回\n参数可以是多个线程句柄,或包含多个线程句柄的数组\n可选使用最后一个参数指定超时值（单位毫秒）\n成功返回值为真,失败返回空,\n返回值2为错误类型,该值为字符串"timeout"表示超时
 thread.waitClose(__) = 等待一个或多个线程返回,并释放所有线程句柄\n参数可以是多个线程句柄,或包含多个线程句柄的数组
-thread.invoke(线程函数,其他参数) = @.invoke( \n	function(){\n		__/*创建线程但不返回线程句柄,线程句柄已自动关闭,\n注意线程函数有独立的全局变量环境,线程引用的库应当在线程函数内 import*/\n	}\n)
+thread.invoke( = 创建线程但不返回线程句柄，线程句柄已自动关闭。
+thread.invoke(.(线程函数,其他调用参数) = @.invoke( \n	function(){\n		__/*创建线程但不返回线程句柄。\n注意线程函数有独立的全局变量环境,线程引用的库应当在线程函数内 import*/\n	}\n)
+thread.invoke(.(aardio文件路径,调用参数) = 创建线程运行 *.aardio 文件，不返回线程句柄。\n该文件所在目录将被设定为此线程的应用程序根目录,\n该目录下的"/lib/"目录将被设定为用户库目录,\n在线程文件内可使用owner参数获取这里传入的首个调用参数。
 thread.invokeEx(线程函数,其他参数) = @.invokeEx( \n	function(){\n		__/*创建线程并等待线程执行完成,然后自动关闭线程句柄。\n可用于原生多线程回调函数中创建独立线程以启用 COM 接口,\n注意线程函数有独立的全局变量环境,线程引用的库应当在线程函数内 import*/\n	}\n)
 thread.stillActive(__) = 线程是否未退出,参数为线程句柄
 thread.callWndMeta = 跨线程传输的窗口对象元表,用于支持跨线程调用

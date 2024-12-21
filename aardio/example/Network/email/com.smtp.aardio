@@ -1,4 +1,4 @@
-//com.smtp
+//com.smtp 发送邮件
 import console;
 import com.smtp;
 

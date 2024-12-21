@@ -19,7 +19,8 @@ wb.onNewWindow = function(url){
  			winform.msgbox(filePath,"本地文件"); 	
  		}
  		else {
- 		 	wb.go(url); 
+ 		 	//用 wb.location 代替 wb.go 以发送 HTTP referrer 请求头（引用网址）。 
+			wb.location = url;
  		} 
  	}
 }

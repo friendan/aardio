@@ -285,8 +285,9 @@ jreHomeFromRegistry = function(x64,version){
 				return jrehome,ver;
 			}
 			regItem.close();
-		}
+		} 
 	}
+	if(version!==null) return;
 	
 	for( keyname in regJre.eachKey() ){
 		var regItem = regJre.open(keyname); 

@@ -194,7 +194,7 @@ namespace metaProperty {
 			msgboxErr = function(str,title){
 				return ..win.msgboxErr(str,title,owner[["hwnd"]])
 			};
-			close = function(){
+			close = function(async){
 				if( ! owner.isForm ){
 					
 					var p = owner[["_parentForm"]]; 
@@ -231,7 +231,8 @@ namespace metaProperty {
 				}  
 				
 				if( ..win.isWindow(owner.hwnd)  ){
-					::SendMessage(owner[["hwnd"]],0x10/*_WM_CLOSE*/);
+					if(!async)::SendMessage(owner[["hwnd"]],0x10/*_WM_CLOSE*/);
+					else ::PostMessage(owner[["hwnd"]],0x10/*_WM_CLOSE*/,0,0);
 				}
 			};
 			autoResize = { 

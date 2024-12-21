@@ -1,0 +1,41 @@
+//AI 聊天简版
+import console; 
+
+import web.rest.aiChat;
+
+//创建 Anthropic 或 OpenAI 兼容 AI 聊天接口
+var ai = web.rest.aiChat(   
+	/*
+	下面的测试密钥 24 小时后失效，
+	DeepSeek 的 key 充 10 元估计能用一年，请自己申请一个吧！
+	*/
+	key = "sk-2f729981180a45e3b28971e9a5c68c72";
+	url = "https://api.deepseek.com/v1";//接口地址
+	model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+	temperature = 0.1;//温度
+	maxTokens = 1024,//最大回复长度
+)
+
+//创建 AI 会话消息队列
+import web.rest.aiChat.message;
+var msg = web.rest.aiChat.message();
+
+//添加系统提示词
+msg.system("你是 aardio 编程助手。");
+while( 
+	var txt = console.getText( "请输入问题:" ) 
+	) {
+	
+	//添加用户提示词
+	msg.prompt(txt);
+	
+	/*
+	调用聊天接口。
+	如果参数 2 指定回调函数，则启用流式输出，并将 AI 逐步回复的增量文本作为回调参数。
+	可选用参数 3 指定一个表，表中可指定要添加的其他请求参数。
+	*/
+	var ok,err = ai.messages(msg,console.writeText);
+	if(err) console.error(err);
+	
+	console.print('\n-----------------------------\n');
+}
