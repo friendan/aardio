@@ -1,5 +1,6 @@
 ﻿import process;
 import process.cache;
+import win.ui.atom;
 
 import string.args;
 
@@ -30,7 +31,40 @@ class imTip{
 	};  
 }
 
+namespace imTip{
+		
+		sendCommand = function(data,dataType){
+			var _,hwnd = ..win.ui.atom.find("E474890D-1DFA-4575-B456-7B46C15665DC.imtip")
+			if(hwnd){
+				..win.sendCopyData(hwnd,data,dataType);
+			}
+		}
+		
+		imeEnable = function(){
+			sendCommand("ime-enable");
+		}
+		
+		
+		imeDisable = function(){
+			sendCommand("ime-disable");
+		}
+		
+		imeSwitch = function(){
+			sendCommand("ime-switch");
+		}
+		
+}
+
+
 
 /*****intellisense()
 process.imTip(argv) = @.imTip(\n	chat = "__/*打开 ImTip 的 AI 聊天助手窗口\nchat 参数可为空字符或 AI 助手配置名称。\n可选用 q 参数指定需要立即发送的问题。*/",\n	q = ""\n)
 end intellisense*****/
+
+/*****intellisense(process.imTip)
+sendCommand(.(data,dataType) = 发送 ImTip 命令，支持的命令请参考 ImTip 源码。
+imeEnable() = 启用 ImTip 输入法状态提示
+imeDisable() = 禁用 ImTip 输入法状态提示
+imeSwitch() = 禁用或启用 ImTip 输入法状态提示
+end intellisense*****/
+

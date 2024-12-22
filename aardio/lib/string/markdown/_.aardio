@@ -219,14 +219,23 @@ namespace markdown{
 string.markdown（Sundown） 解析器默认规则：
 
 - 列表解析默认使用宽松规则。
-无论一级列表还是二级列表（无论类型是否相同），都不要求前面有或没有空格。
+无论一级列表还是二级列表（无论类型是否相同），都不要求前面有或没有空行。
 - 标题的开始标记 `#` 号后面必须有空格。
 - 强调语法使用严格模式，**星号内则不能有空格**，但前面必须有空格。
 - 默认支持删除线，示例： ~~这里显示删除线~~ 。
 - 默认启用表格扩展。
 - 默认启用围栏代码块（Fenced Code Blocks）扩展。
 
-DLL 源码: https://github.com/vmg/sundown
+---
+
+string.markdown 调用的 sundown.dll 
+由 aardio 基于 https://github.com/vmg/sundown 改进。
+
+aardio 用户可在遵循 aardio 用户协议与 aardio 开源许可证相关条款、原始开源项目相关条款
+的基础上将此此修改版 sundown 自由使用于 aardio 程序开发，但是禁止将其用于非 aardio 开发的程序。
+禁止基于其他目的单独分发由 aardio 提供的 sundown 组件与源码，所有权利保留。
+
+---
 
 end intellisense*****/
 

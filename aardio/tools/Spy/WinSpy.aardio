@@ -431,9 +431,23 @@ winform.editStyle.onFocusGot = function(){
 	}
 	
 	for(k,v in style){
-		if( v &  s) winform.richedit.print(k) 
+		if( v &  s) {
+			if(v==0x400000/*_WS_DLGFRAME*/ && s & 0xC00000/*_WS_CAPTION*/){
+				/*
+				_WS_BORDER 样式显示边框
+				_WS_CAPTION 样式显示标题栏
+				
+				_WS_CAPTION == _WS_DLGFRAME | _WS_BORDER 
+				
+				因为 _WS_CAPTION 包含 _WS_BORDER 
+				所以有标题栏的窗口一定有边框，而无边框的窗口一定没有标题栏。 
+				*/
+			}
+			else {
+				winform.richedit.print(k) 
+			} 
+		}
 	}
-	
 	
 };
 

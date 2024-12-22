@@ -8,7 +8,7 @@
 
 参考：[类](../../../language-reference/class/class.md)
   
-```aardio 
+```aardio
 //定义结构体
 class Point{
    int x = 0;  

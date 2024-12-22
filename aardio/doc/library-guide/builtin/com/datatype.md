@@ -181,7 +181,7 @@ COM 函数也可以兼容 raw 库以下函数创建的类型化数值：
 
 # 八、示例
 
-```aardio 
+```aardio
 import com;
 
 //创建用于 COM 函数的 16位数值

@@ -1,9 +1,10 @@
-//临视窗口创建销毁
+//临视窗口创建、销毁、激活、全屏等事件
+//相关范例: doc://example/System/Desktop/appBarMsg.html
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="aardio form";right=448;bottom=249;)
+var winform = win.form(text="临视窗口创建、销毁、激活、全屏等事件";right=603;bottom=384)
 winform.add(
-edit={cls="edit";left=8;top=13;right=437;bottom=239;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;vscroll=1;z=1}
+edit={cls="edit";left=8;top=8;right=594;bottom=372;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;vscroll=1;z=1}
 )
 /*}}*/
 
@@ -19,20 +20,29 @@ shellhook.onShellHook=function(hshell,hwnd){
 	}
 	
 	//判断钩子拦截到的消息类型
+	//https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registershellhookwindow
     select(hshell ) {
 		case 0x1/*_HSHELL_WINDOWCREATED*/ {  
-			winform.edit.text +=   "一个窗口创建"+hwnd+"进程ID：" + pid + "线程ID:" +tid + '\r\n    标题:' + win.getText(hwnd) + '\r\n\r\n'
+			winform.edit.print( "窗口创建"+hwnd+"进程ID：" + pid + "线程ID:" +tid + '\r\n    标题:' + win.getText(hwnd) )
 		}
 		case 0x2/*_HSHELL_WINDOWDESTROYED*/{
-			winform.edit.text += "一个窗口销毁"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) + '\r\n\r\n'
+			winform.edit.print( "窗口销毁"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) )
 		}   
 		case 0x4/*_HSHELL_WINDOWACTIVATED*/{
-			winform.edit.text += "一个窗口激活"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) + '\r\n\r\n'
+			winform.edit.print("窗口激活"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) )
 		}
-		
+		case 0x35/*_HSHELL_FULLSCREEN_ENTERING*/{
+			if(win.getForeground() ==hwnd){
+				winform.edit.print("窗口全屏"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) )
+			}
+		}
+		case 0x36/*_HSHELL_FULLSCREEN_ENTERING*/{
+			if(win.getForeground() ==hwnd){
+				winform.edit.print("窗口退出全屏"+hwnd+"进程ID：" + pid + "线程ID:" +tid  + '\r\n   标题:' + win.getText(hwnd) )
+			}
+		}  
      }	
 }
 
-winform.show() 
+winform.show();
 win.loopMessage();
-

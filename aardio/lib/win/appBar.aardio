@@ -20,10 +20,25 @@ message = function(msg,data){
 	return ::Shell32.SHAppBarMessage( msg,data );
 }; 
 
-regist = function(hwnd,msg){
-	return message( 0x0/*_ABM_NEW*/,{
+regist = function(hwnd,msgOrCallback){
+	if(type(msgOrCallback)=="function"){
+		
+		WM_APPBAR_MESSAGE := ::User32.RegisterWindowMessage("WM_APPBAR_MESSAGE") 
+		
+		if(!hwnd[["hwnd"]]){
+			error("参数 @1 必须指定窗口对象",2);
+		}
+		 
+		hwnd.wndproc = { [WM_APPBAR_MESSAGE] = function(hwnd,message,wParam,lParam){
+			msgOrCallback(wParam,lParam)
+		}  } 
+		
+		return regist(hwnd[["hwnd"]],WM_APPBAR_MESSAGE );
+	}
+	
+	return message( 0/*_ABM_NEW*/,{
 		hwnd = hwnd;
-		uCallbackMessage = msg;
+		uCallbackMessage = msgOrCallback;
 	} );
 };
 
@@ -86,13 +101,15 @@ getTaskBar = function(){
 };  
 
 /**intellisense(win.appBar)
-message(.(_ABM__,{} ) = 发送任务栏命令,\n可选在第二个参数中使用表对象指定APPBARDATA属性
+message(.(_ABM__,{} ) = 发送任务栏命令,\n可选在第二个参数中使用一个表对象指定 APPBARDATA 的部分字段。\n函数会自动创建 APPBARDATA 结构体，并且合并参数 @2 指定的字段值。
 command(__) = 发送命令,\n参数@1指定命令 ID，参数为 419 可显示桌面。
 find() = 返回系统任务栏句柄
 getTaskBar() = 返回系统任务栏信息,失败返回null\n!STDAPPBARDATA.
 getAutoHideBar() = 返回左,上,右,下四个被设置为自动隐藏的任务栏句柄
 setAutoHideBar(.( 任务栏句柄,_ABE_BOTTOM ) = 设置为自动停靠
-regist(.(窗口句柄,自定义回调消息ID) = 将窗口注册接收任务栏通知消息,例如 _ABN_FULLSCREENAPP
+regist( = 将窗口注册接收任务栏通知消息。\n相关范例: doc://example/System/Desktop/appBarMsg.html
+regist(.(窗口句柄,自定义回调消息ID) = 将窗口注册接收任务栏通知消息。\n请在参数 @1 指定的窗口接收参数 @2 指定的消息 ID。\nwParam 为通知代码，例如应用全屏事件通知代码为 _ABN_FULLSCREENAPP\nlParam 为通知参数，对于 _ABN_FULLSCREENAPP 表示是否全屏
+regist(.(窗口对象,通知回调函数) = @.regist(winform,function(code,param){\n	if(code == 2/*_ABN_FULLSCREENAPP*/){\n		__/*code 为通知代码，param 为通知参数。\n对于 _ABN_FULLSCREENAPP 通知消息 ，param 为是否有全屏窗口*/\n	}\n})
 unRegist(.(窗口句柄) = 取消注册的任务栏回调消息
 autoHide(.( 任务栏句柄,true) = 设置为自动隐藏
 autoHide(.( 任务栏句柄,false) = 取消自动隐藏
@@ -129,8 +146,8 @@ _ABM_REMOVE=@0x1/*_ABM_REMOVE*/
 _ABM_SETAUTOHIDEBAR=@0x8/*_ABM_SETAUTOHIDEBAR*/
 _ABM_SETPOS=@0x3/*_ABM_SETPOS*/
 _ABM_WINDOWPOSCHANGED=@0x9/*_ABM_WINDOWPOSCHANGED*/
-_ABN_FULLSCREENAPP=@0x2/*_ABN_FULLSCREENAPP*/
-_ABN_POSCHANGED=@0x1/*_ABN_POSCHANGED*/
-_ABN_STATECHANGE=@0x0/*_ABN_STATECHANGE*/
-_ABN_WINDOWARRANGE=@0x3/*_ABN_WINDOWARRANGE*/
+_ABN_FULLSCREENAPP=@2/*_ABN_FULLSCREENAPP*/
+_ABN_POSCHANGED=@1/*_ABN_POSCHANGED*/
+_ABN_STATECHANGE=@0/*_ABN_STATECHANGE*/
+_ABN_WINDOWARRANGE=@3/*_ABN_WINDOWARRANGE*/
 end intellisense**/

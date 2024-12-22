@@ -16,7 +16,7 @@ owner 参数是 aardio 中一个自动传递的隐藏参数，在形参与实参
 
 代码示例：
 
-```aardio 
+```aardio
 var object = {
 	property = 123;
 	method = function(){

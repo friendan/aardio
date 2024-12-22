@@ -19,7 +19,7 @@ callingConvention 参数指定默认调用约定，可省略，不指定时默�
 
 加载内存 DLL 示例：
 
-```aardio 
+```aardio
 dllmodule := raw.loadDll($"d:\\hardware.dll");
 ```  
 参考：[包含文件操作符 $](../../../language-reference/operator/include.md)
@@ -90,7 +90,7 @@ aardio 已默认加载以下 DLL 模块
 
 4. 声明原生 API 示例
 
-	```aardio 
+	```aardio
 	//导入DLL
 	var dll = raw.loadDll("User32.dll"); 
 
@@ -138,7 +138,7 @@ raw.main = raw.loadDll();
 
 所以我们可以直接写：
 
-```aardio 
+```aardio
 var func = raw.main.api( 内部指针地址,函数原型 ) 
 ```
 
@@ -225,7 +225,7 @@ fastcall,regparm(n) 调用约定( 也就是寄存器传参方式 ) 详解:
 	```
 	实际调用 DLL 导出函数不需要这么复杂，直接调用就可以了，例如：
 
-	```aardio 
+	```aardio
 	//调用 DLL 导出函数
 	::User32.MessageBox(0,"消息","标题",0);
 	```

@@ -419,7 +419,7 @@ picturebox._metaProperty = metaProperty(
 
 在 aardio 中可以用类定义结构体，只要在类构造器的成员键名前添加原生类型声明就可以了。
   
-```aardio 
+```aardio
 //定义结构体
 class Point{
 	int x = 0;  

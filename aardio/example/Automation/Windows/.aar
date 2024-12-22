@@ -1,7 +1,7 @@
-入门=winex.aardio
+﻿入门=winex.aardio
 远程桌面=win.ts.aardio
 窗口菜单=findMenu.aardio
 嵌入外部窗口=embed.aardio
-临视窗口创建销毁=shellhook.aardio
+窗口激活与全屏事件=shellhook.aardio
 桌面图标=winex.desktop.aardio
 桌面图标排圆圈=winex.desktop-circle.aardio

@@ -18,9 +18,10 @@ class shellhook {
 }
 
 namespace shellhook{
-	WM_SHELLHOOK  := ::RegisterWindowMessage("SHELLHOOK");  
+	WM_SHELLHOOK = ::User32.RegisterWindowMessage("SHELLHOOK");  
 }
  
+//@guide [参考文档](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-registershellhookwindow)
 
 /**intellisense()
 win.util.shellhook(__/*输入winform对象*/) = 创建一个通知窗口\n在所有窗口创建销毁时接收消息
@@ -28,8 +29,9 @@ win.util.shellhook() = !winUtilShellhook.
 !winUtilShellhook.onShellHook = @.onShellHook=function(hShell,hwnd){
 	var tid,pid = win.getThreadProcessId(hwnd)
 	if(tid!= thread.getId()){
-		return; __/*如果不想临视本线程在这里退出*/
+		return; __/*如果不想监视此线程在这里退出*/
 	}
+	
     select(hShell) {
 		case 1/*_HSHELL_WINDOWCREATED*/ {  
 			..io.print("一个窗口创建",hwnd,"进程ID：" + pid + "线程ID:" +tid)
@@ -40,4 +42,6 @@ win.util.shellhook() = !winUtilShellhook.
      }	
 }
 
+_HSHELL_FULLSCREEN_ENTERING = @0x35/*_HSHELL_FULLSCREEN_ENTERING*/
+_HSHELL_FULLSCREEN_LEAVING = @0x36/*_HSHELL_FULLSCREEN_ENTERING*/
 end intellisense**/

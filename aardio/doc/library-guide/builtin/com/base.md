@@ -59,7 +59,7 @@ com 库还提供了一些基于以上函数封装的对象可以创建 COM 对�
 
 创建 COM 对象示例：
 
-```aardio 
+```aardio
 import com;
 import console;
 

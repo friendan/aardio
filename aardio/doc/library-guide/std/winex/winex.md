@@ -72,7 +72,7 @@ winex 库主要扩展 win 库的功能，并提供管理外部进程窗口的函
 3. 调用示例：   
   
   
-	```aardio 
+	```aardio
 	import process;
 	import winex; 
 

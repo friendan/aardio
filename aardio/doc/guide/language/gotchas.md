@@ -131,7 +131,7 @@ str += str3;
 
 正确写法是明确地用 `++` 连接字符串：
 
-```aardio 
+```aardio
 var str = "";
 var str2 = 2;
 var str3 = "abc";

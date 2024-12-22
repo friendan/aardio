@@ -102,7 +102,7 @@ process库提供进程管理函数。
 
 3. 调用示例：
   
-    ```aardio  
+    ```aardio
     import process; 
 
     //创建进程对象

@@ -29,13 +29,44 @@ class stateBar{
 		var getCapital = ..key.ime.capital;
 		var tick = ..time.tick;
 		
-		var lastFocusWnd,lastFocusClass; 
+		var lastForeground,lastForegroundDisabled,lastFocusWnd,lastFocusClass; 
 		this.checkImeState = function(){
 			
 			var hForeground = ..win.getForeground();
 			if(!hForeground) return;
 			
-			var caret,hFocus = getCaret(hForeground);
+			if(lastForeground!=hForeground){
+				this.getCaretEx = null;
+				
+				if(this.onImeForegroundWindow){
+					if(this.onImeForegroundWindow(hForeground)===false){
+						this.hide = true;
+						this.imePrevState = null;
+						
+						lastForegroundDisabled = true;
+						lastForeground=hForeground;
+						lastFocusWnd = null;
+						lastFocusClass = null;
+						return;
+					}
+				}
+				
+				lastForegroundDisabled = false;
+			}
+			elseif(lastForegroundDisabled) {
+				return;
+			}
+			
+			lastForeground=hForeground;
+			
+			var caret,hFocus;
+			if(this.getCaretEx){
+				caret,hFocus = this.getCaretEx(hForeground);
+			}
+			else {
+				caret,hFocus = getCaret(hForeground);
+			}
+			
 			var prev = this.imePrevState;
 			var topChanged = 0; 
 		 
@@ -341,6 +372,12 @@ class stateBar{
 				if(!this.imeWatchingTimerId) return;
 				enabled = true;
 			}
+			
+			
+			lastForegroundDisabled = true;
+			lastForeground=hForeground;
+			lastFocusWnd = null;
+			lastFocusClass = null;
 			
 			this.paused = !enabled;
 			if(this.imeWatchingTimerId){

@@ -129,7 +129,7 @@ API 尾标指的是 API 函数名尾部独立大写的特定字符。使用尾�
 
     我们可以将免声明 API 函数保存到变量以自行掌握其生命周期：
 
-    ```aardio 
+    ```aardio
     var msgbox = ::User32.MessageBox; 
     msgbox(0,"消息","标题",0)
     ```

@@ -26,7 +26,7 @@ eval() 函数可将字符串转换为代码执行，并返回一个或多个值
    
 3. 调用示例：   
 
-   ```aardio 
+   ```aardio
    import console; 
 
    console.log( eval("1+1") ); 

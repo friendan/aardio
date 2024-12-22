@@ -12,6 +12,9 @@ trackbar={cls="plus";left=225;top=266;right=667;bottom=281;bgcolor=14265123;bord
 //设置滑尺范围,切换到滑尺模式
 winform.trackbar.setTrackbarRange(1,100);
 
+//使用 progressPos 属性获取或修改滑块当前位置
+winform.trackbar.progressPos = 1;
+
 //设置外观
 winform.trackbar.skin({
 	background={
@@ -37,14 +40,14 @@ winform.trackbar.onMouseUp = function(wParam,lParam){
 	toolinfo.trackPopup(false);
 }
 
-//鼠标按下拖动时显示提示
+//鼠标按下拖动时在提示控件中显示滑块当前位置
 winform.trackbar.onPosChanged = function( pos,thumbTrack ){
 	if(thumbTrack){  
 		var x,_ = win.getMessagePos();
 		var _,y,cx,cy = winform.trackbar.getPos(true)
 		
 		/*
-		注意刻度最小单位总是1,
+		注意刻度最小单位总是 1,
 		如果要改为其他单位,只要修改显示数值就可以,
 		例如下面显示的 pos 修除以 10,对于用户来说就实现了最小单位 0.1 相同的效果。
 		*/
@@ -52,5 +55,5 @@ winform.trackbar.onPosChanged = function( pos,thumbTrack ){
 	}
 }
 
-winform.show() 
+winform.show(); 
 win.loopMessage();

@@ -192,7 +192,7 @@ console.pause();
 
 下面的 aardio 代码互换相邻的字符:
 
-```aardio 
+```aardio
 str = string.replace("hello", "(.)(.)", "\2\1")
 ```  
 

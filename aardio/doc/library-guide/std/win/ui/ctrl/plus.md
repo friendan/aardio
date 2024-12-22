@@ -19,7 +19,8 @@ aardio 的窗体背景图也支持九宫格，缓存绘图等功能。另外 aar
   
 3. 配置好颜色样式，或者点击预设的范例样式，然后点击 **「导出到窗体设计器选中控件」** 就可以了。  
 
-## 使用图标字体
+## 使用图标字体 <a id="icon-font" href="#icon-font">&#x23;</a>
+
 
 注意 plus 控件可以指定两个文本属性，一个是普通「文本」属性，一个是「图标文本」属性。
 
@@ -94,7 +95,8 @@ picturebox 添加图像时默认为会在路径前添加包含操作符`$`通过
  
 expand 模式是最常用的一种图像显示模式，自适应系统 DPI 缩放的效果较好。
 
-## 设置 plus 控件交互样式：动态切换图像
+## 设置 plus 控件交互样式：动态切换图像 <a id="skin-image" href="#skin-image">&#x23;</a>
+
  
 在窗体设计器中添加一 个plus 控件，然后设置好背景图或前景图等参数。  
 
@@ -129,7 +131,8 @@ plus 控件支持的样式非常多。
 
 实际上现代软件界面使用图像已经不多见，更流行的是使用字体图标与配色实现更轻快简洁的效果，使用"plus 控件配色工具"以及 aardio 提供的 "字体图标工具" 做这样的界面将会非常方便。
 
-## 用 plus 控件实现超链接
+## 用 plus 控件实现超链接 <a id="hyperlink" href="#hyperlink">&#x23;</a>
+
 
 创建超链接很简单，在设计器中双击 plus 控件，修改 skin 函数调用代码如下：
 
@@ -189,7 +192,8 @@ winform.plus.skin(
 注意 background 的样式可以指定图像路径，也可以直接指定 0xAARRGGBB 格式的颜色代码。
 
  
-## 用 plus 控件实现进度条
+## 用 plus 控件实现进度条 <a id="progress-bar" href="#progress-bar">&#x23;</a>
+
 
 使用 plus 控件创建进度条比较简单。
 
@@ -217,14 +221,15 @@ plus={cls="plus";left=161;top=282;right=707;bottom=316;bgcolor=6447459;forecolor
 //设置进度区间，可自动切换到进度条显示模式
 winform.plus.setProgressRange(1,50);
 
-//设置进度
+//使用 progressPos 属性获取或修改当前进度值
 winform.plus.progressPos = 20;
 
 winform.show() 
 win.loopMessage();
 ```
 
-## 用 plus 控件实现圆形进度条
+## 用 plus 控件实现圆形进度条 <a id="pie" href="#pie">&#x23;</a>
+
 
 如果使用 `winform.plus.setPieRange(1,100); ` 设定进度条的进度范围就可以创建圆形的进度条。  
 
@@ -262,7 +267,8 @@ winform.show()
 win.loopMessage();
 ```
 
-## 用 plus 控件实现滑块控件
+## 用 plus 控件实现滑尺控件 <a id="trackbar" href="#trackbar">&#x23;</a>
+
 
 创建滑尺控件与创建进度条类似，  
 区别是使用 `winform.plus.setTrackbarRange(1,100)` 设置进度范围.  
@@ -279,9 +285,88 @@ win.loopMessage();
   
 与此类似，当 plus 控件作为普通进度条使用时也自动支持横向、竖向进度条（同样根据设计时的宽高比自动判断）。  
 
-## plus 控件创建静态控件
+用 plus 控件创建滑尺控件示例：
 
-plus 控件用于静态显示图像或背景色时，也可以作为文本框的背景用于美化文本框。需要注意 plus 控件作为背景控件使用时要设置【事件回调】为false（ 这个是默认值，表示不响应鼠标按键事件 ）以避免与文本框争抢绘图。  
-  
-文本框用于显示单行文本时可以将高度调整的较小，加上背景图显示效果就比较好了。 注意要在属性面板中设置【多行】属性为false，多行文本框调整太小了光标就看不到了。  
- 
+```aardio
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="用 plus 控件创建滑尺控件")
+winform.add(
+lbTrackbar={cls="static";text="1";left=77;top=213;right=116;bottom=235;align="right";transparent=1;z=2};
+trackbar={cls="plus";left=133;top=214;right=575;bottom=229;bgcolor=14265123;border={radius=-1};foreRight=15;forecolor=1865727;paddingBottom=5;paddingTop=5;z=1}
+)
+/*}}*/
+
+//设置滑尺范围,切换到滑尺模式
+winform.trackbar.setTrackbarRange(1,100);
+
+//使用 progressPos 属性获取或修改滑块当前位置
+winform.trackbar.progressPos = 1;
+
+//鼠标按下拖动时在提示控件中显示滑尺当前位置
+winform.trackbar.onPosChanged = function( pos,thumbTrack ){
+	
+	//thumbTrack 参数表示当前是否正在拖动滑块
+	if(thumbTrack){  
+		
+	}
+	
+	//pos 参数为当前滑块位置
+	winform.lbTrackbar.text = pos;
+}
+
+//设置外观
+winform.trackbar.skin({
+	background={
+		default=0xFF23ABD9;
+	};
+	foreground={
+		default=0xFFFF771C;
+		hover=0xFFFF6600;
+	};
+	color={
+		default=0xFFFF5C00;
+		hover=0xFFFF6600;
+	}
+})
+
+winform.show(); 
+win.loopMessage();
+```
+
+请参考：[plus 控件范例 - 滑尺控件](../../../../..//example/plus/trackbar.html)
+
+## plus 控件创建静态控件 <a id="static" href="#static">&#x23;</a>
+
+
+plus 控件在窗体设计器属性面板中将 【事件回调】属性设 false 则创建静态控件（这是默认值），设为 true 则创建可响应用户操作的动态控件。在窗体设计器双击 plus 控件，或在代码中调用 plus 控件的 skin 函数都会自动设置【事件回调】属性为 true 。
+
+事件回调属性对应于代码中的 `notify` 属性，这个属性只能由控件的构造参数指定或者由  skin 函数自动设置。  
+
+plus 静态控件不会像动态控件那样争抢焦点并改变 Z 序，可作为其他控件的背景控件。相比 bk,bkplus 这样的纯背景控件，plus 静态控件提供了更多的外观选项。
+
+## 在 plus 控件内添加文本框 <a id="edit" href="#edit">&#x23;</a>
+
+
+在窗体设计器中点选 plus 控件，然后在控件属性中设置『允许编辑』为 "edit" 或 "richedit" 就可以在 plus 控件内部显示文本框（ edit 控件）或富文本框（ richedit 控件）。
+
+这样的好处是可以利用 plus 控件丰富的外观样式美化文本框控件，下面的示例使用 plus 控件创建了一个背景透明、底部划线的单行输入框：
+
+```aardio
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="用 plus 创建文本框示例")
+winform.add(
+plusEdit={cls="plus";left=100;top=48;right=321;bottom=74;align="right";border={bottom=1;color=-6908266};editable=true;textPadding={top=6;bottom=2};z=1}
+)
+/*}}*/
+
+winform.show();
+win.loopMessage();
+
+```
+
+窗体设计器中控件的 『允许编辑』 属性对应于代码中的 editable 属性 。`editable = true` 等价于 `editable = "richedit"` ，表示在 plus 控件内创建 richedit 控件。而  `editable = "edit"` 则表示在 plus 控件内创建 edit 控件。
+
+> 注意：高度较小的单行文本框不要将『多行』属性设为 true （对应于代码中的 `multiline = true` ），避免多行文本框高度太小时无法显示输入光标。
+

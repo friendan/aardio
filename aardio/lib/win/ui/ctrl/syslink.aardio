@@ -6,16 +6,16 @@ namespace win.ui.ctrl;
 class syslink{
     ctor(parent,tParam){ 
     	if(tParam){
-			if(tParam.transparent) { tParam.style |= 1/*_LWS_TRANSPARENT*/ }
-			else{ tParam.exstyle &= ~0x20/*_WS_EX_TRANSPARENT*/ };  
+			if(tParam.transparent) { 
+				tParam.style |= 1/*_LWS_TRANSPARENT*/ 
+			}
 			
 			if( tParam.align == "right" ){
 				tParam.style |=0x0020/*_LWS_RIGHT*/;
 			}
 			
-			if( _WIN7_LATER ){
-				tParam.style |= 8/*_LWS_USEVISUALSTYLE  */ 
-			}
+			//_LWS_USEVISUALSTYLE 无用且有 bug，例如远程重连导致控件无法显示
+			//if( _WIN7_LATER ) tParam.style |= 8/*_LWS_USEVISUALSTYLE*/ 
 		}
     }
 	@_metaProperty;
@@ -97,12 +97,14 @@ namespace syslink{
 	)
 }
 
+//@guide [范例](doc://example/Windows/Controls/syslink.html)
+
 /***intellisense() 
 !syslink.cls = 设计时类名
 !syslink.className = 运行时类名
 !syslink.hwnd = 控件句柄
 !syslink.id = 控件 ID，注意这个不是指超链接的 ID。
-!syslink.text = 控件文本。\n此控件的文本属性支持 HTML 的超链接语法，也就是 a 标签。\n可选使用 href 属性设置超链接，可选使用 id 属性指定链接 ID。\n一个控件可以指定多个普通文本或者超链接，使用超链接索引区分。\n不支持其他 HTML 语法，例如换行应当直接换行而不是使用 `<br>`换行。\n\n可使用 link 属性获取或设置第一个超链接地址。
+!syslink.text = 控件文本。\n此控件的文本属性支持 HTML 的超链接语法，也就是 a 标签。\n超链接可选使用 href 属性设置超链接，可选使用 id 属性指定链接 ID。\n一个控件可以指定多个普通文本或者超链接，使用超链接索引区分。\n不支持其他 HTML 语法，例如换行应当直接换行而不是使用 `<br>`换行。\n\n可使用 link 属性获取或设置第一个超链接地址。
 !syslink.link = 创建、设置或者获取控件的第一个超链接地址。\n这个参数应当指定一个网址，可使用任意协议。
 !syslink.getForm() = 如果是窗体返回自身\n如果是控件则返回_parentForm\n!winform.
 !syslink._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.

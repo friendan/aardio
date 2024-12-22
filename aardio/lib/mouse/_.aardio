@@ -183,15 +183,15 @@ setPos = function( x=0, y=0 ){
 }
 
 state = function(){
-	return  GetAsyncKeyState(1) < 0;
+	return  GetAsyncKeyState(1/*_VK_LBUTTON*/) < 0;
 } 
 
 wait  = function(){
-	waitCmd( 1 );
+	waitCmd(1/*_VK_LBUTTON*/);
 }
 	
 waitDb = function(){
-	waitCmdDb( 1 ); 
+	waitCmdDb(1/*_VK_LBUTTON*/); 
 }
 
 moveTo = function(x2,y2,abs,step=8,tk=2)	{ 
@@ -275,15 +275,15 @@ clickDb = function( x=0,y=0,abs ){
 
 namespace mb begin
 	wait = function(){
-		waitCmd( 4 );
+		waitCmd(4/*_VK_MBUTTON*/);
 	}
 	
 	waitDb = function(){
-		waitCmdDb( 4 ); 
+		waitCmdDb(4/*_VK_MBUTTON*/); 
 	}
 	
 	state = function(){
-		return  GetAsyncKeyState(4) < 0;
+		return  GetAsyncKeyState(4/*_VK_MBUTTON*/) < 0;
 	} 
 
 	down = function(x=0,y=0,abs ){
@@ -312,15 +312,15 @@ end;
 
 namespace rb begin
 	wait = function(){
-		waitCmd( 2 );
+		waitCmd(2/*_VK_RBUTTON*/);
 	}
 	
 	waitDb = function(){
-			waitCmdDb( 2 ); 
+			waitCmdDb(2/*_VK_RBUTTON*/); 
 	}
 	
 	state = function(){
-		return  GetAsyncKeyState(2) < 0;
+		return  GetAsyncKeyState(2/*_VK_RBUTTON*/) < 0;
 	} 
 	
 	down = function(x=0,y=0,abs ){

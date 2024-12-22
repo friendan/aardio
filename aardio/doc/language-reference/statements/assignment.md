@@ -51,7 +51,7 @@ a,b,c = 0;
 
 示例: 
 
-```aardio 
+```aardio
 var a,b,c = table.unpack( { 1 ; 2 ; 3 } )
 ```
 
@@ -134,7 +134,7 @@ _VALUE = 100;
 
 将一个变量赋值为 null，删除这个变量。例如：  
 
-```aardio  
+```aardio
 value = null;
 ```
 
@@ -146,7 +146,7 @@ value = null;
   
 例如：
 
-```aardio   
+```aardio
 a -= b;  
 a *= b;  
 ```

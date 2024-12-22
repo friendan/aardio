@@ -207,7 +207,7 @@ aardio 中的 string 数据类型是传址的，多个相同内容的字符串�
 
 	对于可能被外部函数所改变 Unicocde( UTF-16 )  字符串，可将类型声明 `ustring` 变更为 `ustring &` 以通知 aardio 字符串的内存可能被修改。而在结构体中应声明为 `WORD[]` 数组。在结构体中的 `WORD[]` 是一个宽字节数组，仍然可以使用字符串进行赋值。例如：  
 
-	```aardio 
+	```aardio
 	class struct{
 		WORD b[3] = {'a'#;'b'#;'c'#};
 		WORD b2[3] = "abc"; 
@@ -287,7 +287,7 @@ raw.convert(inPointerOrStringOrBufferOrStruct,outStruct,offset=0 )
 
 下面看一个简单的示例：
 
-```aardio 
+```aardio
 import console; 
 
 var struct = raw.convert({

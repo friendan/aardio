@@ -8,7 +8,7 @@ lnkWebsite={cls="syslink";text="使用 syslink 控件教程";left=84;top=30;righ
 plus={cls="plus";left=37;top=99;right=633;bottom=426;repeat="center";z=2}
 )
 /*}}*/
- 
+
 /*
 添加超链接控件的步骤：
 
@@ -24,11 +24,11 @@ winform.lnkWebsite.link =  "http://www.aardio.com";//快速设置或修改超链
 通过控件的 text 属性可使用 HTML 语法创建一个或多个超链接。
 除普通文本与超链接以外，不支持其他 HTML 语真法，例如文本应当直接换行而不是用 <br> 换行。
 */
-winform.lnkWebsite.text = `<a 
+winform.lnkWebsite.text = `链接：<a 
 href="http://bbs.aardio.com/forum.php?mod=viewthread&tid=13220&extra=&from=portal"
-id="也可以指定 ID">使用 syslink 控件教程</a>
+id="也可以指定 ID">aardio.com</a>
 
-<a href="https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/ctrl/custom.html#cls">使用自定义控件教程</a>
+链接：<a href="https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/ctrl/custom.html#cls">使用自定义控件教程</a>
 `
 
 /*

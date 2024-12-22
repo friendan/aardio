@@ -26,7 +26,7 @@ aardio 有两种不同的选项卡：
    
 	aardio 自动生成代码如下：  
 
-	```aardio 
+	```aardio
 		var frmChild = mainForm.loadForm("\res\frmChild.aardio");  
 		frmChild.show();   
 	```
