@@ -1,0 +1,223 @@
+//服务端
+import golang;
+var go = golang();//创建 Go 编译器（ 仅仅调用编译后的 EXE 不需要 ）
+
+//Go 与 aardio 一样，源码与字符串默认为 UTF-8 编码
+go.main = /********** 
+package main
+
+import (  
+    "net/rpc"
+    "aardio/jsonrpc"  
+	"syscall"
+	"unsafe"
+	"fmt"
+	"regexp"
+)
+
+var (
+	modkernel32 = syscall.NewLazyDLL("kernel32.dll")
+	modpsapi = syscall.NewLazyDLL("psapi.dll")
+	procOpenProcess = modkernel32.NewProc("OpenProcess")
+	procEnumProcessModulesEx = modkernel32.NewProc("K32EnumProcessModulesEx")
+	procGetModuleFileNameEx = modkernel32.NewProc("K32GetModuleFileNameExW")
+	procGetModuleInformation = modpsapi.NewProc("GetModuleInformation")
+	procGetSystemInfo    = modkernel32.NewProc("GetSystemInfo")
+	procVirtualQueryEx = modkernel32.NewProc("VirtualQueryEx")
+	procReadProcessMemory = modkernel32.NewProc("ReadProcessMemory")
+)
+
+const (
+	PROCESS_QUERY_INFORMATION = 0x0400
+	PROCESS_VM_READ = 0x0010
+	MAX_PATH = 260  
+)
+
+type MEMORY_BASIC_INFORMATION struct {
+	BaseAddress       uintptr
+	AllocationBase    uintptr
+	AllocationProtect uint32
+	RegionSize        uintptr
+	State             uint32
+	Protect           uint32
+	Type              uint32
+}
+
+type ModuleItem struct {
+	Path string
+	Handle   string
+	Size     uint32 
+}
+
+type ProcessUtil struct{}
+
+
+type ModuleInfo struct {
+	BaseOfDll   uintptr
+	SizeOfImage uint32
+	EntryPoint  uintptr
+}
+ 
+func (t *ProcessUtil) GetProcessModules(processID *uint32, reply * []ModuleItem) error {
+	 
+	hProcess, _, _ := procOpenProcess.Call(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, 0, uintptr(*processID))
+	defer syscall.CloseHandle(syscall.Handle(hProcess))
+	
+	var hMods [1024]uintptr
+	var cbNeeded uint32
+	ret, _, _ := procEnumProcessModulesEx.Call(hProcess, uintptr(unsafe.Pointer(&hMods)), unsafe.Sizeof(hMods), uintptr(unsafe.Pointer(&cbNeeded)), 0)
+	if ret != 0 {
+		count := cbNeeded / uint32(unsafe.Sizeof(hMods[0]))
+		var moduleItems []ModuleItem
+		for i := uint32(0); i < count; i++ {
+			var szModName [MAX_PATH]uint16
+			ret, _, _ := procGetModuleFileNameEx.Call(hProcess, hMods[i], uintptr(unsafe.Pointer(&szModName[0])), MAX_PATH)
+			if ret != 0 {
+				moduleName := syscall.UTF16ToString(szModName[:]) 
+				
+				var modInfo ModuleInfo
+				procGetModuleInformation.Call(hProcess, hMods[i], uintptr(unsafe.Pointer(&modInfo)), unsafe.Sizeof(modInfo))
+					 
+				moduleItems = append(moduleItems, ModuleItem{
+					Path: moduleName,
+					Handle:   fmt.Sprintf("0x%X", hMods[i]),
+					Size:     modInfo.SizeOfImage,
+				}) 
+			}
+		}
+		
+		*reply = moduleItems;
+		return  nil
+	}
+	return fmt.Errorf("failed to enumerate process modules")
+} 
+
+const (
+	PAGE_NOACCESS    uint32       = 0x01
+	PAGE_READONLY    uint32       = 0x02
+	PAGE_READWRITE   uint32      = 0x04
+	PAGE_WRITECOPY   uint32       = 0x08
+	PAGE_EXECUTE     uint32       = 0x10
+	PAGE_EXECUTE_READ      uint32     = 0x20
+	PAGE_EXECUTE_READWRITE uint32  = 0x40
+	PAGE_EXECUTE_WRITECOPY uint32 = 0x80
+	PAGE_GUARD       uint32       = 0x100
+	MEM_COMMIT uint32 = 0x1000;
+) 
+
+func (mbi MEMORY_BASIC_INFORMATION) Readable() bool {
+	if mbi.State != MEM_COMMIT {
+		return false
+	}
+
+	readableFlags := PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY
+	if mbi.Protect&readableFlags != 0 {
+		return true
+	}
+
+	return false
+}
+
+type SearchResult struct {
+	Address     uintptr
+	Data        []byte
+	NextAddress uintptr
+	RemainSize  uint32
+}
+
+type systemInfo struct {
+	ProcessorArchitecture     uint16
+	_                         uint16
+	PageSize                  uint32
+	_                         [3]uint32
+	MinimumApplicationAddress uintptr
+	MaximumApplicationAddress uintptr
+	_                         uint32 
+}
+
+type SearchMemoryArgs struct {
+   ProcessId uint32
+   BaseAddress uintptr 
+   Length uint32
+   RegexPattern string
+   Count uint32
+}  
+
+func (t *ProcessUtil) SearchMemory(args *SearchMemoryArgs, reply *[]SearchResult) error {
+	baseAddress := uintptr(args.BaseAddress)
+
+	hProcess, _, _ := procOpenProcess.Call(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, 0, uintptr(args.ProcessId))
+	defer syscall.CloseHandle(syscall.Handle(hProcess))
+
+	if args.Length == 0 {
+		var si systemInfo
+		procGetSystemInfo.Call(uintptr(unsafe.Pointer(&si)))
+		args.Length = uint32(si.MaximumApplicationAddress - baseAddress)
+	}
+
+	var searchResults []SearchResult
+
+	regex := regexp.MustCompile(args.RegexPattern)
+	for addr := baseAddress; addr < baseAddress+uintptr(args.Length); {
+		var mbi MEMORY_BASIC_INFORMATION
+		ret, _, _ := procVirtualQueryEx.Call(uintptr(hProcess), addr, uintptr(unsafe.Pointer(&mbi)), unsafe.Sizeof(mbi))
+		if ret == 0 {
+			break
+		}
+
+		if mbi.Readable() {
+			buf := make([]byte, mbi.RegionSize)
+			var bytesRead uintptr
+			ret, _, _ := procReadProcessMemory.Call(uintptr(hProcess), mbi.BaseAddress, uintptr(unsafe.Pointer(&buf[0])), mbi.RegionSize, uintptr(unsafe.Pointer(&bytesRead)))
+
+			if ret != 0 && bytesRead > 0 {
+				matches := regex.FindAllIndex(buf, -1)
+				for _, match := range matches {
+					matchStart := match[0]
+					matchEnd := match[1]
+
+					searchResults = append(searchResults, SearchResult{
+						Address:     mbi.BaseAddress + uintptr(matchStart),
+						Data:        buf[matchStart:matchEnd],
+						NextAddress: mbi.BaseAddress + uintptr(matchEnd),
+						RemainSize:  args.Length - uint32(uintptr(((mbi.BaseAddress - baseAddress) - mbi.RegionSize))),
+					})
+
+					if args.Count == 1 {
+						*reply = searchResults[:1]
+						return nil
+					} else if args.Count > 0 && uint32(len(searchResults)) >= args.Count {
+						*reply = searchResults[:args.Count]
+						return nil
+					}
+				}
+			}
+		}
+
+		addr += mbi.RegionSize
+	}
+
+	if len(searchResults) > 0 {
+		*reply = searchResults
+		return nil
+	}
+
+	return fmt.Errorf("no matching result found")
+}
+
+
+func main() { 
+	server := rpc.NewServer() 
+    server.Register( new(ProcessUtil) )  
+     
+    //运行 RPC 服务端
+	jsonrpc.Run(server)
+}
+**********/
+
+//上面的 go.main 会自动保存到文件，然后编译 Go 源码生成同名 EXE 文件
+go.buildStrip64("/ProcessUtilRpc.go");
+
+//判断是否单独运行此示例
+if(...) console.close();
+else console.pause();

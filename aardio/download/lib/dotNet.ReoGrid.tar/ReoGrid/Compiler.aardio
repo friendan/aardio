@@ -1,0 +1,24 @@
+﻿import dotNet;
+import dotNet.ReoGrid;
+
+/*
+引用本地 DLL 只是用于编译代码。
+如果测试或运行，需要导入 dotNet.ReoGrid 加载内存程序集。 
+运行 DLL 不需要再带上以下本地 DLL 文件（只有编译需要）。
+*/
+dotNet.ReoGrid[["Compiler"]] = class {
+	ctor(){
+		this = ..dotNet.createCompiler("C#");  
+		this.Reference("~\lib\dotNet\ReoGrid\.res\Antlr3.Runtime.dll")
+		this.Reference("~\lib\dotNet\ReoGrid\.res\DotNetZip.dll")
+		this.Reference("~\lib\dotNet\ReoGrid\.res\unvell.ReoScript.dll")
+		this.Reference("~\lib\dotNet\ReoGrid\.res\unvell.ReoGrid.dll")
+		this.Reference("System.Windows.Forms");
+		this.Parameters.CompilerOptions = "/optimize" ;
+	}; 
+}
+
+
+/*****intellisense()
+dotNet.ReoGrid.Compiler() = 创建 C# 编译器，已自动引用 ReoGrid。\n!dotNetCompiler.
+end intellisense*****/

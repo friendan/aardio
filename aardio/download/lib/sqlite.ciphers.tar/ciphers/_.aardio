@@ -1,0 +1,59 @@
+﻿if( ___sqlite_dll__ ) error("不能导入不同版本的 Sqlite 支持库",2)
+___sqlite_dll__ = raw.loadDll($"~/lib/sqlite/ciphers/.res/sqlite3mc.dll","sqlite3mc.dll","cdecl")
+
+import sqlite.base;
+sqlite["ciphers"] = sqlite.base;
+
+namespace sqlite.ciphers{
+    
+    config = function(db,name,value){
+        if(type(name)=="table"){
+        	for k,v in ..table.eachName(name){
+        		config(db,k,v);
+        	} 
+        	return;
+        }
+        
+        if(value===null) value=-1;
+        if(name==="cipher"){
+        	if(type.isString(value)){
+        		value = _dll.sqlite3mc_cipher_index(value);
+        	}
+        }
+        
+    	return _dll.sqlite3mc_config(db,name,value); 
+    }
+    
+    configCipher = function(db,cipherName,name,value){
+        if(type(name)=="table"){
+        	for k,v in ..table.eachName(name){
+        		configCipher(db,cipherName,k,v);
+        	} 
+        	return;
+        }
+        
+    	return _dll.sqlite3mc_config_cipher(db,cipherName,name,value);
+    } 
+}
+
+/**details(必读，点这里展开)
+此扩展库基于开源项目 SQLite3 Multiple Ciphers 
+https://github.com/utelle/SQLite3MultipleCiphers
+
+开发文档: 
+https://utelle.github.io/SQLite3MultipleCiphers/docs/configuration/config_capi/
+end details**/
+
+/**intellisense()
+sqlite.ciphers = 支持多种加密算法的 sqlite 扩展库,\n导入此扩展库以后,代码中仍然可以使用 sqlite\n参考: https://utelle.github.io/SQLite3MultipleCiphers/
+sqlite.ciphers("\__/*数据库路径*/") =  这个函数是 sqlite 构造函数的别名,\n参数一指定数据库路径,支持自动创建数据库文件.\n第二个参数（可选参数）指定数据库密钥 
+sqlite.ciphers("file:__/*数据库路径*/") = 使用 URI 指定数据库路径与参数。\n参数@2 可选用表指定 URI 参数，或用字符串指定密钥。\n也可以在参数 @1 的 URI 后面直接写参数。\n文档 https://www.sqlite.org/uri.html
+sqlite.ciphers() = !sqliteConn.
+end intellisense**/
+
+/*****intellisense(sqlite.ciphers)
+config( = 配置数据库。\n建议直接调用 sqlite 对象的 config 成员函数。\n仅 sqlite.ciphers 等 sqlite 增强扩展库支持此函数。\n用法参考相关扩展库文档。
+config(.(db,name,value) = 配置数据库。\n成功返回当前配置值，失败返回 -1。\n@db 指定 sqlite 数据库对象。\n@name 指定要修改的配置名，也可以指定包含多个配置名值对的表。\n@value 指定配置值，不指定值则用返回当前值。
+configCipher( = 配置加密算法参数。\n建议直接调用 sqlite 对象的 configCipher 成员函数。\n仅 sqlite.ciphers 等 sqlite 增强扩展库支持此函数。\n用法参考相关扩展库文档。
+configCipher(.(db,cipherName,name,value) = 配置加密算法参数。\n成功返回当前配置值，失败返回 -1。\n@db 指定 sqlite 数据库对象。\n@cipherName 指定加密算法名称。
+end intellisense*****/

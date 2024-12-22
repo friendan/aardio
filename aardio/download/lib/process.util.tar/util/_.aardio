@@ -1,0 +1,287 @@
+﻿import process;
+import process.rpc.jsonClient;
+import crypt;
+
+namespace process;
+
+class util{
+	ctor(pidOrExeFile){
+		if(pidOrExeFile[["id"]]){
+			this = pidOrExeFile;
+		}
+		elseif( type.isString(pidOrExeFile)  ) {
+			this = ..process.find(pidOrExeFile);
+			if(!this) return null,"没有找到进程";
+		}
+		elseif(type(pidOrExeFile)!=type.number){
+			error("参数 @1 必须指定进程 ID",2)
+		}
+		else {
+			this = ..process(pidOrExeFile);
+			if(!this) error("错误的进程 ID",2);  
+		}
+		
+		if(_WIN_64){
+			this.rpcClient = ..process.rpc.jsonClient(_path); 
+			if( !this.rpcClient ){
+				error(err:"未知错误",2);
+			}	
+		} 
+	}; 
+	getModuleBaseAddress = function(name){
+		var mi = this.findModule(name);
+		if(mi){
+			if(name){
+				return mi.baseAddress;
+			}
+			
+			return mi[1][["baseAddress"]];
+		} 
+	};
+	searchModuleMemory = function(name,strRegEx,count){
+ 
+		var mi,err = this.findModule(name);
+		if(!mi) return null,err;
+ 	
+		var ret,err = this.searchMemory(strRegEx,count,mi.baseAddress,mi.size);  
+		if(ret) ret.module = mi; 
+		
+		return ret,err;
+	};
+	searchMemory = function(strRegEx,count,baseAddress,size){
+		var singleReturn;
+		if(count && count<0){
+			count = ..math.abs(count);
+			singleReturn = true;
+		}
+	  
+		if(!strRegEx) strRegEx = "";
+		if(!size) size = 0;
+		
+		if(!_WIN_64){
+			 
+			var ret = {}
+			var retCount = 0;
+			
+			for( curMemAddr,curMemSize,strResult,i,j,remainSize
+				in this.eachQuery(baseAddress,size,strRegEx ) ){
+				retCount++;
+				
+				..table.push(ret, {
+    					address = curMemAddr + i;
+						data = strResult;
+						nextAddress = curMemAddr + j;
+						remainSize = remainSize; 
+    				} 
+    			)
+    			
+    			if(count && retCount>=count){
+    				if(singleReturn){
+    					return ..table.pop(ret);
+    				}
+    				
+    				return ret;
+    			}
+			}
+			
+			return ret; 
+		} 
+	 	
+		var rep,err = this.rpcClient.ProcessUtil.SearchMemory( {
+    		ProcessId = this.id,
+    		BaseAddress = baseAddress,//支持 SIZE64 对象或数值
+    		Length = size, //指为 0 则自动获取 
+    		RegexPattern = strRegEx,
+    		Count = count;
+		})
+		
+		if( rep[["result"]] ){   
+			if(singleReturn){
+				var v = rep.result[#rep.result];
+    			return {
+    				address = v.Address;
+					data = ..crypt.decodeBin(v.Data);
+					nextAddress = v.NextAddress;
+					remainSize = v.RemainSize; 
+    			} 
+    		}
+    		
+			var ret = ..table.array(); 
+			
+    		for(k,v in rep.result){
+    			..table.push(ret, {
+    				address = v.Address;
+					data = ..crypt.decodeBin(v.Data);
+					nextAddress = v.NextAddress;
+					remainSize = v.RemainSize; 
+    			});
+    		}  
+    		
+    		return ret;
+		}  
+	 	
+		return null,err;
+	};
+	findModule = function(name){ 
+		
+		if(!_WIN_64){
+			 
+			var ret = {} 
+			for moduleEntry in this.eachModule(name) { 
+				if(name){
+					if(..string.cmpMatch(moduleEntry.szModule,name)){
+						return  {
+    						path = moduleEntry.szModule;
+    						baseAddress = moduleEntry.modBaseAddr;
+    						size = moduleEntry.modBaseSize; 
+    					}	
+					}
+				}
+				else {
+					..table.push(ret,{
+						path = moduleEntry.szModule;
+    					baseAddress = moduleEntry.modBaseAddr;
+    					size = moduleEntry.modBaseSize; 
+					})
+				} 
+			}
+			
+			return ret;
+		}
+		
+    	var rep,err = this.rpcClient.ProcessUtil.GetProcessModules(this.id)
+    	
+		if( #rep[["result"]] ){
+			if(name){
+				for(k,v in rep.result){  
+    	    		if( ..string.cmpMatch(..io.splitpath(v.Path).file,name)){
+    	    			return  {
+    						path = v.Path;
+    						baseAddress = ..math.size64(v.Handle);
+    						size = Size; 
+    					}
+    	    		} 
+    	    	}
+    	    	return;
+    	 	}   
+    	 	
+    		var ret = ..table.array();
+    		for(k,v in rep.result){
+    			..table.push(ret, {
+    				path = v.Path;
+    				baseAddress = ..math.size64(v.Handle);
+    				size = Size; 
+    			});
+    		}
+    		
+    		return ret;
+		} 
+		else{
+			return null,err;
+		} 	
+	}
+} 
+
+namespace util{
+    
+    /*
+    Go 编译的 DLL 时间戳为 0，所以一定要写版本号，
+    当PE 时间戳与文件长度都没有变化 io.appData()不会更新文件。
+    */
+	_path = ..io.appData("aardio/std/process/util/1.0/ProcessUtilRpc.dll",$"~\lib\process\util\.res\ProcessUtilRpc.exe")
+	//_path = "~\lib\process\util\.res\ProcessUtilRpc.exe" 
+}
+
+
+/*****intellisense()
+process.util = 此扩展库主要在 process 基础增强了进程模块与内存搜索功能。\n可兼容 64 位、32 位目标进程，兼容 32 位、64 位操作系统。\n64 位系统最低要求 Win7 ，32 位最低支持 XP 系统。
+process.util(__) = 参数可指定要查找的 EXE 文件名，支持模式匹配语法。\n也可以指定进程 ID，或者 process 对象。\n如果指定 process 对象，则扩展其功能并返回原对象。\n否则创建 process 对象并扩展其功能，然后返回该对象。
+process.util() = !stdProcessUtil.
+end intellisense*****/
+
+/*****intellisense( !stdProcessUtil)
+findModule(__) = 查找并返回模块信息。\n如果参数指定模块名称，则返回单个模块信息。\n否则返回所有模块信息组成的数组。\n没有找到模块返回 null\n\n模块信息的 path 字段为模块文件路径。\nbaseAddress 字段为模块基址。\nsize 字段为模块大小。
+searchModuleMemory(.(moduleName,strRegEx,count) = \n搜寻指定模块内存。\n@moduleName 指定模块名称，忽略大小写并支持模式匹配语法。\n\nstrRegEx 指定模搜索的字符串数据，支持正则表达式（64位系统此参数不使用模式匹配）。\n在 32 位操作系统上 @strRegEx 只能使用模式匹配与正则都支持的语法。\n@strRegEx 可省略（这样做没有意义）。\n\ncount 指定返回结果的数目，0 为返回所有结果，\n如果 @count 为负数则查询其绝对值数目的结果，并返回最后一个匹配结果\n@count 为负数时返回单个值，否则返回数组。\n如果没有找到匹配，返回 null 。
+searchMemory(.(strRegEx,count,baseAddress,size) = \n搜寻 @baseAddress 指定基址的内存。\n@baseAddress 可指定数值或 math.size64 对象。\n如果不指定基址，则自动获取进程基址作为参数。\n@size 指定要搜索的内存长度，不指定则搜索所有可用内存（不要这样做）。\n@strRegEx 指定模搜索的字符串数据，支持正则表达式（不是模式匹配）。\n@strRegEx 可省略（这样做没有意义）。\n\ncount 指定返回结果的数目，0 为返回所有结果，\n如果 @count 为负数则查询其绝对值数目的结果，并返回最后一个匹配结果\n@count 为负数时返回单个值，否则返回数组。\n如果没有找到匹配，返回 null 。
+stillActive() = 进程是否仍在运行
+getInfo( = 获取进程信息
+getInfo(.() = 获取进程信息
+getInfo(.(infoClass,infoStruct) = 如果参数 infoClass 指定非 null 数值，\n并且 infoStruct 指定结构体。\n在 Win8 以及之后系统获取信息到该结构体。\n成功返回原结构体。\n\n此用法内部调用 ::Kernel32.GetProcessInformation\n细节请参考该 API 文档
+getInfo() = !stdProcessInfo.
+setInfo(.(infoClass,infoStruct) = 设置进程信息，成功返回 true。\ninfoClass 指定数值，infoStruct 指定结构体。\n此函数内部调用 ::Kernel32.SetProcessInformation 。\n详细用法请参考 API 文档。\n在低于 Win8 的系统不执行操作
+getExitCode() = 该函数调用成功有两个返回值:进程退出代码,进程是否已退出
+free() = 释放进程对象。\n不是关闭进程,仅仅是释放对进程的控制句柄。
+waitOne() = 等待进程关闭,不阻塞UI消息循环,\n可选使用一个毫秒值参数设定超时\n超时或失败返回 false,\n进程已退出则返回值1为true,返回值2为退出代码
+wait() = 等待进程关闭,\n可选使用一个毫秒值参数设定超时\n超时或失败返回 false,\n进程已退出则返回值1为true,返回值2为退出代码
+malloc(.(长度) = 在目标进程分配内存空间
+malloc(.(长度,访问类型) = 在目标进程分配内存空间
+malloc(.(长度,访问类型,分配类型) = 在目标进程分配内存空间
+mfree(.(指针) = 释放malloc成员函数分配的内存指针
+mfree(.(指针,释放长度,0x4000) = 释放malloc成员函数分配的内存指针\n不建议手工指定长度
+sendMessage(.(hwnd,message,wParam,lParam) = 向外部进程窗口发送消息\nlParam如果是结构体则复制到目标进程内存,\n结构体如果包含指针应当自行调用 process.malloc 分配内存并复制\n发送消息涉及的用法太多,尤其是涉及到访问外部进程内存,\n所涉及的知识量不能通过看几句函数说明获得,\n普通用户请不要学习或使用此函数
+setAffinity(1) = 指定进程运行的CPU内核
+readPtr() = 读取指针地址。\n64 位进程读取 8 字节并返回 math.size64 对象。\n32 位进程读取 4 字节并返回数值。
+readNumberPtr(__/*内存地址*/) = 读取 int 整数的指针，\n然后用在指针指向的内存读取读取数值。\n可用参数 @2 指定静态类型，用法同 readNumber 函数。
+readStringPtr(.(内存地址,长度) = 在参数指定的地址读取字符串指针，\n然后用在指针指向的内存读取字符串。
+readStringUtf16Ptr(.(内存地址,长度) = 在参数指定的地址读取字符串指针，\n然后用在指针指向的内存读取定长 Unicode 字符串。\n返回字符串转换为UTF8编码。\n注意长度以字符为单位
+readStructPtr(.(内存地址,结构体) = 在参数指定的地址读取结构体指针，\n然后用在指针指向的内存读取结构体
+readNumber(__/*内存地址*/) = 读取一个int整数,32位\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"long") = 读取一个long类型整数,64位\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"word") = 读取一个word类型整数,16位\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"byte") = 读取一个字节,8位\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"INT") = 读取一个int整数,32位无符号\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"LONG") = 读取一个long类型整数,64位无符号\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"WORD") = 读取一个word类型整数,16位无符号\n打开进程需要指定 _PROCESS_VM_READ 权限
+readNumber(__/*内存地址*/,"BYTE") = 读取一个字节,8位无符号\n打开进程需要指定 _PROCESS_VM_READ 权限
+write(.(内存地址,任意个字符串或结构体参数) = 写入数据,成功返回写入尾部内存地址,\n失败返回空
+readString(.(内存地址,长度) = 读取定长字符串\n打开进程需要指定 _PROCESS_VM_READ 权限
+readStringUtf16(.(内存地址,长度) = 读取定长 Unicode 字符串，\n返回字符串转换为UTF8编码。\n注意长度以字符为单位\n打开进程需要指定 _PROCESS_VM_READ 权限
+readStruct(.(内存地址,结构体) = 读取定义的结构体\n打开进程需要指定 _PROCESS_VM_READ 权限
+writeStruct(.(内存地址,结构体) = 写入定义的结构体,\n省略内存地址参数则自动分配内存,\n该函数返回写入内存地址,写入长度
+writeString(.(内存地址,字符串,长度) = 写入字符串,长度为可选参数,\n省略内存地址参数则自动分配内存,\n该函数返回写入内存地址,写入长度
+writeStringUtf16(.(内存地址,字符串) = 写入Unicode字符串\n参数可以为默认的UTF8编码文本
+writeNumber(__/*内存地址*/,0) = 写入一个int整数,32位
+writeNumber(__/*内存地址*/,0,"long") = 写入一个long类型整数,64位
+writeNumber(__/*内存地址*/,0,"word") = 写入一个word类型整数,16位
+writeNumber(__/*内存地址*/,0,"byte") = 写入一个字节,8位
+writeNumber(__/*内存地址*/,0,"INT") = 写入一个int整数,32位无符号
+writeNumber(__/*内存地址*/,0,"LONG") = 写入一个long类型整数,64位无符号
+writeNumber(__/*内存地址*/,0,"WORD") = 写入一个word类型整数,16位无符号
+writeNumber(__/*内存地址*/,0,"BYTE") = 写入一个字节,8位无符号
+protect(__/*内存地址*/,4/*_PAGE_READWRITE*/,1) = 修改内存保护属性,返回原来的保护属性,\n第三个参数指定内存长度
+getPriorityClass() = 返回进程优先级
+setPriorityClass(0x80/*_HIGH_PRIORITY_CLASS*/) = 设置进程优先级 
+handle = 进程句柄
+getParentId() = 获取父进程 ID
+id = 进程 ID
+tid = 返回进程的主线程 ID
+remoteApi( = 在外部进程内创建远程调用函数
+remoteApi(.("void()",CALL地址,调用约定) =参数(函数原型,CALL地址,调用约定) \n不指定调用约定在数时默认使用stdcall调用约定
+remoteApi(.("void()","dll名","函数名") =  参数(函数原型,加载DLL模块名,函数名,调用约定) \n不指定调用约定时默认使用stdcall调用约定\n不会在API函数名字后面自动添加或移除"A","W"编码声明后缀,\n并且要注意搜索DLL时默认搜索路径包含目标EXE所在目录,而非当前EXE目录
+remoteApi(.("void()","dll名","函数名","cdecl,borland") =  参数(函数原型,加载DLL模块名,函数名,调用约定) \n不会在API函数名字后面自动添加或移除"A","W"编码声明后缀,\n并且要注意搜索DLL时默认搜索路径包含目标EXE所在目录,而非当前EXE目录
+remoteApi(.("void(INT thisAddr)","dll名","函数名","thiscall") =  参数(函数原型,加载DLL模块名,函数名,调用约定)\nthiscall使用第一个参数指定this指针地址\n不会在API函数名字后面自动添加或移除"A","W"编码声明后缀,\n并且要注意搜索DLL时默认搜索路径包含目标EXE所在目录,而非当前EXE目录
+resume() = 恢复运行
+suspend() = 暂停进程
+terminate() = 强行终止进程\n可在参数中指定退出代码
+kill() = 杀除进程
+getPath() = 返回执行程序文件完整路径。\n如果该进程以管理权限运行，\n则调用函数的进程也必须以管理权限运行\n才能获取到路径
+asm(.(机器码数组,函数原型,调用约定) = 使用table数组指定任意个机器码参数,使用分号隔开,\n机器码可以是字符串,结构体,数值或指针,\n函数原型可省略,调用约定默认为"cdecl"
+asmCdecl(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
+asmStdcall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
+asmThiscall(.(函数原型,任意多个机器码参数) = 写入机器码返回函数对象\n请参考:aardio工具->其他编译器->INTEL汇编语言->汇编转机器码
+getModuleBaseAddress(.(模块名) = 返回模块基址。\n模块名忽略大小写,\n不指定模块名则返回应用程序基址。\n\n此函数在返回数值过大时会返回 math.size64 对象，\n转换方法符合 web.json 解析 10 进制数值的规则
+isWow64() = 进程是否在64位系统上运行的32进程
+isX64() = 是否64位进程
+getUiInfo() = 获取UI线程窗口焦点,光标等信息\n!guithreadinfo.
+getMainWindow(.() = 返回进程的主窗口以及窗口进程ID，找不到则搜寻子进程主窗口。\n查找时忽略隐藏窗口。\n\n也可以调用 winex.mainWindows 获取主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
+getMainWindow(.(类名) = 返回进程的指定类名的主窗口以及窗口进程ID，找不到则搜寻子进程主窗口。\n类名参数支持模式匹配语法
+waitMainWindow( = 等待并返回进程主窗口以及窗口进程ID。\n也可调用 winex.mainWindows 且指定参数 @2 为 true 以等待主窗口。\nwinex.mainWindows 查找规则略有不同，请参考源码
+waitMainWindow(.(类名,等待窗口句柄) = 等待并返回进程主窗口以及窗口进程ID。\n所有参数可选。\n可选指定要等待的类名,类名参数支持模式匹配语法,\n不指定类名时忽略隐藏窗口,\n可选指定等待窗口句柄,该窗口关闭时些函数不再等待并直接返回结果
+closeMainWindow() = 关闭进程的主窗口，忽略隐藏窗口
+assignToJobObject(.(process->job->limitKill) = 绑定到作业对象,成功返回 true\n作业对象示例请参考标准库 process.job.limitKill 的源码。\n也可直接调用 killOnExit 函数绑定 process.job.limitKill
+killOnExit() = 主进程退出时自动退出此进程
+ctrlEvent(0)=发送Ctrl+C(SIGINT信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
+ctrlEvent(1)=发送Ctrl+Break(SIGBREAK信号)\n信号将传递到与目标进程控制台连接的所有非分离控制台进程\n64位目标进程会导致当前控制台暂时关闭
+emptyWorkingSet() = 将工作集中的内存尽可能移动到页面文件中,\n应发在最小化或程序空闲内存确实暂不需要使用时调用,\n不应频繁调用此函数
+end intellisense*****/
+

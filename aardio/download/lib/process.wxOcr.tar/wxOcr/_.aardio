@@ -1,0 +1,518 @@
+﻿import process.cache;
+import util.metaProperty;
+import util.registry;
+import win.reg;
+import fsys;
+
+namespace process;
+
+class wxOcr{
+	ctor( weChatPath,ocrPath ){
+		if(!weChatPath) {
+			if(..io.exist("/WeChatOCR-Portable/mmmojo.dll")
+				|| ..io.exist("/WeChatOCR-Portable/WeChatOCR.exe") ){
+				this.mmmojoDllPath = "/WeChatOCR-Portable/mmmojo.dll"; 
+				this.weChatDir = "/WeChatOCR-Portable/";
+				
+				ocrPath = "/WeChatOCR-Portable/WeChatOCR.exe";
+			}
+			else{
+				var path = ..win.reg.queryWow64("HKEY_CURRENT_USER\Software\Tencent\WeChat","InstallPath")
+					|| ..win.reg.query("HKEY_CURRENT_USER\Software\Tencent\WeChat","InstallPath")
+					
+				if(..io.exist(path) ){
+					this.mmmojoDllPath = ..fsys.searchFile("mmmojo.dll",path,true);
+					if(this.mmmojoDllPath){
+						this.weChatDir = path;
+					}
+				}
+				
+				if(!this.mmmojoDllPath){
+					weChatPath = ..process.cache.find("WeChat.exe"); 
+				} 
+			}
+		}
+
+		if(!this.mmmojoDllPath){
+			weChatPath = ..io.exist(weChatPath); 
+			if(!weChatPath) return null,"请指定 WeChat.exe 或 mmmojo.dll 所在目录路径！";
+			
+			if(..fsys.isDir(weChatPath)){
+				this.weChatDir = weChatPath;
+			}
+			else {
+				this.weChatDir = ..io.splitpath(weChatPath).dir;
+			} 
+			
+			//因为子目录名就是版本号会变动，所以这里自动搜索 mmmojo.dll 位置。
+			this.mmmojoDllPath = ..fsys.searchFile("mmmojo.dll",this.weChatDir,true);	
+			if(!this.mmmojoDllPath ) return null,"请指定 WeChat.exe 或 mmmojo.dll 所在目录路径！";
+		}
+		
+		if(!ocrPath){
+			ocrPath = ..io.joinpath(this.weChatDir,"WeChatOCR.exe")
+			
+			if(!..io.exist(ocrPath)){
+				 
+				var ocrDir =  ..io.getSpecial(0x1a/*_CSIDL_APPDATA*/,"Tencent\WeChat\XPlugin\Plugins\WeChatOCR");
+				if(..io.exist(ocrDir)){
+					//防止子目录名变动，自动搜索正确位置
+					ocrPath = ..fsys.searchFile("WeChatOCR.exe",ocrDir,true);		
+				}
+				 
+				if(!..io.exist(ocrPath)){
+					//防止子目录名变动，自动搜索正确位置
+					ocrPath = ..process.cache.find("WeChatOCR.exe") ;		
+				}
+			}
+		}
+
+		ocrPath = ..io.exist(ocrPath); 
+		if(!ocrPath) return null,"请指定 WeChatOCR.exe 路径"; 
+		this.ocrPath = ocrPath;
+		
+		this.mmmojoDllPath = ..io.fullpath(this.mmmojoDllPath );
+		this.weChatDir = ..io.fullpath(this.weChatDir );
+		
+		//加载 DLL，全局加载一次就可以了
+		if(!::MMMojoDll){
+			::MMMojoDll = ..raw.loadDll(this.mmmojoDllPath,,"cdecl");
+			
+			//一个进程只需要调用一次
+			::MMMojoDll.InitializeMMMojo(null,null);
+		} 
+		 
+		this.mmojoEnv = ::MMMojoDll.CreateMMMojoEnvironmentP();
+		::MMMojoDll.SetMMMojoEnvironmentCallbacks(this.mmojoEnv,0,0 )
+		
+		//设置启动参数
+		this.ocrPathW = ..string.toUtf16(this.ocrPath);
+		::MMMojoDll.SetMMMojoEnvironmentInitParamsW(this.mmojoEnv, 2/*kMMExePath*/,this.ocrPathW);
+		::MMMojoDll.SetMMMojoEnvironmentInitParams(this.mmojoEnv, 0/*kMMHostProcess*/, true);
+		
+		this.mmmojoDllDir = ..string.toUtf16(..io.splitpath(this.mmmojoDllPath).dir );
+		::MMMojoDll.AppendMMSubProcessSwitchNative(this.mmojoEnv, "user-lib-dir",this.mmmojoDllDir ); 
+			
+		//用于获取每次识别的任务 ID 并记录需要触发的回调函数
+		this.callBackTaskIdRegistry = ..util.registry(); 
+		this.callBackTaskIdRegistry.reg("null");
+		  
+		//必须提前指定元表，以自动创建 C 回调函数
+		this@ = _metaProperty;
+		 
+		//必须在使用前创建所有回调函数
+		this.onReadPush = function(mmojoOcrResponse,requetId){}
+		this.onReadPull = function(mmojoOcrResponse,requetId){}
+		this.onReadShared = function(mmojoOcrResponse,requetId){}
+		this.onRemoteConnect = function(isConnected){}
+		this.onRemoteDisconnect = function(){}
+		this.onRemoteProcessLaunched = function(){}
+		this.onRemoteProcessLaunchFailed = function(errorCode){}
+		this.onRemoteMojoError = function(errorBuf,errorSize){} 
+		
+		this.isConnected = false; 
+		
+		//每个 mmojoEnv 只能调用一次，不能停止后重启，除非重新创建 mmojoEnv
+		::MMMojoDll.StartMMMojoEnvironment(this.mmojoEnv);
+
+		//等待启动完成
+		..win.wait(function(){
+			if(this.isConnected){
+				return true;
+			}
+		});
+	}; 
+	sendRquest = function(paths,...){ 
+		
+		//创建 Protobuf 消息对象。
+		var ocrRequest = OcrRequest();
+		
+		//初始化字段
+		ocrRequest.unknow = 0;
+		ocrRequest.taskId = 0xFFFF;
+		ocrRequest.picPath = OcrRequest.PicPaths();
+		
+		//找出最后一个回调函数参数
+		var callback;
+		if(type(paths)!=type.table){
+			
+			//用户传的图像路径不是数组，转换为数组
+			paths = {paths,...};
+			
+			//取最后一个参数，看看是不是回调函数
+			if(#paths>1){
+				callback = ..table.pop(paths); 
+				if(type(callback)!=type.function){
+					
+					//不是回调函数，还回去
+					..table.push(paths,callback);
+					callback = null; 
+				}	
+			}
+		}
+		else {
+			callback = ...;
+		}
+		
+		//转换为完整路径，避免第三方组件不能识别 aardio 路径首字符为 / 或 \ 表示应用程序目录。
+		for(k,v in paths){
+			paths[k] = ..io.fullpath(v)
+		} 
+		
+		//获取回调函数的唯一 ID 作为 taskId，识别完成就可用 taskId 取到回调函数
+		if(callback){
+			ocrRequest.taskId = this.callBackTaskIdRegistry.reg(callback); 
+		}
+		
+		//要识别的图像数组
+		ocrRequest.picPath.picPath = paths; 
+		
+		//Protobuf 消息对象转换为字符串
+		var pdData = ocrRequest.serializeToString(); 
+		var pWriteInfo = ::MMMojoDll.CreateMMMojoWriteInfoP(1/*kMMPush*/, false, 1/*RequestIdOCR.OCRPush*/);
+		
+		if(#pdData){
+			var pRequest = ::MMMojoDll.GetMMMojoWriteInfoRequestP(pWriteInfo, #pdData); 
+			
+			//复制到目标内存
+			..raw.copy(pRequest,pdData,#pdData);	
+		} 
+		::MMMojoDll.SendMMMojoWriteInfo(this.mmojoEnv,pWriteInfo);	
+		
+		//要保持对象引用，因为 mmmojo.dll 需要引用 cdecl 函数指针
+		___gc____[this] = true;
+	};
+	portable = function(dstDir){
+		if(!dstDir){
+			dstDir = "/WeChatOCR-Portable"
+		}
+		
+		if(!..io.createDir(dstDir)) return;
+		..fsys.copy(this.mmmojoDllPath,dstDir); 
+		..fsys.copy(..fsys.path.replaceFile(this.mmmojoDllPath,"mmmojo_64.dll"),dstDir);  
+		..fsys.copy(..fsys.path.replaceFile(this.ocrPath,"*.*"),dstDir);
+	};
+	close =  function(){ 
+		___gc____[this] = null;
+		
+		if(this.mmojoEnv){
+			::MMMojoDll.StopMMMojoEnvironment(this.mmojoEnv);
+			::MMMojoDll.RemoveMMMojoEnvironment(this.mmojoEnv); 
+			this.mmojoEnv = null;	
+		} 
+	} 
+}
+
+..subscribe("beforeUnload",function(){
+	if(::MMMojoDll)::MMMojoDll.ShutdownMMMojo();
+} );
+
+import process.wxOcr.OcrResponse;
+import process.wxOcr.OcrRequest;
+
+namespace wxOcr{
+	___gc____ = {};
+	
+    _metaProperty = ..util.metaProperty(
+    	_serialize =  ..thread._callableSerialize;//允许从界面线程传入工作线程
+    	
+    	onReadPush = {
+    		_get = function(){
+    			return owner.onReadPushCallback;
+    		}
+    		_set = function( callBack ){
+    		    //改个名字不要用 onReadPush，这样 onReadPush 就可以触发元方法
+    		    owner.onReadPushCallback = callBack;
+    		    
+    		    //创建 C 回调函数指针
+    		    if(!owner.onReadPushCdecl){
+    		        
+    		        //在回调前预处理回调参数
+    		        owner.onReadPushCallbackAux = function(pData,size,requestId){  
+    		            if(!owner.onReadPushCallback)return;
+    		            
+    		            //解析 Protobuf 消息
+    		        	var resp = ..process.wxOcr.OcrResponse(); 
+						resp.parseFromString(..raw.buffer(size,pData));
+					 
+					 	//忽略 ocrResult 为空的消息
+						if(resp.taskId && resp.taskId > 1 && resp.ocrResult){
+							var callback = owner.callBackTaskIdRegistry.unReg(resp.taskId);
+							if(callback){
+								callback(resp);
+							}
+						}
+						   
+						//回调用户设置的回调函数
+						owner.onReadPushCallback(resp,requestId);
+    		        }
+    		        
+    		        /*
+    		        注意这是多线程回调。
+    		        所以必须用 thread.tocdecl 转换为 cdecl 指针。
+    		        owner 参数为当前对象，已通过 thread.callable() 支持传入其他线程使用。
+    		        */
+    		    	owner.onReadPushCdecl = ..thread.tocdecl(function(requestId,requestInfo){
+    		    	    
+    		    	    if(!::MMMojoDll){
+    		    	    	::MMMojoDll = ..raw.loadDll(owner.mmmojoDllPath,,"cdecl");
+    		    	    } 
+    		    	    
+    		    	    var requestSize = {INT value};
+    		    	    
+    		    	    //获取数据指针
+    		    	    var pData = ::MMMojoDll.GetMMMojoReadInfoRequestP(requestInfo, requestSize);
+						
+						//调用界面线程函数
+						owner.onReadPushCallbackAux(pData,requestSize.value,requestId);
+						 
+						//释放内存
+						::MMMojoDll.RemoveMMMojoReadInfo(requestInfo); 
+						
+    			 	},"void(INT requestId,ptr requestInfo,ptr udata)",owner);
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,1/*kMMReadPush*/,owner.onReadPushCdecl);	
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onReadPull = {
+    		_get = function(){
+    			return owner.onReadPullCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onReadPullCallback = callBack;
+    		    
+    		    if(!owner.onReadPullCdecl){
+    		        owner.onReadPullCallbackAux = function(pData,size,requestId){ 
+    		            if(!owner.onReadPullCallback)return; 
+						owner.onReadPullCallback(..raw.buffer(size,pData),requestId);
+    		        }
+    		        
+    		    	owner.onReadPullCdecl = ..thread.tocdecl(function(requestId,requestInfo){
+    		    	   
+    		    	    if(!::MMMojoDll){
+    		    	    	::MMMojoDll = ..raw.loadDll(owner.mmmojoDllPath,,"cdecl");
+    		    	    } 
+    		    	    
+    		    	    var requestSize = {INT value};
+    		    	     
+    		    	    var pData = ::MMMojoDll.GetMMMojoReadInfoRequestP(requestInfo, requestSize); 
+						owner.onReadPullCallbackAux(pData,requestSize.value); 
+						::MMMojoDll.RemoveMMMojoReadInfo(requestInfo); 
+    			 	},"void(INT requestId,ptr requestInfo,ptr udata)",owner);
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,2/*kMMReadPull*/,owner.onReadPullCdecl);		
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onReadShared = {
+    		_get = function(){
+    			return owner.onReadSharedCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onReadSharedCallback = callBack;
+    		    
+    		    if(!owner.onReadSharedCdecl){
+    		        owner.onReadSharedCallbackAux = function(pData,size,requestId){ 
+    		            if(!owner.onReadSharedCallback)return; 
+						owner.onReadSharedCallback(..raw.buffer(size,pData),requestId);
+    		        }
+    		        
+    		    	owner.onReadSharedCdecl = ..thread.tocdecl(function(requestId,requestInfo){
+    		    	 
+    		    	    if(!::MMMojoDll){
+    		    	    	::MMMojoDll = ..raw.loadDll(owner.mmmojoDllPath,,"cdecl");
+    		    	    } 
+    		    	    
+    		    	    var requestSize = {INT value}; 
+    		    	    var pData = ::MMMojoDll.GetMMMojoReadInfoRequestP(requestInfo, requestSize); 
+						owner.onReadSharedCallbackAux(pData,requestSize.value); 
+						::MMMojoDll.RemoveMMMojoReadInfo(requestInfo); 
+    			 	},"void(INT requestId,ptr requestInfo,ptr udata)",owner);
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,3/*kMMReadShared*/,owner.onReadSharedCdecl);	
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	
+    	onRemoteConnect = {
+    		_get = function(){
+    			return owner.onRemoteConnectCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onRemoteConnectCallback = callBack;
+    		    owner.onRemoteConnectCallbackAux = function(isConnected){
+    		        owner.isConnected = isConnected;
+    		        if(!owner.onRemoteConnectCallback)return; 
+					owner.onRemoteConnectCallback(isConnected);
+    		    }
+    		    
+    		    if(!owner.onRemoteConnectCdecl){
+    		      
+    		    	owner.onRemoteConnectCdecl = ..thread.tocdecl(function(isConnected){
+						owner.onRemoteConnectCallbackAux(isConnected); 
+    			 	},"void(byte isConnected,ptr udata)",owner);
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,4/*kMMRemoteConnect*/,owner.onRemoteConnectCdecl);
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onRemoteDisconnect = {
+    		_get = function(){
+    			return owner.onRemoteDisconnectCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onRemoteDisconnectCallback = callBack;
+    		    owner.onRemoteDisconnectCallbackAux = function(){
+    		  
+    		        owner.isConnected = false;
+    		        if(!owner.onRemoteDisconnectCallback)return; 
+					owner.onRemoteDisconnectCallback();
+    		    }
+    		    
+    		    if(!owner.onRemoteDisconnectCdecl){
+    		      
+    		    	owner.onRemoteDisconnectCdecl = ..thread.tocdecl(function(){
+						owner.onRemoteDisconnectCallbackAux(); 
+    			 	},"void(ptr udata)",owner);	
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,5/*kMMRemoteDisconnect*/,owner.onRemoteDisconnectCdecl);
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onRemoteProcessLaunched = {
+    		_get = function(){
+    			return owner.onRemoteProcessLaunchedCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onRemoteProcessLaunchedCallback = callBack;
+    		    
+    		    if(!owner.onRemoteProcessLaunchedCdecl){
+    		      
+    		    	owner.onRemoteProcessLaunchedCdecl = ..thread.tocdecl(function(){ 
+						owner.onRemoteProcessLaunchedCallback(); 
+    			 	},"void(ptr udata)",owner);	
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,6/*kMMRemoteProcessLaunched*/,owner.onRemoteProcessLaunchedCdecl);
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onRemoteProcessLaunchFailed = {
+    		_get = function(){
+    			return owner.onRemoteProcessLaunchFailedCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onRemoteProcessLaunchFailedCallback = callBack;
+    		    
+    		    if(!owner.onRemoteProcessLaunchFailedCdecl){
+    		      
+    		    	owner.onRemoteProcessLaunchFailedCdecl = ..thread.tocdecl(function(errorCode){
+						owner.onRemoteProcessLaunchedCallback(errorCode); 
+    			 	},"void(int errorCode,ptr udata)",owner);	
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,7/*kMMRemoteProcessLaunchFailed*/,owner.onRemoteProcessLaunchFailedCdecl);
+    		    }
+    			
+    		} 	
+    	};
+    	
+    	onRemoteMojoError = {
+    		_get = function(){
+    			return owner.onRemoteMojoErrorCallback;
+    		}
+    		_set = function( callBack ){
+    		    owner.onRemoteMojoErrorCallback = callBack;
+    		    
+    		    owner.onRemoteMojoErrorCallbackAux = function(pData,size){ 
+    		        if(!owner.onRemoteMojoErrorCallback)return; 
+					owner.onRemoteMojoErrorCallback(..raw.buffer(size,pData));
+    		    }
+    		    
+    		    if(!owner.onRemoteMojoErrorCdecl){
+    		      
+    		    	owner.onRemoteMojoErrorCdecl = ..thread.tocdecl(function(errorBuf,errorSize){
+						if(errorSize) owner.onRemoteMojoErrorCallbackAux(errorBuf,errorSize);
+						  
+    			 	},"void(ptr errorBuf, int errorSize,ptr udata)",owner);	
+    			 	
+    			 	::MMMojoDll.SetMMMojoEnvironmentCallbacks(owner.mmojoEnv
+    			 		,8/*kMMRemoteMojoError*/,owner.onRemoteMojoErrorCdecl );
+    		    }
+    		} 	
+    	};
+    )
+}
+
+/**details(说明)
+
+参考源码：
+https://github.com/EEEEhex/QQImpl
+ 
+此扩展库仅供技术研究测试，勿作任何不当用途。
+
+aardio 其他 OCR 扩展库：
+string.ocrLite, dotNet.ocr 
+
+end details**/
+
+  
+/*****intellisense()
+process.wxOcr = 微信 OCR 识别库。\n只能用于界面线程，不能用于控制台程序
+process.wxOcr( = 创建微信 OCR 识别对象。\n只能用于界面线程，不能用于控制台程序
+process.wxOcr(.(weChatPath,ocrPath) = 可选用参数 @weChatPath 指定微信安装路径（包含 WeChat.exe 或者 mmmojo.dll 的目录）。\n可选用参数 @ocrPath 指定 WeChatOCR.exe 路径。\n一般不需要指定参数，默认会自动搜索并设置这些参数。\n\n如果找不到目录返回 null\n\n在成功创建对象以后，可以用 portable 函数复制 OCR 组件到指定目录。
+process.wxOcr(.(weChatDir) =  指定包含了 WeChatOCR.exe , mmmojo.dll，mmmojo_64.dll 的目录。\n如果这些文件都放在一个目录，只要指定一个参数就可以。\n\n如果找不到目录返回 null。
+process.wxOcr() = !stdProcessWxOcr.
+mmojoOcrResponse = 微信 OCR 识别结果， protobuf.message 对象。\n可用 web.json.stringify 转换为 JSON。\n可用 web.json.strip() 转换为普通表。\n!process_wxOcr_OcrResponse.
+end intellisense*****/
+
+/*****intellisense(!stdProcessWxOcr)
+portable() = 提取 OCR 组件绿化独立版到指定目录。
+mmmojoDllPath =  当前使用的 mmmojo.dll 路径。
+ocrPath =  当前使用的 WeChatOCR.exe 路径。
+close() = 关闭 OCR 对象。\n注意在没退出此对象事件回调函数前，对象还在使用时，不能直接调用 close 函数。\n可以改用 winform.setTimeout 异步调用 close 函数
+sendRquest(files,callback) = @.sendRquest(__/*发送识别图象请求。\n参数 @file 可指定一个或多个文件路径参数，\n也可以传入一个包含多个文件数据的数组。\n可选用最后一个 @callback 参数指定接收识别结果的回调函数。\n回调函数的第一个参数为  process.wxOcr.OcrResponse 对象*/,\n	function(mmojoOcrResponse){\n		\n	}\n)
+onReadPush = @.onReadPush = function(mmojoOcrResponse){
+	__/*mmojoOcrResponse 为 process.wxOcr.OcrResponse 对象*/
+}
+onReadPull = @.onReadPull = function(respBuffer){
+	__/*忽略这里用不上*/
+}
+onReadShared = @.onReadShared = function(respBuffer){
+	__/*忽略这里用不上*/
+}
+onRemoteConnect = @.onRemoteConnect = function(isConnected){
+	__/*已连接*/
+}
+onRemoteDisconnect = @.onRemoteDisconnect = function(){
+	__/*已断开，忽略这里用不上*/
+}
+onRemoteProcessLaunched = @.onRemoteProcessLaunched = function(){
+	__/*忽略这里用不上*/
+}
+onRemoteProcessLaunchFailed = @.onRemoteProcessLaunchFailed = function(errorCode){
+	__/*忽略这里用不上*/
+}
+onRemoteMojoError = @.onRemoteMojoError = function(errorBuf,errorSize){
+	__/*忽略这里用不上*/
+}  
+end intellisense*****/
+

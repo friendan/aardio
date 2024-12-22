@@ -1,0 +1,195 @@
+﻿import dotNet;
+import System.Windows.Forms;
+
+dotNet.reference(
+	["unvell.ReoScript"] = $"~\lib\dotNet\ReoGrid\.res\unvell.ReoScript.dll";
+	["Antlr3.Runtime"] = $"~\lib\dotNet\ReoGrid\.res\Antlr3.Runtime.dll";
+	["DotNetZip"] = $"~\lib\dotNet\ReoGrid\.res\DotNetZip.dll";
+	["unvell.ReoGrid"] = $"~\lib\dotNet\ReoGrid\.res\unvell.ReoGrid.dll";
+)
+
+dotNet.import("unvell.ReoGrid"); 
+
+dotNet.ReoGrid = unvell.ReoGrid;
+ReoGrid = unvell.ReoGrid
+
+ReoGrid.ReoGridControl[["ctor(...)"]] = function(c,winform){
+ 	var o,e = c();
+ 	if(o){
+ 		..System.Windows.Forms.CreateEmbed(o,winform);
+ 		o[["parentForm"]] = winform;
+ 	} 
+ 	
+ 	if(o){
+ 		var load = o.Load;
+ 		o[["Load"]] = function(path,...){
+ 			return load(..io.fullpath(path),...)
+ 		}
+ 		
+ 		var save = o.Save;
+ 		o[["Save"]] = function(path,...){
+ 			return save(path?..io.fullpath(path):path,...)
+ 		}
+ 		
+ 	}
+ 	
+ 	return o,e;
+}
+
+//右键菜单语言
+with ReoGrid.LanguageResource{
+	var lcid = ::Kernel32.GetUserDefaultLCID();
+	
+	if( lcid==0x804/*zh-CN*/ || lcid==0x1004/*zh-SG*/ ){
+		Filter_SortAtoZ = "升序(&S)";
+		Filter_SortZtoA = "降序(&O)";
+		Filter_SelectAll = "(全选)";
+		Filter_Blanks = "(空白单元格)";
+		Menu_InsertSheet = "插入(&I)";
+		Menu_DeleteSheet = "删除(&D)";
+		Menu_RenameSheet = "重命名(&R)...";
+		Sheet_RenameDialog_Title = "重命名工作表";
+		Sheet_RenameDialog_NameLabel = "名称(&N): ";
+		Button_OK = "确定";
+		Button_Cancel = "取消";
+	}  
+	elseif( lcid==0x404/*zh-TW*/ || lcid == 0x0C04/*zh-HK*/ || lcid == 0x1404/*zh-MO*/ ){
+		Filter_SortAtoZ = "升序(&S)";
+		Filter_SortZtoA = "降序(&O)";
+		Filter_SelectAll = "(全選)";
+		Filter_Blanks = "(空白儲存格)";
+		Menu_InsertSheet = "插入(&I)";
+		Menu_DeleteSheet = "刪除(&D)";
+		Menu_RenameSheet = "重新命名(&R)...";
+		Sheet_RenameDialog_Title = "重新命名工作表";
+		Sheet_RenameDialog_NameLabel = "名稱(&N): ";
+		Button_OK = "確定";
+		Button_Cancel = "取消";
+	}
+	elseif( lcid==0x0412/*ko-KR*/ ){
+		Filter_SortAtoZ = "오름차순(&S)";
+		Filter_SortZtoA = "내림차순(&O)";
+		Filter_SelectAll = "(전체 선택)";
+		Filter_Blanks = "(빈 셀)";
+		Menu_InsertSheet = "삽입(&I)";
+		Menu_DeleteSheet = "삭제(&D)";
+		Menu_RenameSheet = "이름 바꾸기(&R)...";
+		Sheet_RenameDialog_Title = "시트 이름 바꾸기";
+		Sheet_RenameDialog_NameLabel = "이름(&N): ";
+		Button_OK = "확인";
+		Button_Cancel = "취소";
+	} 
+}
+
+/*****intellisense()
+dotNet.ReoGrid = ReoGrid 表格扩展库。\n需要 .NET 4.7.2（Win10 1809 自带）或之后的版本。\n导入后应当使用 ReoGrid 名字空间而不是 dotNet.ReoGrid 。
+ReoGrid = ReoGrid 表格名字空间，自 dotNet.ReoGrid 库导入。
+end intellisense*****/
+
+/*****intellisense(ReoGrid)
+? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
+ReoGridControl(__) = 创建表格控件。\n参数 @1 必须指定 winform 窗口或 custom 控件对象作为容器窗口。
+ReoGridControl() = !stdReoGridControl.
+ReoGridControl.CreateMemoryWorkbook() = 创建内存工作簿
+end intellisense*****/
+
+/*****intellisense(!stdReoGridControl)
+Save(__) = 保存文件。\n参数 @1 指定文件路径。。\n参数 @2 可用 ReoGrid.IO.FileFormat 指定格式。\n其实参数 @2 就是一个数值，0 为自动检测，一般不必指定
+Load(__) = 加载文件。\n参数 @1 指定文件路径。\n参数 @2 可用 ReoGrid.IO.FileFormat 指定格式。\n其实参数 @2 就是一个数值，0 为自动检测，一般不必指定
+CreateWorksheet('mysheet') = 创建工作表，参数指定表名
+Worksheets = 可在下标里指定工作表名称以获取指定工作表，参数可指定表名或索引
+CurrentWorksheet = 获取或设置当前工作表。\n!stdReoGridWorksheet.
+RunScript(__) = 运行字符串参数 @1 指定的脚本
+Worksheets.? = !stdReoGridWorksheet.
+CreateWorksheet() = !stdReoGridWorksheet.
+AddWorksheet(sheet) = 添加工作表。\n可用 CreateWorksheet 函数创建工作表。
+InsertWorksheet(1, sheet) = 插入工作表到指定位置。\n可用 CreateWorksheet 函数创建工作表。
+CopyWorksheet(0, 1) = 复制工作表
+MoveWorksheet(0, 3) = 从参数 @2 指定的索引移动工作表参数 @2 指定的索引
+GetWorksheetIndex("sheet2") = 查找并返回工作表索引
+Workbook = 获取工作簿\n!stdReoGridWorkbook.
+end intellisense*****/
+
+/*****intellisense(!stdReoGridWorkbook)
+Reset() = 重置工作簿
+end intellisense*****/
+
+
+/*****intellisense(!stdReoGridWorksheet)
+AfterCellEdit = @.AfterCellEdit = function(sender,event){
+	__/*数据已编辑，event.NewData 是新的数据*/
+}
+CellDataChanged = @.CellDataChanged = function(sender,event){
+	__/*数据已更改 event.Cell.Data 是变更的数据*/
+}
+Cells = 访问单元格，下标里可使用 "A1" 表示法的字符串作为索引。\nA表示列，1 表示行，A1 为第一列第一行
+Cells.? = !stdReoGridSheetCell.
+AddHighlightRange("A1:D2") = 添加高亮区块。\n参数使用 A1 表示法，示例为 A列1行到D列2行。
+end intellisense*****/
+
+/*****intellisense(!stdReoGridSheetCell)
+Body = 可用于指定显示控件
+Data = 单元格数据
+Style.TextColor = 单元格前景色 ReoGrid.Graphics.SolidColor.Red;
+Style.BackColor = 单元格背景色 ReoGrid.Graphics.SolidColor.Black;
+end intellisense*****/
+
+/*****intellisense(ReoGrid.CellTypes)
+RadioButtonCe() = 单选选框
+ButtonCell(__) = 按钮控件，参数 @1 指定字符串。
+DropdownListCell(__) = 下接控件，参数 @1 指定字符串数组
+ProgressCell() = 进度条控件。
+HyperlinkCell(__) = 超链接控件，参数 @1 指定网址
+CheckBoxCell() = 复选框
+end intellisense*****/
+
+
+/*****intellisense(ReoGrid.IO.FileFormat)
+ReoGridFormat =  1 直接指定数值更快
+CSV = 10 直接指定数值更快
+Excel2007 = 30 直接指定数值更快
+_Auto = 0 直接指定数值更快
+_Custom = 100 直接指定数值更快
+end intellisense*****/
+
+/*****intellisense(ReoGrid.Graphics.SolidColor)
+Transparent = RGB(0,0,0,0) 
+White = RGB(255,255,255) 
+WhiteSmoke = RGB(245,245,245) 
+Gainsboro = RGB(220,220,220) 
+Silver = RGB(192,192,192) 
+Gray = RGB(128,128,128) 
+Black = RGB(0,0,0) 
+Red = RGB(255,0,0) 
+Green = RGB(0,255,0) 
+Blue = RGB(0,0,255) 
+Coral = RGB(255,127,80) 
+DarkBlue = RGB(0,0,139) 
+DarkOrange = RGB(255,140,0) 
+DeepSkyBlue = RGB(0,191,255) 
+Yellow = RGB(255,255,0) 
+Goldenrod = RGB(218,165,32) 
+Orange = RGB(255,165,0) 
+OrangeRed = RGB(255,69,0) 
+IndianRed = RGB(205,92,92) 
+LimeGreen = RGB(50,205,50) 
+LightGreen = RGB(144,238,144) 
+Lavender = RGB(230,230,250) 
+LemonChiffon = RGB(255,250,205) 
+LightCoral = RGB(240,128,128) 
+LightGoldenrodYellow = RGB(250,250,210) 
+LightYellow = RGB(255,255,224) 
+PaleGoldenrod = RGB(238,232,170) 
+LightSteelBlue = RGB(176,196,222) 
+Brown = RGB(165,42,42) 
+SeaGreen = RGB(46,139,87) 
+SteelBlue = RGB(70,130,180) 
+SkyBlue = RGB(135,206,235) 
+LightSkyBlue = RGB(135,206,250) 
+AliceBlue = RGB(240,248,255) 
+Purple = RGB(128,0,128) 
+Peru = RGB(205,133,63) 
+DarkOrchid = RGB(153,50,204) 
+end intellisense*****/
+

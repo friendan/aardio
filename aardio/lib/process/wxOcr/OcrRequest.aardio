@@ -1,0 +1,132 @@
+namespace process.wxOcr;
+import protobuf.message;
+import util.metaProperty;
+
+class OcrRequest {
+	ctor(reader){
+		this = ..protobuf.message(reader);
+		
+    	this.fieldTypes[1] = "..protobuf.type.int32";
+    	this.fieldValues[1] = null;
+    	this.fieldNames[1] = "unknow";
+     
+    	this.fieldTypes[2] = "..protobuf.type.int32";
+    	this.fieldValues[2] = null;
+    	this.fieldNames[2] = "taskId";
+     
+    	this.fieldTypes[3] = "..process.wxOcr.OcrRequest.PicPaths";
+    	this.fieldValues[3] = null;
+    	this.fieldNames[3] = "picPath";
+       
+	} 
+	@_metaProperty ;
+}
+
+namespace OcrRequest {
+	class PicPaths {
+		ctor(reader){
+			this = ..protobuf.message(reader);
+			
+	    	this.fieldTypes[1] = "..protobuf.type.string";
+	    	this.fieldValues[1] = { @{_type="array"}};
+	    	this.fieldNames[1] = "picPath";
+	    	this.fieldIsArray[1] = true;  
+		} 
+		@_metaProperty ;
+	}
+	
+	namespace PicPaths {
+	  
+	  
+		_metaProperty  = ..util.metaProperty(
+			_keys = { "picPath" }
+			_tostring = function(){
+				return owner.serializeToString();
+			};
+			eachName = function(){
+				return ..table.eachName(owner); 
+			};	
+	    	picPath = {
+	        	_get = function(ownerCall,thisMeta){ 
+	        	    if(ownerCall) return thisMeta._call;
+	        		return owner.getFieldArray(1); 
+	        	}; 
+	        	_set = function(v){ 
+	        		return owner.setFieldArray(1,v); 
+	        	};
+	        	_call = function(index,value){ 
+	        		if(value!==null)return owner.setFieldArrayItem(1,index,value); 
+	        		return owner.getFieldArrayItem(1,index); 
+	        	}; 	
+	        }; 
+	    	picPathLength = {
+	    		_get = function(){ 
+	    			return owner.getFieldArraySize(1);
+	    		}; 	
+	    	};
+	        
+		)
+	}
+/**intellisense()
+process.wxOcr.OcrRequest.PicPaths = Protobuf 消息对象
+process.wxOcr.OcrRequest.PicPaths() = 创建 Protobuf 消息对象。\n!48c3a6f4Request_PicPaths.
+!48c3a6f4Request_PicPaths.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!48c3a6f4Request_PicPaths.serializeToString() = 序列化消息对象,返回二进制字符串
+!48c3a6f4Request_PicPaths.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!48c3a6f4Request_PicPaths.picPath = 不作为函数调用时，用于返回或设置数组。 
+!48c3a6f4Request_PicPaths.picPath(.(index,value) = 如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+end intellisense**/  
+  
+	_metaProperty  = ..util.metaProperty(
+		_keys = { "unknow";"taskId";"picPath" }
+		_tostring = function(){
+			return owner.serializeToString();
+		};
+		eachName = function(){
+			return ..table.eachName(owner); 
+		};	
+    	unknow = {
+    		_get = function(){ 
+    			return owner.getFieldValue(1);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(1, value);
+    		}; 	
+    	}; 
+     
+    	taskId = {
+    		_get = function(){ 
+    			return owner.getFieldValue(2);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(2, value);
+    		}; 	
+    	}; 
+     
+    	picPath = {
+    		_get = function(){ 
+    			return owner.getFieldValue(3);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(3, value);
+    		}; 	
+    	}; 
+        
+	)
+}
+/**intellisense()
+process.wxOcr.OcrRequest = Protobuf 消息对象
+process.wxOcr.OcrRequest() = 创建 Protobuf 消息对象。\n!process_wxOcr_OcrRequest.
+!process_wxOcr_OcrRequest.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!process_wxOcr_OcrRequest.serializeToString() = 序列化消息对象,返回二进制字符串
+!process_wxOcr_OcrRequest.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!process_wxOcr_OcrRequest.unknow = protobuf.type.int32
+!process_wxOcr_OcrRequest.taskId = 必定为0\nprotobuf.type.int32
+!process_wxOcr_OcrRequest.picPath = !48c3a6f4Request_PicPaths.
+end intellisense**/

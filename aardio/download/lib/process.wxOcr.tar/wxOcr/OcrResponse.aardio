@@ -1,0 +1,530 @@
+namespace process.wxOcr;
+import protobuf.message;
+import util.metaProperty;
+
+class OcrResponse {
+	ctor(reader){
+		this = ..protobuf.message(reader);
+		
+    	this.fieldTypes[1] = "..protobuf.type.int32";
+    	this.fieldValues[1] = null;
+    	this.fieldNames[1] = "type";
+     
+    	this.fieldTypes[2] = "..protobuf.type.int32";
+    	this.fieldValues[2] = null;
+    	this.fieldNames[2] = "taskId";
+     
+    	this.fieldTypes[3] = "..protobuf.type.int32";
+    	this.fieldValues[3] = null;
+    	this.fieldNames[3] = "errCode";
+     
+    	this.fieldTypes[4] = "..process.wxOcr.OcrResponse.OcrResult";
+    	this.fieldValues[4] = null;
+    	this.fieldNames[4] = "ocrResult";
+       
+	} 
+	@_metaProperty ;
+}
+
+namespace OcrResponse {
+	class OcrResult {
+		ctor(reader){
+			this = ..protobuf.message(reader);
+			
+	    	this.fieldTypes[1] = "..process.wxOcr.OcrResponse.OcrResult.SingleResult";
+	    	this.fieldValues[1] = { @{_type="array"}};
+	    	this.fieldNames[1] = "singleResult";
+	    	this.fieldIsArray[1] = true;
+	    	this.fieldTypes[2] = "..protobuf.type.int32";
+	    	this.fieldValues[2] = null;
+	    	this.fieldNames[2] = "unknown_1";
+	     
+	    	this.fieldTypes[3] = "..protobuf.type.int32";
+	    	this.fieldValues[3] = null;
+	    	this.fieldNames[3] = "unknown_2";
+	       
+		} 
+		@_metaProperty ;
+	}
+	
+	namespace OcrResult {
+			class SingleResult {
+				ctor(reader){
+					this = ..protobuf.message(reader);
+					
+			    	this.fieldTypes[1] = "..process.wxOcr.OcrResponse.OcrResult.ResultPos";
+			    	this.fieldValues[1] = null;
+			    	this.fieldNames[1] = "singlePos";
+			     
+			    	this.fieldTypes[2] = "..protobuf.type.bytes";
+			    	this.fieldValues[2] = null;
+			    	this.fieldNames[2] = "singleStrUtf8";
+			     
+			    	this.fieldTypes[3] = "..protobuf.type.float";
+			    	this.fieldValues[3] = null;
+			    	this.fieldNames[3] = "singleRate";
+			     
+			    	this.fieldTypes[4] = "..process.wxOcr.OcrResponse.OcrResult.SingleResult.OneResult";
+			    	this.fieldValues[4] = { @{_type="array"}};
+			    	this.fieldNames[4] = "oneResult";
+			    	this.fieldIsArray[4] = true;
+			    	this.fieldTypes[5] = "..protobuf.type.float";
+			    	this.fieldValues[5] = null;
+			    	this.fieldNames[5] = "lx";
+			     
+			    	this.fieldTypes[6] = "..protobuf.type.float";
+			    	this.fieldValues[6] = null;
+			    	this.fieldNames[6] = "ly";
+			     
+			    	this.fieldTypes[7] = "..protobuf.type.float";
+			    	this.fieldValues[7] = null;
+			    	this.fieldNames[7] = "rx";
+			     
+			    	this.fieldTypes[8] = "..protobuf.type.float";
+			    	this.fieldValues[8] = null;
+			    	this.fieldNames[8] = "ry";
+			     
+			    	this.fieldTypes[9] = "..protobuf.type.int32";
+			    	this.fieldValues[9] = null;
+			    	this.fieldNames[9] = "unknown_0";
+			     
+			    	this.fieldTypes[10] = "..process.wxOcr.OcrResponse.OcrResult.ResultPos";
+			    	this.fieldValues[10] = null;
+			    	this.fieldNames[10] = "unknownPos";
+			       
+				} 
+				@_metaProperty ;
+			}
+			
+			namespace SingleResult {
+						class OneResult {
+							ctor(reader){
+								this = ..protobuf.message(reader);
+								
+						    	this.fieldTypes[1] = "..process.wxOcr.OcrResponse.OcrResult.ResultPos";
+						    	this.fieldValues[1] = null;
+						    	this.fieldNames[1] = "onePos";
+						     
+						    	this.fieldTypes[2] = "..protobuf.type.bytes";
+						    	this.fieldValues[2] = null;
+						    	this.fieldNames[2] = "oneStrUtf8";
+						       
+							} 
+							@_metaProperty ;
+						}
+						
+						namespace OneResult {
+						  
+						  
+							_metaProperty  = ..util.metaProperty(
+								_keys = { "onePos";"oneStrUtf8" }
+								_tostring = function(){
+									return owner.serializeToString();
+								};
+								eachName = function(){
+									return ..table.eachName(owner); 
+								};	
+						    	onePos = {
+						    		_get = function(){ 
+						    			return owner.getFieldValue(1);
+						    		};
+						    		_set = function( value ){
+						    			return owner.setFieldValue(1, value);
+						    		}; 	
+						    	}; 
+						     
+						    	oneStrUtf8 = {
+						    		_get = function(){ 
+						    			return owner.getFieldValue(2);
+						    		};
+						    		_set = function( value ){
+						    			return owner.setFieldValue(2, value);
+						    		}; 	
+						    	}; 
+						        
+							)
+						}
+			/**intellisense()
+			process.wxOcr.OcrResponse.OcrResult.SingleResult.OneResult = Protobuf 消息对象
+			process.wxOcr.OcrResponse.OcrResult.SingleResult.OneResult() = 创建 Protobuf 消息对象。\n!a35ef3b6Result_OneResult.
+			!a35ef3b6Result_OneResult.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+			!a35ef3b6Result_OneResult.serializeToString() = 序列化消息对象,返回二进制字符串
+			!a35ef3b6Result_OneResult.eachName() = @for k,v in ??.eachName(){
+				__/*遍历此消息对象的所有字段，
+			k 为字段名,v 为字段值。*/
+			}
+			!a35ef3b6Result_OneResult.onePos = !7671c335Result_ResultPos.
+			!a35ef3b6Result_OneResult.oneStrUtf8 = protobuf.type.bytes
+			end intellisense**/  
+			  
+				_metaProperty  = ..util.metaProperty(
+					_keys = { "singlePos";"singleStrUtf8";"singleRate";"oneResult";"lx";"ly";"rx";"ry";"unknown_0";"unknownPos" }
+					_tostring = function(){
+						return owner.serializeToString();
+					};
+					eachName = function(){
+						return ..table.eachName(owner); 
+					};	
+			    	singlePos = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(1);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(1, value);
+			    		}; 	
+			    	}; 
+			     
+			    	singleStrUtf8 = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(2);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(2, value);
+			    		}; 	
+			    	}; 
+			     
+			    	singleRate = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(3);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(3, value);
+			    		}; 	
+			    	}; 
+			     
+			    	oneResult = {
+			        	_get = function(ownerCall,thisMeta){ 
+			        	    if(ownerCall) return thisMeta._call;
+			        		return owner.getFieldArray(4); 
+			        	}; 
+			        	_set = function(v){ 
+			        		return owner.setFieldArray(4,v); 
+			        	};
+			        	_call = function(index,value){ 
+			        		if(value!==null)return owner.setFieldArrayItem(4,index,value); 
+			        		return owner.getFieldArrayItem(4,index); 
+			        	}; 	
+			        }; 
+			    	oneResultLength = {
+			    		_get = function(){ 
+			    			return owner.getFieldArraySize(4);
+			    		}; 	
+			    	};
+			     
+			    	lx = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(5);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(5, value);
+			    		}; 	
+			    	}; 
+			     
+			    	ly = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(6);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(6, value);
+			    		}; 	
+			    	}; 
+			     
+			    	rx = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(7);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(7, value);
+			    		}; 	
+			    	}; 
+			     
+			    	ry = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(8);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(8, value);
+			    		}; 	
+			    	}; 
+			     
+			    	unknown_0 = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(9);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(9, value);
+			    		}; 	
+			    	}; 
+			     
+			    	unknownPos = {
+			    		_get = function(){ 
+			    			return owner.getFieldValue(10);
+			    		};
+			    		_set = function( value ){
+			    			return owner.setFieldValue(10, value);
+			    		}; 	
+			    	}; 
+			        
+				)
+			}
+	/**intellisense()
+	process.wxOcr.OcrResponse.OcrResult.SingleResult = Protobuf 消息对象
+	process.wxOcr.OcrResponse.OcrResult.SingleResult() = 创建 Protobuf 消息对象。\n!d12690dault_SingleResult.
+	!d12690dault_SingleResult.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+	!d12690dault_SingleResult.serializeToString() = 序列化消息对象,返回二进制字符串
+	!d12690dault_SingleResult.eachName() = @for k,v in ??.eachName(){
+		__/*遍历此消息对象的所有字段，
+	k 为字段名,v 为字段值。*/
+	}
+	!d12690dault_SingleResult.singlePos = SingleResult是一行结果 OneResult是单字的\n!7671c335Result_ResultPos.
+	!d12690dault_SingleResult.singleStrUtf8 = protobuf.type.bytes
+	!d12690dault_SingleResult.singleRate = UTF8格式的字符串\nprotobuf.type.float
+	!d12690dault_SingleResult.oneResult() = !a35ef3b6Result_OneResult.
+	!d12690dault_SingleResult.oneResult = 不作为函数调用时，用于返回或设置数组。 
+	!d12690dault_SingleResult.oneResult(.(index,value) = 如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+	!d12690dault_SingleResult.lx = protobuf.type.float
+	!d12690dault_SingleResult.ly = 识别矩形的左上和右下的坐标? 可能是\nprotobuf.type.float
+	!d12690dault_SingleResult.rx = protobuf.type.float
+	!d12690dault_SingleResult.ry = protobuf.type.float
+	!d12690dault_SingleResult.unknown_0 = protobuf.type.int32
+	!d12690dault_SingleResult.unknownPos = 未知\n!7671c335Result_ResultPos.
+	end intellisense**/
+			class ResultPos {
+				ctor(reader){
+					this = ..protobuf.message(reader);
+					
+			    	this.fieldTypes[1] = "..process.wxOcr.OcrResponse.OcrResult.ResultPos.PosXY";
+			    	this.fieldValues[1] = { @{_type="array"}};
+			    	this.fieldNames[1] = "pos";
+			    	this.fieldIsArray[1] = true;  
+				} 
+				@_metaProperty ;
+			}
+			
+			namespace ResultPos {
+						class PosXY {
+							ctor(reader){
+								this = ..protobuf.message(reader);
+								
+						    	this.fieldTypes[1] = "..protobuf.type.float";
+						    	this.fieldValues[1] = null;
+						    	this.fieldNames[1] = "x";
+						     
+						    	this.fieldTypes[2] = "..protobuf.type.float";
+						    	this.fieldValues[2] = null;
+						    	this.fieldNames[2] = "y";
+						       
+							} 
+							@_metaProperty ;
+						}
+						
+						namespace PosXY {
+						  
+						  
+							_metaProperty  = ..util.metaProperty(
+								_keys = { "x";"y" }
+								_tostring = function(){
+									return owner.serializeToString();
+								};
+								eachName = function(){
+									return ..table.eachName(owner); 
+								};	
+						    	x = {
+						    		_get = function(){ 
+						    			return owner.getFieldValue(1);
+						    		};
+						    		_set = function( value ){
+						    			return owner.setFieldValue(1, value);
+						    		}; 	
+						    	}; 
+						     
+						    	y = {
+						    		_get = function(){ 
+						    			return owner.getFieldValue(2);
+						    		};
+						    		_set = function( value ){
+						    			return owner.setFieldValue(2, value);
+						    		}; 	
+						    	}; 
+						        
+							)
+						}
+			/**intellisense()
+			process.wxOcr.OcrResponse.OcrResult.ResultPos.PosXY = Protobuf 消息对象
+			process.wxOcr.OcrResponse.OcrResult.ResultPos.PosXY() = 创建 Protobuf 消息对象。\n!58d30c14_ResultPos_PosXY.
+			!58d30c14_ResultPos_PosXY.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+			!58d30c14_ResultPos_PosXY.serializeToString() = 序列化消息对象,返回二进制字符串
+			!58d30c14_ResultPos_PosXY.eachName() = @for k,v in ??.eachName(){
+				__/*遍历此消息对象的所有字段，
+			k 为字段名,v 为字段值。*/
+			}
+			!58d30c14_ResultPos_PosXY.x = protobuf.type.float
+			!58d30c14_ResultPos_PosXY.y = protobuf.type.float
+			end intellisense**/  
+			  
+				_metaProperty  = ..util.metaProperty(
+					_keys = { "pos" }
+					_tostring = function(){
+						return owner.serializeToString();
+					};
+					eachName = function(){
+						return ..table.eachName(owner); 
+					};	
+			    	pos = {
+			        	_get = function(ownerCall,thisMeta){ 
+			        	    if(ownerCall) return thisMeta._call;
+			        		return owner.getFieldArray(1); 
+			        	}; 
+			        	_set = function(v){ 
+			        		return owner.setFieldArray(1,v); 
+			        	};
+			        	_call = function(index,value){ 
+			        		if(value!==null)return owner.setFieldArrayItem(1,index,value); 
+			        		return owner.getFieldArrayItem(1,index); 
+			        	}; 	
+			        }; 
+			    	posLength = {
+			    		_get = function(){ 
+			    			return owner.getFieldArraySize(1);
+			    		}; 	
+			    	};
+			        
+				)
+			}
+	/**intellisense()
+	process.wxOcr.OcrResponse.OcrResult.ResultPos = Protobuf 消息对象
+	process.wxOcr.OcrResponse.OcrResult.ResultPos() = 创建 Protobuf 消息对象。\n!7671c335Result_ResultPos.
+	!7671c335Result_ResultPos.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+	!7671c335Result_ResultPos.serializeToString() = 序列化消息对象,返回二进制字符串
+	!7671c335Result_ResultPos.eachName() = @for k,v in ??.eachName(){
+		__/*遍历此消息对象的所有字段，
+	k 为字段名,v 为字段值。*/
+	}
+	!7671c335Result_ResultPos.pos() = !58d30c14_ResultPos_PosXY.
+	!7671c335Result_ResultPos.pos = 不作为函数调用时，用于返回或设置数组。 
+	!7671c335Result_ResultPos.pos(.(index,value) = 如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+	end intellisense**/  
+	  
+		_metaProperty  = ..util.metaProperty(
+			_keys = { "singleResult";"unknown_1";"unknown_2" }
+			_tostring = function(){
+				return owner.serializeToString();
+			};
+			eachName = function(){
+				return ..table.eachName(owner); 
+			};	
+	    	singleResult = {
+	        	_get = function(ownerCall,thisMeta){ 
+	        	    if(ownerCall) return thisMeta._call;
+	        		return owner.getFieldArray(1); 
+	        	}; 
+	        	_set = function(v){ 
+	        		return owner.setFieldArray(1,v); 
+	        	};
+	        	_call = function(index,value){ 
+	        		if(value!==null)return owner.setFieldArrayItem(1,index,value); 
+	        		return owner.getFieldArrayItem(1,index); 
+	        	}; 	
+	        }; 
+	    	singleResultLength = {
+	    		_get = function(){ 
+	    			return owner.getFieldArraySize(1);
+	    		}; 	
+	    	};
+	     
+	    	unknown_1 = {
+	    		_get = function(){ 
+	    			return owner.getFieldValue(2);
+	    		};
+	    		_set = function( value ){
+	    			return owner.setFieldValue(2, value);
+	    		}; 	
+	    	}; 
+	     
+	    	unknown_2 = {
+	    		_get = function(){ 
+	    			return owner.getFieldValue(3);
+	    		};
+	    		_set = function( value ){
+	    			return owner.setFieldValue(3, value);
+	    		}; 	
+	    	}; 
+	        
+		)
+	}
+/**intellisense()
+process.wxOcr.OcrResponse.OcrResult = Protobuf 消息对象
+process.wxOcr.OcrResponse.OcrResult() = 创建 Protobuf 消息对象。\n!bfc37b1asponse_OcrResult.
+!bfc37b1asponse_OcrResult.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!bfc37b1asponse_OcrResult.serializeToString() = 序列化消息对象,返回二进制字符串
+!bfc37b1asponse_OcrResult.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!bfc37b1asponse_OcrResult.singleResult() = !d12690dault_SingleResult.
+!bfc37b1asponse_OcrResult.singleResult = 不作为函数调用时，用于返回或设置数组。 
+!bfc37b1asponse_OcrResult.singleResult(.(index,value) = 如果作为函数调用：\n修改值时参数 @index 指定元素索引，参数 @value 指定元素值。\n获取值时用参数 @index 指定数组索引即可
+!bfc37b1asponse_OcrResult.unknown_1 = repeated 每行的结果\nprotobuf.type.int32
+!bfc37b1asponse_OcrResult.unknown_2 = protobuf.type.int32
+end intellisense**/  
+  
+	_metaProperty  = ..util.metaProperty(
+		_keys = { "type";"taskId";"errCode";"ocrResult" }
+		_tostring = function(){
+			return owner.serializeToString();
+		};
+		eachName = function(){
+			return ..table.eachName(owner); 
+		};	
+    	type = {
+    		_get = function(){ 
+    			return owner.getFieldValue(1);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(1, value);
+    		}; 	
+    	}; 
+     
+    	taskId = {
+    		_get = function(){ 
+    			return owner.getFieldValue(2);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(2, value);
+    		}; 	
+    	}; 
+     
+    	errCode = {
+    		_get = function(){ 
+    			return owner.getFieldValue(3);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(3, value);
+    		}; 	
+    	}; 
+     
+    	ocrResult = {
+    		_get = function(){ 
+    			return owner.getFieldValue(4);
+    		};
+    		_set = function( value ){
+    			return owner.setFieldValue(4, value);
+    		}; 	
+    	}; 
+        
+	)
+}
+/**intellisense()
+process.wxOcr.OcrResponse = Protobuf 消息对象
+process.wxOcr.OcrResponse() = 创建 Protobuf 消息对象。\n!process_wxOcr_OcrResponse.
+!process_wxOcr_OcrResponse.parseFromString(__/*字符串*/) = 二进制数据反序列化到消息对象\n此函数自动清空所有数组值,但不会重置其他非数组字段值.\n因此应对新创建的对象调用此函数.
+!process_wxOcr_OcrResponse.serializeToString() = 序列化消息对象,返回二进制字符串
+!process_wxOcr_OcrResponse.eachName() = @for k,v in ??.eachName(){
+	__/*遍历此消息对象的所有字段，
+k 为字段名,v 为字段值。*/
+}
+!process_wxOcr_OcrResponse.type = protobuf.type.int32
+!process_wxOcr_OcrResponse.taskId = 第一次运行OCR会有push一次type1, 正常OCR结束type0\nprotobuf.type.int32
+!process_wxOcr_OcrResponse.errCode = protobuf.type.int32
+!process_wxOcr_OcrResponse.ocrResult = !bfc37b1asponse_OcrResult.
+end intellisense**/

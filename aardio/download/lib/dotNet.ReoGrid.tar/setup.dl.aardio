@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\dotNet\");
+fsys.copy( "\ReoGrid","~\lib\dotNet\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("dotNet.ReoGrid 扩展库已安装成功!","aardio- dotNet.ReoGrid扩展库安装程序")

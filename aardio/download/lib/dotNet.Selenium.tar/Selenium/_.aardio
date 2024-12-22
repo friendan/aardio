@@ -1,0 +1,195 @@
+﻿import dotNet.v4;
+if(!dotNet.v4()){
+	seleniumBasic = {};
+	seleniumBasic[["CreateDefaultChromeService"]] = function(){}
+	seleniumBasic[["CreateDefaultWebDriver"]] = function(){}
+	return;	
+};
+
+import dotNet.json;
+import chrome.driver;
+import System.TimeSpan;
+import win;
+
+dotNet.reference(
+	["WebDriver.Support"] = $"~\lib\dotNet\Selenium\.res\WebDriver.Support.dll";
+	["WebDriver"] = $"~\lib\dotNet\Selenium\.res\WebDriver.dll";
+)
+
+dotNet.load("WebDriver").import("OpenQA.Selenium") 
+//var Support = dotNet.load("WebDriver.Support").import("OpenQA.Selenium.Support")
+
+dotNet.Selenium = OpenQA.Selenium; 
+Selenium = OpenQA.Selenium;  
+
+Selenium[["CreateDefaultChromeService"]] = function(enableLogging){ 
+ 	var driver = ..chrome.driver();
+ 	if(driver.driverPath){
+ 		var driverPath = ..io.splitpath(driver.driverPath); 
+ 		if(driverPath.file==="msedgedriver.exe"){ 
+ 			
+ 			var service = Selenium.Edge.EdgeDriverService.CreateDefaultService(driverPath.dir,driverPath.file);
+ 			if(!enableLogging) service.HideCommandPromptWindow = true;
+ 			
+ 			var options = Selenium.Edge.EdgeOptions(); 
+ 			//options.BinaryLocation = driver.chromePath;
+ 			return service,options;
+ 		}
+ 		
+ 		var service = Selenium.Chrome.ChromeDriverService.CreateDefaultService(driverPath.dir,driverPath.file);
+ 		if(!enableLogging) service.HideCommandPromptWindow = true;
+ 		
+ 		var options = Selenium.Chrome.ChromeOptions();
+ 		if(!enableLogging) options.AddExcludedArgument("enable-logging");
+ 		options.BinaryLocation = driver.chromePath;
+ 		return service,options;
+ 	} 
+} 
+ 
+Selenium[["CreateDefaultWebDriver"]] = function(service,options,...){
+	var args;
+	if(type.isString(service)){
+		args = {service,options,...}
+		service = null;	
+		options = null;
+	}
+	
+ 	if(!service){
+ 		service,options = Selenium.CreateDefaultChromeService();
+ 		if(!service) return;
+ 		
+ 		if(args){
+ 			for(i,arg in args){
+ 				options.AddArgument(arg);
+ 			} 
+ 		}
+ 	} 
+ 	
+ 	if(tostring(service)==="OpenQA.Selenium.Edge.EdgeDriverService"){
+ 		return Selenium.Edge.EdgeDriver(service,options);
+ 	}
+ 	elseif(tostring(service)==="OpenQA.Selenium.Chrome.ChromeDriverService"){
+ 		return Selenium.Chrome.ChromeDriver(service,options);
+ 	}
+ 	elseif(tostring(service)==="OpenQA.Selenium.Firefox.FirefoxDriverService"){
+ 		return Selenium.Firefox.FirefoxDriver(service,options);
+ 	}
+	elseif(tostring(service)==="OpenQA.Selenium.IE.InternetExplorerDriverService"){
+ 		return Selenium.IE.InternetExplorerDriver(service,options);
+ 	} 
+}
+
+Selenium.Edge.EdgeDriver[["ctor"]] = function(this){
+	/*
+	Selenium 自己提供的 WebDriverWait 太难用，自己实现一个简单够用的。
+	*/
+	this[["WaitEle"]] = function(byCond){
+		return ..win.wait( 
+			function(){
+ 				//查找节点
+ 				var ele = this.FindElement( byCond  )
+ 				
+ 				//如果节点可见
+ 				if(ele && ele.Displayed){
+ 					return ele;
+ 				} 
+			}
+		)
+	}
+	
+	//@Deprecated
+	this[["FindElementById"]]  = function(id){
+		var ele = this.WaitEle( Selenium.By.Id(id)  )
+		
+		if(ele){
+			ele[["FindElementById"]] = function(id){
+				return ele.FindElement( Selenium.By.Id(id) )
+			}
+		}
+		
+		return ele;
+	}
+
+}
+
+Selenium.Chrome.ChromeDriver[["ctor"]] = Selenium.Edge.EdgeDriver[["ctor"]]
+Selenium.Firefox.FirefoxDriver[["ctor"]] = Selenium.Edge.EdgeDriver[["ctor"]]
+Selenium.IE.InternetExplorerDriver[["ctor"]] = Selenium.Edge.EdgeDriver[["ctor"]]
+
+/**intellisense()
+dotNet.Selenium = 导入 .NET Selenium 名字空间。\n支持 .NET 4.6.1 或 Win10 1511 以及之后的版本。\n请直接使用 Selenium 名字空间（ dotNet.Selenium 指向 Selenium）。
+Selenium = Selenium 名字空间（ .NET ）
+Selenium.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+Selenium.__assembly__ = 导入此 .NET 名字空间的程序集对象。\n!dotNetCrlAssembly.
+Selenium.Support = Selenium.Support 名字空间（ .NET ）
+Selenium.Support.? = .NET 名字空间、类、结构体的成员，\n可访问成员名字空间、类、枚举、静态属性或字段，\n导入的类可用于构造 .NET 对象，传回 .NET 则自动转为该类的 Type 对象\n!dotNetNameSpace.
+Selenium.CreateDefaultChromeService() = 创建并返回 2 个值，\n分别为 Selenium.DriverService，Selenium.DriverOptions 对象。\n这两个返回值可以作为 CreateDefaultWebDriver 的参数创建 WebDriver 对象。\nSelenium.DriverOptions 的 AddArgument 函数可以用于添加浏览器启动参数。\n这两个返回值的有哪些接口用 ILSpy 打开扩展库目录下的 .NET 程序集就可以查看。\n也可以看 Selenium .NET 的文档。\n\n如果返回2个值表示已经成功找到或自动安装 Chrome 与 ChromeDriver,\nChrome 与 ChromeDriver 路径这些已经指定,不用再修改,\n不指定参数@1为 true,默认排除 enable-logging 参数并隐藏控制台,\n失败返回 null
+Selenium.CreateDefaultWebDriver( = 建议直接用这个函数创建 WebDriver 客户端\n代码量少，自动兼容系统安装的 Chrome 或 Edge Chromium\n没有安装会自动安装
+Selenium.CreateDefaultWebDriver(.(chromeService,ChromeOption) = 不需要指定参数,\n不指定参数时自动调用 Selenium.CreateDefaultChromeService 并获取返回值作为默认参数。\n\n如果需要指定浏览器启动参数，可先调用 CreateDefaultChromeService 函数得到 ChromeOption，\n然后调用 chromeOptions.AddArgument 添加浏览器启动参数。 
+Selenium.CreateDefaultWebDriver(.(args,->->->) = 如果 @args 为字符串，或指定多个字符串参数，\n则这些参数添加为浏览器启动参数。
+Selenium.CreateDefaultWebDriver() = !dotNetSeleniumWebDriver.
+Selenium.By = 创建查询条件\n!netSeleniumBy.
+end intellisense**/
+
+/*****intellisense(!netSeleniumBy)
+Id(__) = 以参数 @1 指定的 ID 作为查询条件
+LinkText(__) = 以参数 @1 指定的链接文本作为查询条件
+Name(__) = 以参数 @1 指定的 name 属性作为查询条件
+XPath(__) = 以参数 @1 指定的 XPath 路径作为查询条件
+ClassName(__) = 以参数 @1 指定的 CSS 类名作为查询条件
+PartialLinkText(__) = 以参数 @1 指定的部分链接文本作为查询条件
+TagName(__) = 以参数 @1 指定的标签名作为查询条件
+CssSelector(__) = 以参数 @1 指定的 CSS 选择器作为查询条件
+Id() = !netSeleniumBy.
+LinkText() = !netSeleniumBy.
+Name() = !netSeleniumBy.
+XPath() =  !netSeleniumBy.
+ClassName() =  !netSeleniumBy.
+PartialLinkText() =  !netSeleniumBy.
+TagName() =  !netSeleniumBy.
+CssSelector() = !netSeleniumBy.
+end intellisense*****/
+
+/**intellisense(!dotNetSeleniumWebDriver)
+FindElement(__) = 根据参数 @1 用 Selenium.By 指定的条件查找节点。 
+FindElements(__) = 根据参数 @1 用 Selenium.By 指定的条件查找节点。 
+WaitEle(__) = 根据参数 @1 用 Selenium.By 指定的条件查找节点。\n此函数会等待指定节点创建并显示。
+FindElement() = !dotNetSeleniumEle.
+FindElements() = !dotNetSeleniumEle.
+WaitEle() = !dotNetSeleniumEle.
+Manage() = 返回 Selenium.IOptions 对象\n!netSeleniumIOptions.
+Quit() = 退出进程
+end intellisense**/
+
+/*****intellisense(!netSeleniumIOptions)
+Cookies.AllCookies = 返回所有 Cookies ，可用 dotNet 遍历
+end intellisense*****/
+
+
+/**intellisense(!dotNetSeleniumEle)
+GetAttribute("outerHTML") = 获取元素属性
+Displayed = 是否显示
+Enabled = 是否可用
+IsMultiple = 是否为支持多选的下拉框
+Location As Position ：返回元素的位置
+Selected = 是否处于勾选状态
+Size = 返回元素的尺寸
+tagName = 返回元素的标签名称
+Text = 返回元素的内部文本（InnerText）
+Clear() = 清空
+Click() = 点击
+SendKeys(__) = 发送参数 @1 指定的字符串
+Submit() = 提交
+SelectByIndex(__) = 根据参数@1指定的索引选择节点
+SelectByText(.(Text,partialMatch) = 根据参数@1指定的文本选择节点,\n可选用参数@2指定是否使用部分匹配
+SelectByValue(__) = 根据参数@1指定的 value 值选择节点
+DeselectAll() = 取消选择所有节点
+DeselectByIndex(index) = 根据参数@1指定的索引取消选择节点
+DeselectByText(Text) = 根据参数@1指定的文本取消选择节点
+DeselectByValue(Value) = 根据参数@1指定的 value 值取消选择节点
+FindElement(__) = 根据参数 @1 用 Selenium.By 指定的条件查找节点。 
+FindElements(__) = 根据参数 @1 用 Selenium.By 指定的条件查找节点。
+FindElement() = !dotNetSeleniumEle.
+FindElements() = !dotNetSeleniumEle.
+end intellisense**/
+
