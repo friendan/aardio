@@ -1,5 +1,5 @@
 //MSAA 自动化入门
-//入门教程: https://mp.weixin.qq.com/s/qeQGC9rnOqaLZvZmHhroKw
+//入门教程: doc://guide/quickstart/automation.html#msaa
 //探测工具 loadcodex("~\tools\Spy\inspect.aardio")
 
 import winex;

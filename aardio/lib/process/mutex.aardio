@@ -13,7 +13,7 @@ class mutex {
 			
 			if(tArg1=="string"){
 				uniqueName = ..string.replace(uniqueName,"@\","/");
-				this.handle = OpenMutex(0x1f0001/* MUTANT_ALL_ACCESS*/,inheritHandle,uniqueName);
+				this.handle = OpenMutex(0x100000/*_SYNCHRONIZE*/,inheritHandle,uniqueName);
 			}
 			
 			if(this.handle) {
@@ -25,7 +25,7 @@ class mutex {
 					 
 				if(tArg1=="string") { 	
 					if(!this.handle) {
-						this.handle = OpenMutex(0x1f0001/* MUTANT_ALL_ACCESS*/,inheritHandle,uniqueName);
+						this.handle = OpenMutex(0x100000/*_SYNCHRONIZE*/,inheritHandle,uniqueName);
 						if(this.handle ) this.conflict = "互斥体已存在";  
 					}
 					elseif(::GetLastError()==0xB7/*_ERROR_ALREADY_EXISTS*/){

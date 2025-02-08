@@ -20,6 +20,7 @@ char = function(hwnd,chr){
 }
 
 send = function(hwnd,str){
+	if(!hwnd) hwnd = ..winex.getFocus();
 	str = ..string.toUtf16(str);
 	for(i=1;#str/2;1){
 		char(hwnd,str[i] );

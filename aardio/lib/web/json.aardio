@@ -178,6 +178,8 @@ var scanRawString = function(str,pos=1){
 var consts = {
 	["true"] = true;
 	["false"] = false; 
+	["True"] = true;
+	["False"] = false;  
 	["null"] = null;
 	["~"] = null;
 	["undefined"] = null;
@@ -203,7 +205,7 @@ var scanConstant = function(str,pos,isKey,rootNode){
     var token = match(str,"^[+-]?[\~_$\a][\w\-\_]*",pos); 
     if( token ){
     	var const = consts[token];  
-    	if( const!==null || (token=="null" || token=="undefined"|| token=="~" )){ 
+    	if( const!==null || (token=="null" || token=="undefined" || token=="None" || token=="~" )){ 
     		return const,pos+#token;
     	} 
 	} 
@@ -437,6 +439,17 @@ strip = function(v){
 	if(v) return parse(v);
 }
 
+save = function(path,...){
+	var j = stringify(...);
+	if(j) return ..string.save(path,j);
+}
+
+load = function(path,...){
+	var j = ..string.load(path);
+	if(j) return ..web.json.tryParse(j,...);
+}
+
+
 /**details(用前必读，点这里展开)
 
 相关工具与范例
@@ -563,11 +576,13 @@ end details**/
 /**intellisense()
 web.json = JSON 解析器,\n字符串化时完全符合 JSON 官方标准。\n解析使用 aardio-json 扩展语法，兼容JSON，JSONP，JSON5，部分类YAML语法,\n存取大容量数据请改用数据库组件
 web.json.stringify( = 转换为参数 @1 为 JSON 文本\n\n表对象可在元表 _defined 字段中预定义可能为 null 值的键,\n也可以在 _json 元方法中返回一个自定义的对象用于转换为 JSON。\n注意 {} 为空对象，table.array 创建 JSON 空数组，详见 table.type 函数说明。\n\n关于时间对象也 buffer 对象的转换规则请查看 web.json 文档。\n以及：范例 / web 应用 / JSON / 特殊数据类型
-web.json.stringify(.(对象,是否格式化,是否使用UNICODE编码) =  参数@2,@3可选,默认不格式化,启用UNICODE编码\n如果指定格式化,参数@3则默认为false\n\n注意即使选择了不启用UNICODE编码，单引号，\n以及一些可能无法直接显示的Unicode字符仍然会进行转义,\n表对象中值不是表对象的成员先列出
-web.json.stringifyArray(.(表,是否格式化,是否使用UNICODE编码,是否清除null值) = 如果参数@1未声明数组类型，则添加类型声明,\n空数组会返回[]而不是{},其他参数与web.json.stringify相同
-web.json.parse( = 使用宽松的 JSON 语法解析并返回表对象,\n支持自动检测输入字符串的 Unicode BOM,\n除完全支持 JSON 标准之外，并可兼容 jsonp，json5，支持 aardio-json 扩展标准。
+web.json.stringify(.(对象,是否格式化,是否使用UNICODE编码) =  参数 @2, @3 可选,默认不格式化,启用 UNICODE 编码。\n如果启用格式化,则参数 @3 则默认为 false。\n\n注意即使选择了不启用 Unicode 编码，单引号，\n以及一些可能无法直接显示的 Unicode 字符仍然会进行转义。\n表对象中值不是表对象的成员先转换。
+web.json.stringifyArray(.(表,是否格式化,是否使用Unicode编码,是否清除null值) = 如果参数 @1 未声明数组类型，则添加类型声明,\n空数组会返回`[]`而不是 `{}`,其他参数与 web.json.stringify 相同
+web.json.parse( = 使用宽松的 JSON 语法解析并返回表对象,\n支持自动检测输入字符串的 Unicode BOM,\n除完全支持 JSON 标准之外，并可兼容 JSONP，JSON5，支持 aardio-JSON 扩展标准。\n可解析与 JSON 兼容的 Python 字典代码（可识别 True,False,None 关键字）
 web.json.parse(.(输入文本,是否解析转义符,输入代码页) = 参数@2默认为 true,\n代码页默认为 65001 即 UTF-8 编码,\n输入文本如使用了 UTF-16 LE/BE 编码则转换为 UTF-8,\n返回对象的元表 _defined 字段记录了所有已定义的键,\n参数传入空值或空字符串返回空值\n解析误到错误的 JSON 语法时会抛出异常
 web.json.tryParse(.(输入文本,是否解析转义符,输入代码页) = 解析 JSON 并返回 aardio 对象\n作用与参数用法与parse函数一样,\n请参考该函数说明\n\n唯一的区别是：\nparse函数遇到JSON语法错误时抛出异常\n而tryParse遇到错误时返回 null,错误信息
+web.json.save(.(文件路径，对象,是否格式化,是否使用Unicode编码) =  将参数 @2 指定的对象转换为 JSON 并存储到 参数 @1 指定的文件。\n其他参数为可选参数。\n\n此函数内部调用 web.json.stringify，参数用法与该函数相同。\n除参数 @1,@2 以外的其他参数为可选参数。\n\n函数执行成功返回 true，\n失败返回 null，错误信息。
+web.json.load(.(文件路径,是否解析转义符,输入代码页) = 自文件加载 JSON 并返回 aardio 对象。\n此函数内部调用 web.json.tryParse 函数，参数用法基本相同。
 web.json.strip(__) = 将一个对象转换为 JSON ,再转换为 aardio 纯值类型对象。\n纯值类型指的是字符串、数值、布尔值、buffer、指针、纯值表。\n关于纯值与纯值表可参考 table.parseValue 函数的说明。\n纯值支持原值序列化，并与 JSON 兼容。\n\nweb.json.strip 兼容 Python 对象。\n\n如果提前导入  dotNet.json ，\n则可以用此函数将 .NET 对象转为 aardio 纯值对象
 web.json.ndParse( = 解析 ndjson，也就是每行一句 JSON 。\n兼容 JSON 行分隔符： '\r'、'\r\n'、'\n'、'\x1E' 。\n此函数忽略错误行，错误行不会抛出异常。\n但会通过 io.stderr.write 函数输出错误信息与出错 JSON
 web.json.ndParse(.(输入文本,是否解析转义符) = 解析 ndjson。\n只能输入 UTF-8 文本，字符串不能有 BOM 编码头（一般也不可能有）

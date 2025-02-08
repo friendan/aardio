@@ -1,10 +1,12 @@
+超级热键=~\example\Windows\Hotkey\key.hotkey.aardio
+监视按键=KeyHook.aardio
+监视鼠标=MouseHook.aardio
+发送字符串=sendString.aardio
+模拟按键=Keypress.aardio
+循环按键=loopkey.aardio
 简单鼠标连点=clickHere.aardio
 鼠标画渐开线=draw.aardio
 鼠标高亮光圈=highlighter.aardio
-循环按键=loopkey.aardio
-发送字符串=sendString.aardio
 拖动桌面图标=DragDesktopIcon.aardio
 暂停继续=Pause.aardio
-模拟按键=Keypress.aardio
-监视按键=KeyHook.aardio
-监视鼠标=MouseHook.aardio
+

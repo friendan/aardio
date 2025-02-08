@@ -17,7 +17,7 @@ sleep(1000);
 //切换到小写状态
 key.capsLk(false)  //ABCD
 
- //按下A键,也可以仅指定一个键名
+ //按下A键,也可以仅指定一个虚拟键名称
 key.press("A");               
 sleep(1000);
 

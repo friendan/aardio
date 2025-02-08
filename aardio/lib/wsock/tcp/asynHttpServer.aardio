@@ -871,7 +871,7 @@ spaUrl( = 返回 SPA 单页应用首页网址\n如未启动服务端则自动启
 spaUrl(.(indexHtmlPath,documentBase) = 参数指定 SPA 单页应用首页路径，\n404错误页也会自动设置到该路径，\n返回首页网址\n\n可选用参数 @documentBase 指定根目录以避免网页不支持非根目录路径
 documentRoot = 网站应用程序根目录,默认为"/",\n只能设置为硬盘上实际存在的目录,\n改变此目录,会同时改变\n服务端代码中的应用程序根目录以及用户库目录,\n如果只是相将所有请求路径转向某个目录,应当改用 documentBase 属性\n如果网站在嵌入资源目录中,应当改用 documentBase 属性
 documentBase = 网站根目录,\n不会修改应用程序根目录,支持硬盘目录与资源目录,\n这个属性应当设置为应用程序根目录下的相对路径,\n例如 "/res/web/"\n\n注意： request.path 前面包含 documentBase 目录。\n而 request.pathInfo 忽略 documentBase 目录
-defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杆结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杆才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
+defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杠结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杠才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
 customErrors = @.customErrors = {\n    [404] = function(response){\n		response.status = "404 Not Found";\n		response.write("404 Not Found"); __/*自定义错误页，\n也可以直接指定错误页路径*/\n	} \n}
 onUpgradeProtocol = @.onUpgradeProtocol = function(client,request,response){
 	__/*处理客户端升级协议请求,\n可在此回调中切换到WebSocket协议*/

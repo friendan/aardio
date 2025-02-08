@@ -1,7 +1,7 @@
 //JSON / URL 编码 /table 互转
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="JSON / URL 编码 /table 互转";right=969;bottom=691)
+var winform = win.form(text="JSON（或简单 Python 字典） / URL 编码 /table 互转";right=969;bottom=691)
 winform.add(
 btnDataType={cls="plus";text="特殊类型说明";left=231;top=655;right=341;bottom=679;color=8388608;db=1;dl=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=3};
 btnHelp={cls="plus";text="web.json 库函数文档";left=342;top=655;right=482;bottom=679;color=8388608;db=1;dl=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=4};

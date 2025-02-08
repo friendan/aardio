@@ -443,6 +443,8 @@ namespace parser{
 import protobuf.parser.lex;
 import protobuf.parser.message;
 
+//@guide [示例](doc://example/Network/protobuf/QuickStart.html)
+
 /**intellisense()
 protobuf.parser() = Protobuf 结构定义文件 *.proto 解析器,\n支持 proto2,proto3\n!protobuf_parser.
 !protobuf_parser.libPaths = 指定导入 proto 文件时搜索的目录，\n此属性只能为字符串数组。\n默认为 {"."} ，"." 表示第一个解析的 proto 文件所在目录。\n如果自内存字符串解析 proto，但 "." 表示应用程序根目录

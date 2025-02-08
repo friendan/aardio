@@ -122,30 +122,37 @@ function showWindowInfo(hwnd){
 	if(#str){
 		winform.editText.text = string.replace(str,"[\r\n]","")
 	} 
-	else { 
-		winform.editText.text = "";
+	else {  
 		
-		if( hwnd != winform.lastSpyHwnd
-			&& winform.chkPassword.checked
+		if( winform.chkPassword.checked
 			&& winform.editClass.text == "Edit"
 			&& ..win.getStyle(hwnd,0x40000000/*_WS_CHILD*/) 
-			&& !..win.isChild(winform.hwnd,hwnd) ){
-			var tid,pid = win.getThreadProcessId(hwnd)
-			var tid2,pid2 = win.getThreadProcessId(winform.hwnd);
-			if( pid2 != pid ){ 
-				var prcs = process( pid )
-				if(prcs){ 
-					var tid,pid = win.getThreadProcessId(hwnd);
-					var prcs = process( pid );
-					var getWindowText = prcs.remoteApi("int(addr hwnd,ustring& lpString,int cch)" ,"User32.dll","GetWindowTextW" )
-					if(getWindowText){
-						var len,str = getWindowText(hwnd,100,50);
-						if(len) winform.editText.text = str;
+			&& ..win.getStyle(hwnd,0x20/*_ES_PASSWORD*/) 
+			&& !..win.isChild(winform.hwnd,hwnd) 
+			){ 
+			if( hwnd != winform.lastSpyHwnd  && winform.editText.text == ""){
+				var tid,pid = win.getThreadProcessId(hwnd)
+				var tid2,pid2 = win.getThreadProcessId(winform.hwnd);
+				if( pid2 != pid ){ 
+					var prcs = process( pid )
+					if(prcs){ 
+						var tid,pid = win.getThreadProcessId(hwnd);
+						var prcs = process( pid );
+				 	
+						var getWindowText = prcs.remoteApi("int(addr hwnd,ustring& lpString,int cch)" ,"User32.dll","GetWindowTextW" )
+						if(getWindowText){ 
+							var len,str = getWindowText(hwnd,400,200);
+							if(len) winform.editText.text = str;
+						}
+						prcs.free();
 					}
-					prcs.free();
 				}
 			}
 		}
+		else {
+			winform.editText.text = "";
+		}
+		
 	}
 	
 	winform.editStyle.text =  numberToString(win.getStyle(hwnd) );

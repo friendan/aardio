@@ -1,0 +1,30 @@
+/*
+普通窗口拖放： doc://example/Windows/Effects/DnD.aardio
+richedit 拖放： doc://example/Windows/Edit/oleCallback.aardio
+web.view 拖放： doc://example/WebUI/web.view/dnd.aardio
+web.form 拖放： doc://example/WebUI/web.form/dnd.aardio
+web.layout 拖放： doc://example/WebUI/HTMLayout/exchange.aardio
+web.sciter 拖放： doc://example/WebUI/Sciter.JS/exchange.aardio
+*/
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="窗口程序 - 文件拖放";right=759;bottom=469)
+winform.add(
+edit={cls="edit";left=69;top=34;right=693;bottom=377;autohscroll=false;edge=1;multiline=1;vscroll=1;z=1}
+)
+/*}}*/
+
+/*
+拖放会触发 onDropFiles 事件。
+定义此事件会自动执行 ::Shell32.DragAcceptFiles(winform.hwnd,true) 以启用拖放支持。 
+
+要特别注意有管理权限的窗口不能接受拖放，新系统已经完全禁止了这种操作。
+*/
+winform.onDropFiles = function(files){
+	winform.edit.print(files) 
+}
+
+winform.text = "请拖放一个或多个文件到窗口上"
+
+winform.show() 
+win.loopMessage();

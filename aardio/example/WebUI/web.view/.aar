@@ -10,6 +10,7 @@ React hooks=react.aardio
 视频 / 全屏=video.aardio
 透明 3D=transparent.aardio
 弹窗/文件拖放=NewWindow.aardio
+拖放文本=dnd.aardio
 禁止刷新缩放=keydown.aardio
 其他应用=OtherApps
 提问前必读=more.aardio

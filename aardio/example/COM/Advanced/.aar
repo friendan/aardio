@@ -6,3 +6,5 @@ COM 迭代器=com.each.aardio
 输出与引用参数=ByRef.aardio
 事件输出参数=EventParamByRef.aardio
 ROT 运行对象表=ROT.aardio
+atlax 手写板=InkEdit.aardio
+atlax PDF=pdf.aardio

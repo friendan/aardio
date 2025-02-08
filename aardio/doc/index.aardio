@@ -9,14 +9,14 @@ var winform = win.form(text="aardio 文档";right=903;bottom=569;bgcolor=1638245
 winform.add(
 bk2={cls="bk";left=-17;top=-5;right=906;bottom=36;bgcolor=16579578;dl=1;dr=1;dt=1;z=1};
 bk3={cls="bk";left=3;top=30;right=267;bottom=31;bgcolor=15461355;dl=1;dt=1;forecolor=11842740;z=2};
-btnAiSearch={cls="plus";text="问 AI";left=342;top=3;right=410;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);hide=1;iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome');padding={left=8}};iconText='\uF007';notify=1;textPadding={left=25};z=10};
 btnBack={cls="plus";text='\uF060';left=783;top=8;right=810;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=8};
 btnForward={cls="plus";text='\uF061';left=824;top=8;right=851;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=9};
-btnSearch={cls="plus";text="搜索";left=274;top=3;right=335;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF002';notify=1;textPadding={left=25};z=4};
+btnSearch={cls="plus";text="搜索";left=276;top=3;right=337;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF002';notify=1;textPadding={left=25};z=4};
+btnSearchOnline={cls="plus";text="在线检索";left=342;top=3;right=435;bottom=33;align="left";color=3355443;dl=1;dt=1;font=LOGFONT(h=-13);hide=1;iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome');padding={left=8}};iconText='\uF059 ';notify=1;textPadding={left=25};z=10};
 btnWebDoc={cls="plus";text='\uF268';left=866;top=8;right=893;bottom=31;color=8421376;dr=1;dt=1;font=LOGFONT(h=-21;name='FontAwesome');notify=1;z=11};
 custom={cls="custom";text="自定义控件";left=231;top=39;right=902;bottom=567;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=6};
 editKeyWord={cls="edit";left=3;top=8;right=267;bottom=30;align="right";bgcolor=16579578;color=3355443;dl=1;dt=1;z=5};
-editUrl={cls="edit";left=408;top=9;right=767;bottom=36;align="right";bgcolor=16579578;color=3355443;dl=1;dr=1;dt=1;z=7};
+editUrl={cls="edit";left=436;top=9;right=767;bottom=36;align="right";bgcolor=16579578;color=3355443;dl=1;dr=1;dt=1;z=7};
 treeview={cls="treeview";left=3;top=47;right=228;bottom=567;asel=false;bgcolor=16579578;db=1;dl=1;dt=1;z=3}
 )
 /*}}*/
@@ -87,6 +87,14 @@ explorer.translatePath = function(dirPath,files,dirs){
 	 			var name = dirs[i];
 	 			var path = dirs[name];
 	 			
+	 			if(name==".res"){ 
+					continue;
+				}
+				
+				if(name[1]=='.'#){
+					continue;
+				}
+	 			
 				var newName = langList[itemPath ++ name]  : name;
 				newDirs[i] = newName;
 				newDirs[newName] = path;  
@@ -105,12 +113,12 @@ explorer.translatePath = function(dirPath,files,dirs){
 	var dirs1 = {};
 	
 	var push = ..table.push;
-	for(k,v,f in string.each(str,"(.+)\=(.+?)(<.md>?)$") ){
+	for(k,v,f in string.each(str,"(.+)\=(.+?)(<<.md>|<.aardio>|<.url>>?)$") ){ 
 		v = string.trim(v);
 		
 		if(#f){
 			push(files1,k);
-			files1[k] = v[1]!='~'#?..io.joinpath(dirPath,v+".md"):v+".md";
+			files1[k] = v[1]!='~'#?..io.joinpath(dirPath,v++f):v++f;
 		}
 		else {
 			push(dirs1,k);
@@ -151,6 +159,11 @@ var markdown = string.markdown()
 
 explorer.onClick = function(filePath,hItem ){
     if( !fsys.isDir( filePath ) ) {
+        if(string.endWith(filePath,".url",true)){
+        	raw.execute(filePath);
+        	return;
+        }
+        
         if(fsys.path.ischild("~/lib/",filePath)){
             
         	var path = fsys.path.relative(filePath,"~/lib/");
@@ -304,6 +317,17 @@ wb.translate = function( url ){
 	return url;
 }
 
+winform.editUrl.onOk = function(){ 
+	var url = winform.editUrl.text;
+	if(..string.startWith(url,"doc://",true)){
+		url = wsock.tcp.simpleHttpServer.startUrl(string.right(url,-6));   
+	} 	
+	
+	if(url != wb.location){
+		wb.go(url);	
+	} 
+}
+
 wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
  
 	if( ..string.startWith(url,"javascript:",true) ) return;
@@ -326,6 +350,13 @@ winform.btnSearch.oncommand = function(id,event){
 	var keyWord = winform.editKeyWord.text;
 	if(!#keyWord){
 		winform.editKeyWord.showWarningTip("请输入要搜索的关键词");
+		return;
+	}
+	
+	if(string.startWith(keyWord,"doc://",true)){
+		winform.editKeyWord.text = "";
+		var url = wsock.tcp.simpleHttpServer.startUrl(string.right(keyWord,-6));   
+		wb.go(url);
 		return;
 	}
 	
@@ -360,8 +391,8 @@ winform.btnSearch.oncommand = function(id,event){
 	if(err){
 		err = string.match(err,"\{Error\}\:(.+)") : err;
 		winform.editKeyWord.showErrorTip("模式匹配语法错误",err);
-		winform.btnAiSearch.hide = false;
-		winform.btnAiSearch.webSelectedText = `string.find("`+keyWord+`") //函数报模式匹配语法错误:` + err;
+		winform.btnSearchOnline.hide = false;
+		winform.btnSearchOnline.webSelectedText = `string.find("`+keyWord+`") //函数报模式匹配语法错误:` + err;
 		return;
 	}
 	
@@ -373,7 +404,18 @@ winform.btnSearch.oncommand = function(id,event){
 	win.ui.waitCursor(true)
 	thread.delay(500);
 	  
-	var searchResultMd = ""
+	var searchResultMd = `没有找到相要的内容吗？  
+[继续必应搜索](`+
+	inet.url.appendExtraInfo("https://www.bing.com/search?form=DEEPSH&mkt=en-us&lang=zh&cc=US",{
+		q = winform.editKeyWord.text + " site:www.aardio.com";
+	})
++ `) | [继续在线检索](`+
+	inet.url.appendExtraInfo("https://www.aardio.com/zh-cn/doc/",{
+		q = winform.editKeyWord.text;
+	})
++ `) | <a href="javascript:external.askAi()">问 AI - 智能快搜专业版知识库</a>
+
+`
 	 
 	fsys.enum( "~/doc", "*.md",
 		function(dir,filename,fullpath,findData){ 
@@ -614,7 +656,7 @@ winform.btnSearch.skin({
 	}
 })
 
-winform.btnAiSearch.skin({
+winform.btnSearchOnline.skin({
 	color={
 		active=0xFF00FF00;
 		default=0xFF3C3C3C;
@@ -643,37 +685,42 @@ wb.DocumentComplete = function(pDisp,url) {
 	}
 } 
 
-//自动启用禁用 前进、后退等按钮
-wb.CommandStateChange=function(cmd,enable) { 
-    select(cmd) { 
-        case 0x2/*_CSC_NAVIGATEBACK*/ { 
-           winform.btnBack.disabled = !enable
-        }
-        case 0x1/*_CSC_NAVIGATEFORWARD*/ { 
-            winform.btnForward.disabled = !enable
-        }    
-    }
-}  
-
 wb.external = {
 	onSelectedText = function(text){ 
-		winform.btnAiSearch.hide = !text;
-		winform.btnAiSearch.webSelectedText = text;
+		winform.btnSearchOnline.hide = !text;
+		winform.btnSearchOnline.webSelectedText = text;
 	}
 	openExample = function(path){
-		ide.openDocument(path)
 		winform.hitMin();
+		ide.openDocument(path); 
 	} 
+	askAi = function(){
+	
+		import fsys.table;
+		var aiConfig = fsys.table(io.appData("aardio/ide/aiChat/~"))
+		aiConfig.save = function(){}//只读
+		
+		if(aiConfig.url && inet.url.split(aiConfig.url).host=="ai.aardio.com"){
+			ide.createProcess("~/example/AI/aardioAgent.aardio",{
+				_ASK_AI_USER_PROMPT = `请帮我查找与 """`+winform.editKeyWord.text+`""" 有关的 aardio 文档与范例，请根据最佳实践择优选择查询结果，精确匹配与使用频率更高的查询结果应当放在最前面，排除不常用或匹配度不高的结果。你应当先返回所有查询结果的简单列表与简单介绍，并与我进一步沟通以决定是否需要调整查询方向或者是否需要详细解释某个查询结果。`;
+			})
+		}
+		else {
+			winform.msgboxErr('很抱歉您未切换到 aardio 专业版 AI 接口，\n无法使用 AI 搜索 aardio 专业版知识库！')
+			import process;
+			process.openUrl("https://aardio.com/vip/")
+		}
+	}
 }
 
 import process;
-winform.btnAiSearch.oncommand = function(id,event){
-	if(!#winform.btnAiSearch.webSelectedText){
+winform.btnSearchOnline.oncommand = function(id,event){
+	if(!#winform.btnSearchOnline.webSelectedText){
 		return;
 	}
 	
 	var url = inet.url.appendExtraInfo("https://www.aardio.com/zh-cn/doc/?",{
-		q = winform.btnAiSearch.webSelectedText ;
+		q = winform.btnSearchOnline.webSelectedText ;
 	})
 	 
 	process.openUrl(url,"","open",5/*_SW_SHOW*/,"~/",hwnd,wait,waitTimeout,ide.getMainHwnd() )
@@ -759,6 +806,59 @@ winform.btnWebDoc.oncommand = function(id,event){
 	import process;
 	process.openUrl(url);
 }
+
+import web.form.menu;
+ 
+ 
+//自动启用禁用 前进、后退等按钮
+wb.CommandStateChange=function(cmd,enable) { 
+    select(cmd) { 
+        case 0x2/*_CSC_NAVIGATEBACK*/ { 
+           winform.btnBack.disabled = !enable
+        }
+        case 0x1/*_CSC_NAVIGATEFORWARD*/ { 
+            winform.btnForward.disabled = !enable
+        }    
+    }
+}  
+
+
+wb.showMenu = function(x,y,id,ele){
+	 
+	var menu = web.form.menu( wb, {
+		[0/*_CONTEXT_MENU_DEFAULT*/] = {
+			{ "后退";lambda() wb.goBack(); winform.btnBack.disabled? 1/*_MF_GRAYED*/:0};
+			{ "前进";lambda() wb.goForward(); winform.btnForward.disabled ? 1/*_MF_GRAYED*/:0 };
+			{ "刷新";lambda() wb.reload(); };  
+			{ /*-----*/};  
+			{ "打印";lambda() wb.script.print()}
+			{ "全选";"SelectAll"};   
+			{ /*-----*/};  
+			{ "本文档在线版";winform.btnWebDoc.oncommand}
+		}
+    	[2/*_CONTEXT_MENU_CONTROL*/] = {  
+        	{ "撤消";"Undo" }; 
+        	{ /*-----*/};  
+        	{ "剪切";"Cut"}; 
+        	{ "复制";"Copy"}; 
+        	{ "粘贴";"Paste"};
+        	{ "删除";"Delete"}; 
+        	{ /*-----*/};
+        	{ "全选";"SelectAll"};   
+    	};
+    	[4/*_CONTEXT_MENU_TEXTSELECT */] = {   
+        	{ "复制";"Copy" }; 
+        	{ /*-----*/}; 
+        	{ "打印";lambda() wb.script.print()}
+        	{ "全选";"SelectAll"};   
+        	{ /*-----*/}; 
+        	{ "在线检索";winform.btnSearchOnline.oncommand}; 
+    	};   
+	} );
+
+	return menu.popup(x,y,id,ele);
+}
+ 
 
 ide.show(winform,3/*_SW_MAXIMIZE*/); 
 winform.setTimeout( function(){

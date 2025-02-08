@@ -3,7 +3,7 @@ import console;
 import web.script;
 
 //创建 JScript 脚本虚拟机
-var   = web.script("JScript")
+var vm = web.script("JScript")
 
 //直接将 aardio 对象（表、数组、函数）赋值为 vm 的成员，即可在 JScript 中直接调用。
 vm.external = {

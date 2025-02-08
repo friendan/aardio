@@ -79,10 +79,10 @@ sleep(100)
 
 /*
 您可以使用 thread.command 在线程间交互通信,请参考《多线程开发入门》
-http://bbs.aardio.com/forum.php?mod=viewthread&tid=13625&from=portal
+doc://guide/language/thread.html
 
 您还可以使用 thread.event 来实现线程间的同步,请参考《多线程中的交通信号灯：thread.event》
-http://bbs.aardio.com/forum.php?mod=viewthread&tid=11531
+doc://library-guide/builtin/thread/event.html
 
 或者使用 thread.works, thread.manage 这些线程管理器来批量的管理线程句柄,
 请参考此目录中的其他范例。

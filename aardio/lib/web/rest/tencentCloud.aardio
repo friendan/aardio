@@ -63,7 +63,6 @@ class web.rest.tencentCloud{
 
 /**intellisense()
 web.rest.tencentCloud = 腾讯云 API 客户端。\n请求数据，返回数据都使用 JSON 格式。\n[使用范例](doc:///example/Web/REST/tencentCloud.html)
-web.rest.tencentCloud( = 创建 腾讯云 API 客户端。\n请求数据，返回数据都使用 JSON 格式
 web.rest.tencentCloud(config) = @.tencentCloud(\n	secretId = "secretId";\n	secretKey = "secretKey";\n	action =  "action";\n	version = "2018-11-19";\n	region =  "ap-shanghai"; \n	service = "service";__/*创建 腾讯云 API 客户端。\n参数用法请参考腾讯云 API 文档。\n\n可选指定 userAgent,proxy,proxyBypass,httpFlags 等创建 HTTP 客户端的选项，\n这几个选项的用法请参考 web.rest.client,inet.http 文档*/\n);
 web.rest.tencentCloud() = !web_restClient.
 end intellisense**/

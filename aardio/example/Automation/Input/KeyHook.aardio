@@ -17,10 +17,10 @@ hook.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){
     	
     select(msg) {
     	case 0x100/*_WM_KEYDOWN*/ ,0x104/*_WM_SYSKEYDOWN*/ {
-    	    winform.edit.print("按下","键名:" + kn,"键码:"+vkcode)
+    	    winform.edit.print("按下","虚拟键名称:" + kn,"键码:"+vkcode)
     	}
     	case 0x101/*_WM_KEYUP*/,0x105/*_WM_SYSKEYUP*/ {
-    	    winform.edit.print("弹起","键名:" + kn,"键码:"+vkcode)
+    	    winform.edit.print("弹起","虚拟键名称:" + kn,"键码:"+vkcode)
     	}  
     } 
     

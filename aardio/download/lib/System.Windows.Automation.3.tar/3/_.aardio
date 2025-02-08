@@ -2,7 +2,11 @@
 
 if(!( _WIN10_LATER || (_WIN_VER_MAJOR==6 && _WIN_VER_MINOR >= 2) ) ){
 	import  System.Windows.Automation;
-	System.Windows.Automation[["GetCaret"]] = function(){};
+	
+	if(!System.Windows.Automation[["GetCaret"]]){
+		System.Windows.Automation[["GetCaret"]] = function(){};
+	}
+	
 	System.Windows.Automation[["3"]] = System.Windows.Automation;
 	return;
 }
@@ -52,7 +56,24 @@ namespace System.Windows.Automation{
 	And = function(cond,isNot){
 		var arr = {}
 		for k,v in ..table.eachName(cond){
-			if(k=="ControlType"){
+			if(..table.isArray(v)){
+				var arr2 = {}
+				for(i,v in v){
+					if(k=="ControlType"){
+						if(type.isString(v)){
+							v = ControlType[v];
+						}
+					}
+					..table.push(arr2,PropertyCondition(AutomationElement[k+"Property"],v));
+				
+				} 
+				
+				if(#arr2){
+					..table.push(arr,OrCondition(arr2))
+				}
+				continue;
+			}
+			elseif(k=="ControlType"){
 				if(type.isString(v)){
 					v = ControlType[v];
 				}
@@ -60,6 +81,7 @@ namespace System.Windows.Automation{
 			..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
 		}
 		 
+	
 		var cond;
 		if(#arr>1){
 			cond = AndCondition(arr)
@@ -74,6 +96,10 @@ namespace System.Windows.Automation{
 		
 		
 		return cond;
+	}
+	
+	Not = function(cond){
+		return And(cond,true);
 	}
 	
 	Or = function(cond,isNot){
@@ -95,7 +121,7 @@ namespace System.Windows.Automation{
 					if(type.isString(v)){
 						v = Automation.ControlType[v];
 					}
-				}
+				} 
 				..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
 			} 
 		}
@@ -122,6 +148,41 @@ namespace System.Windows.Automation{
 	
 	FindByOr = function(cond,root){
 		return (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, Or(cond) )  
+	}
+
+	Find = function(root,...){
+		
+		var cond;
+		var args = {...};
+		
+		if(..dotNet.getObject(root)){ 
+			args = {...};
+		}
+		else { 
+			args = {root,...};
+			root = null;
+		}
+		
+		
+		for(i=1;#args;1){  
+			args[i] = And(args[i]) 
+		}
+		
+		if(#args>1){
+			cond = OrCondition(arr)
+		}
+		else {
+			cond = args[1]
+		}
+		
+		var node =  (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, cond )  
+		if(node){
+			node[["Find"]] = function(...){
+				return Find(node,...)
+			} 
+			
+			return node;
+		}
 	}
 } 
 

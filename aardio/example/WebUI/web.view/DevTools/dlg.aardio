@@ -1,7 +1,7 @@
 //自动关闭弹框
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="CDP 事件 - 自动关闭对话框";right=818;bottom=507)
+var winform = win.form(text="CDP 事件 - 自动关闭网页上弹出信息框";right=818;bottom=507)
 winform.add()
 /*}}*/
 

@@ -163,8 +163,10 @@ namespace metaProperty {
 							owner[["(disabledText)"]] = null;
 						}
 						
-						owner.iconText = owner[["(disabledIconText)"]];
-						owner[["(disabledIconText)"]] = null; 
+						if(owner[["(disabledIconText)"]]){
+							owner.iconText = owner[["(disabledIconText)"]];
+							owner[["(disabledIconText)"]] = null; 	
+						}
 						
 						owner.disabled = false;
 					} 

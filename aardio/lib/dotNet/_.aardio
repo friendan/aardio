@@ -73,10 +73,17 @@ try{
 			n.Show();	
 		}
 	}
-	
+
 	//.NET 4.5 开始支持异步任务
 	wait = function(t,winform,...){
-		return winform.wait( lambda()(t.IsCompleted?(!t.IsFaulted && !t.IsCanceled):null) ,...); 
+		if(!winform){
+			while(..thread.delay(1)){
+				if(t.IsCompleted?(!t.IsFaulted && !t.IsCanceled)) break;
+			}
+			
+			return t.Result;
+		}
+		return winform.wait( lambda()(t.IsCompleted?((!t.IsFaulted && !t.IsCanceled)?t.Result):null) ,...); 
 	}
 	
 }
@@ -168,8 +175,8 @@ double() = !dotNetObject.
 each(netObj) = @for i,v in ??.each(__/*输入需要遍历的 .NET 对象或普通数组，\n返回值 i 为当前索引,v 为当前值，\n注意并非所有 .NET 类型都支持此接口*/) {
 	
 }
-wait( = 等待 .NET 异步任务执行完成。 \n如果任务执行成功返回 true ，取消或出错返回 false 。
-wait(.(task,winform,->->->) =  参数 @1 指定异步函数返回的 System.Threading.Tasks.Task 对象。\n参数 @2 指定 win.form 对象，其他可选参数传给 winform.wait 函数。 \n异步任务的 Result 属性可取返回值，Exception.Message 属性可取错误信息。\n也可以用异步任务的 ContinueWith 方法指定异步回调函数，在任务完成后触发。  
+wait( = 等待 .NET 异步任务执行完成。 \n如果任务执行成功返回异步任务的 Result 属性，\n取消或出错返回 null 。\n[范例](doc://example/Languages/dotNet/Generic.html)
+wait(.(task,winform,->->->) =  参数 @1 指定异步函数返回的 System.Threading.Tasks.Task 对象。\n参数 @2 指定 win.form 对象，其他可选参数传给 winform.wait 函数。\n如果参数 @2 为 null （未指定值）则循环等待（不卡界面），忽略其他参数。 \n成功返回异步任务的 Result 属性（异步函数返回值），失败返回 null 。\n\n异步任务的 Result 属性可取返回值，Exception.Message 属性可取错误信息。\n也可以用异步任务的 ContinueWith 方法指定异步回调函数，在任务完成后触发。  
 dict( = 将非空表转换为 .NET 字典。\n如果要创建空字典，调用返回对象的 Clear 函数清空即可。\n返回对象支持用下标操作符访问键值对。\n可用 dotNet.each 遍历字典。
 dict(.(tab,byRef) = 将非空表转换为 .NET 字典（Dictionary）对象。\n\n如果传入空表或 null 返回 null 值。\n否则必须传入非空表，表中所有的键必须是相同类型。\n表中所有的值必须是相同类型。\n\n参数 @byRef 为可选参数，如果 @byRef 为 true，\n则返回对象可作为 .NET 输出与引用参数使用
 dict() = !stdNetDictionary.

@@ -1,7 +1,9 @@
-//web.view( WebView2 浏览器控件) - 调用 waitEle 等待节点
+//web.view( WebView2 ) - 调用 waitEle 等待节点
+//更多 waitEle, waitEle2 示例： doc://example/AI/lmarena.aardio
+
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="Edge 浏览器控件 - web.view";right=1097;bottom=690;bgcolor=16777215)
+var winform = win.form(text="web.view( WebView2 ) - 调用 waitEle 等待节点";right=798;bottom=541;bgcolor=16777215)
 winform.add()
 /*}}*/
 
@@ -21,15 +23,19 @@ wb.waitEle("#search-input",function(ok,err){
 })
 */
 
-//用法二：同步等待参数@1指定CSS选择器的节点
+//用法二：不指定回调函数或回调 JS 脚本则同步等待参数 @1 指定CSS选择器的节点
 wb.waitEle("#search-input");
+/*
+wb.waitEle 在单个网页内有效，打开其他网页则会取消等待。
+如果要跨网页等待应改用 wb.waitEle2 函数。
+*/
+
 wb.doScript("
 var searchInput = document.querySelector('#search-input');
 searchInput.value='多线程'; 
 searchInput.dispatchEvent(new Event('input', { bubbles: true, }));
 ")
 
- 
 /*
 也可以用 CDP （Devtool 接口）实现上面的功能，
 请参考『 范例 / Web 界面 / web.view / Devtool 接口』

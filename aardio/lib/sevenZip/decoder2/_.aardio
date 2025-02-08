@@ -43,27 +43,17 @@ class decoder2{
 		if( !path ){
 			return null,"解压缩路径错误";
 		}
-
-		
-		this.openParamters.outDir = path;
-		var hr = archive_extract(this.archiveHandle,this.openParamters);
-		if(  (hr)<0/*_FAILED*/){
-				return false,this.errorMessage,hr;
-		}
-		return true;
-	};
-	extract = function( path ){
-		path = path ? ..io.createDir(path);
-		if( !path ){
-			return null,"解压缩路径错误";
-		}
 		this.openParamters.outDir = path;
 		
-		var hr = ..win.invoke(
-			function(archiveHandle,openParamters){
-				_dll = ..raw.loadDll( ,"sevenZip.decoder2.7zxr.dll" ,"cdecl")
-				return  _dll.archive_extract(archiveHandle,openParamters);
-			} ,this.archiveHandle,..raw.buffer(this.openParamters)
+		 
+		var hr = ..thread.invokeAndWait(
+			function(pfunc_archive_extract,archiveHandle,openParamters){
+				
+				//将函数指定转为函数对象。勿滥用此技巧，调用线程要保持 _dll 引用，避免被回收。
+				var archive_extract = ..raw.module("cdecl")[pfunc_archive_extract] 
+				
+				return archive_extract(archiveHandle,openParamters);
+			} ,_dll.api("archive_extract") , this.archiveHandle,..raw.buffer(this.openParamters)
 		)  
 
 		if(  (hr)<0/*_FAILED*/){
@@ -227,7 +217,7 @@ sevenZip.decoder2 引用的DLL组件则使用7zip客户端中的开源代码编�
 */
 
 /**intellisense(!sevenZip_decoder2)
-open(.("7z压缩包路径",是否测试模式) = 打开压缩包,\n成功返回true,失败返回false以及错误信息
+open(.("7z压缩包路径",是否测试模式) = 打开压缩包,\n成功返回 true,失败返回 false 以及错误信息
 close() = 关闭对象
 count() = 返回文件数
 extract(.("解压路径") = 解压文件到指定目录,\n目录不存在则自动创建该目录
@@ -286,9 +276,9 @@ extractSetOperationResult = @.extractSetOperationResult = function(opRet){
 end intellisense**/
 
 /**intellisense()
-sevenZip.decoder2 = 7Zip解压支持库,\n支持LZMA/BCJ*算法
-sevenZip.decoder2( = 创建7Zip解压对象
-sevenZip.decoder2() = 创建7Zip解压对象,\n!sevenZip_decoder2.
+sevenZip.decoder2 = 7Zip 解压支持库，支持 LZMA/BCJ* 算法。\n此库只能用于调用 win.loopMessage 创建窗口消息循环的线程，例如界面线程。
+sevenZip.decoder2( = 创建 7Zip 解压对象
+sevenZip.decoder2() = 创建 7Zip 解压对象,\n!sevenZip_decoder2.
 _kpidMainSubfile=@1/*_kpidMainSubfile*/
 _kpidHandlerItemIndex=@2/*_kpidHandlerItemIndex*/
 _kpidPath=@3/*_kpidPath*/

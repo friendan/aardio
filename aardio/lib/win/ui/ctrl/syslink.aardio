@@ -163,3 +163,17 @@ namespace syslink{
 win.ui.ctrl.syslink() = 超链接控件。\n!syslink.
 win.ui.ctrl.syslink = 超链接控件类
 end intellisense***/
+
+/**details(用法步骤)
+
+请参考：
+
+- [使用自定义控件类指南](doc://library-guide/std/win/ui/ctrl/custom.html#cls)
+- [syslink 控件使用范例](doc://example/Windows/Controls/syslink.html)
+
+atlax 控件用法步骤：
+
+1. 拖一个 custom 控件放到界面上,控件类名改为"atlax"
+2. 然后在 atlax 控件的文本属性中指定要创建的 COM 类名，例如 "InkEd.InkEdit"
+
+end details**/

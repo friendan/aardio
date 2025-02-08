@@ -1,0 +1,16 @@
+//Base64
+import crypt.bin; 
+
+//BASE64 编码
+var base64 = crypt.encodeBin( "字符串" );
+
+//BASE64 解码，支持 PEM，非 BASE64 文本等，可以看一看这个函数的源码
+var bin = crypt.decodeBin(base64) 
+
+//BASE64 编码，等价于调用 crypt.encodeBin(str, ,_CRYPT_STRING_BASE64|_CRYPT_STRING_NOCRLF)
+var base64 = crypt.bin.encodeBase64("字符串");
+
+//仅 BASE64 解码
+var bin = crypt.bin.decodeBase64(base64);
+
+print(base64);

@@ -71,7 +71,24 @@ namespace System.Windows.Automation{
 	And = function(cond,isNot){
 		var arr = {}
 		for k,v in ..table.eachName(cond){
-			if(k=="ControlType"){
+			if(..table.isArray(v)){
+				var arr2 = {}
+				for(i,v in v){
+					if(k=="ControlType"){
+						if(type.isString(v)){
+							v = ControlType[v];
+						}
+					}
+					..table.push(arr2,PropertyCondition(AutomationElement[k+"Property"],v));
+				
+				} 
+				
+				if(#arr2){
+					..table.push(arr,OrCondition(arr2))
+				}
+				continue;
+			}
+			elseif(k=="ControlType"){
 				if(type.isString(v)){
 					v = ControlType[v];
 				}
@@ -96,6 +113,10 @@ namespace System.Windows.Automation{
 		return cond;
 	}
 	
+	Not = function(cond){
+		return And(cond,true);
+	}
+	
 	Or = function(cond,isNot){
 		var arr = {}
 		for k,v in ..table.eachName(cond){
@@ -115,7 +136,7 @@ namespace System.Windows.Automation{
 					if(type.isString(v)){
 						v = Automation.ControlType[v];
 					}
-				}
+				} 
 				..table.push(arr,PropertyCondition(AutomationElement[k+"Property"],v));
 			} 
 		}
@@ -143,6 +164,100 @@ namespace System.Windows.Automation{
 	FindByOr = function(cond,root){
 		return (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, Or(cond) )  
 	}
+	
+	Find = function(root,...){
+		
+		var cond;
+		var args = {...};
+		
+		if(..dotNet.getObject(root)){ 
+			args = {...};
+		}
+		else { 
+			args = {root,...};
+			root = null;
+		}
+		
+		
+		for(i=1;#args;1){  
+			args[i] = And(args[i]) 
+		}
+		
+		if(#args>1){
+			cond = OrCondition(arr)
+		}
+		else {
+			cond = args[1]
+		}
+		
+		var node =  (root || AutomationElement.RootElement).FindFirst(TreeScope.Descendants, cond )  
+		if(node){
+			node[["Find"]] = function(...){
+				return Find(node,...)
+			} 
+			
+			return node;
+		}
+	}
+
+	var TextPatternPattern = TextPattern.Pattern;
+	GetCaret = function(hFocus){
+		var caretInfo;
+		var focusedEle; 
+
+    	try{
+    		if(hFocus) focusedEle = AutomationElement.FromHandle(hFocus) 
+			else {
+				focusedEle = AutomationElement.RootElement.FocusedElement;
+				hFocus = focusedEle.Current.NativeWindowHandle;
+			}
+    	} 
+    	if (!focusedEle) return false;
+    	
+		var textPattern;
+		try{	
+			textPattern = focusedEle.GetCurrentPattern(TextPatternPattern);
+			var selections = textPattern.GetSelection();
+			
+			..com.Release(textPattern);
+			textPattern = null;
+			
+			if(selections){
+				if(selections.Length){
+					var cursorRange = selections[1]
+					var boundingRectangles = cursorRange.GetBoundingRectangles();
+							
+            		if(!boundingRectangles.Length){
+            	 		//扩展光标位置为文本选区
+						cursorRange.ExpandToEnclosingUnit( TextUnit.Character ); 
+						boundingRectangles = cursorRange.GetBoundingRectangles();
+					}	 
+                        			
+           			if( boundingRectangles.Length>0) { 
+                   		var rc = boundingRectangles[1];
+                            
+                        caretInfo = {
+                           	top = rc.Top;
+                           	left = rc.Left;
+						   	bottom = rc.Bottom;
+						   	right = rc.Right; 
+						   	hwnd= hFocus;	
+                        }			
+                    
+            		}
+					..com.Release(cursorRange);  
+				} 
+				
+				..com.Release(selections);	
+			}
+		}
+		catch(e){
+			if(textPattern) ..com.Release(textPattern);
+		}
+		
+		..com.Release(focusedEle);	
+		return caretInfo;
+	}
 }
 
 /**details(说明)
@@ -155,8 +270,15 @@ System.Windows.Automation = .NET System.Windows.Automation 组件。\nSystem.Win
 end intellisense**/
 
 /*****intellisense(System.Windows.Automation)
+Not(与条件表取反) = @.Not({\n	ClassName = "Notepad",\n	ControlType = "Window";\n}) 
 And(与条件表) = @.And({\n	ClassName = "Notepad",\n	ControlType = "Window";\n})  
-And(或条件表) = @.And({\n	ClassName = {"RichEditD2DPT","RICHEDIT50W","Edit" }\n})  
+Or(或条件表) = @.Or({\n	ClassName = {"RichEditD2DPT","RICHEDIT50W","Edit" }\n})  
 FindByAnd(与条件表) = @.FindByAnd({\n	ClassName = "Notepad",\n	ControlType = "Window";\n})  
-FindByOr(或条件表) = @.FindByOr({\n	ClassName = {"RichEditD2DPT","RICHEDIT50W","Edit" }\n})  
+FindByOr(或条件表) = @.FindByOr({\n	ClassName = {"RichEditD2DPT","RICHEDIT50W","Edit" }\n}) 
+Find( = 查找节点。\n凡是使用此函数返回的节点都会提供一个 Find 函数用于查找子节点。\n其他函数返回的节点没有 Find 方法。
+Find(.(与条件表,与条件表->->->) = 此函数只有一个参数时作用与 FindByAnd 函数相同。\n表中的任何一个表参数都是 and 条件，而多个参数之间是 or 条件。\n如果参数表中单个键值对的值部分是数组，则该键值对为一个 or 条件。\n表中的名字应当是 UIA 对象的属性名，首字母要大写，\n常见的属性例如 AutomationId，Name，ControlType 等，详见 UIA 文档。\nControlType 属性可用的值为 System.Windows.Automation.ControlType 的成员，\n常见的如 "Button", "Text"，也可以写数值。\n例如 inspect 里 ControlType 显示 UIA_TextControlTypeId （0xC364）\n那么在这里要么写 "Text"，要么就写 0xC364。
+Find(.(根节点,与条件表,与条件表->->->) = 此函数只有一个参数时作用与 FindByAnd 函数相同。\n表中的任何一个表参数都是 and 条件，而多个参数之间是 or 条件。\n表中的名字应当是 UIA 对象的属性名，首字母要大写，\n常见的属性例如 AutomationId，Name，ControlType 等，详见 UIA 文档。\nControlType 属性可用的值为 System.Windows.Automation.ControlType 的成员，\n常见的如 "Button", "Text"，也可以写数值。\n例如 inspect 里 ControlType 显示 UIA_TextControlTypeId （0xC364）\n那么在这里要么写 "Text"，要么就写 0xC364。
+AutomationElement.RootElement.FocusedElement = 获取当前拥有输入焦点的 AutomationElement 对象
+AutomationElement.FromHandle(.(hwnd) = 自 @hwnd 参数指定句柄的窗口获取 AutomationElement 对象
+GetCaret(__/*hFocus*/) = 获取当前输入光标位置，\n返回表示屏幕位置的 ::RECT 结构体，hwnd 字段指定句柄。\n可选用参数 @1 指定输入焦点所在窗口句柄。\n\n此函数用于 winex.caret ,\n 由 System.Windows.Automation.3 库实现。
 end intellisense*****/

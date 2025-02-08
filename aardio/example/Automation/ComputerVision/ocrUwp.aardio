@@ -1,5 +1,11 @@
 //屏幕找字简版
 
+/*
+屏幕找字完整版 doc://example/Automation/ComputerVision/ocrLite.html
+简单 OCR: doc://example/Automation/ComputerVision/soImage.ocr.example.html
+屏幕找图: doc://example/Automation/ComputerVision/findImage.example.html
+*/
+
 if( _WIN10_LATER ){ 
 	//注意现在低于 Win10 的系统已经很罕见，并且越来越少。
 	

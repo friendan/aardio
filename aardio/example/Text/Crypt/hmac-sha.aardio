@@ -1,0 +1,15 @@
+//HMAC-SHA 
+import crypt.hmac;
+ 
+var key = '\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b';
+var data =  "Hi There"; 
+  
+//HMAC-SHA1 
+var hmacData = crypt.hmac.sha1(key,data).getValue(); 
+var base64 = crypt.encodeBin( hmacData );
+print( base64 ) 
+
+//HMAC-SHA256
+var hmacData = crypt.hmac.sha256(key,data).getValue(); 
+var base64 = crypt.encodeBin( hmacData );
+print( base64 );

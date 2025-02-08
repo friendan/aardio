@@ -13,7 +13,8 @@ dotNet.import("FlaUI.UIA2");
 if(!FlaUI[["UIA"]]){
 	FlaUI[["UIA"]] = FlaUI.UIA2
 	FlaUI[["UIA"]][["UIAAutomation"]] = FlaUI.UIA2.UIA2Automation;	
-}
+} 
+FlaUI.UIA2[["Automation"]] = FlaUI.UIA2.UIA2Automation;  
 
 FlaUI.UIA2.UIA2Automation[["ctor"]] = function(automation){
 	automation[["By"]] = class {
@@ -93,6 +94,10 @@ FlaUI.UIA2.UIA2Automation[["ctor"]] = function(automation){
 			return wnd;
 		}	
 	}; 
+}
+
+if(!FlaUI[["$UIA.Automation.Instance"]]){
+	FlaUI[["$UIA.Automation.Instance"]] = FlaUI.UIA2.UIA2Automation();
 }
 
 /*****intellisense()

@@ -232,6 +232,7 @@ class client{
 				
 				if(this.lastStatusCode){
 					if( !utf8 ) errMsg = ..string.fromto( errMsg,codepage,65001);  
+					elseif( !..string.len(errMsg)) errMsg = ..string.fromto(errMsg,0,65001);
 					
 					this.lastResponseData = errMsg;
 					this.lastResponseErrorData = errMsg; 
@@ -279,10 +280,25 @@ class client{
 	lastResponseString = function(){
 		return this.lastResponseData;
 	};
+	lastResponseObject = function(){ 
+		if( this.lastResponseDataObject ) {
+			return this.lastResponseDataObject;
+		}
+		
+		if(this.lastResponseData){
+			var e = this.parseResponseResult(this.lastResponseData);
+			if( field ) return e[[field]];
+			return e;
+		}
+	};
 	lastResponseError = function(field){
 		if(this.lastResponseErrorData){
-			var e = this.parseResponseResult(this.lastResponseErrorData);
-			if( field ) return e[[field]];
+			var e;
+			
+			try{
+				e = this.parseResponseResult(this.lastResponseErrorData);
+				if( field ) return e[[field]];
+			}
 			return e;
 		}
 	};
@@ -296,6 +312,9 @@ class client{
 		if(!urlTemplate){
 			urlTemplate = this.defaultUrlTemplate;
 			if(!urlTemplate) error("参数@1错误",2);
+		}
+		elseif(this.defaultUrlTemplate && (urlTemplate[1]==='/'# || urlTemplate[1]==='.'#) ){
+			urlTemplate = ..inet.url.joinpath(this.defaultUrlTemplate,urlTemplate)
 		}
 		
 		var urlRequest = urlTemplate; 
@@ -541,22 +560,14 @@ namespace client {
 	} 
 }
 
-/*
-如果URL模板中的变量出现在URL路径中,因为web.rest调用inet.http,
-而inet.http请求URL的路径中的中文字符默认会自动以UTF8编码并URLEncode编码发送,这是比较通用的实现方式,与具体的页面编码无关。
-如果服务器设置或其他原因不接受UTF8编码的URL,请事先调用URL编码URL中的中文字即可( 也就是rest中的资源名 )
-
-如果模板变量出现在附加参数中,web.rest不处理任何编码。
-对于调用方法时的提交参数,则一律URLEncode,如果指定页面编码为 UTF8 ,则UTF8编码后URLEncode
-*/
+//@guide [必读：web.rest 使用指南](doc://library-guide/std/web/rest/client.html)
 
 /**intellisense()
 web.rest.client = REST客户端
 web.rest.client() = !web_restClient.
 web.rest.client( = 创建 REST 客户端。
-userAgent,cfg.proxy,cfg.proxyBypass,cfg.flags
 web.rest.client(.(userAgent,proxy,proxyBypass,httpFlags) = 创建 REST 客户端，所有参数可选。\nuserAgent 参数用于自定义 User-Agent 请求标头，用于服务器识别请求程序特征。\nHTTP 代理服务器请指定为 "代理服务器地址:端口" 格式，\nproxy 参数指定代理，proxyBypass 参数指定绕过代理的主机。\n└──  [代理参数格式说明](doc://library-guide/std/inet/proxy.md)\nhttpFlags 可选用一个数值指定 HTTP 连接选项，一般不需要指定。 \n\n可选传入一个表指定以上参数以及其他 API 自定义设置。\n如果传入表参数则存为对象的 config 属性。
-web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数指定 API 自定义的配置项。\n参数存为对象的 config 属性。
+web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数指定 API 自定义的配置项。\n参数存为对象的 config 属性。\n\n参数 config 的 userAgent,proxy,proxyBypass,flags 字段将作为 web.rest.client 构造参数。
 !web_restClient.config = 自定义的 API 配置表。\n默认指向创建对象时指定的表参数。\n如果构造对象未指定表参数，此配置默认为 null 值。
 !web_restClient.stringifyRequestParameters(提交参数表,代码页) = @.stringifyRequestParameters = function(params,codepage){
 	__/*参数是表对象时调用此函数转换为字符串\n此函数一般由库文件定义，一般调用不应修改此函数\n注意返回的文本格式应与 owner.contentType 一致\n在该函数中可获取或修改对象的 lastRequestUrl, lastRequestMethod 属性*/
@@ -588,7 +599,7 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_restClient.setHeaders( = 设置所有请求默认添加的HTTP头
 !web_restClient.setHeaders(.(headers) = 参数 @headers 必须指定一个表中,\n用该表中的键值对更新 addHeaders 属性中的键值\n如果addHeaders的原属性值不是一个表,则先清空该属性
 !web_restClient.addHeaders = 替换所有请求默认添加的HTTP头\n请求结束时不会清空此属性\n该值可以是一个字符串,也可以是键值对组成的table对象
-!web_restClient.referer = 引用页地址\n如果此属性指定了一个值，则每次请求都会使用该引用页\n如果不指定，每次请求都会自动设置上次请求的网址为引用页\n这个属性不像inet.http对象的referer属性那样每次请求结束都会清空
+!web_restClient.referer = 引用页地址。\n如果此属性指定了一个值，则每次请求都会使用该引用页。\n如果不指定，每次请求都会自动设置上次请求的网址为引用页。\n这个属性不像 inet.http 对象的 referer 属性那样每次请求结束都会清空。
 !web_restClient.charset = 指定服务端使用的编码,默认为"UTF-8",\n服务端HTTP响应头里如果显式指定了编码，会自动修改此属性\n对于服务端返回的数据,会根据charset自动转换为aardio默认的UTF8编码\n对于请求参数,如果使用JSON编码统一转换为Unicode编码格式,不需要考虑编码转换,\n如果使用UrlEncode编码与浏览器的规则一致，根据charset转换为对应编码后提交，\n开发服务端接口应统一使用UTF8编码,可避免任何乱码问题
 !web_restClient.getUserAgent() = 返回HTTP客户端请求HTTP头中用户代理头的值,\n该值可在创建HTTP客户端的构造参数中指定
 !web_restClient.setAuth( = 设置登录名,密码，或者设置 API Key 与 Secret Key
@@ -609,13 +620,14 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_restClient.lastResponseHeaders(.("Content-Length:") = 获取单个指定的 HTTP 服务器响应头，返回字符串。\n参数指定HTTP头名字或部分名字，忽略大小写，忽略冒号以后部分。\n如果调用 head, headGet, headPost 等函数。\n或调用 或 API 对象的 head.get,head.post 等函数，\n则在请求成功后可调用此函数读取 HTTP 头
 !web_restClient.lastResponseHeaderList("__") = 获取所有指定字符串作为开始段的 HTTP 头。\n忽略大小写，不忽略冒号以后部分。\n不指定参数则读取全部响应头。\n返回键值对组成的表对象，键名转为小写，每个值都是一个数组。\n如果调用 head, headGet, headPost 等函数。\n或调用 或 API 对象的 head.get,head.post 等函数，\n则在请求成功后可调用此函数读取 HTTP 头 
 !web_restClient.lastResponse() = 获取最后一次服务器返回的数据,\n如果控制台已打开或在开发环境中导入 console 库则在控制台输出数据\n下载文件时该值为空
+!web_restClient.lastResponseObject() = 获取最后一次服务器返回的对象（已将响应文本解析为对象），\n请求失败，或者下载文件时此属性值为空。\n如果是 SSE 流式调用，默认无返回值。\n web.rest.aiChat 则在流式调用时会返回最后一次接受的包含 token 计数的对象。
 !web_restClient.lastResponseString() =  获取最后一次服务器返回的原始数据，\n请求失败，或者下载文件时此属性值为空
-!web_restClient.lastResponseError() =  返回服务器最后一次返回的错误响应，并转换为错误对象。\n与调用 API 时转换响应数据一样，支持相同的服务器响应格式 。\n如果错误来自本地（lastStatusCode 属性为 null）则此函数返回 null 。\n如果最后一次发生请求成功，则此函数返回 null 。\n\n如果在参数 @1 中指定返回字段，且错误对象包含该字段则使用直接下标获取并返回字段值。\n获取字段失败返回 null 而非抛出异常
-!web_restClient.lastRequestUrl = 获取最后一次请求的URL
+!web_restClient.lastResponseError() =  返回服务器最后一次返回的错误响应，并转换为错误对象。\n与调用 API 时转换响应数据一样，支持相同的服务器响应格式 。\n如果错误来自本地（lastStatusCode 属性为 null）则此函数返回 null 。\n如果最后一次发生请求成功，则此函数返回 null 。\n\n如果在参数 @1 中指定返回字段，且错误对象包含该字段则使用直接下标获取并返回字段值。\n获取错误对象失败、或格式解析失败、获取字段失败都会返回 null 而非抛出异常
+!web_restClient.lastRequestUrl = 获取最后一次请求的 URL。\n允许的 beforeRequestHeaders 事件中修改此属性以改变请求地址。 
 !web_restClient.lastRequestMethod = 最后一次请示使用的HTTP方法
 !web_restClient.lastRequestInfo = 最后一次请示使用的所有参数信息
 !web_restClient.strictParsing = 对于 JSON 客户端，如果此属性设为 true：\n且服务器响应头未声明 JSON 类型，返回数据第一个字符不是 { 也不是 [，\n则直接返回包含服务器响应数据的字符串。\n\n此属性值默认为 null
-!web_restClient._http = inet.http客户端，用于执行http请求\n!inet_http.
+!web_restClient._http = inet.http客户端，用于执行 http 请求\n!inet_http.
 !web_restClient.close() = 关闭对象释放资源
 !web_restClient.beforeSend = @.beforeSend = function(){
 	__/*已准备向服务器发送数据触发此回调函数*/ 
@@ -650,8 +662,8 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_restClient.headGet(.(网址,参数表) = 使用 GET 方法提交请求，但仅获取 HTTP 头。\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头\n成功返回数据,失败返回空值,错误信息,错误代码
 !web_restClient.headPost(.(网址,参数表) = 使用 POST 方法提交请求，但仅获取 HTTP 头。\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头\n成功返回数据,失败返回空值,错误信息,错误代码
 !web_restClient.head(.(网址,参数表) = 使用 HEAD 方法提交请求\n如果该函数返回非 null 值为成功,请使用 lastResponseHeaders 获取应答HTTP头。\n成功返回 true,失败返回 null,错误信息,错误代码
-!web_restClient.get(.(网址,参数表,接收数据回调函数) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度
-!web_restClient.post(.(网址,参数表,接收数据回调函数) = 使用该POST方法提交请求,新增或修改资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度
+!web_restClient.get(.(网址,参数表,接收数据回调函数) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度。\n回调函数如果返回 false 则停止接收数据。
+!web_restClient.post(.(网址,参数表,接收数据回调函数) = 使用该POST方法提交请求,新增或修改资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n\n如果服务端返回内容类型为 text/event-stream，\n则接收数据回调函数的参数为解析服务端每次推送数据的表对象，\n否则回调参数依次为：当前响应数据，本次响应数据长度，响应数据总长度。\n回调函数如果返回 false 则停止接收数据。
 !web_restClient.get(.(网址,参数表) = 使用该GET方法提交请求,获取资源\n请求参数将会自动转换为URL附加参数,\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
 !web_restClient.post(.(网址,参数表) = 使用该POST方法提交请求,新增或修改资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
 !web_restClient.delete(.(网址,参数表) = 使用该DELETE方法提交请求,删除资源\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串\n成功返回数据,失败返回空值,错误信息,错误代码
@@ -660,11 +672,12 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_restClient.api( = 定义API对象，使用成员操作符或下标获取API对象的成员时将会自动转换为新的API对象
 !web_restClient.api(.("网址模板","HTTP动词","模式串") = 网址模板可使用 {name}、{/name}、或 {...} 指定模板参数,\n大括号内的参数名可使用英文字符或数字,\n模板参数名首字符为斜杠（例如{/name}）表示使用实参替换后保留斜杠，\n {...} 表示不定个数的模板参数,如使用多个实参替换则自动使用斜杠拼接，\n默认在网址模板尾部自动添加 {...}\n\n返回API对象使用下标指定模板实参，\n如果下标是字符串，按下标出现的前后顺序替换模板参数，\n如果下标是表对象，则表中的键值对用于替换与键同名的模板参数,\n\n可选用参数@2指定HTTP动词,默认值为"POST"\n\n参数@3如果为模式串，则使用模式匹配转换响应数据并返回。\n参数@3如果为函数，则调用该函数转换转换响应数据并返回。\n参数@3如果为数组，则作为string.map的模式参数@2转换响应数据并返回
 !web_restClient.api(.("网址模板","HTTP动词","模式串",HTTP选项) = 可选在参数@4用 _INTERNET_FLAG_ 前缀常量自定义http请求选项\n其他参数用法同上
+!web_restClient.api(.("/路径") = 如果客户端使用 defaultUrlTemplate 属性指定了默认网址模板。\n则这里的第一个参数可以省略，或者仅指定以 `/` 或 `.` 字符开始的路径。
 !web_restClient.api() = !web_rest_api.
-!web_rest_api.? = 可输入任意 HTTP API 资源名\n返回一个  HTTP API 调用对象,\n返回对象可以使用成员操作符继续获取下级资源，\n也可以作为函数直接调用并发送请求,\n作为函数使用时,\n可选用参数@1指定请求数据参表，也可直接指定请求字符串,\n可选用参数@2指定URL参数表,\n可选用参数 @2 或 @3 指定 inet.http对象的 onReceive 回调函数。\n指定 onReceive 回调函数则自动支持自动解析 SSE 流，兼容 ndjson 流。\n作为函数调用时成功返回解析后数据，失败返回 null,错误信息,错误代码\n!web_rest_api.
+!web_rest_api.? = 可输入任意 HTTP API 资源名\n返回一个  HTTP API 调用对象。\n对 API 调用对象可以使用成员操作符继续获取下级资源，\n也可以将其作为函数对象直接调用并自动发送 HTTP 请求。\n作为函数调用时成功返回解析后数据，失败返回 null,错误信息,错误代码。\n调用参数 @1 可选用表对象指定请求参数，也可直接用字符串指定请求参数。\n可选用参数 @2 指定 URL 参数表。\n可选用参数 @2 或 @3 指定 inet.http 对象的 onReceive 回调函数。\n指定 onReceive 回调函数则自动支持自动解析 SSE 流，兼容 ndjson 流。。\nonReceive 回调函数如果返回 false 则停止接收数据。\n!web_rest_api.
 !web_rest_api.head() = HEAD方法提交请求\n如果该函数返回非null值为成功,请使用lastResponseHeaders获取应答HTTP头\n请求参数可以指定表或字符串,如果是表请求前会转换为字符串
-!web_rest_api.get(__) = GET方法提交请求,获取资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n如果资源URL名称需要用到 get，请使用["/get"]替代以避免被识别为默认HTTP方法
-!web_rest_api.post(__) = POST方法提交请求,新增或修改资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n可选用参数@2指定URL参数表,\n可选用参数@3指定inet.http对象的onReceive回调函数
+!web_rest_api.get(__) = 使用 HTTP 协议的 GET 方法提交 HTTP 请求。\n如果资源 URL 名称需要用到 get，请使用["/get"]替代以避免被识别为默认HTTP方法。\n成功返回解析后数据，失败返回 null,错误信息,错误代码。\n调用参数 @1 可选用表对象指定请求参数，也可直接用字符串指定请求参数。\n可选用参数 @2 指定额外的 URL 参数表。\n可选用参数 @2 或 @3 指定 inet.http 对象的 onReceive 回调函数。\n指定 onReceive 回调函数则自动支持自动解析 SSE 流，兼容 ndjson 流。。\nonReceive 回调函数如果返回 false 则停止接收数据。\n!web_rest_api.
+!web_rest_api.post(__) = 使用 HTTP 协议的 POST 方法提交 HTTP 请求。\n如果资源 URL 名称需要用到 post，请使用["/post"]替代以避免被识别为默认HTTP方法。\n成功返回解析后数据，失败返回 null,错误信息,错误代码。\n调用参数 @1 可选用表对象指定请求参数，也可直接用字符串指定请求参数。\n可选用参数 @2 指定 URL 参数表。\n可选用参数 @2 或 @3 指定 inet.http 对象的 onReceive 回调函数。\n指定 onReceive 回调函数则自动支持自动解析 SSE 流，兼容 ndjson 流。。\nonReceive 回调函数如果返回 false 则停止接收数据。\n!web_rest_api.
 !web_rest_api.delete(__) = DELETE方法提交请求,删除资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n可选用参数@2指定URL参数表,\n可选用参数@3指定inet.http对象的onReceive回调函数\n如果资源URL名称需要用到 delete，请使用["/delete"]替代以避免被识别为默认HTTP方法
 !web_rest_api.put(__) = PUT方法提交请求,替换或更新资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n可选用参数@2指定URL参数表,\n可选用参数@3指定inet.http对象的onReceive回调函数
 !web_rest_api.patch(__) = PATCH方法提交请求,更新资源,\n请求参数@1可以指定表或字符串、缓冲区,如果是表请求前会转换为字符串\n可选用参数@2指定URL参数表,\n可选用参数@3指定inet.http对象的onReceive回调函数
@@ -687,3 +700,10 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_rest_api.deleteDelete() = !web_rest_api.
 !web_rest_api.patchPatch() = !web_rest_api.
 end intellisense**/
+
+/**details(说明)
+如果 URL 模板中的变量出现在 URL 路径中，
+那么实际调用接口时被应用到 URL 路径中的模板实参内的中文字符
+默认会自动以 UTF-8 编码并 URLEncode 编码发送，这是标准方式与具体的页面编码无关。
+如果需要在 URL 内使用非 UTF-8 编码（不太可能有这种情况），可事先对模板实参进行 URL 编码以去掉中文字符。
+end details**/

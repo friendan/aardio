@@ -2,6 +2,7 @@
 import mouse;
 import winex.caret;
 
+//如果要支持 WPF 或 Java 窗口请使用 winex.caret.getEx 函数。
 var caretRect = winex.caret.get();
 if(caretRect){
 	mouse.moveTo(caretRect);

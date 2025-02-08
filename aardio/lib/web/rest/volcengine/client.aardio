@@ -1,0 +1,102 @@
+﻿import web.rest.jsonClient;
+import crypt.hmac;
+
+namespace web.rest.volcengine;
+
+class client{
+    ctor(cfg){
+
+        if(!(cfg[["accessKeyId"]]&&cfg[["secretAccessKey"]])) error("构造参数必须是表对象，并且必须指定 包含accessKeyId 与 secretAccessKey 字段！");
+        
+        cfg = ..table.mix(cfg,{
+        	region = "cn-beijing"; 
+        });
+        
+        this = ..web.rest.jsonClient(cfg.userAgent,cfg.proxy,cfg.proxyBypass,cfg.httpFlags);
+        this.defaultUrlTemplate = "https://open.volcengineapi.com/?Action={action}&Version=2024-01-01";
+	 	this.config = cfg;
+
+        // 在发送请求前触发,返回自定义 HTTP 头
+        this.beforeRequestHeaders = function(params, payload, url, httpMethod, contentType){
+            
+            var tUrl = ..inet.url.split(url);
+            var utcTime = ..time(,"!%Y%m%dT%H%M%SZ");
+            var xDate = tostring(utcTime, "!%Y%m%dT%H%M%SZ");
+            var shortXDate = tostring(utcTime,"!%Y%m%d");
+            var xContentSha256 = ..crypt.sha256(payload || "", false);
+           
+            //拆分 URL，参数 @2 为 true 则 tUrl.extraInfo 存储的 URL 参数按字典序重新排序（并且移除开始的`?`号）
+            var tUrl = ..inet.url.split(this.lastRequestUrl,true);
+            
+            //修改请求 URL
+            this.lastRequestUrl = tostring(tUrl);
+
+            // 规范化请求头，小写， ASCII 排序
+            var signedHeaders = "content-type;host;x-content-sha256;x-date";
+            
+            var canonicalRequest = ..string.join( {
+                httpMethod;
+                tUrl.path;
+                tUrl.extraInfo||"";
+                ..string.join({
+                    "content-type:" ++ contentType;
+                    "host:" ++ tUrl.host;
+                    "x-content-sha256:" ++ xContentSha256;
+                    "x-date:" ++ xDate;
+                }, '\n');
+                "";
+                signedHeaders;
+                xContentSha256;
+            }, '\n');
+
+            // 计算规范化请求的哈希值
+            var hashedCanonicalRequest = ..crypt.sha256(canonicalRequest, false);
+
+            // 计算签名范围
+            var credentialScope = ..string.join( {
+                shortXDate;
+                this.config.region;
+                this.config.service;
+                "request";
+            }, "/");
+
+            // 计算签名字符串
+            var stringToSign = ..string.join( {
+                "HMAC-SHA256";
+                xDate;
+                credentialScope;
+                hashedCanonicalRequest;
+            }, '\n');
+
+            // 计算签名
+            var kDate = ..crypt.hmac.sha256(this.config.secretAccessKey, shortXDate).getValue();
+            var kRegion = ..crypt.hmac.sha256(kDate, this.config.region).getValue();
+            var kService = ..crypt.hmac.sha256(kRegion, this.config.service).getValue();
+            var kSigning = ..crypt.hmac.sha256(kService, "request").getValue();
+            var signature = ..crypt.hmac.sha256(kSigning, stringToSign).getHexValue(false);
+
+            // 生成 Authorization 头
+            var authorization = ..string.format(
+                "HMAC-SHA256 Credential=%s, SignedHeaders=%s, Signature=%s",
+                this.config.accessKeyId ++ "/" ++ credentialScope,
+                signedHeaders,
+                signature
+            );
+
+            // 返回自定义 HTTP 头
+            return {
+                ["Authorization"] = authorization;
+                ["X-Content-Sha256"] = xContentSha256;
+                ["X-Date"] = xDate;
+                ["Content-Type"] = contentType;
+                ["V-Account-Id"] = this.config.accountId
+            };
+        };
+    };
+};
+
+/**intellisense()
+web.rest.volcengine.client = 字节跳动火山引擎云服务平台 API 客户端。\n请求数据，返回数据都使用 JSON 格式。\n[使用范例](doc:///example/Web/REST/tencentCloud.html)
+web.rest.volcengine.client(config) = @.arkClient(\n	accessKeyId = "accessKeyId";\n	secretAccessKey = "secretAccessKey";\n	action =  "action";\n	version = "2018-01-01";\n	region =  "cn-beijing"; \n	service = "service";__/*创建火山 API 客户端。\n参数用法请参考腾讯云 API 文档。\n\n可选指定 userAgent,proxy,proxyBypass,httpFlags 等创建 HTTP 客户端的选项，\n这几个选项的用法请参考 web.rest.client,inet.http 文档*/\n);
+web.rest.volcengine() = !web_restClient.
+end intellisense**/

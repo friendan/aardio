@@ -1,4 +1,5 @@
-快速入门=JSON.aardio
+﻿快速入门=JSON.aardio
 特殊数据类型=DataType.aardio
 HTTP-JSON-RPC 客户端=rpcClient.aardio
 HTTP-JSON-RPC 服务端=rpcServer.aardio
+可视化编辑器=~\example\WebUI\web.view\OtherApps\json-editor.aardio

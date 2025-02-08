@@ -1,7 +1,12 @@
 # 输入法与键盘状态检测
 
-aardio 标准库 [key.ime](../../../library-reference/key/ime.md) 提供输入法相关函数。  
-key.ime.state 函数则用于检测输入法与键盘状态，标准库 key.ime.stateBar 用于创建显示输入法状态的工具界面。基于  key.ime.stateBar 实现的开源软件 [ImTip](https://imtip.aardio.com)  目前已经成为了流行的桌面软件。
+aardio 提供以下库或函数用于检测输入法与键盘状态：
+
+- aardio 标准库 [key.ime](../../../library-reference/key/ime.md) 提供输入法相关函数。key.ime.state 函数则用于检测输入法与键盘状态。
+- 标准库 [key.ime.stateBar](ime.stateBar.md) 用于创建显示输入法状态的工具界面。基于  key.ime.stateBar 实现的开源软件 [ImTip](https://imtip.aardio.com)  目前已经成为了流行的桌面软件。
+- [winex.candidate.visible()](../../../library-reference/winex/candidate.md) 可用于检测输入法候选窗口显示状态。
+- [sys.input.getEnabledLayoutOrTips()](../../../library-reference/sys/input.md) 可用于获取操作系统启用的输入法列表。
+
 
 ## 一、输入法状态检测原理与规则
 

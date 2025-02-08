@@ -1,7 +1,8 @@
 //web.view( WebView2 浏览器控件) - 多线程界面回调
+//多线程开发入门: doc://guide/language/thread.html
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="多线程界面回调";right=759;bottom=469)
+var winform = win.form(text="web.view( WebView2 浏览器控件) - 多线程界面回调";right=759;bottom=469)
 winform.add()
 /*}}*/
 
@@ -35,21 +36,16 @@ wb.external = {
 			  */	
 			},wb,domain 
 		) 
-		
-		return "<br>已启动多线程 ping"
 	} 
 }
 
 wb.html = /**
-<body style="white-space: pre;"><script>
-doSomething = async() => {
-	
-  	var result = await aardio.ping('www.example.com');
-  	document.body.insertAdjacentHTML('beforeend',result);
-};
-</script>
-<button  onclick="doSomething()">开始干活了</ping>
+<body style="white-space: pre;">
+<button 
+	onclick="javascript:aardio.ping('www.example.com')"
+	>开始干活了</button>
 **/
+
 
 winform.show();
 win.loopMessage();

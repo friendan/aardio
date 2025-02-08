@@ -1,0 +1,51 @@
+//获取文本
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="按超级热键获取外部编辑器文本";left=-2;right=333;bottom=333;bgcolor=16777215;topmost=1)
+winform.add(
+edit={cls="richedit";left=8;top=7;right=325;bottom=317;edge=1;limit=-1;multiline=1;vscroll=1;z=1}
+)
+/*}}*/
+
+//只要提前调用 import java.accessBridge，
+// winex.editor, winex.selection, key.ime.stateBar 将自动支持 Java 自动化接口（JAB）。
+
+import key.hotkey; 
+var superHotkey = key.hotkey(); 
+ 
+//添加超级热键
+superHotkey.loadTable({
+ 
+	["Ctrl+#"] = function(hFocus){   
+		
+		return function(){
+			
+			//用于操作外部文本编辑器
+			import winex.editor;
+			
+			//可如下检测输入焦点所在文本编辑器的窗口类名，支持模式匹配，忽略大小写
+			if(winex.editor.matchClass("aardioCodeEditor")){
+				
+			}
+			
+			//获取光标插入点之前的所有文本
+			var leftText = winex.editor.getText2();
+			
+			//获取输入光标（插入点）左右侧的文本，参数 2 为 true 则返回值 2 为光标之后的文本
+			var leftText,rightText = winex.editor.getText2(true);
+			
+			//获取当前行光标插入点之前的文本（或者选区文本），参数 1 可指定模式匹配串限定返回结果。
+			//var caretText = winex.editor.caretText();
+			
+			winform.edit.text = leftText;
+			
+		} ; 
+		
+	}; 
+});
+ 
+//显示窗口
+winform.show();
+
+//启动窗口消息循环
+win.loopMessage();

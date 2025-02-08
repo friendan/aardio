@@ -1203,6 +1203,38 @@ namespace tabs{
 				}
 			}
 		};
+		disabledText = {
+			_get = function(){ 
+				return owner.selTab ? owner.selTab.disabledText;
+			}
+			_set = function(v){
+				if(!owner.selTab) return;
+				
+				var tabList = owner.tabList;
+				for(i=1;#tabList;1){
+					 tabList[i].disabledText = null;
+					 tabList[i].notify = !v;
+				} 
+				
+				if(owner.selTab) owner.selTab.disabledText = v; 
+			}
+		};
+		disabled = {
+			_get = function(){ 
+				return owner.selTab ? owner.selTab.disabled;
+			}
+			_set = function(v){
+				if(!owner.selTab) return;
+				
+				var tabList = owner.tabList;
+				for(i=1;#tabList;1){
+					 tabList[i].disabled = null;
+					 tabList[i].notify = !v;
+				} 
+				
+				owner.selTab.disabled = v;
+			}
+		};
 		count = function(){
 			return #(owner.tabList);
 		};
@@ -1377,7 +1409,7 @@ onFocusLost(hFocus) = @.onFocusLost = function(hFocus){
 	__/*失去焦点触发此事件,hFocus为得到焦点的窗口句柄*/
 }
 onSelchange(idx,tab,form) = @.onSelchange = function(idx,tab,form){
-	__/*切换选项卡会触发此事件,idx为当前选中索引\ntab 为当前选项卡,form为当前子窗口*/
+	__/*切换选项卡会触发此事件,idx 为当前选中索引\ntab 为当前选项卡,form 为当前子窗口。\n如果在这里禁用选项卡或 tab，则不会自动触发 tab 的其他事件。*/
 }
 onOk(tab) = @.onOk = function(tab){
 	__/*用户在弹出列表中选择并确认选项,且即将关闭弹出列表*/
@@ -1417,4 +1449,6 @@ queryTab(查询属性) = @.queryTab(text = "标题"__/*使用选项卡的指定�
 queryTab() = !ui_ctrl_plus.
 setTabs(.(属性名,属性值数组) = 设置所有选项卡的指定属性值
 count() = 返回选项卡总数
+disabledText = @.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}__/*指定文本时,指定为文本或文本数组则禁用当前选项并显示指定文本，\n同时也会禁止所有选项响应事件（但其他选项不显示禁用样式），禁止切换选项。\n此属性指定为一个文本数组时,当前选项将创建动画逐帧显示数组里的文字图标。\n如果当前选项卡配置了图标文本则使用图标文本（ iconText ）显示数组内的文字图标,\n\n此属性指定为 null 时，启用当前选项，并恢复控禁用之前的 text、iconText 属性。\n同时其他所有选项也会切换到允许响应事件（notify 属性恢复为 true ）。\n如果尚未指定当前选项，则获取此属性时总是为 null。*/
+disabled = 是否禁用选项卡。\n仅当前选项会切换禁用样式，其他选项仅切换是否允许响应事件属性（notify）。\n如果尚未指定当前选项，则获取此属性时总是为 false 。
 end intellisense**/

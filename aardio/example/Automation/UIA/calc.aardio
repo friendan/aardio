@@ -1,0 +1,82 @@
+import winex;
+import mouse;
+import process; 
+import System.Windows.Automation;
+
+if(!_WIN10_LATER) error("此范例支持 Win10 以上版本的计算器")
+
+//启动计算器
+process.execute("calc.exe")
+ 
+//等待计算器窗口激活
+var hwnd = winex.waitActive("计算器",,"ApplicationFrameWindow")
+ 
+//访问 .NET 类的静态成员
+Automation = System.Windows.Automation;
+AutomationElement = Automation.AutomationElement;
+ 
+//查找计算器窗口
+var calcWindow = AutomationElement.FromHandle(hwnd);
+
+//等待创建按钮控件
+var numButton1 = win.wait( function(){
+	
+	//查找数字 1 按钮
+	return Automation.Find(calcWindow,{
+		AutomationId = "num1Button" 
+	})
+})
+
+//查找其他按钮（不需要再调用 win.wait 等待）
+var numButton2 = Automation.Find(calcWindow,{
+	AutomationId = "num2Button" 
+})
+
+//数字 3
+var numButton3 = Automation.Find(calcWindow,{
+	AutomationId = "num3Button" 
+})
+
+//加运算按钮
+var addButton = Automation.Find(calcWindow,{
+	AutomationId = "plusButton" 
+})
+
+//等于按钮
+var equalButton = Automation.Find(calcWindow,{
+	AutomationId = "equalButton" 
+})
+
+//点击数字按钮 1
+var invokePattern = numButton1.GetCurrentPattern(Automation.InvokePattern.Pattern);
+invokePattern.Invoke();
+
+//点击 + 按钮 
+var invokePattern = addButton.GetCurrentPattern(Automation.InvokePattern.Pattern);
+invokePattern.Invoke();
+ 
+//点击数字按钮 2
+var invokePattern = numButton2.GetCurrentPattern(Automation.InvokePattern.Pattern);
+invokePattern.Invoke();
+ 
+//用鼠标点击等号按钮，mouse 库函数直接支持以 .NET 控件作为参数
+mouse.click(equalButton);
+
+//也可以用参数 1,2 指定控件内部的相对 x,y 坐标 
+mouse.click(2,3,equalButton);
+ 
+//显示结果的节点
+var resultText = Automation.Find(calcWindow,{
+	AutomationId = "CalculatorResults" 
+}) 
+ 
+//获取结果
+var text = resultText.Current.Name;
+var num = string.match(text,"[\d\,]+");
+num = string.replace(num,",","");
+ 
+//输出结果
+print(resultText.Current.Name)
+ 
+ 
+

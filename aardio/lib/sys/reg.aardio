@@ -28,13 +28,69 @@ setValue = function(name,value,path,root) {
 	else error("@value 参数类型错误",2)
 };
 
+getValueWow64= function(name,path,root,samDesired){
+	return getValue(name,path,root,0x0100/*_KEY_WOW64_64KEY*/|0x20019/*_KEY_READ*/);
+}
+
+getValue = function(name,path,root,samDesired){
+	var hKey = {ptr value}
+	var err = ::Advapi32.RegOpenKeyExW( root: 0x80000001/*_HKEY_CURRENT_USER*/ ,path ,0,samDesired||0x20019/*_KEY_READ*/,hKey ); 
+	 
+	if(err!==0/*_ERROR_SUCCESS*/) return;
+	hKey = hKey.value;
+		   
+	var rType = {INT value}
+	var length = {INT value} 
+	err = ::Advapi32.RegQueryValueExW(hKey,name,0,rType,null,length)
+ 
+ 	var ret ;
+	if(err===0/*_ERROR_SUCCESS*/) { 
+		var t  = rType.value;
+		if( t <= 3/*_REG_BINARY*/  || t == 7/*_REG_MULTI_SZ*/){ 
+			ret= ..raw.buffer(length.value)
+			::Advapi32.RegQueryValueExW(hKey,name,0,rType,ret,length)
+			
+			if(t!=3){
+				ret = ..string.fromUtf16(ret,,length.value>=2 ? length.value/2 - 1 : 0);
+				if(t === 7 ){
+					ret = ..string.trimright(ret,'\0');
+					ret = ..string.split(ret,'\0');	
+				}
+			}  
+		}
+		elseif(t<=5){
+			ret = {INT value}
+			::Advapi32.RegQueryValueExW(hKey,name,0,rType,ret,length) 
+			ret = ret.value; 
+			
+			if(t==5/*_REG_DWORD_BIG_ENDIAN*/){
+				ret = ..raw.swap(ret,"INT")
+			} 
+		} 
+		elseif(t==0xB){
+			ret = { LONG v = ..math.size64() } 
+			err = ::Advapi32.RegQueryValueExW(hKey,name,0,rType,ret,length)	
+			ret = ret.v;
+		}
+	}
+	 
+	::Advapi32.RegCloseKey(hKey);
+	return ret;
+}
+
+
 /**intellisense()
-sys.reg = 简单写注册表\n如果需要更多功能,请改用 win.reg
+sys.reg = 注册表函数库精简版。\n如果需要更多功能,请改用功能更多的 win.reg 库。
 sys.reg.setValue( = 写注册表
 sys.reg.setValue(.(name,value,path,root) = 写注册表。\n@name 使用字符串指定值名称（null 或 空串表示默认值），\n@value 可指定数值、字符串、buffer、null\n数值为存为 _REG_DWORD 类型,\n字符串值存为 _REG_SZ 类型,\nbuffer 值存为 _REG_BINARY 类型。,\nnull 值表示删除。\n\n参数 @path 使用字符串指定注册表路径,\n参数 @root 指定注册表根键,省略则默认为 _HKEY_CURRENT_USER
+sys.reg.getValueWow64( = 读注册表 64 位键
+sys.reg.getValueWow64(.(name,path,root,samDesired) = 读注册表 64 位键 
+sys.reg.getValue( = 读注册表。\n根据注册表类型返回字符串值、数值、数组等类型值。\n失败返回 null 。
+sys.reg.getValue(.(name,path,root,samDesired) = 读注册表。\n@name 使用字符串指定值名称（null 或 空串表示默认值），\n参数 @path 使用字符串指定注册表路径,\n参数 @root 指定注册表根键,省略则默认为 _HKEY_CURRENT_USER。\n@samDesired 为保留参数，请不要指定。
 end intellisense**/
 
 ::Advapi32 := ..raw.loadDll("Advapi32.dll");
+
 /**intellisense(::)
 ::Advapi32 = Advapi32.dll 模块\n以下标准库已加载该模块:\ncrypt,process,service,sys,sys.reg,win.reg\n!dllModule.
 end intellisense**/

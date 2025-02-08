@@ -9,6 +9,21 @@ class chat{
 		this = ..web.form.simpleMarkdown(...)
 		this.chatMessage = ..web.rest.aiChat.message();
 	};
+	findSystem = function(pattern){
+		var chatMessage = this.chatMessage;
+		
+		for(i=1;#chatMessage;1){
+			var msg = chatMessage[i]
+			if(msg[["role"]]=="system"){
+				if(msg.content && ..string.find(msg.content,pattern) ){
+					return msg.content;
+				}
+			}
+		} 
+	};
+	aardioSystem = function(prompt,isUserPrompt,libList,quickRef){ 
+		this.chatMessage.aardioSystem(prompt,isUserPrompt,libList,quickRef);
+	};
 	system = function(content){
 		this.pushMessage({ 
         	role = "system"; 
@@ -23,17 +38,23 @@ class chat{
 	};
 	assistant = function(content){
 		this.pushMessage(content);  
+	}; 
+	url = function(urlData){
+		this.chatMessage.url(urlData);
 	};
 	pushMessage = function(msg){ 
 	 
 		//加入聊天消息 
 		if(msg){
-			this.chatMessage.push(msg);
 			
 			if(type.isString(msg)){
 				this.writeDelta(msg); 
 			}
 			elseif(msg.role=="user"){ 
+				var lastastAssistant = this.lastAssistantMessage();
+				if(lastastAssistant[["content"]]){
+					lastastAssistant[["content"]] = ..string.replace(lastastAssistant[["content"]] ,"\<think\>(.+?)\</think\>","");
+				}
 				
 				if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
 					this.writeDelta('\n\n<span class="chat-role user">我</span>\n
@@ -46,6 +67,9 @@ class chat{
     				
     			this.showLoading("正在思考 ");
     		}
+    		
+    		this.chatMessage.push(msg);
+			
 		}
 		else{
 			this.writeDelta(null);  
@@ -85,14 +109,19 @@ web.form.chat() = !webFormChat.
 end intellisense*****/
 
 /*****intellisense(!webFormChat)
+enableKatex(true) = 允许解析数学公式，参数为 false 则禁用此功能（默认）。\n仅在 Win10 以上系统有效。
 started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
 clear() = 清除会话记录
 errorMessage(__/*错误信息*/) = 显示错误信息
 assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
 prompt(__/*提示词*/) = 添加并显示用户提示词
 system(__/*提示词*/) = 添加并显示系统提示词
-chatMessage = 消息队列，用于发送到 chat/completions 聊天接口。
-chatMessage.limit = 可选指定一个限制消息队列大小的数值。\nlimit 限制的队列大小不包含第一个系统提示词与最后一次抓取网址后发送的知识库。\n但其他通过抓取网址发送的知识库消息会计算在内（在页面上不显示）。
+url(__) = 获取参数 @1 指定网址的内容并转换为 Markdown 格式或者文本格式提示词。\n参数 @1 也可以指定包含 url 字段的对象，或这样的对象数组。\n参数为 包含 url 字段的对象时如果同时包含 text 字段，则直接自 text 字段获取网页文本。\n如果参数 @1 指定数组参数，则将所有数组成员作为参数获取目标内容。\n如果参数为空数组、空字符串、null 则返回 null。\n成功返回添加的提示词，失败返回  null,错误信息 。\n\n如果提前导入 web.turndown 库则支持自动转换 HTML 为 Markdown 格式文本。
+aardioSystem( = 自动创建 aardio 编程助手系统提示词。\n除函数自带的基本的 aardio 助手提示词以外，EXE 目录下必须存在待添加的文档。
+aardioSystem(.(prompt,isUser,libList,quickRef) =  增加 aardio 编程助手提示词（如果已添加则忽略）。\n如果不指定 isUser 或 isUser 为 false，\n则将参数 prompt 追加到系统提示词（不检测之前是否已添加过）。\n如果 isUser 为 true ，\n则将 prompt 作为用户提示词分析所需的文档并添加到系统提示词（不重复添加）\n如果 isUser 为 true ，不添加 prompt 本身。\n如果 prompt 为空或 null，则忽略该参数。\n如果 libList 为 true 则添加库列表\n如果 quickRef 不为 false （true 或 null）则添加语法速览文档
+aardioSystem(.(userPrompt,true) = 如果用 userPrompt 指定稍后要发送的用户提示词。\n则分析 userPrompt 关键词附加关键的 aardio 文档（不会添加 userPrompt 本身）。\n附加规则请查看此函数源码。
+findSystem(__/*模式串*/) = 使用模式匹配语法查找消息队列中是否存在指定的系统提示词
+chatMessage = 消息队列，用于发送到 chat/completions 聊天接口。\n!webRestChatMessage.
 lastMarkdown() = 获取最后一次 AI 回复的原始 Markdown 格式内容。
 lastAssistantMessage() = AI 最后一次返回的消息，如果没有则返回 null。
 getMarkdown() = 返回输出到页面的所有 Markdown 格式内容。
@@ -106,4 +135,5 @@ beforerWriteEnd = @.beforerWriteEnd = function(markdown){
 	__/*在输出完整回复以前，可在此回调中修改返回输出的全部 Markdown。\n错误输出不会触发此函数。*/
 }
 showLoading(.(title) = 显示加载动画，可选用 title 指定标题。
+showThinking(.(reasoning) = 显示推理过程，reasoning 参数指定 AI 返回的推理响应文本。
 end intellisense*****/

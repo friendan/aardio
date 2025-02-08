@@ -196,6 +196,7 @@ win\region = region 绘图区域
 winex\accObject = accObject 自动化接口
 winex\ctrl = ctrl 外部控件
 win\rt = rt 运行时
+web\rest\volcenginet = volcenginet 火山引擎
 raw\asm = asm 汇编
 raw\fasm = fasm 编译器
 raw\argsPointer = argsPointer 参数指针

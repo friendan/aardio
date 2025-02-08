@@ -26,7 +26,8 @@ download = function(url,title="下载",saveDir,extraDir,saveName,parentForm){
 	downBox.referer = self.referer;
 	downBox.userAgent = self.userAgent; 
 	
-	downBox.endProc = function(savePath){ 
+	downBox.endProc = function(savePath2){ 
+		savePath = savePath2;
 		
 		if(!extraDir){
 			var tpath = ..io.splitpath(savePath);

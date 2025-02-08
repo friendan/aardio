@@ -34,4 +34,7 @@ func main() {
 //上面的 go.main 会自动保存到文件，然后编译 Go 源码生成同名 EXE 文件
 go.buildStrip("/goRpc.go");
 
+//更新 PE 时间戳（ Go 默认不更新）
+go.updatePeTime("/goRpc.exe");
+
 console.pause();

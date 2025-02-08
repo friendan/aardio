@@ -1,0 +1,125 @@
+﻿/*
+在 aardio 开发环境内部自 IDE 插件导入 ide 库，
+不会执行下面的代码。
+
+在 ImTip 超级热键中使用以下代码导入 ide 扩展库，
+ImTip 这样的外部程序将使用 ide.command 将调用转发给 aardio 开发环境。
+
+发布 EXE 时将会忽略 ide 库。
+*/
+import ide.command;
+import win.ui.ctrl.edit;
+import winex;
+
+if(_STUDIO_INVOKED) error("禁止直接运行 ide 库！");
+
+/*
+在 ImTip 超级超键中导入 ide 库，可启用自动安装扩展库的功能。
+
+外部程序只有不在主线程中导入 ide 库，
+才会自动将 _STUDIO_INVOKED 的值设为 "external" 并启用自动安装扩展库的功能。
+*/
+if(_STUDIO_INVOKED===null){
+	if( thread.getId()!=thread.getMainId() ){
+		_STUDIO_INVOKED = "external";
+	}	
+}
+
+namespace ide;
+
+external = true;//当前进程是由外部 EXE 而不是 aardio 开发环境启动
+
+getMainHwnd = lambda() null;
+
+if(!..ide.command.joined()){
+	for hwnd,groupId in ..ide.command.each(){
+		if(hwnd == ..win.getForeground() ){
+			if( ..ide.command.join(groupId) ){
+				getMainHwnd = lambda() hwnd;	
+				break;
+			}
+		}
+	}
+	
+	if(!..ide.command.joined()){
+		for hwnd,groupId in ..ide.command.each(){
+			if(hwnd != ..win.isIconic(hwnd)){
+				if( ..ide.command.join(groupId) ){
+					getMainHwnd = lambda() hwnd;	
+					break;
+				}
+			}
+		}	
+	}
+	
+	for hwnd,groupId in ..ide.command.each(){ 
+		if( ..ide.command.join(groupId) ){
+			getMainHwnd = lambda() hwnd;
+			break;
+		} 
+	}		
+}
+
+getActiveCodeEditor = function(){ 
+	var hView = getActiveViewHwnd(); 
+	if( hView ){
+		var hEdit = ..winex.findEx(hView ,,"AardioCodeEditor.+")
+		if(hEdit){ 
+			var ctrl = ..win.ui.ctrl.edit();
+			ctrl.hwnd = hEdit;
+			return ctrl;
+		}
+	}
+}; 
+
+if(..ide.command.joined()){
+
+	self@ = {
+		
+		_get = function(name,ownerCall){
+			if(type.isString(name) && name[1]!='_'#){
+				//if(ownerCall){
+					self[name] =  function(...){ 
+						return ..ide.command.dispatchIdeCommand(name,...) 
+					};
+					
+					return self[name];	
+				//}			
+			}
+		}
+	}
+	
+	installLib = function(libName,libUrl,askTitle){
+		return importFile(libName,libUrl,askTitle:"",true);
+	};
+	
+	importFile = function(libName,libUrl,...){
+		if(libUrl===null){
+			if(_IMPORTURL[libName]){ 
+				libUrl = _IMPORTURL[libName];
+			}	
+		}
+		
+		if( ..ide.command.dispatchIdeCommand("importFile",libName,libUrl,...) ){
+		 
+			if(..io.libpath(libName)){
+				global.import(libName);
+				return true; 
+			}
+		}
+	}
+	 
+}
+else {
+
+	self@ = {
+		
+		_get = function(name,ownerCall){
+			if(type.isString(name) && name[1]!='_'#){
+				 return function(){
+				 	
+				 }	
+			}
+		}
+	}	
+}

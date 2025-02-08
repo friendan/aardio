@@ -24,8 +24,29 @@ for(i=1;10;1){
 }
 
 ```
+
+行内公式： \( 1 + 1 = 2 \) ，也可以写在一对 `$` 中间（不被推荐的写法）。
+
+行间公式：
+
+\[ 1 \quad \text{and} \quad 1 \]
+
+行间公式也可以写在一对 `$$` 中间（不被推荐的写法）。
+
 */
 
+//启用数学公式解析器
+wb.enableKatex(true);
+
+/*
+可直接写 Markdown，自动转换为网页。
+也可以写入 HTML 代码（只要写 body 内部的部分，控件已自带 Markdown 样式）。
+*/
 wb.write(markdown);
 
-win.loopMessage();
+/*
+改用 wb.writeDelta(deltaText) 则可以写入增量文本，并自动优化减少解析 Markdown 过程。
+这个函数被用于实现 AI 聊天助手的 web.form.chat 库。
+*/
+
+win.loopMessage(); 

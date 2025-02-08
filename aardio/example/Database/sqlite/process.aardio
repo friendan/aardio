@@ -24,8 +24,8 @@ db.logResponse();
 var csv = db.readAll();
 
 //解析 CSV 
-import string.database;
-var tab = string.database(",").parse( csv ); 
+import string.csv;
+var tab = string.csv(",").parse( csv ); 
 console.dumpJson(tab);
 
 */

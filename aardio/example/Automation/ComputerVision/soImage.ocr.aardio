@@ -16,7 +16,7 @@ static3={cls="static";text="字库与识别代码：";left=23;top=206;right=488;
 
 /*
 这是一个不需要第三方组件的简单 OCR 实现，仅适用于识别规则数字。
-请理解自行车里开不出航天飞机，复杂图文请改用其他 OCR 组件。
+简单 OCR 范例: doc://example/Automation/ComputerVision/soImage.ocr.example.html
 */
 
 import soImage;

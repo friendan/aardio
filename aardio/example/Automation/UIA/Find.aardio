@@ -1,0 +1,40 @@
+//UIA 查找节点
+//UIA 为 .NET 对象，请参考 .NET 相关范例与文档
+//UIA 探测工具： file://~/tools/Spy/inspect.aardio
+//使用 FlaUI 查找节点更方便: doc://example/Automation/FlaUI/FlaUI.aardio
+ 
+//运行外部程序
+import process;  
+var filepath = io.getSpecial(0x25/*_CSIDL_SYSTEM*/,"drivers\etc\HOSTS");
+process.execute("notepad.exe",{ filepath });
+
+//等待激活的窗口句柄，文本框句柄
+import winex;
+var hwnd,hEdit = winex.waitActive(,,"Notepad"
+	,"<RichEditD2DPT>|<Edit>");//模式语法：类名为 RichEditD2DPT 或 Edit
+
+//导入 .NET 类  
+import System.Windows.Automation;
+//改为 import System.Windows.Automation.3 可支持 TextPattern2 等接口，下面的代码不必更改。
+
+//访问 .NET 类的静态成员
+Automation = System.Windows.Automation;   
+
+//查找窗口。由 System.Windows.Automation.And 生成查询条件。
+var notepad = Automation.FindByAnd({
+	ClassName = "Notepad",
+	ControlType = "Window";
+}) 
+
+if(!notepad) error("未发现目标窗口"); 
+ 
+//查找写字板的编辑框。由 System.Windows.Automation.Or 生成查询条件。 
+var editBox = Automation.FindByOr({
+	ClassName = {"RichEditD2DPT","RICHEDIT50W","Edit" } 
+},notepad) 
+ 
+//自 AutomationElement 对象得到窗口句柄
+var hwnd = editBox.Current.NativeWindowHandle;//窗口句柄
+
+//UIA 节点需要通过 Current 成员访问节点属性
+print( editBox.Current.LocalizedControlType )

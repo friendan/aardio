@@ -37,7 +37,7 @@
 			this.algor = null;
 		}
 		if(#str==0){
-			error("出错了")
+			return function(){}; 
 		}
 		
 		var token = {
@@ -95,6 +95,14 @@ namespace mmseg{
 	text = $mmseg.text;
 	hasWord = $mmseg.hasWord; 
 	
+	var logBase = lambda(n,b) ..math.log(n) / ..math.log(b) 
+	llmTokens  = function(str){
+		var count = 0
+		for word,attr in each(str) count++; 
+		for p in ..string.gmatch(str ,"\p+") count++;   
+		return ..math.round( count * (1 + 0.4 / (1 +  logBase(count/200,1.5) / 15)) );
+	}
+	
 	//如果不要这些默认词库,直接删除下面的文件不影响运行
 	loadChars("~/lib/mmseg/.res/data/chars.dic");
 	loadWords("~/lib/mmseg/.res/data/words/words.dic");
@@ -119,4 +127,6 @@ mmseg.each(str) = @for word,attr in mmseg.each(__/*输入字符串，迭代变�
 mmseg.list(__/*文本*/) = 分词并返回包含分词结果的数组，\n第 2 个返回值为一个字典表，键为词，值为对应的 attr 数值。\nattr 默认值是 '@'#，汉字或标点 attr 为 0，\n英文字符 attr 为 'e'#。
 mmseg.text(.(str,space) = 分词并返回文本，使用空格将词分开。\n可选用 space 参数自定义分隔符。
 mmseg.hasWord(__/*多字词*/) = 检测词典中是否已包含参数 @1 指定的词。
+mmseg.llmTokens( = 估算文本用于调用大模型的 token 数。
+mmseg.llmTokens(.(text) = 估算参数 text 指定的文本用于调用大模型所消耗的 token 数。\n结果仅供参考。
 end intellisense**/

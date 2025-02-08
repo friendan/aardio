@@ -276,6 +276,11 @@ bkplus.__stringAlignment = {
 		left =0/*_GdipStringAlignmentNear*/ ; right = 2/*_GdipStringAlignmentFar*/;
 		center = 1/*_GdipStringAlignmentCenter*/;
 	}	
+	
+/**details(更多绘图样式与选项)
+[plus 控件](doc://library-guide/std/win/ui/ctrl/plus.md)调用 directDrawBackgroundOnly 函数也可以转换为背景贴图控件，
+不但拥有 bk,bkplus 控件的相同优势，而且支持更多的绘图样式与选项。
+end details**/
 
 /**intellisense()
 win.ui.ctrl.bkplus() = 无窗口控件,仅用于背景贴图,支持透明png图像,\n直接输出颜色或图像到窗口背景图缓存,\n因为不需要创建窗口可避免前后叠加控件后，处理不当带来的闪烁，\n适合显示静态、不会频繁变动的图像\n\nplus控件也可通过\n调用directDrawBackgroundOnly函数变为背景控件\n!winuictrlbkplus.

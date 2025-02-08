@@ -1,5 +1,5 @@
-web.view=web.view.aardio
+﻿web.view=web.view.aardio
 web.form=web.form.aardio
-driver=driver.aardio
+chrome.driver=driver.aardio
 Selenium=Selenium.aardio
 远程调试=WebSocket.aardio

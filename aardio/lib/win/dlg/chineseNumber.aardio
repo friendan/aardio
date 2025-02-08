@@ -6,7 +6,10 @@ import win.ui.tabs;
 namespace win.dlg;
 class chineseNumber{
 	ctor(parent){
-	if(!parent) parent = ..win.getForeground();;
+	if(!parent) parent = ..win.getForeground();
+	var rcCaret,oldFocus = ..winex.caret.get(parent); 
+	if(!oldFocus) oldFocus = ..winex.getFocus(parent);
+	
 	/*DSG{{*/
 	this = ..win.form(text="中文化数值";right=418;bottom=30;border="none";exmode="toolwindow";mode="popup";parent=parent;topmost=1)
 	this.add(
@@ -169,7 +172,7 @@ class chineseNumber{
     			..win.setFocus(this.oldFocus);
     			..winex.attach(this.oldFocus,false);
     		}
-        	key.sendString(text);
+        	key.sendString(text); 
     	}
 		this.close();
 	}
@@ -180,8 +183,7 @@ class chineseNumber{
 	
 	this.enableDpiScaling("init");
 	
-	var hOwner = ..win.getOwner(this.hwnd) : ..win.getForeground();
-	var rcCaret = ..winex.caret.get(hOwner); 
+	var hOwner = ..win.getOwner(this.hwnd) : ..win.getForeground();  
 	if(rcCaret){  
 		this.setPos(rcCaret.left,rcCaret.top  + (rcCaret.bottom ? rcCaret.height() : this.dpiScale(50)) );	
 	}
@@ -202,7 +204,7 @@ class chineseNumber{
 		this.setPos(x,y);
 	}
 	
-	this.oldFocus = rcCaret[["hwnd"]] : ..winex.getFocus(hOwner);
+	this.oldFocus = oldFocus;
 	this.show();
 	
 	..win.setTopmost(this.hwnd)

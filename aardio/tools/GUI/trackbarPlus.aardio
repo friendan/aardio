@@ -1,4 +1,9 @@
 //滑尺配色工具
+
+//删除配置文件并重置为默认样式
+//import fsys;
+//fsys.delete( io.appData("/aardio/trackbarPlus") );
+
 import win.ui;
 import win.ui.ctrl.pick;
 import fonts.fontAwesome;
@@ -36,8 +41,8 @@ chkFgDefault={cls="plus";text='\uF0C8 默认状态';left=175;top=61;right=258;bo
 chkFgDisabled={cls="plus";text='\uF0C8 禁用状态';left=175;top=192;right=258;bottom=218;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=24};
 chkFgFocus={cls="plus";text='\uF0C8 获得焦点';left=175;top=159;right=258;bottom=185;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=22};
 chkFgHover={cls="plus";text='\uF0C8 鼠标进入';left=175;top=94;right=258;bottom=120;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=18};
-chkLinearGradient={cls="plus";text='\uF0C8 启用线性渐变';left=48;top=716;right=168;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=54};
-chkPreviewBackground={cls="plus";text='\uF0C8 设置预览窗口背景色';left=203;top=716;right=365;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=43};
+chkLinearGradient={cls="plus";text='\uF0C8 启用线性渐变';left=32;top=716;right=152;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=54};
+chkPreviewBackground={cls="plus";text='\uF0C8 设置预览窗口背景色';left=141;top=716;right=303;bottom=742;clipBk=false;db=1;dl=1;font=LOGFONT(name='FontAwesome');notify=1;z=43};
 chkTxtActive={cls="plus";text='\uF0C8 鼠标按下';left=301;top=127;right=386;bottom=153;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=31};
 chkTxtDefault={cls="plus";text='\uF0C8 默认状态';left=301;top=61;right=386;bottom=87;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=27};
 chkTxtDisabled={cls="plus";text='\uF0C8 禁用状态';left=301;top=192;right=386;bottom=218;dl=1;dt=1;font=LOGFONT(name='FontAwesome');z=35};
@@ -71,7 +76,7 @@ if(!atom){
     win.setForeground(hwnd);
 	win.quitMessage();	
 	return;
-}
+} 
 
 import win.ui.simpleWindow;
 win.ui.simpleWindow(winform,,,24);
@@ -856,14 +861,13 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 
 winform.setIcon( hico )
 
-winform.show();
 for(name,ctrl in winform.eachControl("trackbar") ){ 
 	ctrl.oncommand ();
 }
 
 winform.btnHelp.oncommand = function(id,event){
-	import process;
-	process.openUrl("https://bbs.aardio.com/forum.php?mod=redirect&goto=findpost&ptid=11486&pid=64076")
+	import ide;
+	ide.openDocument("doc://library-guide/std/win/ui/ctrl/plus.html#trackbar")
 }
 
 winform.btnHelp.skin({
@@ -874,6 +878,8 @@ winform.btnHelp.skin({
 		hover=0xFFFF0000
 	}
 })
+
+winform.show();
 
 winform.plusPreview.redrawTransparent();
 winform.cPreviewBackground.redrawTransparent();

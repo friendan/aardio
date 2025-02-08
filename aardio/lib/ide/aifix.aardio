@@ -28,6 +28,8 @@ class aifix{
 		var replace = string.replace;
 		var count;  
 		
+		code = string.replace(code,`/\*\*(\s+<\s+\*\s+\N+>+\s+)\*/`,`/*\1*/`);
+		
 		//保护块注释（可能包含其他语言代码，例如 JavaScript）
 		code = ..string.replace(code,"(/(\*+)![^*].+?![*]\2/)",function(comment){
 				return "/*___" + ..crypt.encodeBin(comment) + "___*/";
@@ -850,6 +852,8 @@ class aifix{
 		code = replace(code,"![\w._]io\.close\(\);?",""); 
 		code = replace(code,`![\w._]execute\(\"?pause\"?\)`,"console.pause()"); 
 		
+		code = replace(code,"!\wraw\.SendMessage!\W","::User32.SendMessage"); 
+		code = replace(code,"!\wraw\.close\((\w+)\)","\1.close()"); 
 		code = replace(code,"!\wwin\.loop!\W","win.loopMessage"); 
 		code = replace(code,"!\wapp\.run!\W","win.loopMessage");
 		code = replace(code,"!\wwindow\.create!\W","win.form"); 
@@ -898,6 +902,8 @@ class aifix{
 			}
 			return a + " ** " + b;
 		}); 
+		
+		code = replace(code,`![\w._$]math\.mod\(([^,]+),([^,]+)\)`,`\1 % \2`); 
 		
 		code = replace(code,"!\wrect\s*\{(.+?)\}","::RECT(\1)");
 		

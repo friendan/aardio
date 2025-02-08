@@ -1,0 +1,79 @@
+/*
+普通窗口拖放： doc://example/Windows/Effects/DnD.aardio
+richedit 拖放： doc://example/Windows/Edit/oleCallback.aardio
+web.form 拖放： doc://example/WebUI/web.form/dnd.aardio
+web.layout 拖放： doc://example/WebUI/HTMLayout/exchange.aardio
+web.sciter 拖放： doc://example/WebUI/Sciter.JS/exchange.aardio
+文件拖放： doc://example/Windows/Effects/onDropFiles.aardio
+*/
+import win.ui;
+var winform = win.form(text="拖放演示";right=759;bottom=469)
+
+import web.view;
+var wb = web.view(winform);
+
+//导出 aardio 函数给网页调用
+wb.external = {
+    onDropText = function(text){
+        winform.text = "收到拖放的文本：" + text;
+    }
+}
+
+//创建网页
+wb.html = /*******
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        #dropZone {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        #dropZone.dragover {
+            background: #e1e1e1;
+            border-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div id="dropZone">将外部程序的文本拖放到这里</div>
+    
+    <script>
+        var dropZone = document.getElementById('dropZone');
+        
+        //阻止默认拖放行为
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', function(e) {
+            this.classList.remove('dragover');
+        });
+        
+        //处理拖放
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            //获取拖放的文本
+            var text = e.dataTransfer.getData('text');
+            if(text) {
+                this.textContent = text;
+                //调用 aardio 函数
+                aardio.onDropText(text);
+            }
+        });
+    </script>
+</body>
+</html>
+*******/
+
+winform.show();
+win.loopMessage();

@@ -1,3 +1,4 @@
 ﻿web.rest 使用指南=client.md
-
+调用 AI 大模型=aiChat.md
+调用火山引擎 API=volcengine.md
 

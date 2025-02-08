@@ -1,0 +1,20 @@
+﻿import protobuf.parser;
+import web.rest.github;
+
+namespace protobuf.parser;
+
+class github{
+	ctor(inProject,user,repos,path,branch){
+		var proto = ..web.rest.github.getContent(user,repos,path,branch)
+		if(proto){
+			return ..protobuf.parser().parse(proto,,inProject);
+		}
+	};  
+}
+
+//@guide [示例](doc://example/Network/protobuf/QuickStart.html)
+
+/*****intellisense()
+protobuf.parser.github(.(输出到到工程目录,网址) = 自指定的 GitHub 网址获取 proto 并生成 Protobuf 库。\n包含 blob,raw 的 GitHub 网址可省略域名部分。
+protobuf.parser.github(.(输出到到工程目录,用户名,仓库名,文件路径,分支名) = 自指定的 GitHub 网址获取获取 proto 并生成 Protobuf 库。\n分支名可省略。
+end intellisense*****/

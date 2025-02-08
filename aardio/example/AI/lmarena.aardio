@@ -1,0 +1,46 @@
+/*
+web.view 快速入门指南: doc://library-guide/std/web/view/_.html
+高级选项卡操作浏览器控件: doc://example/tabs/web.view.aardio
+*/
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="lmarena.ai";right=818;bottom=507)
+winform.add()
+/*}}*/
+
+import web.view; 
+var wb = web.view(winform);
+winform.show(3/*_SW_SHOWMAXIMIZED*/);
+ 
+wb.cdp("Page.enable");
+wb.cdpSubscribe("Page.javascriptDialogOpening",function(dlg){  
+	
+	//返回的函数会在 CDP 事件退出后延迟异步执行，这样可以避免 CDP 阻塞。
+	return function(){
+		wb.cdp("Page.handleJavaScriptDialog",{accept=true})
+		wb.doScript(`document.documentElement.scrollTop = document.documentElement.scrollHeight;`);
+	} 
+})
+ 
+wb.go("https://lmarena.ai/?model=claude-3-5-sonnet-20241022");
+
+//wb.waitEle2 可跨网页等待，网址变更不会退出。
+wb.waitEle2("#notice_markdown");
+wb.doScript(`document.querySelectorAll("#notice_markdown").forEach(node => {
+    node.style.display = "none";
+});`);
+
+//wb.waitEle 限制在单个网页内有效，打开其他网页则会取消等待。
+wb.waitEle("#leaderboard_markdown",`
+document.querySelectorAll("#leaderboard_markdown").forEach(node => {
+    node.style.display = "none";
+});`); 
+ 
+wb.waitEle("#ack_markdown",`
+document.querySelectorAll("#ack_markdown").forEach(node => {
+    node.style.display = "none";
+});`);
+
+wb.waitEle("footer","this.style.display='none'");
+
+win.loopMessage();

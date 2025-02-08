@@ -72,26 +72,32 @@ GetXPath = function(node){
 	var shortXPath = ..string.match(xpath,"/[^/]+$");
 	var property = 0;
 	
-	var name =  node.Name; 
-	if(#name && #name < 50 /*&& !..string.find(name,"\s")*/ ){
-		xpath = xpath + `[@Name="` + name + `"]`;
-		if(shortXPath) shortXPath = shortXPath + `[@Name="` + name + `"]`;
-		property++;
-	}
-	
 	var aid = node.AutomationId;
 	if(#aid){
 		xpath = xpath + `[@AutomationId="` + aid + `"]`;
-		if(shortXPath) shortXPath = shortXPath + `[@AutomationId="` + aid + `"]`;
+		if(shortXPath) {
+			shortXPath = ..string.replace(shortXPath,"%\[\]$","");
+			shortXPath = shortXPath + `[@AutomationId="` + aid + `"]`;
+		}
 		property++;
 	} 
-	
-	var cls = node.ClassName;
-	if(#cls){
-		xpath = xpath + `[@ClassName="` + cls + `"]`;
-		if(shortXPath) shortXPath = shortXPath + `[@ClassName="` + cls + `"]`;
-		property++;
-	} 
+	else{ 
+		var name =  node.Name; 
+		if(#name && #name < 50 /*&& !..string.find(name,"\s")*/ ){
+			xpath = xpath + `[@Name="` + name + `"]`;
+			if(shortXPath) shortXPath = shortXPath + `[@Name="` + name + `"]`;
+			property++;
+		}
+		
+		
+		
+		var cls = node.ClassName;
+		if(#cls){
+			xpath = xpath + `[@ClassName="` + cls + `"]`;
+			if(shortXPath) shortXPath = shortXPath + `[@ClassName="` + cls + `"]`;
+			property++;
+		} 
+	}
 	
 	if(shortXPath){
 		shortXPath = "/" + shortXPath;

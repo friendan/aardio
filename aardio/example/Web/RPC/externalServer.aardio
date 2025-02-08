@@ -28,7 +28,7 @@ externalServer.external = {
  
 //可选用下面的方法限定只有下面允许的外部域名才能访问 aardio 函数
 externalServer.accessControlAllowOrigin = {
-    ["https://d.aardio.com"] = true //指定准确前缀，域名后不要加斜杆
+    ["https://d.aardio.com"] = true //指定准确前缀，域名后不要加斜杠
 }
 
 //如果不指定端口号，则默认动态分配空闲的端口号

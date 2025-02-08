@@ -1,4 +1,8 @@
 ﻿//COM 接口 - 修改集合值
+/*
+调用 Word VBA: doc://example/Languages/VBA%20JSA/Word.html
+web.view 预览 Word 文档:  doc://example/WebUI/web.view/OtherApps/docx.html
+*/
 import console.int; 
 import com.doc;
 

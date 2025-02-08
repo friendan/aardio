@@ -64,6 +64,8 @@ namespace command {
 		}
 	}
 	
+	joined = lambda() !!__groupName__;
+	
 	join = function(name,size=0x100000){  
 		for(i=1;5;1){
 			if( joinTest(name,size) ){
@@ -82,6 +84,38 @@ namespace command {
 		error( ..string.concat("注册进程群组时遇到错误"
 			,'\r\n',err," ->",..table.tostring(dbg)),2);
 	}
+	
+	each = function(){
+		 
+		var aardioWindows = {}
+		for hwnd in ..win.eachChild(,"Afx\:[\x\:]+") {	
+			if(..win.findEx(hwnd,,"MDIClient")){
+				var tid,pid =  ..win.getThreadProcessId( hwnd );
+				var gId = ..string.concat( "{5D345FB2-C8CC-4EA6-B762-FCB2A40CE799}.aardio.ide[" + pid + "]");
+				var mutex = ..process.mutex(gId + ".mutex"); 
+				
+				if(mutex){
+					if(mutex.conflict){
+						..table.push(aardioWindows,{
+							hwnd = hwnd;
+							gId = gId;
+						})
+					}
+					
+					mutex.close()
+				} 
+			}
+		}
+ 		
+ 		var i,v;
+ 		return function(){
+ 			i,v = ..table.next(aardioWindows,i);
+ 			if(v){
+ 				return v.hwnd,v.gId
+ 			}
+ 		} 
+	}
+	
 	
 	pushReturnValue = function(v){
 		if(! mutex.waitOne() ) return;
@@ -209,8 +243,9 @@ namespace command {
 }
 
 /**intellisense() 
-ide.command = 只允许在ide扩展库、以及IDE启动触发器init.aardio中使用\n用于避免在IDE中因为导入ide接口而无法支持 process.command
-ide.command.join(.("群组GUID") = 加入进程群组\n使用GUID区分不同的进程分组\n同一线程应当且必须在定义或发送进程命令前调用该函数一次,\n同一线程可多次调用该函数,但参数必须相同\n成功返回true
+ide.command = 只允许在 ide 扩展库、以及IDE启动触发器 init.aardio 中使用。\n用于避免在 IDE 中因为导入ide接口而无法支持 process.command
+ide.command.joined() = 进程是否已加入进程命令群组。
+ide.command.join(.("群组ID") = 加入进程命令群组。\n使用群组 ID 区分不同的进程命令分组。\n同一线程应当且必须在定义或发送进程命令前调用该函数一次，\n同一线程可多次调用该函数，但参数必须相同。\n成功返回true。\n试图加入不同的群组会抛出异常。\nide.command 不能与 process.command 使用相同的群组 ID。
 ide.command.sendPid(.(目标进程ID,"命令函数名",其他参数) = 阻塞调用跨进程命令,\n可获取回调函数的数值返回值,默认返回null
 ide.command.post(.("命令函数名",其他参数) = 非阻塞调用跨进程命令,无返回值\n此函数需要创建线程调用send函数,不适合频繁调用\n异步命令如果尚未发出前,发送线程如果立即退出会导到命令发送失败
 ide.command.invoke(.("命令函数名",其他参数) = 非阻塞调用跨进程命令,支持返回值
@@ -223,4 +258,7 @@ ide.command() = !ide_command.
 	__/*支持不定个数参数\n返回值可阻止命令继续传递*/
 }
 !ide_command._form = 窗体对象\n!winform.
+ide.command.each() = @for hwnd,groupId in ide.command.each(){
+	__/*遍历 aardio 开发环境主窗口。\nhwnd 为主窗口句柄，groupId 为 ide.command 进程群组 ID。*/
+}
 end intellisense**/

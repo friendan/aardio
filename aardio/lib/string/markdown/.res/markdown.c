@@ -1637,6 +1637,7 @@ parse_listitem(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t s
 	struct buf *work = 0, *inter = 0;
 	size_t beg = 0, end, pre, sublist = 0, orgpre = 0, i;
 	int in_empty = 0, has_inside_empty = 0, in_fence = 0;
+	size_t fenceTagLengh = 0;
 
 	/* keeping track of the first indentation prefix */
 	while (orgpre < 3 && orgpre < size && data[orgpre] == ' ')
@@ -1686,8 +1687,16 @@ parse_listitem(struct buf *ob, struct sd_markdown *rndr, uint8_t *data, size_t s
 		pre = i;
 
 		if (rndr->ext_flags & MKDEXT_FENCED_CODE) {
-			if (is_codefence(data + beg + i, end - beg - i, NULL, NULL) != 0)
+			if (is_codefence(data + beg + i, end - beg - i, NULL,&fenceTagLengh ) != 0){
 				in_fence = !in_fence;
+
+				if(in_fence){
+					in_empty = 1; //列表项紧接 ```前面不需要空行
+				}
+				else{
+					fenceTagLengh = 0;
+				}
+			}
 		}
 
 		/* Only check for new list items if we are **not** inside

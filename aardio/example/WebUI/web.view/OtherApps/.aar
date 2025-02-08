@@ -11,3 +11,5 @@ Cesium 三维地图=Cesium.aardio
 KaTeX 公式=katex.aardio
 Mermaid 绘图=mermaid.aardio
 PDF=pdf.aardio
+Word 文档=docx.aardio
+JSON 编辑器=json-editor.aardio

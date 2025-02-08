@@ -791,14 +791,12 @@ namespace win.form{
  	        }
  	        
  	        if(this[["(__continueModal)"]]){
- 	        	var hwndOwner = ..win.getOwner(this.hwnd);	
+				var hwndOwner = ..win.getOwner(this.hwnd);	
  	        	if(hwndOwner){
  	        		..win.enable(hwndOwner,1/*_TRUE*/); 
 					..win.setActive(hwndOwner);
  	        	}
- 	        }
- 	        
- 	        this[["(__continueModal)"]] = null;
+ 	        } 
  	   };
  	   [0x110/*_WM_INITDIALOG*/] = function(this,hwnd, message, wParam, lParam){
  	   		this.enableDpiScaling("init")
@@ -938,7 +936,19 @@ namespace win.form{
 			if( this[["_atomId"]] ){ 
 				this.atom(false);//释放实例占用原子
 			} 
-			this[["(__continueModal)"]] = null;//退出模态循环 
+			
+			if(this[["(__continueModal)"]]){
+				var hwndOwner = ..win.getOwner(this.hwnd);	
+ 	        	if(hwndOwner){
+ 	        		..win.enable(hwndOwner,1/*_TRUE*/); 
+					..win.setActive(hwndOwner);
+ 	        	}
+ 	        	
+				//退出模态循环，必须发送 _WM_NULL 退出 win.pumpMessage
+				this[["(__continueModal)"]] = null;
+				::User32.PostMessage(0,0/*_WM_NULL*/,0,0);
+ 	        } 
+			
 			
 			_forms[hwnd] = null;  
 			
@@ -1216,6 +1226,10 @@ namespace win.form{
  	   				var minMaxInfo = owner.getMinMaxInfo();
  	   				if(minMaxInfo) ..win.setPos(owner[["hwnd"]],,,minMaxInfo.maxSize.x,minMaxInfo.maxSize.y);  
  	   			}
+ 	   			
+ 	   			if(owner.hasDirectDrawBackground()){
+ 	   				owner.redrawBackground();
+ 	   			}
 			};
 			doModal = function(hwndOwner,swFlags){ 
 			
@@ -1241,8 +1255,9 @@ namespace win.form{
 					}
 				}
 				
-				while(owner[["(__continueModal)"]])   
+				while(owner[["(__continueModal)"]]){
 					..win.pumpMessage(); 
+				}
 				 
 				if( hwndOwner ) { 
 					..win.enable(hwndOwner,1/*_TRUE*/); 

@@ -1,9 +1,9 @@
-//string.database 库 - 读写 CSV 文件
+//string.csv 库 - 读写 CSV 文件
 import console;
-import string.database;
+import string.csv;
 
 //创建 CSV 数据库对象
-var csv = string.database(",");
+var csv = string.csv(",");
 
 //CSV 格式测试数据
 var txt = /*

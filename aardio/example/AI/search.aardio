@@ -1,0 +1,46 @@
+//AI 搜索
+import console.int; 
+console.showLoading(" Thinking ");
+
+//创建 AI 客户端
+import web.rest.aiChat;
+var aiClient = web.rest.aiChat(   
+	key = "***************";//获取 Key https://platform.deepseek.com
+	url = "https://api.deepseek.com/v1";//大模型接口地址，兼容 OpenAI 或 Anthropic  聊天接口
+	model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+	temperature = 0.1;//温度
+	maxTokens = 1024,//最大回复长度
+)
+
+//创建对话消息队列
+var msg = web.rest.aiChat.message();
+
+//导入 AI 搜索接口 doc://library-guide/std/web/rest/aiChat.html#search
+import web.rest.jsonClient; 
+var exaClient = web.rest.jsonClient(); 
+exaClient.setHeaders({ "x-api-key":"接口密钥"} )
+var exa = exaClient.api("https://api.exa.ai/");
+
+//搜索网页
+var searchData,err = exa.search({
+    query:"DeepSeek 有哪些成就", 
+    contents={text= true}
+    numResults:2,
+    searchType:"keyword"
+})
+ 
+//将搜索结果添加到系统提示词
+msg.url(searchData[["results"]])
+
+//添加用户提示词
+msg.prompt( "DeepSeek 有哪些成就" );
+
+//4. 第四步：发送请求，调用聊天接口。
+//--------------------------------------------------------------------- 
+var resp,err = aiClient.messages(msg,
+	function(deltaText){ 
+		console.writeText(deltaText) 
+	}
+);
+
+console.error(err);

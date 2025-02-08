@@ -1,12 +1,18 @@
-﻿//message 聊天消息
-import web.rest.aiChat;
+//message 聊天消息
+import win.version;
+import string.html;
 
 namespace web.rest.aiChat;
 
 class message{
-	ctor( /*输入构造函数所需要的参数*/ ){
+	ctor( messages ){
 		this = ..table.array();
 		this.limit = 15;
+		
+		if(#messages) {
+			..table.append(this,messages);
+			this.limit = 0;
+		} 
 	};
 	push = function(msg){  
 		if(type.isString(msg)){
@@ -36,10 +42,8 @@ class message{
 					if(msg.role=="system" ){
 						//优先移除插入的知识库
 						..table.remove(this,i);
-						console.log("remove",i)
 						i--;
 					}
-						
 				}
 				
 				if( (#this-2)>=this.limit ){
@@ -51,15 +55,57 @@ class message{
 			..table.push(this,msg); 
 		} 
 	}
-	system = function(content){
-		this.push(
-    		{ 
-        		role = "system"; 
-        		content  = content;
-    		}
-		);
+	aardioSystem = function(prompt,isUserPrompt){
+		var p = "";
+		
+		if(!this.aardioSystemPrompt){
+			p = p ++ aardioSystemPrompt;
+			
+			var qr = ..string.load("~\doc\guide\language\syntax-quick-ref.md");
+			if(qr){
+				p = p + '\r\n\r\n---\r\n\r\n' + qr;
+			}	
+			
+			p = p ++ '\r\n\r\n---\r\n\r\n## 当前运行环境\r\n- 当前 aardio 主版本号为：' + _AARDIO_VERSION;
+			p = p ++ '\r\n- 当前时间为：' + tostring(..time());
+			p = p ++ '\r\n- 当前应用程序根目录为："' + ..io.fullpath("/") + '"';
+			p = p ++ '\r\n- 当前进程 EXE 目录为："' + ..io._exedir + '"';
+			p = p ++ '\r\n- 当前进程 EXE 执行文件名为："' + ..io._exefile + '"';
+			p = p ++ '\r\n- 当前操作系统为："' + ..win.version.format() + '"';
+
+			this.aardioSystemPrompt = true; 
+		}
+
+		if(#prompt){ 
+			if(!isUserPrompt){ 
+				p = p + '\r\n\r\n---\r\n\r\n' + prompt;
+			}
+		}
+
+		if(#p) this.system(p);
+	} 
+	findSystem = function(pattern){
+		 
+		for(i=1;#this;1){
+			var msg = this[i]
+			if(msg[["role"]]=="system"){
+				if(msg.content && ..string.find(msg.content,pattern) ){
+					return msg.content;
+				}
+			}
+		} 
 	};
-	prompt = function(content){
+	system = function(content){ 
+		if(#content){
+			this.push(
+    			{ 
+        			role = "system"; 
+        			content  = content;
+    			}
+			);			
+		} 
+	};
+	prompt = function(content){ 
 		this.push(
     		{ 
         		role = "user"; 
@@ -70,29 +116,113 @@ class message{
 	assistant = function(content){
 		this.push(content);
 	};
+	url = function(url){
+		var sysMsg = "";
+		
+		if(type(url)!="table" || url[["url"]]) url = {url};
+		
+		for(i=1;#url;1){ 
+			var md,err,u = httpGet(url[i]);
+			if(!md) continue;
+			
+			sysMsg = sysMsg + '\r\n\r\n用户输入的参考网址：' + u 
+				+  '\r\n\r\n下面是自该网址获取的' +(!err?" Markdown ":"文本")+'格式内容：'
+				+  '\r\n\r\n' + md +'\r\n\r\n------------------------\r\n\r\n'	 
+		} 
+		
+		if(!#sysMsg) return null,err;
+		this.system(sysMsg);
+		return sysMsg;  
+	};
 	clear = function(){  
 		for(i=#this;1;-1){
 			..table.remove(this,i);
 		}
+		
+		this.aardioSystemPrompt = null;
 	};
 	started = function(){  
 		for(i=1;#this){ 
 			if(this[i][["role"]]!="system"){
 				return true;
 			} 
-		} 
+		}   
 	};
 }
 
 /*****intellisense()
-web.rest.aiChat.message() = 创建 AI 聊天助手消息队列\n!webRestChatMessage.
+web.rest.aiChat.message() = 创建 AI 聊天助手消息队列。\n可选用参数 @1 指定初始化消息数组。\n可以在界面线程单独创建与管理消息队列，\n然后再通过线程参数发给后台线程的 web.rest.aiChat 对象。\n!webRestChatMessage.
 end intellisense*****/
 
 /*****intellisense(!webRestChatMessage)
 started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
-clear() = 清除会话记录
+clear() = 清除会话记录。
 assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
-prompt(__/*提示词*/) = 添加并显示用户提示词
-system(__/*提示词*/) = 添加并显示系统提示词
+prompt(__/*提示词*/) = 添加并显示用户提示词。
+system(__/*提示词*/) = 添加并显示系统提示词。
+url(__) = 获取参数 @1 指定网址的内容并转换为 Markdown 格式或者文本格式提示词。\n参数 @1 也可以指定包含 url 字段的对象，或这样的对象数组。\n参数为 包含 url 字段的对象时如果同时包含 text 字段，则直接自 text 字段获取网页文本。\n如果参数 @1 指定数组参数，则将所有数组成员作为参数获取目标内容。\n如果参数为空数组、空字符串、null 则返回 null。\n成功返回添加的提示词，失败返回  null,错误信息 。\n\n如果提前导入 web.turndown 库则支持自动转换 HTML 为 Markdown 格式文本。
+aardioSystem( = 自动创建 aardio 编程助手系统提示词。\n除函数自带的基本的 aardio 助手提示词以外，EXE 目录下必须存在待添加的文档。
+aardioSystem(.(prompt,isUser) =  增加 aardio 编程助手提示词（如果已添加则忽略）。\n如果不指定 isUser 或 isUser 为 false，\n则将参数 prompt 追加到系统提示词（不检测之前是否已添加过）。
+aardioSystemPrompt = 是否自动附加了 aardio 编程助手系统提示词。\n不可手动修改此属性。
 limit = 可选指定一个限制消息队列大小的数值。\nlimit 限制的队列大小不包含第一个系统提示词与最后一个系统提示词。
+findSystem(__/*模式串*/) = 使用模式匹配语法查找消息队列中是否存在指定的系统提示词
 end intellisense*****/
+
+namespace message{
+	aardioSystemPrompt = $"~\lib\web\rest\aiChat\.res\aardio.md";
+	
+	httpGet = function(url){
+
+		if(type(url)==="table" && #url){
+			url = url[1];
+			url = url[["url"]] || url;
+			if(url && ..string.find(url,"(https?\://<www\.>?aardio\.com/zh\-cn/doc/?$") ){
+				url = url[2] || url;
+			}
+		}
+		
+		var snippet;
+		if(url[["url"]]){
+			if(url[["text"]]){
+				return url[["text"]],"text",url[["url"]];
+			}
+			
+			snippet = url[["snippet"]];
+		}
+		
+		url = url[["url"]] || url;
+		if(!#url) return; 
+ 	
+		var docUrl = ..string.match(url,"(https?\://<www\.>?aardio\.com/zh\-cn/doc/\S+)\.<html.md>|<html>")
+		if( docUrl ){
+			url = docUrl + ".html.md"; 
+			var r,e = ..inet.http.get(url);
+			if(r) return r,,url; 	
+			return null,e;
+		}
+		else{ 
+			var html,err = ..inet.http.get(url);
+			if(html){ 
+				if(!_WIN10_LATER || !..web[["turndown"]]) return ..string.html.toText(html),"text",url;
+				
+				var md; 
+				try { 
+					var turndownService = ..web.turndown.default();
+					md = turndownService.turndown( 
+						html
+					); 
+				} 
+				catch(e){
+					err = e;
+				}
+				
+				if(#md) return md,,url 
+			}
+			
+			if(snippet){
+				return snippet,"text",url;
+			}
+			return null,err;	
+		}
+	}
+}

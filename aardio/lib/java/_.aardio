@@ -4,6 +4,8 @@ import process.popen;
 import string.cmdline;
 import string.encoding;
 
+var __javaTable__ = ..java;
+
 class java{
 
 	ctor (...){  
@@ -392,7 +394,14 @@ class java{
 	__jvm_init__(this) and null;
 }
 
+if( __javaTable__ ) ..table.mix( java/*class*/,__javaTable__/*table*/);
+
 import java.path;
+/*
+import java.jdk.v8;
+import java.jre.v8;
+*/
+
 namespace java {  
 	encoding = "utf-8";
 	

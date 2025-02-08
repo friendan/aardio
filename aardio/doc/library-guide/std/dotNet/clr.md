@@ -81,7 +81,7 @@ aardio + .NET 开发有更好的兼容性，对 .NET 版本没有严格要求，
 自 .NET Framework 4.6.1 起支持 NET Standard  2.0，
 但实际上  NET Standard  2.0 推荐的最低版本是 .NET 4.7.2 。  
 
-### 各操作系统自带 .NET 版本
+### 各操作系统自带 .NET 版本 
 
 - Windows 7 自带 .NET 3.5.1，支持 lambda
 - Windows 8 自带 .NET 3.5.1 + .NET 4.5 

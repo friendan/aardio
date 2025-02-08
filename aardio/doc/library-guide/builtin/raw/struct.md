@@ -378,3 +378,43 @@ console.dumpJson(rawArray2);
 console.pause();
 ```
 
+## 内置结构体定义
+
+aardio 已在内置模块 [builtin.struct](doc://library-reference/builtin/struct.html) 内预定义以下结构体为 [保留常量](../../../language-reference/variables-and-constants.md#reserved-constant)，全局有效可直接使用。
+
+
+```aardio
+class ::POINT {
+   ctor(x=0,y=0){
+      this.x = x;
+      this.y = y;
+   } 
+   int x ; 
+   int y ;
+}
+
+class ::SIZE {
+    ctor(cx=0,cy=0){
+      this.cx = cx;
+      this.cy = cy;
+    }
+    int cx;
+    int cy;
+} 
+
+class ::RECT {
+    ctor(left=0,top=0,right=0,bottom=0){
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom; 
+    } 
+    int left;
+    int top;
+    int right;
+    int bottom;
+}
+
+```
+
+`::RECT` 结构体定义了很多方法，请查看库参考文档。

@@ -1,0 +1,141 @@
+﻿import win;
+import com.interface;
+
+namespace  com.interface;
+
+class IDataObject{
+	ctor(ptr){
+		if(type(ptr)==type.pointer){
+			return ..com.interface(ptr,"IDataObject");
+		}
+		
+		this = ..com.interface.IUnknown();
+	}; 
+	pointer $GetData = "int(struct formatetcIn,struct &medium)";
+	pointer GetDataHere = "int(struct formatetc,struct &medium)";
+	pointer $QueryGetData = "int(struct formatetc)";
+	pointer GetCanonicalFormatEtc = "int(struct formatectIn,struct formatetcOut)";
+	pointer SetData = "int(struct formatetc,struct medium, bool fRelease)";
+	pointer EnumFormatEtc = "int( INT dwDirection, ptr &ppenumFormatEtc)";
+	pointer DAdvise = "int( ptr formatetc,INT advf,ptr pAdvSink,INT &pdwConnection)";
+	pointer DUnadvise = "int(INT dwConnection)";
+	pointer EnumDAdvise = "int(ptr ppenumAdvise)";  
+	
+	queryGetData = function(arg1){ 
+		var formatetc = arg1;
+		if(!formatetc[["_struct"]]) {
+			formatetc = FORMATETC();
+			if(type(arg1)=="number") formatetc.format = arg1;
+			else ..table.assign(formatetc,arg1);
+		}
+		 
+		return owner.$QueryGetData(formatetc) == 0/*_S_OK*/; 
+	}
+	
+	isText = lambda() owner.queryGetData(0xD/*_CF_UNICODETEXT*/); 
+	isFile = lambda() owner.queryGetData(0xF/*_CF_HDROP*/); 
+	isHtml = lambda() owner.queryGetData(CF_HTML); 
+	isUrl = lambda() owner.queryGetData(CF_URL); 
+	
+	getData = function(arg1){
+		var formatetc = arg1;
+		if(!formatetc[["_struct"]]) {
+			formatetc = FORMATETC();
+			if(type(arg1)=="number") formatetc.format = arg1;
+			else ..table.assign(formatetc,arg1);
+		}
+		
+		var medium = STGMEDIUM();
+		var hr = owner.$GetData(formatetc,medium); 	
+	
+		if( hr == 0/*_S_OK*/){
+			return medium;
+		}
+	}
+	
+	getText = function(format){
+		var medium = owner.getData(format || 0xD/*_CF_UNICODETEXT*/);
+		
+		if( medium ? medium.tymed == 1/*_TYMED_HGLOBAL*/){
+			var ptr = ::GlobalLock(medium.hGlobal);
+        	if(ptr){
+            	var str = ..string.fromUtf16(ptr,,-1);
+            	::GlobalUnlock(medium.hGlobal); 
+            	if(!medium.unkForRelease) ::Kernel32.GlobalFree(medium.hGlobal);
+            	return str;
+        	} 
+        }
+    }
+    
+    getDropFile = function(finish){
+		var medium = owner.getData(0xF/*_CF_HDROP*/); 
+		if(medium ? medium.tymed == 1/*_TYMED_HGLOBAL*/){
+			return ..win.getDropFile(medium.hGlobal); 
+        }
+    } 
+    
+    getHtml = function(){
+    	var cbData = owner.getText(CF_HTML);
+    	if(cbData){
+    		var startHTML = ..string.match(cbData ,"StartHTML\:(\d+)")
+			var headstr = ..string.slice(cbData ,1,tonumber(startHTML,10)-1);
+
+			var head = {}
+   	    	for k,v in ..string.gmatch(headstr ,"([^\:\r\n]+)\:([^\r\n]+)") { 
+   	    		if( ..string.match(v,"^\d+$") ) v = tonumber(v,10)
+   	    		head[k] = v;
+   	    	}
+   	    	
+   	    	if(head.StartHTML===null)return false;
+   	    	if(head.StartFragment===null)return false;
+		  
+   	    	var html = ..string.slice(cbData ,head.StartHTML+1,head.EndHTML);
+   	    	var fragment =  ..string.slice( cbData ,head.StartFragment+1,head.EndFragment);
+   	    	return fragment,html	
+    	}
+    } 
+    
+    getUrl = function(){
+    	return owner.getText(CF_URL);
+    }
+} 
+
+namespace IDataObject{
+	
+	IID = "{0000010e-0000-0000-c000-000000000046}";
+	CF_HTML = ::User32.RegisterClipboardFormat("HTML Format"); 	
+	CF_URL = ::User32.RegisterClipboardFormat("UniformResourceLocatorW");
+
+	class FORMATETC{
+    	INT format;
+    	pointer ptd;
+    	INT aspect = 1/*_DVASPECT_CONTENT*/;
+    	int lindex = -1;
+    	INT tymed = 1/*_TYMED_HGLOBAL*/;
+	}
+	
+	class STGMEDIUM {
+    	INT tymed;
+    	pointer hGlobal;
+    	pointer unkForRelease;
+	}
+} 
+    
+/*****intellisense()
+com.interface.IDataObject(__) = 如果参数 @1 指定接口指针，则返回接口对象，\n否则返回接口声明类。
+com.interface.IDataObject() = !stdIDataObject.
+end intellisense*****/
+
+/*****intellisense(!stdIDataObject)
+queryGetData(__/*FORMATETC*/) = 检查是否可获取指定类型数据。\n参数 @1 可指定 FORMATETC 结构体，\n也可传入仅指定 FORMATETC 的部分字段的表，\n或者传一个仅指定该结构体 format 字段的的数值参数。\n细节请参考 FORMATETC 结构体文档。
+getData(__/*FORMATETC*/) = 获取数据\n参数 @1 可指定 FORMATETC 结构体，\n也可传入仅指定 FORMATETC 的部分字段的表，\n或者传一个仅指定该结构体 format 字段的的数值参数。\n成功返回 STGMEDIUM 结构体。\n细节请参考相关结构体文档以及库源码。
+getDropFile() = 获取拖放文件，返回数组。\n可选用参数指定是否结束拖放（默认为 true ）.
+getText() = 返回文本。\n可选用参数指定格式，默认为 _CF_UNICODETEXT 。
+getHtml() = 成功返回两个返回值 fragment，html 。\n分别为 HTML 复制片段以及完整 HTML。
+getUrl() = 返回超链接。
+isText() = 是否文本数据 。
+isFile() = 是否文件 。
+isHtml() = 是否 HTML 。
+isUrl() = 是否超链接。
+end intellisense*****/
+

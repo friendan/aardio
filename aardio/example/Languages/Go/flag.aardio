@@ -51,7 +51,7 @@ import console.int;
 import process.popen;
 import process.job.limitKill;
 
-//打开 Go 进程返回管道对象，路径首字符为单个斜杆或反斜杆表示应用程序根目录。
+//打开 Go 进程返回管道对象，路径首字符为单个斜杠或反斜杠表示应用程序根目录。
 var prcs,err = process.popen("/.go/flag.exe",{
 	"--num":123;
 	"--url":"https://example.com"

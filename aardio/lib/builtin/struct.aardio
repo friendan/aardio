@@ -193,3 +193,42 @@ class ::RECT {
 !size.cy = 高
 ::OffsetRect(.(rc,dx,dy) = 移动矩形框，\n此函数已废弃，请直接调用 rc.offset 函数
 end intellisense**/
+
+/**details(结构体定义)
+
+aardio 已默认定义以下结构体：
+
+```aardio
+class ::POINT {
+   ctor(x=0,y=0){
+      this.x = x;
+      this.y = y;
+   } 
+   int x ; 
+   int y ;
+}
+
+class ::SIZE {
+	ctor(cx=0,cy=0){
+      this.cx = cx;
+      this.cy = cy;
+	}
+	int cx;
+	int cy;
+} 
+
+class ::RECT {
+	ctor(left=0,top=0,right=0,bottom=0){
+  		this.left = left;
+  		this.top = top;
+  		this.right = right;
+  		this.bottom = bottom; 
+	} 
+	int left;
+	int top;
+	int right;
+	int bottom;
+	@_meta;
+}
+```
+end details**/

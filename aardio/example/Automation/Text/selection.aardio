@@ -1,19 +1,91 @@
-//自动化 - 获取选区文本
+//自动化 - 获取选区文本查单词
+//获取选区在线查单词: doc://library-guide/std/key/hotkey.html#web.view
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="当前焦点窗口选区文本";left=-2;right=448;bottom=354)
+var winform = win.form(text="超级热键 - 获取选区文本查单词")
 winform.add(
-edit={cls="richedit";left=11;top=11;right=436;bottom=340;db=1;dl=1;dr=1;dt=1;edge=1;multiline=1;z=1}
+edit={cls="edit";left=32;top=35;right=725;bottom=414;edge=1;multiline=1}
 )
 /*}}*/
 
-import winex.selection;
-winform.setInterval( 
-	function(){
-		winform.edit.text = winex.selection.get(true);
-	},900
-)
+import winex.tooltip;
+import winex.selection; 
+import winex.caret;
+import key.hotkey;
 
-winform.transparent(188);
-win.setTopmost(winform.hwnd); 
+superHotkey = key.hotkey();
+superHotkey.loadTable({
+	
+	// 按 Ctrl + Shift + I 触发热键
+	["Ctrl+Shift+I"] = function(hFocus){
+		
+		//获取当前选区文本
+		var txt = winex.selection.get(true);
+		if(!#txt) return true;//选区文本为空，继续发送按键
+			
+		//本地英中翻译查词
+		import string.words;
+		var cn,en = string.words(txt) 
+		if(cn){
+			var x,y = winex.caret.getPos();  
+			winex.tooltip.popup(cn,x,y - 50); 
+		}
+		
+		//朗读单词
+		if(en){
+			//用 := 操作符避免重复创建控件
+			wmPlayer := com.CreateObject("WMPlayer.OCX"); 
+			wmPlayer.url = "https://dict.youdao.com/dictvoice?audio="+txt+"&type=2";
+			
+			return;	
+		} 
+		
+		//如果不包含空格分隔的英文单词则退出
+		if(!string.find(txt,"\a+\s+\a+")){
+			return true;
+		} 
+		
+		//创建多线程以执行耗时操作，以避免阻塞键盘钩子消息导致热键失效。
+		thread.invoke( 
+			function(txt){ 
+				import web.rest.aiChat;
+				import key;
+
+				var ai = web.rest.aiChat(
+					key = "sk-请修改密钥";
+					url = "https://api.deepseek.com/v1";//接口地址
+					model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+					temperature = 0.5;//温度
+					maxTokens = 1024,//最大回复长度
+				)
+
+				//创建 AI 会话消息队列 
+				var msg = web.rest.aiChat.message();
+
+				//添加系统提示词
+				msg.system("你是一个翻译助手，如果用户输入主要为中文请翻译为英文，反之则将输入翻译为英文。")
+
+				//添加用户提示词
+				msg.prompt("请翻译:"+txt);
+				
+				//获取文本选区坐标
+				import winex.caret;
+				var x,y = winex.caret.getPos(,-50);
+
+				import winex.tooltip;
+				var ok,err = ai.messages(msg,function(delta){ 
+					
+					//增量显示屏幕提示
+					if( winex.tooltip.popupDelta(delta,x,y ) ){
+						thread.delay(3000);//已完成输出，延时避免线程退出导致提示立即关闭。
+					} 
+				} ); 
+				
+				//显示错误信息
+				if(err)winex.tooltip.popupDelta(err,x,y ) 
+			},txt
+		) 
+	}
+})
+
 win.loopMessage();

@@ -1,122 +1,62 @@
-﻿//aardio 通过 .NET 调用 UWP 接口 
+﻿//aardio 通过 .NET 调用 WinRT / UWP 接口 
 //标准库 dotNet.ocr, 扩展库 dotNet.toastListener 都运用了以下方法编译 DLL 。
-import dotNet.uwpCompiler  
+//调用 UWP / WinRT 接口 doc://library-guide/std/dotNet/_.html#uwp
+import console.int;
+import dotNet.uwpCompiler;
 
 /*
-如果参数@2 未指定 Windows.winmd，默认在 C:\Program Files (x86)\Windows Kits\10\UnionMetadata 
-最新版本SDK目录下查找此文件，生成的DLL程序集并不依赖 Windows.winmd 文件，仅编译时需要。
+创建启用 WinRT / UWP 接口的 .NET 编译器，
+请先安装 Windows 10 SDK，或用参数 @2 指定 WinRT 元数据文件 Windows.winmd 的路径。
+调用编译后的 DLL 不需要 Windows.winmd ，仅编译时需要。
 */
-var uwpCompiler = dotNet.uwpCompiler( "\ocr.dll" )//"~\lib\dotNet\ocr\.res\ocr.dll" 
-
-//启用编译优化
+var uwpCompiler = dotNet.uwpCompiler("/aardio.WindowsRuntime.dll")
 uwpCompiler.Parameters.CompilerOptions = "/optimize"
- 
-//设置待编译C#源码
-uwpCompiler.Source = /****** 
-using System;
-using System.Reflection; 
-using System.Collections; 
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks; 
-using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using System.Runtime.InteropServices;
-using Windows.Media.Ocr;
 
-namespace aardio  
-{ 
-	public class UwpOcrResult
-	{
-	
-    	public UwpOcrResult(OcrResult ocrRet)
-    	{
-        	ocrResult = ocrRet; 
+//C# 源代码
+uwpCompiler.Source = /****** 
+using System; 
+using System.Threading.Tasks; 
+
+namespace aardio.WindowsRuntime{
+
+	public class API {
+		
+		//异步函数
+    	public async Task<bool> LaunchUriAsync(string uri) {
+        	return await Windows.System.Launcher.LaunchUriAsync(
+        		new Uri(uri)
+        	);
     	}
-	
-    	public int LineCount()
-    	{
-        	return ocrResult.Lines.Count;
-    	}
-	
-    	public string [] GetWords(int index)
-    	{
-        	ArrayList arr = new ArrayList();
-        	foreach (var word in ocrResult.Lines[index].Words)
-        	{
-            	arr.Add(word.Text);
-        	}
-	
-        	return (string[])arr.ToArray(typeof(string));
-    	}
-	
-    	public object GetWordRects(int index)
-    	{
-        	ArrayList arr = new ArrayList();
-        	foreach (var word in ocrResult.Lines[index].Words)
-        	{
-            	double[] rc = { word.BoundingRect.Left, word.BoundingRect.Top, word.BoundingRect.Right, word.BoundingRect.Bottom };  
-            	arr.Add(rc);
-        	}
-	
-        	return (object)arr.ToArray(typeof(object));
-    	}
-	
-    	private OcrResult ocrResult;
-	
+    	
+    	//同步函数
+    	public bool LaunchUri(string uri){   
+    		return LaunchUriAsync(uri).GetAwaiter().GetResult();
+    	}  
 	}
-	
-	public class UwpOcrEngine  
-	{
-    	public string [] AvailableRecognizerLanguages(){   
-        	ArrayList arr = new ArrayList();
-        	foreach (var lang in OcrEngine.AvailableRecognizerLanguages)
-        	{
-            	arr.Add(lang.LanguageTag);
-        	}
-        	return (string [])arr.ToArray(typeof( string));
-    	} 
-      	
-    	public object IsLanguageSupported( string name ){   
-        	Windows.Globalization.Language lang = new Windows.Globalization.Language(name);
-        	return OcrEngine.IsLanguageSupported(lang); 
-    	}
-	
-    	public UwpOcrResult Recognize(byte[] imgBuffer, string language){   
-    		return new UwpOcrResult( RecognizeAsync(imgBuffer, language).GetAwaiter().GetResult() );
-    	}
-	
-    	async Task<OcrResult> RecognizeAsync(byte[] imgBuffer, string language)
-    	{ 
-            	var randomAccessStream = new InMemoryRandomAccessStream();
-            	var outputStream = randomAccessStream.GetOutputStreamAt(0);
-            	var dw = new DataWriter(outputStream);
-            	var task = new Task(() => dw.WriteBytes(imgBuffer));
-            	task.Start();
-            	await task;
-            	await dw.StoreAsync();
-            	await outputStream.FlushAsync();
-	
-            	BitmapDecoder decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
-            	SoftwareBitmap softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            	Windows.Globalization.Language lang = new Windows.Globalization.Language(language);
-	
-            	OcrEngine engine = OcrEngine.TryCreateFromLanguage(lang);
-            	if (engine != null)
-            	{
-                	OcrResult ocrResult = await engine.RecognizeAsync(softwareBitmap);
-                	return ocrResult;
-            	}
-	
-            	return null;
-    	}
-	}   
-} 
+}
 ******/
 
-//编译并返回程序集  
-var assembly = uwpCompiler.CompileOrFail();
+//编译 DLL
+var ret = uwpCompiler.Compile();
+if(!ret){
+    console.log("编译错误:",uwpCompiler.getLastError() );
+    return;
+}
 
-import console;
-if(assembly) console.logPause("编译成功",uwpCompiler.Parameters.OutputAssembly);
+//加载编译后的程序集
+var assembly = dotNet.load("/aardio.WindowsRuntime.dll");
+
+//导入名字空间
+assembly.import("aardio.WindowsRuntime");
+
+//创建 .NET 对象
+var uwp = aardio.WindowsRuntime.API();
+
+//调用同步方法
+uwp.LaunchUri("ms-screenclip:");
+
+//调用异步方法
+//var task = uwp.LaunchUriAsync("ms-screenclip:")
+
+//同步等待任务完成，不会阻塞界面
+//var result = dotNet.wait(task);

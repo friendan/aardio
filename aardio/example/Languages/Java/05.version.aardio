@@ -3,8 +3,8 @@ import java;
 import console;
 
 //在创建 Java 虚拟机或运行 Java 程序以前调用才会生效
-//java.path.setJreHome("/自定义 JRE 路径,路径首字符为单个斜杆表示应用程序目录")
-//java.path.setJdkHome("/自定义 JDK 路径,路径首字符为单个斜杆表示应用程序目录")
+//java.path.setJreHome("/自定义 JRE 路径,路径首字符为单个斜杠表示应用程序目录")
+//java.path.setJdkHome("/自定义 JDK 路径,路径首字符为单个斜杠表示应用程序目录")
 
 //创建 Java 虚拟机接口
 var jvm = java(); 

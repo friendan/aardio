@@ -2,27 +2,25 @@
 import fsys;
 namespace fsys; 
 
-var getIniPath = function(path){
-	if(!path) error("请指定ini文件路径",3);
+var getIniPath = function(path,utf16){
+	if(!path) error("请指定 INI 文件路径",3);
 	
 	var fullpath = ..io.exist(path);
 	if( fullpath) return fullpath;
 		
 	var defult = ..string.load(path)
+	if(#defult){
+		..string.save(path ,defult)
+		return ..io.exist(path);
+	}
 	
-	..fsys.createParentDir(path);
-	var file = ..io.file(path,"w+b")
-	if( ! file  ) error("ini文件路径错误:" + path,3) 
-	
-	file.write(defult);
-	file.close();
-	
-	return ..io.exist(path); 
+	..string.save(path ,utf16?'\xFF\xFE':'')  
+	return path; 
 }
 
 class ini{
-        ctor(path){  
-			path = getIniPath(path);
+        ctor(path,utf16){  
+			path = getIniPath(path,utf16);
         };         
         read = function(app,key ,default = ""){
 			var getlen=512;
@@ -95,7 +93,7 @@ namespace ini{
 class ini.section{
 	ctor(path,app){
 		if(!app )
-			error("请指定ini文件[小节名字]",2) 
+			error("请指定 INI 文件[小节名字]",2) 
 			
 		path = getIniPath(path);
 				
@@ -149,28 +147,29 @@ class ini.section{
 
 namespace ini.section{
 	GetPrivateProfileSection = ::Kernel32.api("GetPrivateProfileSectionW","int(ustring app,string &buffer,int size,ustring file)");
-	WritePrivateProfileSection = ::Kernel32.api("WritePrivateProfileSectionW","int(ustring app,
-	string buffer,ustring file)");
+	WritePrivateProfileSection = ::Kernel32.api("WritePrivateProfileSectionW","int(ustring app,string buffer,ustring file)");
 }
 
 /**intellisense()
-fsys.ini = 用于 ini 文件读写\nfsys.ini 使用 UTF-8 编码读写 ini 文件，\n但操作系统自动转换为 ANSI 编码存储。\n\n如果不是为了兼容原来的 ANSI 程序，不必要使用 ini 文件格式。\nweb.json, fsys.config 这些格式使用的都是 UTF-8 编码，\n使用也更方便。
-fsys.ini("__") = 打开 ini 文件对象
-!fsysini.read("小节名","键名")= 读取 ini 指字小节的指键键\n可选使用参数 @3 指定默认值\n成功返回读取的值,失败返回 null\n\n如果指定键名成功应返回字符串值\n不指定键名成功返回小节下所有键值组成的字符串数组\n返回字符串、数组、null 时都可以使用#操作符取长度,null 的长度为0，\nnull,0 转换为逻辑值都等价于 false
-!fsysini.write("小节名","键名","新值") = 写 ini 文件\n健名为 null 删除指定的小节\n值为 null 删除指定的键名
-!fsysini.readSectionNames() = 返回小节名称组成的字符串数组
-!fsysini.readKeys("小节名") = 返回指定小节中所有键名组成的字符串数组 
-!fsysini.getSectionNames() = 获取所有小节名字,返回字符串数组.
-!fsysini.getSection("__/*小节名*/") = 读取或添加小节对象,可直接读写成员
+fsys.ini = 用于 INI 文件读写\n\n如果文件已存在并使用 UTF-16 编码存储，则文件保持原编码。\n否则使用 ANSI 编码存储 INI 文件。\n在 aardio 中仍以 UTF-8 编码读写，读写时自动转换编码。\n改用 string.ini，web.json, fsys.config 则可始终使用 UTF-8 编码读写配置文件。
+fsys.ini( = 打开 INI 文件对象。\n如果文件未存在并且存在同路径的资源文件，\n则先将资源文件保存到本地文件。
+fsys.ini(.(path) = 打开 path 参数指定路径的INI 文件对象。\n如果文件已存在并使用 UTF-16 编码存储，则继续以此编码存储 INI 文件。\n否则使用 ANSI 编码存储 INI 文件。\n在 aardio 中仍以 UTF-8 编码读写，读写时自动转换编码。
+fsys.ini(.(path,true) = = 打开 path 参数指定路径的 INI 文件对象。\n如果文件未存在则创建文件并添加 UTF-16 LE BOM 头，并继续以此编码存储 INI 文件。\n如果文件已存在并使用 UTF-16 编码存储，则继续以此编码存储 INI 文件。\n否则使用 ANSI 编码存储 INI 。\n在 aardio 中仍以 UTF-8 编码读写，读写时自动转换编码。
+!fsysIniFile.read("小节名","键名")= 读取 INI 指字小节的指键键\n可选使用参数 @3 指定默认值\n成功返回读取的值,失败返回 null\n\n如果指定键名成功应返回字符串值\n不指定键名成功返回小节下所有键值组成的字符串数组\n返回字符串、数组、null 时都可以使用#操作符取长度,null 的长度为0，\nnull,0 转换为逻辑值都等价于 false
+!fsysIniFile.write("小节名","键名","新值") = 写 INI 文件\n健名为 null 删除指定的小节\n值为 null 删除指定的键名
+!fsysIniFile.readSectionNames() = 返回小节名称组成的字符串数组
+!fsysIniFile.readKeys("小节名") = 返回指定小节中所有键名组成的字符串数组 
+!fsysIniFile.getSectionNames() = 获取所有小节名字,返回字符串数组.
+!fsysIniFile.getSection("__/*小节名*/") = 读取或添加小节对象,可直接读写成员
 !inisection.name() = 返回小节名称
-!inisection.save() = 保存更改到ini文件
-!inisection.? = 可输入任意属性名,读写小节属性,\n成功返回字符串值,失败返回null
-!fsysini.getSection() = !inisection.
-!fsysini.eachSection()  = !inisection.
-!fsysini.eachSection() = @for section in ??.eachSection(__/*可选用模式匹配搜索*/) { 
+!inisection.save() = 保存更改到 INI 文件
+!inisection.? = 可输入任意属性名，读写小节属性。\n成功返回字符串值,失败返回 null 。
+!fsysIniFile.getSection() = !inisection.
+!fsysIniFile.eachSection()  = !inisection.
+!fsysIniFile.eachSection() = @for section in ??.eachSection(__/*可选用模式匹配搜索*/) { 
 	for(k,v in section){
-		/*k为键,为值,section为当前遍历到的小节*/
+		/*k 为键，v 为值，section 为当前遍历到的小节*/
 	}
 }
-fsys.ini() = !fsysini.
+fsys.ini() = !fsysIniFile.
 end intellisense**/

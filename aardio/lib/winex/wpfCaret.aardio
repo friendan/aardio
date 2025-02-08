@@ -1,0 +1,74 @@
+﻿
+if(!_WIN7_LATER){
+	get = function(){}
+	return;
+}
+
+import System.Windows.Automation.3;
+var Automation = System.Windows.Automation;
+var AutomationElement = Automation.AutomationElement;
+
+var cacheBoundingRect = Automation.CacheRequest(); 
+cacheBoundingRect.TreeFilter = Automation.Automation.RawViewCondition;  
+cacheBoundingRect.Add(AutomationElement.BoundingRectangleProperty);
+
+var conditionWpfCaret = Automation.PropertyCondition( AutomationElement.ClassNameProperty, "WpfCaret" );
+
+namespace winex.wpfCaret;
+get = function(hwnd) {
+
+	var hFocus;
+	var focusedEle; 
+
+    try{
+    	if(hwnd) { 
+    	    hFocus = ..winex.getFocus(hwnd);
+    		focusedEle = AutomationElement.FromHandle(hFocus); 
+    	}
+		else {
+			focusedEle = AutomationElement.RootElement.FocusedElement;
+			hFocus = focusedEle.Current.NativeWindowHandle;
+		}
+    } 
+    
+    if (!focusedEle) {
+    	return false;
+    }
+    
+    var rc;
+ 
+    cacheBoundingRect.Push(); 
+ 	
+ 	try{
+    	var wpfCaret = focusedEle.FindFirst(4/*Automation.TreeScope.Descendants*/
+    		,conditionWpfCaret);
+    		
+    	if (wpfCaret) {
+    		with wpfCaret.Cached.BoundingRectangle{
+    			rc = ::RECT(Left,Top,right,Bottom);  
+    			rc.hwnd = hFocus;
+    		}
+    		
+    	} 
+    }
+    
+    cacheBoundingRect.Pop(); 
+    
+    ..com.Release(focusedEle);
+	return rc,hFocus;
+}
+
+/*****intellisense()
+winex.wpfCaret = 获取 WPF 窗口输入光标位置。\n用于 key.ime.stateBar , 返回值为 winex.caret.get 兼容格式。
+winex.wpfCaret.get( = 获取 WPF 窗口输入光标位置。\n获取其他类型窗口光标应当事用 winex.caret.get 。
+winex.wpfCaret.get(.(hwnd) = 在 @hwnd 指定句柄的 WPF 窗口获取输入光标位置.\n不指定参数则获取前台 WPF 窗口输入光标。\n\n成功返回 ::RECT 结构体，失败返回 null。\n返回结构体的值使用屏幕坐标。\n如果获取到真实输入光标大小则返回结构体的 right,bottom 为非 0 值，\n返回结构体的 hwnd 成员为输入光标所在窗口句柄。\n\n第 2 个返回值为输入焦点窗口句柄
+winex.wpfCaret.get() = !rect.
+end intellisense*****/
+
+/**details(检测 WPF 窗口)
+
+```aardio
+var wndClass = win.getClass(hForeground);
+var wpfWnd = string.find(wndClass,"HwndWrapper\[\N+?;;\x[\x\-]+\x\]");
+```
+end details**/

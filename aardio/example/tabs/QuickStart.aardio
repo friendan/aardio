@@ -1,8 +1,8 @@
-//高级选项卡 win.ui.tabs
+//入门
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-mainForm = win.form(text="使用高级选项";right=1040;bottom=642;bgcolor=16777215;border="none")
+mainForm = win.form(text="高级选项卡 - 入门";right=1040;bottom=642;bgcolor=16777215;border="none")
 mainForm.add(
 caption={cls="bkplus";text="选项卡演示";left=35;top=12;right=160;bottom=30;color=15780518;dl=1;dt=1;font=LOGFONT(h=-16);z=5};
 logo={cls="bkplus";text='\uF0AD';left=6;top=9;right=35;bottom=34;color=15780518;dl=1;dt=1;font=LOGFONT(h=-18;name='FontAwesome');z=4};
@@ -17,15 +17,15 @@ titleBar={cls="bkplus";left=0;top=0;right=1042;bottom=41;bgcolor=14977280;dl=1;d
 import win.ui.tabs;
 
 /*
-相关文档: doc://library-guide/std/win/ui/tabs/_.md
+高级选项卡入门指南: doc://library-guide/std/win/ui/tabs/_.md
 
 创建"高级选项卡"步骤：
 
-- 在窗体上添加两个 plus 控件 mainForm.tabPlus1, mainForm.tabPlus2 
-  这些 plus 控件显示在选项卡头部（ header ）位置，并且用于确定选项卡的外观与排列方向。
+1. 在窗体上添加两个 plus 控件 mainForm.tabPlus1, mainForm.tabPlus2 
+这些 plus 控件显示在选项卡头部（ header ）位置，并且用于确定选项卡的外观与排列方向。
 	
-- 在窗体上添加一个 custom 控件 mainForm.tabPanel 作为页面容器，
-  用于在选项卡的客户区（ client area ）加载子窗口以显示不同的页面内容。
+2. 在窗体上添加一个 custom 控件 mainForm.tabPanel 作为页面容器，
+用于在选项卡的客户区（ client area ）加载子窗口以显示不同的页面内容。
 
 然后调用下面的代码创建 win.ui.tabs 控件。
 */

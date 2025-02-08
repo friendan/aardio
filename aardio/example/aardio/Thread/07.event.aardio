@@ -1,7 +1,7 @@
 //事件对象同步
 /*
 请参考《多线程中的交通信号灯：thread.event》
-http://bbs.aardio.com/forum.php?mod=viewthread&tid=11531
+doc://library-guide/builtin/thread/event.html
 */
 
 import console;

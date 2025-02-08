@@ -1,4 +1,5 @@
 //aardio 调用 .NET 之 OCR 图文识别
+//相关 OCR 范例: file://~/example/Automation/ComputerVision/ocrLite.aardio
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="dotNet.ocr 简单演示";right=498;bottom=465)
@@ -8,7 +9,6 @@ edit={cls="edit";left=13;top=12;right=485;bottom=391;db=1;dr=1;dt=1;edge=1;hscro
 )
 /*}}*/
 
-//相关 OCR 范例："~/example/Automation/ComputerVision/ocrLite.aardio"
 import win.clip;
 import dotNet.ocr;
 var ocr = dotNet.ocr();

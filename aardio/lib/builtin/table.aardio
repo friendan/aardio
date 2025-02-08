@@ -122,18 +122,20 @@ namespace table{
 		else{ return t[k],t };
 	};
 	var setByNamespace_;
-	setByNamespace_ = function(k,v,t,n=0){  
+	setByNamespace_ = function(k,v,t,n=0){
 		var p,m = ..string.match(k,"\.*(.+)(%\[\])$");
 		if( m ){
 			t = setByNamespace_(p,,t,n+1);
-			k = eval(..string.trim(m,"[]"))
+			k = #m>2 ? eval(..string.trim(m,"[]")) : null;
 			if(k===null)k=#t+1;
 		}
 		else{
 			p,m = ..string.match(k,"\.*(.+)\.([^.]+)$"); 
-			if( m!==null ){ t = setByNamespace_(p,,t,n+1); k = m }
+			if( m!==null ){
+				t = setByNamespace_(p,,t,n+1); k = m 
+			}
 		}
-		
+
 		if( n ){
 			if( t[k]===null ) t[k] = (v===null) ? {} : v ;
 		}
@@ -427,9 +429,9 @@ gc(.(table对象,"析构函数名") =  指定析构函数名,返回参数@1\n函
 gc( = 添加对象在销毁前执行的析构函数\n按调用 table.gc 顺序的逆序析构对象,\n最后调用 table.gc 标记的对象会最先执行析构函数
 gcOnly( = 创建一个被保护的对象析构函数,\n此析构函数只会在对象被自动回收时自动触发,\n主动调用此析构函数将被忽略
 gcOnly(.(dtor) = @dtor 参数指定使用 table.gc 标记的析构对象的析构函数,\n此函数将返回一个新的用于覆盖原析构函数的函数,\n应将返回的析构函数重新赋值为对象的同名析构函数
-namespace(__) = 创建字符串参数@1指定的全局名字空间,\n查询或创建名字空间不会触发元方法，\n如果名字被非表对象占用导致名称冲突则返回 null，\n成功返回该名字空间\n\n此函数的作用与 namespace 语句相同，但不会改变当前名字空间
+namespace(__) = 创建字符串参数 @1 指定的全局名字空间,\n查询或创建名字空间不会触发元方法，\n如果名字被非表对象占用导致名称冲突则返回 null，\n成功返回该名字空间\n\n此函数的作用与 namespace 语句相同，但不会改变当前名字空间
 getByNamespace(.("表内名字空间路径->名字[2]",表对象) = 返回两个值:名字路径指向对象,该对象所在的表.\n参数一为表内名字空间路径,参数二可选指定查找路径的表对象,\n默认在global全局对象内查找路径\n\n要注意此函数会触发表的元方法，\n而 namespace 语句以及 table.namespace 函数不会触发元方法
-setByNamespace(.("表内名字空间路径->名字[]",新值,表对象) = 参数一指定表内名字空间路径,如果不存在则则创建此表内名字空间,\n参数二指定需要设置的值,如果不指定则创建空表并赋值,\n参数三可选指定一个表对象,默认为global全局对象\n\n要注意此函数会触发表的元方法，\n而 namespace 语句以及 table.namespace 函数不会触发元方法
+setByNamespace(.("表内名字空间路径->名字[]",新值,表对象) = 参数 @1 指定表内名字空间路径,如果不存在则则创建此表内名字空间,\n└── 可用 `.` 分隔上下级名字空间。\n└── 可用下标`[]`包含简单表达式，空的`[]`表示追加值到数组尾部。\n参数 @2 指定需要设置的值,如果不指定则创建空表并赋值,\n参数 @3 可选指定一个表对象,默认为 global 全局对象\n\n要注意此函数会触发表的元方法，\n而 namespace 语句以及 table.namespace 函数不会触发元方法
 unpackArgs(.(args) = 从索引1到最大索引返回所有元素值,包含中间的null值
 spliceArgs(.(数组,位置,删除长度,参数表) = 类似splice函数替换数组片段,\n从索引1到最大索引取参数表所有元素插入数组指定位置,\n返回包含删除元素的数组
 spliceArgs(.(数组,位置,删除长度,参数表,开始索引,结束索引) = 类似splice函数替换数组片段,\n从开始到结束索引取出参数表元素插入数组指定位置,\n返回包含删除元素的数组

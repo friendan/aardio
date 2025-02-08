@@ -1,5 +1,10 @@
 //屏幕找图示例
 
+/*
+找图代码生成器: doc://example/Automation/ComputerVision/findImage.html
+屏幕找字简版 doc://example/Automation/ComputerVision/ocrUwp.html
+*/
+
 //创建要查找的目标图像
 import soImage;
 var imgFind = soImage();

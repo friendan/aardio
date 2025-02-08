@@ -51,9 +51,9 @@
     COM 对象不可以从一个线程传递到另一个线程。  
     
     以下对象可从一个线程传递到另一个线程：  
-    >time,time.ole,thread.var,thread.table,  
+    > time,time.ole,thread.var,thread.table,  
     thread.command,thread.event,thread.semaphore,process.mutex,  
-    fsys.file,fsys.stream,fsys.mmap,raw.struct …… 请参考相关文档说明。  
+    fsys.file,fsys.stream,fsys.mmap,raw.struct,win.form,web.form,web.view …… 更多支持传入多线程的对象请参考相关文档说明。  
     
     如果不想看文档，直接判断一个对象是不是可以跨线程传递的方法也很简单：  
     不支持传入线程使用的对象，那么传入线程后调用必然会失败报错。  

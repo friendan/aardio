@@ -1,0 +1,26 @@
+﻿import com.interface;
+import com.interface.IDataObject;
+
+namespace  com.interface;
+
+class IRichEditOleCallback{
+	ctor(  ){
+		this = ..com.interface.IUnknown(); 
+	}; 
+	ptr GetNewStorage = "int(ptr &stg)";
+	ptr GetInPlaceContext = "int(ptr &Frame,ptr &doc,ptr frameInfo)";
+	ptr ShowContainerUI = "int(bool show)";
+	ptr QueryInsertObject = "int(struct clsid,ptr stg,int cp)";
+	ptr DeleteObject = "int(ptr lpoleobj)";
+	ptr QueryAcceptData = "int(ptr dataObj,int &format,INT reco,bool really,ptr hMetaPict)";
+	ptr ContextSensitiveHelp = "int(bool enterMode)";
+	ptr GetClipboardData = "int(struct chrg,INT reco,ptr &lplpdataobj)";
+	ptr GetDragDropEffect = "int(bool drag,INT grfKeyState,INT &effect)";
+	ptr GetContextMenu = "int(WORD selType, ptr oleObj,struct chrg,ptr hMenu)";
+}
+
+IRichEditOleCallback.IID = "{00020D03-0000-0000-C000-000000000046}";
+
+/*****intellisense()
+com.interface.IRichEditOleCallback = 用于 richedit 控件的 oleCallback 函数。
+end intellisense*****/

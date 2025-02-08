@@ -68,6 +68,9 @@ func main() {}
 //编译 Go 源码生成同名 DLL 文件，go.main 会自动保存参数指定的文件
 go.buildShared("/.go/start.go");
 
+//更新 PE 时间戳（ Go 默认不更新）
+go.updatePeTime("/.go/start.dll");
+
 //------------------下面调用 DLL----------------------- 
 
 //加载 Go 编译的 DLL，注意要指定 cdecl 调用约定。 

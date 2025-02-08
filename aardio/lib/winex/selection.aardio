@@ -10,47 +10,57 @@ import key;
 namespace winex.selection;
 
 var cbHtml = ..win.clip.data("HTML Format");
+var cbRtf = ..win.clip.data("RTF");
+var cbPng = ..win.clip.data("PNG");
+
 var edit = ..win.ui.ctrl.edit();
 var richedit = ..win.ui.ctrl.richedit();
 var getByEdit = function(copyText){
 	var hFocus = ..winex.getFocus(,true);
 	if(hFocus){
 		var cls = ..win.getClass(hFocus);
-		if(cls=="Edit"){
+		if(cls=="Edit"  || ..string.cmpMatch(cls,"aardioCodeEditor") ){
 			edit.hwnd = hFocus;
 			return edit.selText,hFocus;
 		}
-		elseif( ..string.find(cls,"@@richedit") ){
+		elseif( cls!="RichEditD2DPT" && ..string.find(cls,"@@richedit") ){
 			richedit.hwnd = hFocus;
 			return richedit.selText,hFocus;
+		} 
+		elseif(..string.startWith(cls,"SunAwt") && ..java[["accessBridge"]]){
+			var ret = ..java.accessBridge.getSelection(hFocus);
+			if(ret) return ret,hFocus;
+			return;
 		}
-		
+
 		if(copyText){
 			var ret;
 			var orig = ..win.clip.read();
 			var origBmp = ..win.clip.readBitmap();
 			var origHtml = cbHtml.read();
+			var origRtf = cbRtf.read();
+			var origPng = cbPng.read();  
+			
+			if(..key.getState("SHIFT")) ..key.up("SHIFT");
+			if(..key.getState("ALT")) ..key.up("ALT"); 
+			
+			if(!::User32.OpenClipboard(0)) return;
+			::User32.EmptyClipboard();
+			::User32.CloseClipboard();
 			
 			..key.combine("CTRL","INSERT");
-			..thread.delay(10);
+			..thread.delay(100);
 			
 			var str = ..win.clip.read();
-			if( #str && str!=orig){
-				ret = str;
-				if(ret[1]='`'#){
-					ret = ..string.match(ret,"```aardio\s+(.+)```") || ret;
-				}
+			if( #str ){
+				ret = str; 
 			}
 			
-			..win.clip.write(orig:""); 
-			
-			if(origBmp){
-				..win.clip.writeBitmap(origBmp,true,false);
-			}
-			
-			if(origHtml){
-				cbHtml.write(origHtml,false);
-			}
+			..win.clip.write(orig:"");  
+			if(origBmp) ..win.clip.writeBitmap(origBmp,true,false); 
+			if(origHtml) cbHtml.write(origHtml,false); 
+			if(origRtf) cbRtf.write(origRtf,false); 
+			if(origPng) cbPng.write(origPng,false);   
 
 			return ret;
 		}
@@ -72,10 +82,9 @@ AutomationElement = Automation.AutomationElement;
 var TextPatternPattern = Automation.TextPattern.Pattern;
 var NativeWindowHandleProperty = AutomationElement.NativeWindowHandleProperty
 
-get = function(copyText){
+get = function(copyText,copyText2){
 	if(::GetAsyncKeyState( 1/*_VK_LBUTTON*/ ) < 0) return;
 	
-	var hwnd = ..winex.getFocus()
 	var focusedEle = AutomationElement.RootElement.FocusedElement;
 	if(!focusedEle) {
 		return getByEdit(copyText);
@@ -85,10 +94,10 @@ get = function(copyText){
 	try{
 		textPattern = focusedEle.GetCurrentPattern(TextPatternPattern);
 		selections = textPattern.GetSelection();
-		com.Release(textPattern);
+		..com.Release(textPattern);
 	}
 	catch(e){
-		if(textPattern) com.Release(textPattern);
+		if(textPattern) ..com.Release(textPattern);
 	}
 	 
 	var ret;
@@ -107,7 +116,7 @@ get = function(copyText){
 		
 		..com.Release(selections);	
 		
-		if(!#ret) return;	
+		if(!#ret && !copyText2) return;	
 	}
 	else {
 		ret = getByEdit(copyText);
@@ -116,13 +125,17 @@ get = function(copyText){
 	var hFocus = focusedEle.GetCurrentPropertyValue(NativeWindowHandleProperty);
 	..com.Release(focusedEle);
 	
-	if(!#ret){
+	if(!#ret){ 
 		return getByEdit(copyText);
 	}
 	return ret,hFocus;
 }
 
 /**intellisense()
-winex.selection = 用于获取当前焦点窗口文本选区，可用于实现划词功能。
-winex.selection.get(true) = 如果鼠标左键是放开状态，获取焦点窗口选区文本。\n成功返回文本,焦点窗口句柄。\n仅适用于支持 UIA 选区接口的窗口。\n\n参数 @1 为 true 则允许使用剪贴板复制选区文本，\n在获取选区文本失败才会使用剪贴板，\n用后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
+winex.selection = 用于获取当前焦点窗口文本选区，可用于实现划词功能。\n如果提前导入 java.accessBridge 库则自动支持 Java 窗口。
+winex.selection.get( = 如果鼠标左键是放开状态，获取焦点窗口选区文本。\n成功返回文本,焦点窗口句柄。
+winex.selection.get(.() = 无参数调用时不使用剪贴板与模拟按按键方式获取选区文本。\n仅适用于支持 UIA 选区接口或 edit,richedit 消息的窗口。 
+winex.selection.get(.(true) =  优先使用 UIA  接口或 edit,richedit 消息获取选区文本。\n参数 @2 为 true 则允许在不支持前述接口的窗口使用剪贴板复制选区文本，\n用后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
+winex.selection.get(.(true,true) =  \n\n参数 @1 为 true 则允许不支持相关接口的窗口使用剪贴板复制选区文本，\n参数 @2 为 true 则允许在 UIA 接口返回空文本时使用剪贴板重新获取。\n剪贴板方式需要模拟按键，操作完成后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
+winex.selection.getByEdit(true) = 如果鼠标左键是放开状态，获取焦点窗口选区文本。\n成功返回文本,焦点窗口句柄。\n不使用 UIA 接口以避免 UIA 接口返回的是不需要的文本，例如浏览器。\n对于支持 edit,richedit 消息的窗口直接获取选区文本。\n\n参数 @1 为 true 则允许使用剪贴板复制选区文本，\n在获取选区文本失败才会使用剪贴板，\n用后会尝试还原剪贴板文本与图像。\n不建议连续无间隔地调用此函数以免点用过多 CPU
 end intellisense**/

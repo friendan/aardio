@@ -98,6 +98,6 @@ function decrypt(str, key) {
 }  
 
 /*intellisense(string.xxtea)
-encrypt(__,"密钥") = xxtea加密
-decrypt(__,"密钥") = xxtea解密
+encrypt(__,"密钥") = xxtea 加密
+decrypt(__,"密钥") = xxtea 解密
 end intellisense*/

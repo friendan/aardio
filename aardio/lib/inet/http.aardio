@@ -875,7 +875,7 @@ inet.http() = !inet_http.
 !inet_http.disableCache() = 强制刷新\n可在参数中指定是否禁用缓存
 !inet_http.disableCookies() = 禁止自动添加、管理cookie的功能,\n需要自行在HTTP请求头、响应头中分析处理cookie\n可在参数中指定是否禁用cookies
 !inet_http.onReceive = @.onReceive = function(str,size,contentLength){
-	__/*定义了此函数循环接收数据,则 get,post 等函数返回布尔值*/
+	__/*定义了此函数循环接收数据,则 get,post 等函数返回布尔值。\n此回调函数返回 false 停止接收数据。*/
 }
 
 !inet_http.onReceiveBegin = @.onReceiveBegin = function(statusCode,contentLength){

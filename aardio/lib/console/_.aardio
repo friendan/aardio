@@ -110,6 +110,7 @@ kbRead = function(wait){
 	else {
 		while( getInputHandle() ){ 
 			sleep(100);
+			
 			if( kbHit() ){
 				input = readInput(1,0x1/*_KEY_EVENT*/);
 				if(!#input) continue;
@@ -118,6 +119,10 @@ kbRead = function(wait){
 			};
 		}
 	} 
+}
+
+getKey = function(){
+	return kbRead(true)[["wVirtualKeyCode"]]; 
 }
 
 ::Msvcrt := ..raw.loadDll("Msvcrt.dll",,"cdecl")
@@ -161,9 +166,23 @@ more = function(count,cls){
 	moreLines++;
 };
 
+::Imm32 := ..raw.loadDll("Imm32.dll")   
+var closeInputMethod = function(){
+	openForWrite();
+	
+	var hwnd = getWindow(); 
+	var hIme = ::Imm32.ImmGetDefaultIMEWnd(hwnd);
+	if(hIme){
+		 ::User32.SendMessage(hIme,0x283/*_WM_IME_CONTROL*/,6/*_IMC_SETOPENSTATUS*/,0)
+	} 
+}
+
 askYesNo  = function(title){
+	closeInputMethod();
+	
 	log( "[Y/N] " + (title : langYesNo) )
-		while(true){ 
+	
+	while( getInputHandle() && sleep(10) ){ 
 		if( kbHit() ){
 			var kb = kbRead();
 			if(!kb) continue;
@@ -176,15 +195,17 @@ askYesNo  = function(title){
 			elseif( vk ==  'N'#){
 				return false;
 			}
-		}
+		} 
 	}	
 }
 
-pause = function(close,msg,erase){ 
+pause = function(close,msg,erase,...){ 
 	openForWrite();
 	
 	var x,y = getPos();
-	if(x) writeText( '\n' );
+	if(x) {
+		writeText( '\n' );
+	}
 	clearInputBuffer();
 	
 	msg := langPause; 
@@ -193,8 +214,9 @@ pause = function(close,msg,erase){
 	var chr = kbRead(true).wVirtualKeyCode; 
 	clearInputBuffer();
 	
-	eraseLine(erase);
+	clearScreen(x,y);
 	if(erase)  {
+		writeText(erase,...);
 		writeText('\n'); 
 	}
 	
@@ -349,21 +371,20 @@ setLoadingDots = function(dots,endDots,interval){
 }
 
 showLoading = function(msg,dotColor){
-	initLoading();
-	open();
+	initLoading();   
 	
 	if(!msg) {
 		eventLoadingStop.set()
-		eventLoadingStopped.waitOne(); 
+		eventLoadingStopped.waitOne(1000); 
 		return;
 	}
-	
+
 	loadingDotColor.set(type(dotColor)!=type.number ? 0xF : dotColor);
 	loadingMessage.set(type(msg)==type.string ? msg : "");
 	if(!eventLoadingStopped.waitOne(100)){
 		return;
 	}
-	
+
 	open();
 	eventLoadingStop.reset();
 	eventLoadingStopped.reset();
@@ -372,6 +393,8 @@ showLoading = function(msg,dotColor){
 			..io.utf8 = utf8;
 			
 			import console;
+			console.$isLoadingThread____ = true;
+			
 			var cursorVisible = console.isCursorVisible();
 			console.setCursorVisible(false);
 			var outHandle = console.getOutputHandle();
@@ -425,6 +448,11 @@ getText = function(s,len){
 }
 
 writeText = function(s,...){
+	
+	if(! $isLoadingThread____ ){
+		showLoading(false);
+	} 
+	
 	var written = {INT size}; 
 	s = s!==null? tostring(s) : "";
 	if( (!..string.isUtf8(s)) && (!..string.isUtf16(s)) ){
@@ -481,6 +509,8 @@ writeBack = function( s,... ){
 }
 
 self.error = function(x,...){
+	if(x===null && ... === null) return;
+	
 	if( _STUDIO_INVOKED ) openForWrite();
 	if( isOpened() ) setTextAttribute( color.red );
 	
@@ -507,22 +537,28 @@ class CONSOLE_SCREEN_BUFFER_INFO {
 	struct maximumWindowSize = {word x;word y}; 
 }
 
-clearScreen = function(){
+clearScreen = function(x,y){
 	showLoading(false);
+	
+	x = x:0;
+	y = y:0;
+	var offset = x*y;
+	var coord = ::MAKELONG(x,y);
 	
 	var csbi = CONSOLE_SCREEN_BUFFER_INFO();
 	var hConsole = getOutputHandle(); 
-	
 	::Kernel32.GetConsoleScreenBufferInfo(hConsole,csbi)
+
 	var size = csbi.size.x * csbi.size.y;
 	var cCharsWritten = { INT cChars = 0}
-	::Kernel32.FillConsoleOutputCharacter(hConsole,' '#,  size,0, cCharsWritten );
+	::Kernel32.FillConsoleOutputCharacter(hConsole,' '#,  size-offset,coord, cCharsWritten );
 		
 	::Kernel32.GetConsoleScreenBufferInfo(hConsole,csbi);
-	::Kernel32.FillConsoleOutputAttribute(hConsole, csbi.wAttributes, size, 0, cCharsWritten);
-	::Kernel32.SetConsoleCursorPosition(hConsole, 0);
+	::Kernel32.FillConsoleOutputAttribute(hConsole, csbi.wAttributes,size-offset,coord, cCharsWritten);
+	::Kernel32.SetConsoleCursorPosition(hConsole, coord);
 	::Kernel32.SetConsoleTextAttribute(getOutputHandle(),15);
-}  
+} 
+cls = clearScreen;
 
 eraseToEndOfLine = function(){
 	var x,y = getPos();
@@ -598,14 +634,23 @@ getTextAttribute = function(){
 } 
 
 setTextAttribute = function(fore,back){
+	open();
+	
+	if(fore)fore = color[[fore]] || fore;
+	if(back)back = color[[fore]] || fore;
+	
 	if(fore===null) fore = 0xF;
 	if( type(fore) != type.number ) error("参数必须是数值",2)
 	if( type(back) == type.number ) fore = back * 0x10 + fore;
 	return ::Kernel32.SetConsoleTextAttribute(getOutputHandle(),fore);
 } 
+setTextColor = setTextAttribute;
 
 //设整整个窗口颜色，设置局部颜色用 setTextAttribute 或 writeColorText
 setColor = function(fore,back){ 
+	if(fore)fore = color[[fore]] || fore;
+	if(back)back = color[[fore]] || fore;
+	
 	execute("color " + ..string.format("%x%x",back:0, fore:0xF))	
 }
 
@@ -761,12 +806,14 @@ getTitle = function(){
 	return title; 
 }
 
-getNumber = function( s,len ){
+getNumber = function( s,min,max ){
+	closeInputMethod();
+	
 	var n;
 	while( 
 		var _;
-		n = tonumber( getText(s,len),10 );
-		n === null
+		n = tonumber( getText(s,30),10 );
+		( (n === null) || (min!==null && n < min ) || (max!==null && n > max ) )
 	) { 
 		s = langInvalidNumber;
 	}
@@ -862,6 +909,65 @@ color =  {
 	white = 0xF //白色
 	/*end intellisense*/
 }
+colors = color;
+
+choice2 = function(items,color){ 
+    if(type(items)!="table" || !#items) error("参数必须是非空数组！"); 
+    if(!color) color = 0xA;
+    
+    var sel,oldSel = 1; 
+    var col,row = getPos(); 
+    var count = #items;
+    while(getInputHandle() && sleep(10)){ 
+        if(oldSel!=sel){
+            clearScreen(col,row)
+            
+        	for(i=1;count){
+            	if(i == sel){
+                	writeColorText("["+i+"] " + items[i],0xA);
+            	}
+            	else {
+                	writeText("["+i+"] " + items[i]+"  ");
+            	}
+            	writeText('\n');
+        	}	
+        	
+        	oldSel = sel;
+        }
+        
+        var key = getKey(); 
+        
+        if(key == 0x26/*UP*/ || key == 0x25/*_VK_LEFT*/){
+            sel = sel > 1 ? sel - 1 : count;
+        }
+        elseif(key == 0x28/*DOWN*/ || key == 0x27/*_VK_RIGHT*/){
+            sel = sel < count ? sel + 1 : 1;
+        }
+        elseif(key == 0xD/*ENTER*/){
+            return sel,items[sel];
+        } 
+        elseif(key==0x1B/*_VK_ESC*/){
+        	clearScreen(col,row) 
+        	return;
+        } 
+    }
+}
+
+
+choice = function(items,title){
+	if(type(items)!="table" || !#items) error("参数必须是非空数组！"); 
+	
+	var col,row = getPos(); 
+	for(i=1;#items){
+        writeText("["+i+"] " + items[i]+"  ");
+        writeText('\n');
+    }	
+    
+    var n = getNumber(title || langChoice,1,#items)
+    clearScreen(col,row)
+    if(n) return n,items[n];
+}
+
 
 begin
 	var lcid = ::Kernel32.GetUserDefaultLangID();
@@ -870,18 +976,49 @@ begin
 		langPause = "請按任意鍵繼續 ... ";
 		langYesNo =  "按 Y 鍵繼續,按 N 鍵取消";
 		langInvalidNumber = "請重新輸入有效的數值: ";
+		langChoice = "請輸入選項對應的數字: "
 	}
 	elseif( lcid==0x804/*zh-CN*/ || lcid!==0x1004/*zh-SG*/ ){
 		langMore = "--- 请按任意键显示更多 ---";
 		langPause = "请按任意键继续 ... ";
 		langYesNo =  "按 Y 键继续,按 N 键取消";
 		langInvalidNumber = "请重新输入有效的数值: ";
+		langChoice = "请输入选项对应的数字: "
+	}
+	elseif( lcid==0x411/*ja-JP*/ ){
+		langMore = "--- 続きを読むには任意のキーを押してください ---";
+		langPause = "続行するには任意のキーを押してください... ";
+		langYesNo =  "続行しますか？";
+		langInvalidNumber = "有効な数値を入力してください。";
+		langChoice = "選択肢の番号を入力してください: ";
+	}
+	elseif( lcid==0x412/*ko-KR*/ ){
+		langMore = "--- 계속 읽으려면 아무 키나 누르세요 ---";
+		langPause = "계속하려면 아무 키나 누르세요... ";
+		langYesNo =  "계속하시겠습니까?";
+		langInvalidNumber = "유효한 숫자를 입력하세요.";
+		langChoice = "선택 번호를 입력하세요: ";
+	}
+	elseif( lcid==0x419/*ru-RU*/ ){
+		langMore = "--- Нажмите любую клавишу, чтобы прочитать дальше ---";
+		langPause = "Нажмите любую клавишу, чтобы продолжить... ";
+		langYesNo =  "Продолжить?";
+		langInvalidNumber = "Пожалуйста, введите действительное число.";
+		langChoice = "Введите номер выбора: ";
+	}
+	elseif( lcid==0x101E/*th-TH*/ ){
+		langMore = "--- กดปุ่มใดๆ เพื่ออ่านต่อ ---";
+		langPause = "กดปุ่มใดๆ เพื่อดำเนินการต่อ... ";
+		langYesNo =  "ต้องการดำเนินการต่อหรือไม่?";
+		langInvalidNumber = "กรุณาป้อนตัวเลขที่ถูกต้อง.";
+		langChoice = "ป้อนหมายเลขทางเลือกของคุณ: ";
 	}
 	else {
 		langMore = "--- Press any key to read more ---";
 		langPause = "Press any key to continue . . .";
 		langYesNo =  "Do you want to continue?";
 		langInvalidNumber = "Please enter a valid number.";
+		langChoice = "Enter your choice:";
 	}  
 end;
 
@@ -894,8 +1031,8 @@ open() = 打开控制台窗口,\n如果控制台窗口已打开,该函数不进�
 utf8 = 控制台是否启用UTF-8编码,\n所有线程设置必须相同,否则会导致重新打开控制台,\n如果操作系统为英文环境,控制台启用 UTF-8 可正常显示中文,\n此值为 null（默认值） 时由 aardio 自动选择编码（WIN10 以上系统默认开启 UTF-8）,\n启用这个选项在 WIN10 以下系统可能出现显示不正常的问题,\n但有一些程序，例如 Electron 主进程输出默认需要打开此选项
 setLoadingDots(.(动画字符数组,是否显示在尾部,动画间隔毫秒数) = 指定showLoading函数使用的默认动画字符数组\n除参数@1必须指定之外，其他参数可选
 showLoading( = 显示进度动画
-showLoading(.(状态文本,动画颜色) = n所有参数都可以省略,状态文本为false关闭动画,\n调用console.open,console.log等函数都能自动关闭动画\n参数@2只能使用 console.color 的成员值
-getNumber( "请输入数值:__" ) = 读取用户输入的数值,\n如果用户输入错误的数值则显示错误提示并重新读取输入直到成功,\n可选在参数@2中指定缓冲区大小
+showLoading(.(状态提示文本,动画颜色) = 所有参数都可以省略,状态文本参数为 false 关闭动画,\n调用 console 库的其他函数基本都会自动停止动画。\n参数 @2 只能使用 console.color 的成员值。
+getNumber( "请输入数值:__" ) = 读取用户输入的数值,\n如果用户输入错误的数值则显示错误提示并重新读取输入直到成功。\n可选用参数@2限定最小有效数值。\n可选用参数 @3 限定最大有效数值。
 getText( "请输入文本:__" ) = 此函数内部调用io.getText自控制台读取用户输入,\n可选在参数@2中指定缓冲区大小\n此函数不调用io.stdin.read等标准输入函数
 writeText(__) = 直接写入控制台，\n参数支持UTF8/UTF16/ANSI字符串，\n支持1个或多个参数，但遇到null参数会停止输出后面的参数,\n注意这个函数不会自动打开控制台，\n此函数不调用io.stdout.write,io.print等标准输出函数\n并且可以支持更多的Unicode字符
 writeColorText( = 调用 console.writeText 输出指定颜色文本,\n此函数不会自动打开控制台窗口
@@ -908,13 +1045,16 @@ hex(__) = 调用console.log以16进制输出字符串、或缓冲区的所有字
 writeBack(__) = 控制台输出字符串并覆盖最后显示的等长字符\n如果有多个参数则调用string.format格式化后输出
 fullscreen() = 控制台窗口全屏切换
 modifyMode(.(输入输出句柄,移除模式,添加模式) = 设置控制台的显示模式\n参数用法参考 WINAPI SetConsoleMode\n参数@1如果省略则默认为标准输出句柄\n成功返回当前模式,失败返回null
-error("__") = 使用标准错误输出流（io.stderr）输出，可以重定向，\n可指定任意个参数，参数转换为字符串以后输出。\n\n在开发环境中会自动打开控制台以红色字体输出参数，并输出当前调用栈信息。\n发布后的程序不会自动打开控制台，不会输出调用栈信息。
+error(__/*错误信息*/) = 使用标准错误输出流（io.stderr）输出，可以重定向，\n可添加任意个参数，其他参数也转换为字符串以后输出。\n\n在开发环境中会自动打开控制台以红色字体输出参数，并输出当前调用栈信息。\n发布后的程序不会自动打开控制台，不会输出调用栈信息。\n如果不指定参数 @1 （null值），此函数不作任何操作。
 more( = 等待并在按任意键以后继续，用于在控制台分页输出时等待按键。
 more(.(分页大小,是否清屏) = 略参数  @1 则参数默认为 1 。\n如果参数 @2 为true，按任意键以后清除控制台已显示的内容。
-askYesNo("按Y键继续,按N键取消") = 等待用户按Y或N键
+askYesNo("按 Y 键继续,按 N 键取消") = 等待用户按 Y 或 N 键
+choice2(.(items,color) = 显示菜单。\n参数 @1 必须指定非空数组。\n参数 @2 可选用 console.color 名字空间的颜色值指定选中项颜色。\n按方向键选择项目，回车键确认选项，ESC 键取消。
+choice2(.(items,title) = 显示菜单。。\n参数 @1 必须指定非空数组。\n参数 @2 可选用一个字符串自定义输入提示。
 kbHit() = 检测键盘有没有输入
 peek() = 测试键盘有没有输入\n有则读取并返回keyEvent对象,否则返回空\n!console_kbevent.
 clearInputBuffer() = 刷新控制台输入缓冲区\n丢弃缓冲区的所有输入
+getKey() = 等待并读取控制台按键，并返回虚拟键码。\n程序退出或控制台关闭返回 null 。
 kbRead() = 读取用户按键返回keyEvent对象\n!console_kbevent.
 kbRead(true) = 等待用户按任意键并返回keyEvent对象(不包含释放按键事件)
 getch() = 读取输入字节码,中文字返回两个字节码\n控制台不回显字符
@@ -930,8 +1070,9 @@ readOutputCharacter() = 读取标准输出缓冲区文本。\n可选用参数 @1
 setColor(.(前景色,背景色) = 设置控制台前景色与背景色\n参数必须使用 console.color 的成员值\n无参数恢复默认颜色
 getTextAttribute() = 获取控制台文本颜色,\n返回颜色值为 背景色 * 0x10 + 前景色
 setTextAttribute( = 设置文本前景色与背景色,\n设置整个窗口的背景色请使用 console.setColor;
-setTextAttribute(.(颜色) = 颜色值必须为 背景色 * 0x10 + 前景色,\n前景色,背景色必须使用 console.color 的成员值 
-setTextAttribute(.(前景色,背景色) = 参数必须使用 console.color 的成员值\n无参数恢复默认颜色 
+setTextAttribute(.(颜色) = 颜色值必须为 背景色 * 0x10 + 前景色,\n前景色,背景色必须使用 console.color 的成员值 （数值）或名称（字符串值）
+setTextAttribute(.(前景色,背景色) = 参数必须使用 console.color 的成员值（数值）或名称（字符串值）。\n无参数恢复默认颜色 
+setTextColor(.(前景色,背景色) = 设置文本颜色，此函数为 setTextAttribute 函数的别名。\n参数必须使用 console.color 的成员值（数值）或名称（字符串值）。\n无参数恢复默认颜色 
 isCursorVisible() =控制台当前是否显示光标
 setCursorVisible(.(visible) = 设置控制台是否显示光标
 setCursorInfo(.(info) = 修改光标信息,\n用法请参考此函数源码
@@ -942,14 +1083,15 @@ dump(.(value,->->->) = 在控制台显示普通 table,string,number 等类型的
 dump(.(comObj) = 参数 @1 指定 COM 对象，且无其他参数，\n则在控制台输出调用 com.DumpTypeInfo 函数返回的类型信息。\n调用 com.tlbDoc.dump 函数可打印 COM 对象更详细的类型库信息
 dump(.(comObj,enumType) = 参数 @1 指定 COM 对象，参数 @2 指定枚举类型名，\n在控制台输出该枚举类型的所有名值对。\n\n通常枚举名值对也是 COM 常量名值对，\n可以使用列举的枚举名字（不用指定枚举类型名）\n作为 COM 对象的成员名获取枚举值
 dumpJson(__/*变量*/) = 将对像转换为格式化的 JSON 文本并输出到控制台\n对象如果包含数值索引自1开始的顺序数组成员则转换为 JSON 数组\nJSON 数组会忽略其他索引不在数组范围内的成员
-dumpTable(__/*表对象*/) = 如果参数 @1 传入字符串或 buffer，转换为字节码数组再输出。\n\n如果参数 @1 传入表参数,\n使用 ..util.table.stringify 函数格式化为文本然后输出到控制台。\n仅转换表包含的文本、数值、布尔值、嵌套表对象,\n小数精度最大为 6 位、并自动清除小数尾部多余的 0,\n如果表定义了 tostring 元方法、则转换为字符串\n忽略其他类型,忽略循环引用的表
+dumpTable(__/*表对象*/) = 如果参数 @1 传入字符串或 buffer，转换为字节码数组再输出。\n\n如果参数 @1 传入表参数,\n使用 ..util.table.stringify 函数格式化为文本然后输出到控制台。\n仅转换表包含的文本、数值、布尔值、嵌套表对象,\n小数精度最大为 6 位、并自动清除小数尾部多余的 0,\n如果表定义了 tostring 元方法、则转换为字符串\n忽略其他类型,忽略循环引用的表\n如果输出表的数组成员，则忽略非数组成员。\n\nconsole.dumpTable 输出时对表的信息进行了精简，没输出的数据不是丢了。\nconsole.dump, console.varDump 输出的信息更全，但也不是所有对象都能打印出来
 dumpFile(__/*文件路径*/) = 输出参数 @1 指定文件路径的文件内容
 close() = 关闭控制台
 pause( = 暂停,\n按任意键继续
 pause(.(按键后是否关闭控制台,提示) = 返回用户按键键码 
 setTitle("__") = 设置控制台标题,\n此函数会打开控制台窗口
 getTitle() = 获取控制台标题
-clearScreen() = 清屏
+clearScreen( = 清屏
+clearScreen(.(列号,行号) = 可选指定清屏的开始位置。\n开始位置之前的输出保持不变，\n仅清除指定位置以后的输出。\n不指定参数则清除所有输入。\n\n使用 console.getPos 函数可以获取当前位置（行号，列号）。
 eraseLine() = 清除当前行\n可选指定要在当前行输出的一个或多个参数
 eraseToEndOfLine() = 清除当前输入光标到行尾的所有字符\n注意用‘\r’虽然能回退光标到行首，但并不擦除已输出的字符
 getScreenBufferInfo() = 返回屏幕缓冲区信息

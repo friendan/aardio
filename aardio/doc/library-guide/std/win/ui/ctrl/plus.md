@@ -370,3 +370,166 @@ win.loopMessage();
 
 > 注意：高度较小的单行文本框不要将『多行』属性设为 true （对应于代码中的 `multiline = true` ），避免多行文本框高度太小时无法显示输入光标。
 
+## plus 控件演示 <a id="example" href="#example">&#x23;</a>
+
+如果创建 aardio 工程，建议将应用了 plus 控件 skin 函数的样式参数写到库文件里，以简化与重用样式配置参数。
+
+```aardio
+import fonts.fontAwesome;
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="用 plus 控件演示";right=759;bottom=469)
+winform.add({
+	//plus 控件显示为按钮
+	plusButton={cls="plus";text="按钮";left=193;top=51;right=292;bottom=81;align="left";bgcolor=-5197169;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=20}};iconText='\uF021';textPadding={left=39};z=3};
+	
+	//plus 控件显示为透明控件
+	plusTransButton={cls="plus";text="透明按钮";left=59;top=51;right=156;bottom=81;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF122';textPadding={left=25};z=2};
+	
+	//plus 控件显示为复选框
+	plusCheckBox={cls="plus";text="复选框";left=574;top=51;right=657;bottom=82;align="left";font=LOGFONT(h=-15);iconStyle={align="left";font=LOGFONT(h=-15;name='FontAwesome')};iconText='\uF0C8 ';textPadding={left=24};z=5};
+	
+	//plus 控件显示为单选按钮
+	plusRadioButton={cls="plus";text="单选框";left=437;top=51;right=537;bottom=82;align="left";font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-15;name='FontAwesome')};iconText='\uF111 ';textPadding={left=24};z=6};
+	
+	//plus 控件显示为超链接
+	plusHyperlink={cls="plus";text="超链接";left=330;top=51;right=400;bottom=75;color=8388608;font=LOGFONT(h=-13);textPadding={left=5};z=4};
+	
+	//plus 控件自动支持展示JPG,PNG 等图像或 GIF 动画
+	plusPictureBox={cls="plus";left=70;top=166;right=292;bottom=276;notify=1;z=10};
+	
+	//plus 控件显示为进度条
+	plusProgressBar={cls="plus";left=70;top=373;right=616;bottom=407;bgcolor=6447459;forecolor=9959653;notify=1;z=9};
+
+	//plus 控件显示为滑尺控件
+	plusTrackBar={cls="plus";left=70;top=322;right=512;bottom=337;bgcolor=-2512093;border={radius=-1};color=23807;foreRight=15;forecolor=-14911489;paddingBottom=5;paddingTop=5;z=8};
+	
+	//启用编辑（ 设置 `editable=true` ） 就可以嵌入编辑框
+	plusEdit={cls="plus";left=70;top=108;right=386;bottom=134;align="right";border={bottom=1;color=-6908266};editable=1;font=LOGFONT(h=-13);textPadding={top=6;bottom=2};z=7};
+	
+	//实现组合框只要设置好边框样式，z 序在其他控件之下，不要启用事件通知，也就是不要指定 `notify=true`。
+	plusGroupBox={cls="plus";left=18;top=24;right=745;bottom=452;align="left";border={color=-16744448;radius=8;width=1};db=1;dl=1;dr=1;dt=1;font=LOGFONT(h=-14);textPadding={left=16};valign="top";z=1};
+	
+	//plusGroupTitle 利用 plus 控件默认剪切窗口背景的特性在后面的 plusGroupBox 控件上挖空一块显示标题。 plus 控件如果剪切背景属性（clipBk=true 默认设置不需要指定）则透明部分显示窗口背景而不是后面的控件。
+	plusGroupTitle={cls="plus";text="组合框标题，剪切背景属性必须为 true (默认值，不用设置)";left=181;top=10;right=552;bottom=36;dl=1;dt=1;z=11};
+} )
+/*}}*/
+
+/* 
+plus 控件只要简单地设置图标字体与样式就可以直接显示为复选框效果。通过 checked 属性获取或设置选中状态。 
+*/
+winform.plusCheckBox.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000000;
+		disabled=0xEE666666;
+		hover=0xFFFF0000		
+	};
+	checked={
+		iconText='\uF14A'		
+	}
+})
+
+/* 
+plus 控件只要简单地设置图标字体与样式就可以直接显示为单选框效果。通过 checked 属性获取或设置选中状态。
+skin 参数表中可选通过 group 字段指定单选框分组名称。
+*/
+winform.plusRadioButton.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000000;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	};
+	checked={
+		iconText='\uF058'		
+	}
+})
+
+/*
+plus 控件调用 setTrackbarRange 函数自动显示为滑尺（ trackbar ）样式。
+控件的前景边距（水平滑尺指 paddingBottom，paddingTop 属性）指定滑道边距以限制滑道的大小。
+控件的前景九宫格切图参数用于控制滑块按钮大小，水平滑尺通过控件参数中的 `foreRight=15` 指定了滑块按钮大小。
+使用 winform.plusTrackBar.progressPos 读写滑尺当前进度值。
+*/
+winform.plusTrackBar.setTrackbarRange(1,100);
+
+//滑尺外观，背景色与前景色用于在滑道上区分进度位置。
+winform.plusTrackBar.skin({
+	background={
+		default=0xFF23ABD9
+	};
+	foreground={
+		default=0xFFFF771C;
+		hover=0xFFFF6600
+	};
+	color={
+		default=0xFFFF5C00;
+		hover=0xFFFF6600
+	}
+})
+
+/*
+plus 控件调用 setProgressRange 函数自动显示为进度条（ progress bar ）样式。
+以前景色与背景色区分进度位置。
+*/
+winform.plusProgressBar.setProgressRange(1,100)
+winform.plusProgressBar.progressPos = 50; //读写当前进度
+
+/*
+plus 控件显示为进度条或滑尺模式，进度变更时触发下面的事件，
+pos 参数为当前进度，triggeredByUser 参数表示是否因为用户拖动滑块导致进度值变动
+*/
+winform.plusProgressBar.onPosChanged = function( pos,triggeredByUser ){
+	
+}
+
+// plus 控件只要简单地设置样式就可以直接显示为超链接效果。 
+winform.plusHyperlink.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+// plus 控件只要简单地设置样式就可以直接显示为按钮效果。 
+winform.plusButton.skin({
+	background={
+		default=0x668FB2B0;
+		disabled=0xFFCCCCCC;
+		hover=0xFF928BB3		
+	};
+	color={
+		default=0xFF000000;
+		disabled=0xFF6D6D6D		
+	}
+})
+
+//响应用户点击命令
+winform.plusButton.oncommand = function( id,event ){
+	winform.msgbox("按钮被点击")
+}
+
+// plus 控件只要简单地设置样式就可以直接显示为透明背景按钮效果。 
+winform.plusTransButton.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+import inet.http;
+/*
+plus 控件直接支持 JPG，PNG 透明背景图像，GIF 动画等。
+如果事先导入 inet.http ，则 plus 控件的 background，forground 属性都支持图像网址。
+*/
+winform.plusPictureBox.background = "http://download.aardio.com/v10.files/demo/transparent.gif";
+
+
+winform.show();
+win.loopMessage();
+```

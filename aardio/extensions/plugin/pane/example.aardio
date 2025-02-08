@@ -202,7 +202,66 @@ explorer.onRightClick = function(filePath,hItem,x,y){
         	}
     	)
     	
-    	menu.add(); 	
+    	menu.add("复制文件路径",
+        	function(){
+        	    import win.clip;
+        	    win.clip.write(filePath)
+        	}
+    	) 
+    	
+    	menu.add("复制 file://~/ 路径",
+        	function(){
+        	    var path = string.replace(fsys.path.relative(filePath,"~/",false),"\\","/");
+        	    var url = "file://~/"+path;
+        	    
+        	    import win.clip;
+        	    win.clip.write(url)
+        	}
+    	) 
+    	
+		menu.add();
+		
+		menu.add("在网站文档中查看",
+        	function(){ 
+        	    var path = ..fsys.path.replaceExt(filePath,".html")
+        	    var path = string.replace(fsys.path.relative(path,"~/",false),"\\","/");
+        	    var url = "http://www.aardio.com/zh-cn/doc/?q="+path;
+        	    
+        	    import process;
+        	    process.openUrl(url)
+        	}
+    	)
+    	
+    	menu.add("复制分享网址",
+        	function(){ 
+        	    var path = ..fsys.path.replaceExt(filePath,".html")
+        	    var path = string.replace(fsys.path.relative(path,"~/",false),"\\","/");
+        	    var url = "http://www.aardio.com/zh-cn/doc/"+path;
+        	    
+        	    import win.clip;
+        	    win.clip.write(url)
+        	}
+    	) 
+    	
+    	menu.add();
+    	
+    	menu.add("在本地文档中查看",
+        	function(){ 
+        	    var path = fsys.path.relative(filePath,"~/",false);
+        	    ide.openDocument("doc://"+path)
+        	}
+    	)
+    	
+    	menu.add("复制 doc:// 地址",
+        	function(){ 
+        	    var path = ..fsys.path.replaceExt(filePath,".html")
+        	    var path = string.replace(fsys.path.relative(path,"~/",false),"\\","/");
+        	    var url = "doc://"+path;
+        	    
+        	    import win.clip;
+        	    win.clip.write(url)
+        	}
+    	)  	
     } 
     else{	
     	menu.add("浏览目录...",
@@ -230,9 +289,7 @@ explorer.onRightClick = function(filePath,hItem,x,y){
         	function(){
             	win.clip.file.write(filePath,"copy"); 
         	}
-    	)
-    	
-    	menu.add();  
+    	)  
 	} 
     
     if(isDir){

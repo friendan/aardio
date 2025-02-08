@@ -23,9 +23,15 @@ class zip{
 	beginWrite = function(fileName,password,level=9){
 		var crcForCrypting,zip64;
 		var info = zip_fileinfo();
-		var fileName = ..fsys.longpath(fileName)
-		var attr = ..fsys.attrib(fileName);
 		
+		var toPath = fileName[["to"]]
+		if(toPath){
+			fileName = fileName[["from"]];
+			if(!fileName) error("缺少源路径");
+		}
+		fileName = ..fsys.longpath(fileName);
+		
+		var attr = ..fsys.attrib(fileName);
 		if( attr == -1)
 			error("路径参数错误",2);
 
@@ -59,12 +65,12 @@ class zip{
 		 
 		info.dosDate = ftm.toDosTime();
 		info.external_fa = attr; 
-   
-		fileName = ..fsys.path.relative(fileName,localDir,false);
-		if(!#fileName)return;
+  
+		toPath = toPath || ..fsys.path.relative(fileName,localDir,false);
+		if(!#toPath)return;
 		
-		fileName = ..string.replace(fileName,"\\","/");
-		if (zipOpenNewFileInZip4_64(zipFile,fileName,info,  , 0,  , 0,  , 8/*_Z_DEFLATED*/, level,
+		toPath = ..string.replace(toPath,"\\","/");
+		if (zipOpenNewFileInZip4_64(zipFile,toPath,info,  , 0,  , 0,  , 8/*_Z_DEFLATED*/, level,
 			0,-15/*_Z_MAX_WBITS*/, 8/*_Z_DEF_MEM_LEVEL*/, 0/*_Z_DEFAULT_STRATEGY*/,password, crcForCrypting, 0/*_VERSIONMADEBYDOS*/, 0x800, zip64) != 0/*_ZIP_OK*/){
             return;
         }
@@ -80,16 +86,17 @@ class zip{
 	endWrite = function(){
 		zipCloseFileInZip(zipFile);
 	}; 
-	writeDir = function(path,password){
-		path = ..fsys.path.addBackslash(path);
-		if( this.beginWrite(path,password) ){
+	writeDir = function(pathInfo,password){
+		if( this.beginWrite(pathInfo,password) ){
 			this.endWrite();
 			return true;
 		}
 	}; 
-	eachWriteFile = function(path,password,bufSize = 0xA00000,level){ 
+	eachWriteFile = function(pathInfo,password,bufSize = 0xA00000,level){  
+		path = pathInfo[["from"]] || pathInfo;
+		
 		if(!..io.exist(path) )error("路径参数错误",2);
-		if( ( bufSize <= 0 ) || (!  this.beginWrite(path,password,level) )  )return function(){};
+		if( ( bufSize <= 0 ) || (!  this.beginWrite(pathInfo,password,level) )  )return function(){};
 		var buffer;
     	if( #bufferPrev = bufSize ){
     		buffer = bufferPrev;
@@ -97,6 +104,7 @@ class zip{
     	else{
     		buffer = ..raw.buffer(bufSize);
     	};
+    	
     	var file = ..io.file(path,"rb")
     	return function(){
     		var len = file.readBuffer(buffer)
@@ -116,9 +124,52 @@ class zip{
 		}
 	};
 	compress = function(compressPath,proc,password,level=9,bufSize = 0xA00000){
+		
+		var toPath = compressPath[["to"]]
+		if(toPath){
+			compressPath = ..io.exist(compressPath[["from"]]);
+			if(!compressPath)error("压缩源文件路径错误",2); 
+			
+			toPath = ..string.trimleft(toPath,"/\");//必须移除
+				 
+			if( !..fsys.isDir(compressPath) ){ 
+				
+				for len in this.eachWriteFile({
+					from = compressPath;
+					to = toPath;
+				},password,bufSize,level){
+					if(proc)proc( len,compressPath );
+				}
+			}
+			else { 
+				..fsys.enum(compressPath, "*.*",
+					function(dir,file,fullpath,findData){ 
+						
+						var subPath = ..fsys.path.relative(fullpath,compressPath,false);
+						
+						if(file){
+			           		for len in this.eachWriteFile({
+									from = fullpath;
+									to = ..io.joinpath(toPath,subPath);
+								},password,bufSize,level){
+								if(proc) proc( len,fullpath );
+							}
+						}
+						else{
+							this.writeDir({
+								from = fullpath;
+								to = ..io.joinpath(toPath,subPath);
+							},password);
+						}
+					}  
+				);
+			}
+			
+			return true;	
+		}
+		
 		var compressPath = ..io.exist(compressPath);
 		if(!compressPath)error("压缩源文件路径错误",2); 
-	  	
 	  	
 		if( !..fsys.isDir(compressPath) ){ 
 			if(!localDir)localDir = ..fsys.getParentDir(compressPath);
@@ -170,15 +221,17 @@ namespace zip{
 	} 
 }
 
+//@guide [点这里查看使用范例](doc://example/File/Compression/zip.aardio)
+
 /**intellisense()
-zlib.zip(.(zip路径,根目录,是否追加) = 创建压缩文件对象。\n参数二,参数三都可以省略。\n如果不指定根目录，首先调用 compress 函数时将自动指定。\n如果首次压缩的是目录，则该目录设为根目录，否则文件的父目录设为根目录。
+zlib.zip(.(zip路径,根目录,是否追加) = 创建压缩文件对象。\n参数二,参数三都可以省略。\n如果不指定根目录，首先调用 compress 函数时将自动指定。\n如果首次压缩的是目录，则该目录设为根目录，否则文件的父目录设为根目录。\n如果压缩时路径参数传入包含 from,to 字段的表则忽略根目录配置。
 zlib.zip() = !zlib_zip.
 !zlib_zip.beginWrite(.(文件路径,压缩密码,压缩级别) = 开始添加压缩文件,\n密码为可选参数,压缩级别可省略,默认为0
 !zlib_zip.endWrite() = 添加压缩文件完成
 !zlib_zip.writeBuffer(.(buffer,长度) =  参数@1 使用 raw.buffer 函数分配的 buffer 对象,\n长度可省略
 !zlib_zip.close() = 关闭对象
 !zlib_zip.writeDir(.(目录路径) =  添加目录
-!zlib_zip.compress(压缩源目录,回调函数,压缩密码,压缩级别,缓冲区大小) = @.compress( "__/*源目录*/",\n	function(len,path){\n		..io.print( len,path )\n	}\n)
+!zlib_zip.compress(文件路径,回调函数,压缩密码,压缩级别,缓冲区大小) = @.compress( "__/*参数 @1 可指定需要压缩的源目录或文件路径。\n也可指定一个表：由 from 字段指定源路径，to 字段指定目标路径。*/",\n	function(len,path){\n		..io.print( len,path )\n	}\n)
 _ZIP_OK=@0/*_ZIP_OK*/
 _ZIP_EOF=@0/*_ZIP_EOF*/
 _ZIP_ERRNO=@-1/*_ZIP_ERRNO*/

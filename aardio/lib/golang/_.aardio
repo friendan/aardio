@@ -317,6 +317,26 @@ class golang{
 	env = function(){
 		return this.command("env");
 	}; 
+	updatePeTime = function(path,value){
+		var file = ..io.file(path,"r+b");
+		if(!file) return null,"打开文件失败！"
+		
+		if( (file.read(2) != '\x4d\x5a' ) || (file.seek("set",60)!=60 ) ){
+			file.close();
+			return null,"文件不是 PE 格式"
+		} 
+		
+		var r,e;
+		var headerAddress = file.read({INT lfanew})[["lfanew"]];
+		if(  headerAddress ? file.seek("set",headerAddress+8) ){
+			r,e = file.write({ 
+				INT timeDateStamp = tonumber(..time(value).utc()) 
+			} );
+		}
+		
+		file.close();  
+		return r,e;
+	}
 }  
 import golang.string;
 
@@ -353,6 +373,7 @@ golang() = !golang.
 !golang.cmd() = !process_popen.
 !golang.generate(__) = 执行 generate 命令，可添加一个或多个命令行参数。\n\n可指定字符串或参数表等任何 string.args.join 支持的参数。
 !golang.yaegiExtract(.(->->->) = 执行 yaegi extract 命令导出模块符号表。\n参数可以是一个或多个命令行参数，\n这些参数可以是 string.args.join 支持的字符串或表参数。\n\nyaegi 用法可参考 golang.excelize 扩展库的 DLL 源码。\n不要看网上过时的文章，这个命令没有重定向，也不需要指定输出文件名。\n直接到应用程序根目录找默认输出的文件。
+!golang.updatePeTime(.(path,tm) = 设置 PE 时间戳。\n参数 @path 指定文件路径。\n参数 @tm 可以是数值或 time 对象。\n省略 @tm 参数则设为当前时间。\n\n- Go 编译的执行文件默认不会更新 PE 时间戳。\n- 使用 raw.pefile.getTime 函数读取 PE 时间戳。
 end intellisense**/
 
 /**details(必读)

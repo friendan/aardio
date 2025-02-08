@@ -1,0 +1,170 @@
+//自动部署 Ollama 本地模型
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="自动部署 Ollama 本地模型";right=644;bottom=556)
+winform.add(
+cmbModels={cls="combobox";left=171;top=520;right=336;bottom=546;db=1;dl=1;edge=1;items={};mode="dropdown";z=2};
+custom={cls="custom";text="自定义控件";left=3;top=3;right=638;bottom=504;db=1;dl=1;dr=1;dt=1;z=1};
+goLibrary={cls="syslink";text='<a href="https://ollama.com/library?sort=popular">搜索大模型</a>';left=369;top=523;right=471;bottom=541;color=16729600;db=1;dl=1;dr=1;notify=1;z=4};
+static={cls="static";text="请输入或选择模型名称：";left=9;top=520;right=166;bottom=546;align="right";db=1;dl=1;transparent=1;z=3}
+)
+/*}}*/
+
+/*
+下面演示怎样调用 Ollama 接口自动部署 Ollama 本地模型。
+web.rest.aiChat 已兼容 Ollama，如果只是调用模型创建对话则使用 web.rest.aiChat 会更简单。 
+
+请参考 web.rest.aiChat: doc://library-guide/std/web/rest/aiChat.html
+*/
+
+//导入浏览器控件
+import web.view;
+var wb = web.view(winform.custom);
+
+//几句代码创建 Ollama 接口，不需要额外封装库
+import web.rest.jsonClient;
+var client = web.rest.jsonClient();
+var ollama = client.api("http://localhost:11434/api/")
+
+//创建聊天上下文
+import web.simpleChatUi.messages;
+var messages = web.simpleChatUi.messages(); 
+
+//添加消息 
+messages.push( 
+	//system 角色用来写系统指令提示
+	role = "system"; 
+	content  = "你是 Ollama 智能助理，用户的贴心小助手~。现在的时间是 " + tostring(time()) + "。"
+)
+
+//导出网页 JavaScript 可以调用的接口
+wb.external = {};
+wb.external.sendMessage = function(id,prompt){ 
+	 
+	//启动时 ChatUI 会发一个空消息
+	if(!id){
+		
+		//第一次显示欢迎消息
+		return chatUi.emit(
+			content = '主人好，我是 Ollama 智能助理，您的贴心小助手~。您可以在下面输入或选择模型，如果模型尚未安装我会自动帮您下载安装。'; 
+		);
+	}
+		
+	//加入到聊天上下文
+	messages.push( 
+		role = "user";
+		content = prompt;
+	)  
+	
+	//非阻塞异步调用，让 JavaScript 调用先返回 
+	wb.setTimeout( 
+		function(){
+			
+			//记录应答消息
+			var content = "";
+				
+			//发送聊天请求
+			var ok,err = ollama.chat({
+				model = winform.cmbModels.text;
+				options = {
+					temperature = 0.7;//模型选项
+				}
+				messages = messages;
+			},function(result){  	
+				
+				//流式响应，每次应答一个字
+				content = content ++ result.message.content;
+				
+				//逐字发送聊天消息到界面，实现打字效果  
+				chatUi.emit({
+					id = id;
+					content = content
+				})    
+			} )	 
+			
+			if(ok){
+				//加入到聊天记录
+				messages.push( 
+					role = "assistant";
+					content = string.trim(content);
+				)
+			}  
+			else{
+				//如果模型不存在
+				if(string.indexOf(err,`try pulling it first`)){
+					
+					//下载模型
+					var ok,err = ollama.pull({
+						model = winform.cmbModels.text; 
+					},function(result){   
+						
+						//出错了，显示错误信息
+						if( result.error ){
+							chatUi.emit({
+								id = id;
+								content = result.error 
+							})  
+							return;
+						}
+						
+						//显示模型下载进度	
+						if(result.completed) {
+							chatUi.emit({
+								id = id;
+								content = "正在下载模型:"  + ..math.round((result.completed / result.total) * 100) + "% " + ..math.size64(result.completed).format()
+							})  
+						}
+						elseif( result.status ){
+							
+							//显示下载状态
+							chatUi.emit({
+								id = id;
+								content = result.status
+							}) 
+							
+							//下载完成
+							if(result.status == "success"){
+								wb.external.sendMessage(id,prompt);
+								return;
+							} 
+						}   
+					} )	
+					
+					//下载成功
+					if(ok) return ; 
+				}
+					
+				//显示错误信息
+				chatUi.emit({
+					id = id;
+					content = client.lastResponseError("error"):err;
+				})   
+			} 
+		}
+	); 
+};	 
+
+//加载 ChatUI 前端界面
+import web.simpleChatUi;
+chatUi = web.simpleChatUi(wb);
+chatUi.avatar = 'https://gw.alicdn.com/tfs/TB1DYHLwMHqK1RjSZFEXXcGMXXa-56-62.svg';
+
+//列出已安装的大模型
+var ret = ollama.tags.get(); 
+if( #ret.models){
+	winform.cmbModels.items = table.map(ret.models,lambda(v) v.name )
+	winform.cmbModels.selIndex = 1;	
+}
+else {
+	winform.cmbModels.text = "qwin:0.5b";
+}
+
+
+//搜索在线大模型
+import process;
+winform.goLibrary.onHyperlinkClick = function(nmSysLink,url,id){
+	process.openUrl(url) //打开超链接	
+} 
+
+winform.show();
+win.loopMessage();

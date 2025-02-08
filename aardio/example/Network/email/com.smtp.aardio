@@ -1,26 +1,36 @@
 //com.smtp 发送邮件
-import console;
 import com.smtp;
 
 var smtp = com.smtp();
 
+//如果要在 QQ 中显示发件记录，可在 QQ 邮箱设置中勾选『SMTP发信后保存到服务器』
 smtp.from="1000@qq.com" //发件人
 smtp.to="1000@qq.com" //收件人
 smtp.ssl = true; 
 
 smtp.server="smtp.qq.com" //邮件服务器
 smtp.username="1000@qq.com" //用户名
-smtp.password = "1000100010001000" //密码
+smtp.password = "1000100010001000" //密码或 SMTP 授权码
 smtp.subject="标题" //邮件标题
-smtp.html="邮件内容" //邮件内容
 
-io.open()
+//注意在 HTML 中加上 UTF-8 编码声明
+smtp.html=`<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<style></style>
+</head>
+<body>邮件内容</body>
+</html>
+`
 try{
-	console.log("正在发送邮件...")
+	print("正在发送邮件...")
     smtp.send();//发送邮件 
 }
 catch(e){
-    console.log("出错了,请正确设置smtp服务器登录信息,如密码等.",e)
+    print("出错了,请正确设置smtp服务器登录信息,如密码等.",e)
 }
 
-console.pause();
+//免费 SMTP 一般不支持批量发送
+//QQ 邮箱模拟正常操作，一次发一封没问题，
+//批量发可能会 250 错误，这是被 QQ 邮箱限制 SMTP 频率了。
+thread.delay(5000)

@@ -1,21 +1,47 @@
 //zip 压缩
 import console;
 import zlib.zip
+
+//----------------------------------------
  
+//打开新压缩包
 var zip = zlib.zip("/测试文件.zip"); 
-zip.compress( io._exedir + "config",
+
+//压缩目录或文件
+zip.compress( "~/config",
 	function(len,path){
 		console.log( len,path )
 	}
 )
 
+//关闭文件
+zip.close();
+
+//----------------------------------------
+
+//打开压缩包，参数 @3 为 true 则保留压缩包原来的文件
+var zip = zlib.zip("/测试文件.zip",,true); 
+
+//自定义添加到压缩包的指定路径。
+zip.compress( {
+		from = "~/config"; //指定压缩源目录
+		to = "subDir/abc/"; //自定义目标路径（压缩包内相对根目录的路径）。
+	},
+	function(len,path){
+		..io.print( len,path )
+	}
+)
+
+//----------------------------------------
+
 raw.explore("/测试文件.zip","/select");
 
 /*
+
+//简单压缩目录也可以调用 Win10 及更新系统自带组件
 import System.IO.Compression.ZipFile;
 var ZipFile = System.IO.Compression.ZipFile;
 
-//简单压缩目录也可以调用 Win10 及更新系统自带组件
 ZipFile.CreateFromDirectory (
 	io.fullpath("/测试文件/"),
 	io.fullpath("/测试文件.zip"),

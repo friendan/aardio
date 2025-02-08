@@ -1,7 +1,7 @@
 //编译 DLL
 import process.gfortran;
 
-//创建 gfortran 编译环境，参数指定工作目录，单个斜杠或反斜杆表示应用程序根目录（工程目录、或工程外独立启动文件所在目录，发布后为 EXE 目录）
+//创建 gfortran 编译环境，参数指定工作目录，单个斜杠或反斜杠表示应用程序根目录（工程目录、或工程外独立启动文件所在目录，发布后为 EXE 目录）
 var fortran = process.gfortran("/");
 
 /*

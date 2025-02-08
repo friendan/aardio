@@ -6,7 +6,7 @@ import py2;
 //如果要创建 Python 整数请使用 py2.int 函数，例如:
 var pyInt = py2.int("12355678901235567890")
 
-//支持 aadio 中的常用运算符,注意这些运算符返回的都是 py2.object 对象
+//支持 aardio 中的常用运算符,注意这些运算符返回的都是 py2.object 对象
 console.log( pyInt+py2.int("12355678901235567890") );
 console.log( pyInt%3 ); 
 console.log( pyInt==3 );

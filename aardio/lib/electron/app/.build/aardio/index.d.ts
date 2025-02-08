@@ -132,7 +132,7 @@ declare namespace aardio {
         /**  
          * Electron 内 @url 可传入以主窗口首页地址的相对路径，
          * 其他网页 @url 可传入以当前网页地址的相对路径，
-         * 如果传入 @url 首字符为斜杆，则为应用根目录的相对路径，
+         * 如果传入 @url 首字符为斜杠，则为应用根目录的相对路径，
          * 返回完整URL
          * */
         fullUrl(url:string):string;

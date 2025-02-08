@@ -1,4 +1,5 @@
+﻿获取文本=editor.aardio
+获取选区查单词=selection.aardio
+获取光标插入点=caret.aardio
 发送字符串=sendString.aardio
 用剪贴板发送文本=sendByCb.aardio
-获取选区文本=selection.aardio
-光标位置=caret.aardio

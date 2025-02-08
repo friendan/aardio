@@ -142,6 +142,8 @@ namespace doc{
 	} 
 }
 
+//@guide [范例：调用 VBA](doc://example/Languages/VBA%20JSA/Word.html) [范例：修改集合值](doc://example/COM/Advanced/Collection.html) [范例：web.view 预览 Word 文档](doc://example/WebUI/web.view/OtherApps/docx.html)
+
 /**intellisense()
 com.doc = Word 支持库（测试版），请不要使用精简版 Word。\n兼容 WPS 文档。\n\n参考: https://learn.microsoft.com/en-us/office/vba/api/overview/word/object-model \n\n注意 com.doc 支持 Word 接口提供的所有方法与属性。\n但并不是智能提示里都能看到这些方法与属性，这个数量太大了 aardio 没办法都做进来。\n智能提示看不到，只要文档里有都可以使用。\n通过 com.doc 对象的成员可访问 Word 接口的所有常量。
 com.doc( __/*是否创建新实例或文件路径*/ ) = 创建 Word 对象。\n如果参数为 false ,则获取已打开的 Word 对象。\n如果参数输入文件路径，则打开该文件。\n如果文件不存在，则创建文件然后再打开。

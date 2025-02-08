@@ -13,7 +13,7 @@ class menu{
 	popup = function(x,y,id,ele){
 		var args = tMenus[id]
 		if(!args)
-			return;
+			return true;
 
 		var popMenu = ..win.ui.popmenu( this._form );//创建弹出菜单
 		var arg,command,proc,id;
@@ -57,7 +57,26 @@ class menu{
 } 
 
 /**intellisense()
+web.form.menu = 用于在 wb.showMenu 事件中创建菜单。
 web.form.menu(wb,menu) = @.menu( __/*web.form 对象*/, {\n    [2/*_CONTEXT_MENU_CONTROL*/] = {  \n        { "撤消";"Undo" }; \n        { /*-----*/};  \n        { "剪切";"Cut"}; \n        { "复制";"Copy"}; \n        { "粘贴";"Paste"};\n        { "删除";"Delete"}; \n        { /*-----*/};\n        { "全选";"SelectAll"};  \n    };\n    [4/*_CONTEXT_MENU_TEXTSELECT */] = {  \n        { "剪切";"Cut" }; \n        { "复制";"Copy" }; \n        { "粘贴";"Paste" };\n        { "删除";"Delete" };\n    };  \n} );
+web.form.menu() = !webFormMenu.
+!webFormMenu.popup( = 在 wb.showMenu 事件中弹出菜单
+!webFormMenu.popup(.(x,y,id,ele) = x,y 为显示坐标。\nid,ele 则必须是 wb.showMenu 事件的参数。
 end intellisense**/ 
 
 //https://developer.mozilla.org/docs/Web/API/Document/execCommand
+
+/*****intellisense(菜单ID)
+_CONTEXT_MENU_DEFAULT = 0,
+_CONTEXT_MENU_IMAGE = 1,
+_CONTEXT_MENU_CONTROL = 2,
+_CONTEXT_MENU_TABLE = 3,
+_CONTEXT_MENU_TEXTSELECT = 4,
+_CONTEXT_MENU_ANCHOR = 5,
+_CONTEXT_MENU_UNKNOWN = 6,
+_CONTEXT_MENU_IMGDYNSRC = 7,
+_CONTEXT_MENU_IMGART = 8,
+_CONTEXT_MENU_DEBUG = 9,
+_CONTEXT_MENU_VSCROLL = 10,
+_CONTEXT_MENU_HSCROLL = 11
+end intellisense*****/

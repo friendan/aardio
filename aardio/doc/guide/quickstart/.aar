@@ -1,6 +1,10 @@
 创建控制台=~/doc/library-guide/std/console/_.md
 创建窗口界面=~/doc/library-guide/std/win/ui/create-winform.md
 创建网页界面=~/doc/library-guide/std/web/view/_.md
+高级图像控件（plus）=~/doc/library-guide/std/win/ui/ctrl/plus.md
 高级选项卡=~/doc/library-guide/std/win/ui/tabs/_.md
 HTTP 客户端=~/doc/library-guide/std/web/rest/client.md
 HTTP 服务端=web-server.md
+调用 AI 大模型=~/doc/library-guide/std/web/rest/aiChat.md
+超级热键入门=~/doc/library-guide/std/key/hotkey.md
+自动化=automation.md

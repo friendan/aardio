@@ -1,0 +1,37 @@
+//RUNAS//
+/*
+在 aardio 启动代码第一行加上注释 `//RUNAS//` 
+就可以管理员身份（管理权限）启动程序或 aardio 代码。
+
+如果 aardio 工程的启动 main.aardio 第一行是 `//RUNAS//`，则发布为 EXE 后会显示盾牌图标，
+并且在启动时会申请管理员权限。
+
+使用 sys.runAsTask 可将程序注册为自动获取管理员权限的系统自启动程序，
+注册时需要管理权限，自启动时不再需要确认管理权限。
+*/
+import process;
+import process.admin;
+import thread.token;
+import sys.acl;
+
+if(process.admin.isRunAs()){
+	print("进程以管理权限启动");
+}
+
+//切换到 SYSTEM 身份
+thread.token.impersonate("winlogon.exe",function(){
+	var sid = thread.token().sid()
+	
+	var user = sys.acl.sidToUserName(sid);
+	print("当前线程用户身份：",user);
+})
+
+/*
+参数 @3 指定为 "runas" 就可以管理员身份（管理权限）运行其他程序，
+当前进程如果是普通权限就会弹出确认警告，否则直接运行。
+*/
+process.execute("notepad.exe",,"runas");
+
+
+//如果当前进程是管理员身份（管理权限）运行，可用下面的函数以普通用户权限运行外部程序。
+process.admin.runasLeastPrivileges("notepad.exe");

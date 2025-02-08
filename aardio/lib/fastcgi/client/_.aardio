@@ -757,9 +757,10 @@ postFileData() = 可以使用此函数判断当前请求是否上传文件\n获�
 end intellisense**/
 
 /**intellisense(response)
+flush() = 发送并清空缓冲区。\nIIS 仍然会继续在缓冲区缓存输出。\nIIS 内如果要实时输出请修改 FastCGI 缓冲区大小为 0\n[参考文档](doc://guide/quickstart/web-server.html#responseBufferLimit)
 write(__) = 输出一个或多个值,\n参数将自动转换为字符串对象\n可直接输出结构体,其他table转换为JSON输出
 writeBuffer(.(buffer,长度) = 输出 buffer 对象中的数据
-eventStream( = 按 text/event-stream 协议格式输出表对象。\nwsock.tcp.simpleHttpServer,wsock.tcp.asynHttpServer 已自动支持。\nIIS 需要在处理程序映射配置中添加 responseBufferLimit="0"（注意备份原配置）
+eventStream( = 按 text/event-stream 协议格式输出表对象。\nwsock.tcp.simpleHttpServer,wsock.tcp.asynHttpServer 已自动支持。\nIIS 需要在处理程序映射配置中添加 responseBufferLimit="0"（注意备份原配置），\n\n[参考文档](doc://guide/quickstart/web-server.html#responseBufferLimit)
 eventStream(.(message) = 将参数 @message 指定的表对象按 text/event-stream 格式输出。\n该表对象中值类型为表的对象自动转换为 JSON 输出。\nresponse.contentType 自动指定为 "text/event-stream"
 redirect("__") = 302重定向,\n必须在页面尚未输出响应头时调用,\n参数@1可以是相对路径或任意网址,\n此函数终止执行页面后续代码 
 redirect("__",301) = 301重定向,\n必须在页面尚未输出响应头时调用,\n参数@1可以是相对路径或任意网址,\n此函数终止执行页面后续代码 
@@ -793,6 +794,7 @@ customErrors[404] = @.customErrors[404] = function(response,request,session){
 	response.write("404 Not Found"); __/*自定义错误处理函数,\n每次请求仅第一个自定义错误处理函数会被调用*/
 } 									
 end intellisense**/
+
 
 /**intellisense()
 session = Web服务端会话对象,\nsession对象必须由服务端框架自动维护，\n用户发起不同的请求时session对象都是不同的，\n并且由服务端框架自动设置为全局变量。\n\nsession的接口规范由标准库中fastcgi.client定义，\n目前aardio提供的所有HTTP服务端框架都兼容此接口。

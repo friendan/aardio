@@ -1,0 +1,14 @@
+﻿十六进制编码=hex.aardio
+Base64=base64.aardio
+AES 加密=aes.aardio
+DES 加密=des.aardio
+RSA 加密=rsa.aardio
+RSA 签名=rsa-sign.aardio
+加解密文件=file.aardio
+文件哈希工具=hash-file.aardio
+MD5,SHA-1=hash.aardio
+sha-256=sha-256.aardio
+HMAC-SHA=hmac-sha.aardio
+RC4=rc4.aardio
+XXTEA=xxtea.aardio
+escape2=escape2.aardio

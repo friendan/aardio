@@ -212,7 +212,7 @@ export {};
 
 ```
 rpcServer.accessControlAllowOrigin = {
-	["https://example.com"] = true //域名后不要加斜杆
+	["https://example.com"] = true //域名后不要加斜杠
 }
 ```
 

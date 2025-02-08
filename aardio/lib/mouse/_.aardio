@@ -30,6 +30,13 @@ var getPointArgs;
 getPointArgs = function(x=0,y=0,abs){ 
 	if(type(x)=="table"){
 		if(abs===null) abs = 1;
+		
+		if(x[["_dotNetObject"]]){
+			if(x.BoundingRectangle) x = x.BoundingRectangle;
+			else x = x.Current.BoundingRectangle;
+			if(!x) return;
+		}
+		
 		if(x.left!==null) {
 			y = x.top + x.height()/2;
 			x = x.left + x.width()/2;
@@ -47,10 +54,7 @@ getPointArgs = function(x=0,y=0,abs){
 				y = x.y;
 				x = x.x;		
 			}
-		}
-		elseif(x.BoundingRectangle){
-			return getPointArgs(x.BoundingRectangle,,abs);
-		}
+		} 
 		else error("错误的坐标参数类型",3);
 	}
     
@@ -63,6 +67,12 @@ getPointArgs = function(x=0,y=0,abs){
 	}
 	elseif(type(abs)=="table"){
 		
+		if(abs[["_dotNetObject"]]){
+			if(abs.BoundingRectangle) abs = abs.BoundingRectangle;
+			elseif(!abs) abs = abs.Current.BoundingRectangle; 
+		}
+		
+		
 		if(abs.left!==null) {
 			y = abs.top + y;
 			x = abs.left + x;
@@ -74,9 +84,6 @@ getPointArgs = function(x=0,y=0,abs){
 		elseif(abs.x!==null) { 
 			y = abs.y + y;
 			x = abs.x + x;	 
-		}
-		elseif(abs.BoundingRectangle){
-			return getPointArgs(x,y,abs.BoundingRectangle);
 		}
 	}
 	

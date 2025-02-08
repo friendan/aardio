@@ -14,6 +14,7 @@ class pefile{
 		this.path = path;
 		
 		if( (file.read(2) != '\x4d\x5a' ) || (file.seek("set",60)!=60 ) ){
+			file.close();
 			return null,"文件不是PE格式"
 		} 
 		
@@ -345,7 +346,7 @@ namespace pefile{
 		['X'#]="void";
 	}
 	
-getDecoratedTypes = function(types){
+	getDecoratedTypes = function(types){
 		var i=1;
 		
 		var nextType;
@@ -480,10 +481,40 @@ getDecoratedTypes = function(types){
 		
 		return result;
 	}
+	
+	setTime = function(path,value){
+		var file = ..fsys.file(path,"r+b");
+		if(!file) return null,"打开文件失败！"
+		
+		if( (file.read(2) != '\x4d\x5a' ) || (file.seek("set",60)!=60 ) ){
+			file.close();
+			return null,"文件不是 PE 格式"
+		} 
+		
+		var r,e;
+		var headerAddress = file.read({INT lfanew})[["lfanew"]];
+		if(  headerAddress ? file.seek("set",headerAddress+8) ){
+			r,e = file.write({ 
+				INT timeDateStamp = tonumber(..time(value).utc()) 
+			} );
+		}
+		
+		file.close();  
+		return r,e;
+	}
+	
+	getTime = function(path){
+		var file = ..raw.pefile(path);
+		if(!file) return;
+		
+		var r = file.imageHeader.timeDate;
+		file.close();
+		return r;
+	} 
 }
 
 /**intellisense()
-raw.pefile = 用于分析PE文件\n用法请参考 aardio 工具 / 探测器 / DLL 查看工具
+raw.pefile = 用于分析 PE 文件\n用法请参考 aardio 工具 / 探测器 / DLL 查看工具
 raw.pefile(.(path) = 参数指定 PE 文件路径
 raw.pefile() = !rawPeFile.
 !rawPeFile.getExportDirectory() = 返回导出表信息,失败或无导出表返回 null。\n用法请查看函数源码
@@ -503,4 +534,7 @@ raw.pefile() = !rawPeFile.
 !rawPeFile.path = 文件路径
 !rawPeFile.sections = PE 节信息数组。
 !rawPeFile.getSectionByName(__) = 返回参数 @1 指定名称的 PE 节信息。
+!rawPeFile.close() = 关闭文件，对象被回收时也会自动调用此函数。
+raw.pefile.getTime(__/*path*/) = 返回使用 PE 时间戳作为参数创建的 time 对象。\n参数 @path 指定文件路径。
+raw.pefile.setTime(.(path,tm) = 设置 PE 时间戳。\n参数 @path 指定文件路径。\n参数 @tm 可以是数值或 time 对象。
 end intellisense**/

@@ -95,6 +95,20 @@ winform.txtGuid.onChange = function(){
 					return;
 				}
 			}
+			else {
+				var txt = string.match(txtGuid,"!\d<<<0x\x+>|0>\s*,\s*>{10}<<0x\x+>|0>");
+				if(txt){
+					var arr = string.map(txt,"<<0x\x+>|0>",tonumber);
+					if(#arr==11){
+						var guid = ..win.guid( table.unpack(arr) );
+						if(tostring(guid) != txtGuid )winform.txtGuid.text = guid; 
+						winform.txtGuid.onChange();
+						return;
+					} 
+				} 
+				
+			}
+			
 		}
 		
 		winform.txtGuid2.text = "";

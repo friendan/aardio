@@ -7,6 +7,7 @@ namespace web.form;
 class simpleMarkdown{
 	ctor(...){{
 		this = ..web.form(...); 
+		this.noScriptErr = true; 
 
 		this.loadcode(`
 <!DOCTYPE html><html><head>
@@ -61,17 +62,19 @@ window.lastInsertElement = function(){
 	return document.body.children[ document.body.children.length -1 ]
 }
 
-window.onWriteEnd = function(){
-	if(window.interval){
-		clearInterval( window.interval );
-		window.interval  = 0;
-	}
-	
-	Prism.highlightAll(); 
-	document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
+
+function isScrollAtBottom(container) {
+    var threshold = 5;
+    return document.documentElement.scrollHeight - document.documentElement.scrollTop - document.documentElement.clientHeight <= threshold;
 }
 
+var isAutoScrolling = false; 
+var userHasScrolled = false;;
+
 window.showLoading = function(title){ 
+	isAutoScrolling = false; 
+	userHasScrolled = false;
+	
 	if(!title) title = "正在加载 "
 	if(window.interval){
 		clearInterval( window.interval );
@@ -81,6 +84,18 @@ window.showLoading = function(title){
 	loading.innerText = title;
 	document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
 	
+
+	document.documentElement.onscroll = function(){ 
+    	if (!isAutoScrolling) {
+        	userHasScrolled = true;
+    	}
+    	
+    	if (isScrollAtBottom()) {
+        	userHasScrolled = false;
+    	}
+	};
+
+	
 	var dots = 1;
 	window.interval = setInterval(function() {
 		var loading = document.getElementById('loading');
@@ -89,8 +104,16 @@ window.showLoading = function(title){
 			clearInterval( window.interval );
 			
 			//用定时器滚动更轻快，不能打一个字就滚一下那会卡得不行
-			window.interval = setInterval(function() {
-				document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
+			window.interval = setInterval(function() { 
+				
+				if (!userHasScrolled) {
+					isAutoScrolling = true;
+					document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
+					
+					setTimeout(function() {
+            			isAutoScrolling = false;
+        			}, 0); 
+        		}
      		},800);
      		
 			return;
@@ -104,11 +127,35 @@ window.showLoading = function(title){
     	dots = (dots % 10) + 1;
 	}, 800); 			
 }
+
+window.onWriteEnd = function(){
+	if(window.interval){
+		clearInterval( window.interval );
+		window.interval  = 0;
+	}
+	
+	if(Prism)Prism.highlightAll(); 
+	
+	if (!userHasScrolled) {
+		document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;
+	}
+}
 </script>
 
 <style><?=..web.form.simpleMarkdown._css?></style><script><?=..web.form.simpleMarkdown._js?></script><script><?=..web.form.simpleMarkdown._js2?></script>
+ 
+<? if _WIN7_LATER { ?>
+<link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/latest/katex.min.css">
+<script src="https://lib.baomitu.com/KaTeX/latest/katex.min.js"></script>
+<? } ?>
+
+<script>
+!function(e,t){"function"==typeof define&&define.amd?define(t):"object"==typeof exports?module.exports=t():t()}(0,function(){var o="details",i="summary";(function(){var e=document.createElement(o);if(!("open"in e))return!1;e.innerHTML="<"+i+">a</"+i+">b",document.body.appendChild(e);var t=e.offsetHeight;e.open=!0;var n=t!=e.offsetHeight;return document.body.removeChild(e),n})()||(document.documentElement.className+=" no-details",window.addEventListener("click",function(e){if("summary"===e.target.nodeName.toLowerCase()){var t=e.target.parentNode;if(!t)return;t.getAttribute("open")?(t.open=!1,t.removeAttribute("open")):(t.open=!0,t.setAttribute("open","open"))}}),function(e,t){if(document.getElementById(e))return;var n=document.createElement("style");n.id=e,n.innerHTML=t,document.getElementsByTagName("head")[0].appendChild(n)}("details-polyfill-style","html.no-details "+o+":not([open]) > :not("+i+") { display: none; }\nhtml.no-details "+o+" > "+i+':before { content: "▶"; display: inline-block; font-size: .8em; width: 1.5em; }\nhtml.no-details '+o+"[open] > "+i+':before { content: "▼"; }'))});
+</script>
 </head><body></body></html>
 `)
+
+		this.wait();
 		
 		var lastElement;    
 		var markdownText = "";
@@ -122,74 +169,173 @@ window.showLoading = function(title){
 		}
 		
 		var markdown = ..string.markdown(); 
-		this.write = function(md){
-			var html = markdown.render(md); 
-    		this.body.innerHTML = html;  
-    		this.script.onWriteEnd();  
+		
+		var katexParse;
+		this.enableKatex = function(enabled){
+		   
+			if(enabled ){ 
+				
+				katexParse = function(md){ 
+					return ..string.replaceUnmatched(md 
+						,"<$[""'`$]?![^$]+$>|<$$[^$]+$$>|<%<\\\(><\\\)>>|<%<\\\[><\\]>>"
+						,function(text){
+							var t,e = ..string.match(text,"^(<<\\\[>|<\\\(>|<$$>|$>)(.+)<<\\\]>|<\\\)>|<$$>|$>$");
+				 			if(#e) return ..string.crlf(this.xcall("katex.renderToString",e,{
+								throwOnError: false,
+								displayMode: t=='[' || t =='$'
+							}),"");
+						}
+						,"!\N([ \t]*)(```+)<\a\w+>?(.+?)!\N\s*\2![^`\S]"
+						,"\<script!\W[^\>]*\>.*?\<\/script\>"
+						,`(["'])\s*javascript\:.+?\1`
+					);
+				}
+			}
+			else {
+				katexParse = null;
+			} 
 		}
 		
+		var renderFinalMarkdown = function(md){
+			if(katexParse) md = katexParse(md);
+			var html = markdown.render(md);  
+			html = ..string.replace(html 
+         		,"\<code\>(<@@Ctrl@>|<@@Shift@>|<@@Alt@>|<Fn>|<[Ff]\d>!\W.*?)\</code\>"
+         		,function(kbd){
+					var items = ..string.splitEx(kbd,"\s*\+\s*"); 
+					for(i,v in items){
+						items[i] = "<kbd>"+v+"</kbd>"
+					} 
+					
+					return ..string.join(items,"+");
+				}
+			)
+			
+			html = ..string.replace(html,"\<think\>(.+?)\</think\>","<details><summary>推理过程</summary><blockquote>\1</blockquote></details>");
+			return html;
+		}
+		
+		this.write = function(md){ 
+    		this.body.innerHTML = renderFinalMarkdown(md);  
+    		this.script.onWriteEnd(null);  
+    		return this; 
+		}
+		
+		var eleThinking;
+		var deltaCatch = {}
 		this.showLoading = function(title){
+			eleThinking = null;
 			lastElement = null;
 			
 			this.body.insertAdjacentHTML("beforeEnd",`<div id="loading"></div>`)
 			this.script.showLoading(title);
+			
+			deltaCatch = {};
+		}
+		 
+		this.showThinking = function(delta){
+			lastElement = null;
+			deltaCatch = {};
+			
+			if(!#delta) return;
+			
+			if(!eleThinking){
+				eleThinking = this.getEle("loading");
+				if(eleThinking){
+					eleThinking.outerHTML = `<blockquote id="thinking"></blockquote>`;
+				}
+				else {
+					this.body.insertAdjacentHTML("beforeEnd",`<blockquote id="thinking"></blockquote>`);
+				}
+				
+				..com.Release(eleThinking);
+				
+				eleThinking = this.getEle("thinking");
+				delta = ..string.replace(delta,"<\<br\>>|<\s*>","");
+			}
+			
+			eleThinking.insertAdjacentText("beforeEnd",delta);
 		}
 		
 		this.showError = function(msg){
-			 
+			deltaCatch = {};
+			
 			this.writeDelta("");//清除 loading 
 			this.body.insertAdjacentHTML("beforeEnd",`<div class="error-message">`+(msg:"未知错误")+`</div>`);
 			lastElement = null;
 			
-			this.script.onWriteEnd(); 
+			this.script.onWriteEnd(null); 
 			if(this.onWriteEnd){ this.onWriteEnd(); }
 		}
 		
 		this.writeDelta = function(delta){
+			if(eleThinking){
+				
+				markdownText = ..string.concat(markdownText,
+					`<details><summary>推理过程</summary><blockquote>`+eleThinking.innerHTML +`</blockquote></details>`);
+				 
+				..com.Release(eleThinking)
+				eleThinking = null;
+			}
+			
     		if(!delta){
+    		    if(this.$writeDeltaDone){
+    		    	return; 
+    		    }
+    		    this.$writeDeltaDone = true;
     		    
+    		    deltaCatch = {};
          		if(#markdownText) {
-         			
+         		    
          			var html;
          			if(this.beforerWriteEnd){
          				var md = this.beforerWriteEnd(markdownText);
-         				html = markdown.render(md || markdownText);
+         				html = renderFinalMarkdown(md || markdownText);
          			}
          			else {
-         				html = markdown.render(markdownText);	
-         			}
+         				html = renderFinalMarkdown(markdownText);	
+         			} 
          			
         			this.body.innerHTML = html;
          		}
          		
-         		this.script.onWriteEnd(); 
+         		this.script.onWriteEnd(null); 
          		lastElement = null; 
          		if(this.onWriteEnd){ this.onWriteEnd(); }
          		return; 
     		}
+    		if(!#delta) return;
     		
+    		this.$writeDeltaDone = null;
     		markdownText = markdownText ++ delta; 
     		
     		if(lastElement && 
         		( (lastElement.tagName=="PRE"&&!..string.indexOf(delta,"`")) || !..string.find(delta,"\p")) ){
-        		lastElement.insertAdjacentText("beforeEnd",delta)  
+        		 
+        		..table.push(deltaCatch,delta);
+        		if(#deltaCatch>5){
+        			lastElement.insertAdjacentText("beforeEnd",..string.join(deltaCatch));
+        			deltaCatch = {};
+        		}  
     		}
     		else {
+    		    deltaCatch = {};
+    		    
         		var html = markdown.render(markdownText);
         		this.body.innerHTML = html; 
          		
          		if(#delta){
-         			lastElement = this.script.lastInsertElement() 
+         			lastElement = this.script.lastInsertElement(null) 
          		}
     		}
+    		
+    		return this;
 		}
 		
 		this.BeforeNavigate2=function( pDisp, url,flags,target,postData,headers,cancel ) { 
  			..raw.execute(url);
 			return url, flags, target, postData, headers,true;
-		}
-		
-		this.noScriptErr = true; 
+		} 
 		
 	} }; 
 }

@@ -1,4 +1,6 @@
 //拆分控件
+//使用拆分控件: doc://library-guide/std/win/ui/ctrl/splitter.html
+//回车缩放编辑框: file://~/example/Windows/Edit/onOk.aardio
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="使用拆分条(splitter)控件在窗口上拆分多个控件";right=801;bottom=486)

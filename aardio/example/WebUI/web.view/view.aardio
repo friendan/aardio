@@ -138,7 +138,7 @@ import wsock.tcp.simpleHttpServer;
 wb.go("\res\index.html"); 
 
 这时候 aardio 会自动创建嵌入 HTTP 服务端，
-并将单个斜杠或反斜杆开头的路径转换为嵌入 HTTP 服务端地址（支持 SPA 单页应用）。
+并将单个斜杠或反斜杠开头的路径转换为嵌入 HTTP 服务端地址（支持 SPA 单页应用）。
 如果打开路径的文件名为 "index.html", 则上级目录自动设为根目录。
 也就是说前端工程里不用再配置非根目录，网页可以直接使用  "/index.html" 这样的路径。
 

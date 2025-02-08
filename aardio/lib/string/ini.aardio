@@ -1,0 +1,102 @@
+﻿//ini 配置文件
+
+import console; 
+
+namespace string{
+	
+	var stringify;
+	var push = ..table.push; 
+	
+	class ini{
+		ctor(s,inlineComment){
+			this = parse(s,inlineComment);
+		};  
+	}
+
+	namespace ini{
+		
+		self.stringify = lambda(t,whitespace,newline) stringify(t,""); 
+		
+		load = lambda(path,inlineComment) parse( ..string.removeBom(..string.load(path)),inlineComment );
+		
+		save = function(path,tab,bom,whitespace,newline){
+			var s = stringify(tab,whitespace,newline)
+			if(bom) s = '\xEF\xBB\xBF' + s;
+			if(s) return ..string.save(path,s);
+		}	
+		
+		_meta = {
+			_tostring = lambda(whitespace,newline) stringify(owner,"",whitespace,newline);
+		}  
+	};
+	
+	ini.parse = function(s,inlineComment){ 
+		var tab = { @(ini._meta) } 
+		if(!s) return tab;
+		 
+		var section="";
+		for l,isSectionName in lines(s,"^!\N\s*\[\s*(\N+?)\s*\]\s*<[#;]\N*>? *!\n$"){
+			if(isSectionName){ 
+				section = l[1]=='.'#? (section++l) : l;
+			}
+			elseif(#section){
+				..table.setByNamespace(section,table(l,,,inlineComment),tab); 
+			}  
+			else {
+				..table.assign(tab,table(l));
+			}
+		} 
+		
+		return tab; 
+	}
+
+	stringify = function(t,path,whitespace,newline){
+		var out = {}
+		var sep1,sep2 = '=','[]='
+		if(whitespace)sep1,sep2 = ' = ','[] = '
+		 
+		var keys = {}
+		for(k,v in ..table.eachName(t)){
+			if(type(v)="table"){
+				push(keys,k);
+			}	 
+			else {
+				push(out,k++sep1++tostring(v)) 
+			}
+		}
+		
+		for( i,k in keys){ 
+			var v = t[k];
+			
+			if(#v){
+				for(i=1;#v;1){
+					push(out,k++sep2++tostring(v[i]))
+				} 
+			}
+			else{
+				var d = stringify(v,path++k+".",whitespace,newline) ;
+				if(#d){ 
+						
+					if(!newline && d[1]!='['#) push(out,'['+path++k+']');
+					elseif(newline && d[1]!='\r'#) push(out,'\r\n['+path++k+']');
+					
+					push(out,d);  
+				} 
+			} 
+		} 
+		
+		return join(out,'\r\n'); 
+	}  
+} 
+
+/*****intellisense()
+string.ini = INI 文件格式解析器。\nstring.ini 库处理字符串或读写文件都使用 UTF-8 编码。 \nfsys.ini 库用 UTF-8 编码处理字符串，但读写文件使用 UTF-16 或 ANSI 编码\n \nINI 并没有统一的标准格式，通常被用于读写简单的配置文件。\n因此 string.ini 仅考虑较流行的写法规则。\n\n- 支持在行首以 `.` 或 `;` 标明注释行 。  \n- 节名支持用 `.` 号分隔的名字空间语法\n- 支持在节名开始用 `.` 表示嵌套到上一个节内。\n- 键名可用下标表示添加值到数组成员，空下标表示追加到数组尾部。\n- 键值不考虑是否用引号包围，如有需求请自行处理。\n- 不解析转义字符，如有需要请用 string.unescape 自行解析。\n- 所有节名与键值都不应跨行，如有需求请自行转义。
+end intellisense*****/
+
+/*****intellisense(string.ini)
+parse( = 解析 INI 格式
+parse(.(str,inlineComment) = 解析 INI 格式字符串，返回表对象。\n@str 参数指定要解析的字符串。\n@inlineComment 为可选参数，设为 true 支持行内注释。
+stringify(.(tab,bom,whitespace,newline) = 将 @tab 参数指定的表以 INI 格式并返回字符串。\n可选的 @bom 参数为 true 则文件写入 UTF-8 BOM 头。\n可选的 @whitespace 参数为 true 则分隔键值的等号首尾添加空格。\n可选的 @whitespace 参数为 true 则节与节之间添加空行。
+load(.(path,inlineComment) = 加载并解析 INI 文件，返回表对象。\n@path 参数指定要解析的文件路径，仅支持 UTF-8 编码文件。\nANSI 或 UTF-16 编码文件可自行转换编码，或改用 fsys.ini 操作。\n@inlineComment 为可选参数，设为 true 支持行内注释。
+save(.(path,tab,bom,whitespace,newline) = 将 @tab 参数指定的表以 INI 格式保存到文件。\n@path 参数指定文件路径。\n可选的 @bom 参数为 true 则文件写入 UTF-8 BOM 头。\n可选的 @whitespace 参数为 true 则分隔键值的等号首尾添加空格。\n可选的 @whitespace 参数为 true 则节与节之间添加空行。\n函数执行成功返回  true 。
+end intellisense*****/

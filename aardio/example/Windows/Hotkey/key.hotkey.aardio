@@ -1,5 +1,5 @@
 //超级热键
-//教程: https://www.aardio.com/zh-cn/doc/?q=library-guide/std/key/hotkey.html
+//超级热键使用指南: https://www.aardio.com/zh-cn/doc/?q=library-guide/std/key/hotkey.html
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="超级热键演示";right=796;bottom=434;bgcolor=16777215)
@@ -14,10 +14,7 @@ var superHotkey = key.hotkey() //只能在界面线程创建超级热键
 
 //批量加载热键配置表
 superHotkey.loadTable({
-	(function(){
-		//这里的代码可以直接执行	
-	})();
-	
+
 	/* 大写金额(可输入数学表达式)、日期、时间  */
 	["Ctrl+$"] = function(hFocus){  
 		win.dlg.chineseNumber().show();
@@ -111,8 +108,6 @@ winform.edit.text = /*
 超级热键是操作系统级别的热键，系统全局可用。 
 
 超级热键的更多用法请参考开源软件 ImTip (http://imtip.aardio.com)
-
-超级热键使用指南: doc://library-guide/std/key/hotkey.html
 */
 
 winform.show();

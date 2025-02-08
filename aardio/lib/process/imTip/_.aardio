@@ -17,15 +17,28 @@ class imTip{
 					loadcodex("\dlg\aiChat.aardio");
 					return; 
 				}
+				elseif(_ARGV.yong){ 
+					error("请在发布后运行，或单独运行此窗口"); 
+				}
 			}
 			else {
-				..process(..io._exepath,..string.args.joinEx(true,,,argv));  
+				if(argv.yong){ 
+					..process.execute(..io._exepath,..string.args.joinEx(true,,,argv),"runas");
+				}
+				else {
+					..process(..io._exepath,..string.args.joinEx(true,,,argv));  	
+				}   
 			} 
 		}
 		else {  
 			var path  = ..process.cache.find("imtip.exe");
 			if(path){
-				..process(path,..string.args.joinEx(true,,,argv));  	
+				if(argv.yong){ 
+					..process.execute(path,..string.args.joinEx(true,,,argv),"runas");
+				}
+				else {
+					..process(path,..string.args.joinEx(true,,,argv));  	
+				} 
 			}
 		} 
 	};  

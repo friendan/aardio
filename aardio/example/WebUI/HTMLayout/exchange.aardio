@@ -1,7 +1,14 @@
-//系统拖放
+/*
+普通窗口拖放： doc://example/Windows/Effects/DnD.aardio
+richedit 拖放： doc://example/Windows/Edit/oleCallback.aardio
+web.view 拖放： doc://example/WebUI/web.view/dnd.aardio
+web.form 拖放： doc://example/WebUI/web.form/dnd.aardio
+web.sciter 拖放： doc://example/WebUI/Sciter.JS/exchange.aardio
+文件拖放： doc://example/Windows/Effects/onDropFiles.aardio
+*/
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="HTMLayout系统拖放演示";right=599;bottom=399)
+var winform = win.form(text="HTMLayout 接收系统拖放";right=599;bottom=399)
 winform.add()
 /*}}*/
 
@@ -15,7 +22,17 @@ namespace web.layout.behavior.sysdnd{
 	}
 	
 	onExchangeDrop = function( ltTarget,ltOwner,x,y,cmd,dataTypes,fetchData,exParams ) { 
+    	
+    	/***
+    	fetchData 参数指定 1/*_HL_EXF_TEXT*/ 接受拖放文本，data 为字符串。
+    	fetchData 参数指定 2/*_HL_EXF_HTML*/ 接受拖放 HTML，data 为字符串表示的 HTML，格式与剪贴板相同（参考 win.clip.html ）。
+    	fetchData 参数指定 4/*_HL_EXF_HYPERLINK*/ 接受拖放链接，data 为字符串数组，第一个元素为链接地址，之后依次为提示，显示文本。
+    	fetchData 参数指定 0x10/*_HL_EXF_FILE*/ 接受拖放文件，data 为文件路径数组。
+    	
+    	如果调用 fetchData 不指定参数则接收所有拖放类型， dataType 表示类型（可选值为上述 _HL_EXF_ 前缀常量 ）
+    	***/
     	var data,dataType = fetchData( 0x10/*_HL_EXF_FILE*/ );
+    	
     	if( data ) {
     		wbLayout.getEle("destination").innerHTML = ..string.join(data,"<br>")
         	return true;

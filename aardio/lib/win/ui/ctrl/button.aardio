@@ -250,6 +250,7 @@ end intellisense***/
 ?win.ui.ctrl.checkbox  =!checkbox.
 win.ui.ctrl.checkbox() = 复选控钮控件\n!checkbox.
 !checkbox.checked = 复选框是否选中状态
+!checkbox.text = 文本属性
 !checkbox.hwnd = 控件句柄
 !checkbox.id = 控件ID
 !checkbox._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
@@ -300,6 +301,7 @@ end intellisense***/
 /***intellisense()
 ?win.ui.ctrl.radiobutton  =!radiobutton.
 win.ui.ctrl.radiobutton() = 单选控钮控件\n!radiobutton.
+!radiobutton.text = 文本属性
 !radiobutton.checked = 单选按钮否选中状态
 !radiobutton.hwnd = 控件句柄
 !radiobutton.id = 控件ID

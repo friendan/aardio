@@ -104,8 +104,8 @@ jvm = function(){
 		if( jvm ) return jvm; 
 	}
 
-	if(!..java.jre[["v8"]]){
-		import ..java.jre.v8;
+	if( !..java.jre[["v8"]] && (type(..java) == type.class )){ 
+		global.import("java.jre.v8");
 		
 		var jreHome = ..thread.get("$(JRE_HOME)")
 		if(jreHome){
@@ -196,8 +196,8 @@ jreHome = function(){
 	var jre = findJre( jreHomeFromProgramFiles(,false) )
 	if( jre ) return jre; 
 	
-	if(!..java.jre[["v8"]]){
-		import ..java.jre.v8;
+	if(!..java.jre[["v8"]] && (type(..java) == type.class )){ 
+		global.import("java.jre.v8");
 		
 		var jre = findJre( ..thread.get("$(JRE_HOME)") );
 		if(jre) return jre;
@@ -255,8 +255,8 @@ jdkCompiler = function(){
 		return ..io.joinpath(home,"bin\javac.exe") 
 	}
 
-	if(!..java.jdk[["v8"]]){
-		import ..java.jdk.v8;
+	if(!..java.jdk[["v8"]] && (type(..java) == type.class ) ){
+		global.import("java.jdk.v8")
 		
 		var javaHome = ..thread.get("$(JDK_HOME)")
 		if( ..io.exist(javaHome) ){ 

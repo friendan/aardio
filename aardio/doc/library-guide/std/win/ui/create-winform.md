@@ -148,8 +148,7 @@ controlsPropertiesTable 里每个控件的参数属性为设计时属性，可�
 
 这里介绍几个最重要的控件设计时属性：
 
-- cls 所有控件都必须指定 cls，cls 对应的是 win.ui.ctrl 名字空间的类名。例如 `cls="button"` 就指定调用 win.ui.ctrl.button 创建一个按钮控件。cls 被称为设计时类名，控件在创建以后会生成一个 className 属性用于记录运行时类名，运行时类名通常不一样，例如 win.ui.ctrl.tab 创建以后运行时类名为 "SysTabControl32"，"SysTabControl32" 实际上是操作系统提供的系统控件类名。
-- left 相对于父窗口客户区的左坐标，设计时坐标，之所以称为设计时坐标，是因为 aardio 在运行时默认会根据系统缩放设置自动缩放并调整窗口与控件的实际位置。
+- left 相对于父窗口客户区的左坐标，设计时坐标。 所以控件的创建参数中指定的是设计时坐标，运行时坐标会根据设计时坐标计算出来。aardio 窗口支持自动缩放与自动调整坐标，默认会根据系统 DPI 缩放设置自动调整窗口与控件的位置和大小，
 - top 相对于父窗口客户区的上坐标，设计时坐标
 - right 相对于父窗口客户区的右坐标，设计时坐标
 - bottom 相对于父窗口客户区的下坐标 ，设计时坐标
@@ -157,8 +156,40 @@ controlsPropertiesTable 里每个控件的参数属性为设计时属性，可�
 - dt 上侧是否固定与父窗口的上边距,如果是一个小数,计算父窗口高度的百分比得出当前边距
 - dr 右侧是否固定与父窗口的右边距,如果是一个小数,计算父窗口宽度的百分比得出当前边距
 - db 底侧是否固定与父窗口的底边距,如果是一个小数,计算父窗口高度的百分比得出当前边距
+- cls 所有控件都必须指定 cls，cls 对应的是 win.ui.ctrl 名字空间的类名。例如 `cls="button"` 就指定调用 win.ui.ctrl.button 创建一个按钮控件。cls 被称为设计时类名，控件在创建以后会生成一个 className 属性用于记录运行时类名，运行时类名通常不一样，例如 win.ui.ctrl.tab 创建以后运行时类名为 "SysTabControl32"，"SysTabControl32" 实际上是操作系统提供的系统控件类名。
 
-aardio 窗口支持自动缩放并在运行时自动调整坐标，或根据系统 DPI 缩放设置自动调整窗口与控件的位置和大小，所以控件的创建参数中指定的是设计时坐标，运行时坐标会根据设计时坐标计算出来。
+	aardio 标准在 win.ui.ctrl 名字空间提供的常用控件类名如下：
+
+	* custom 自定义控件，可用于加载其他窗体或者作为其他窗窗体的容器，也是在窗体设计器中是唯一可更改 cls 属性为其他控件类的控件。[使用指南](ctrl/custom.md)
+	* static 静态文本控件 
+	* button 控钮按件
+	* radiobutton 单选控件 ， checked 属性表示是否选中。
+	* checkbox 复选控件 ，checked 属性表示是否选中。 
+	* combobox 组合框控件，items 属性可获取或设置一个字符串数组（列表数据）。[范例：自动完成输入效果](../../../../example/Windows/Dropdown/autoComplete.html)
+	* listbox 列表框，items 属性可获取或设置一个字符串数组（列表数据）。[范例](example/Windows/Listbox/ListboxDemo.html)
+	* listview 列表视图，items 属性返回或设置包含所有列表项的数组，数组的每个项表示一行，每行也必须是包含列文本的数组，返回数组有一个可选字段 checked 包含了所有勾选的行。[范例](../../../../example/Windows/ListView/listview.html)
+	* checklist 这是基于 listview 控件实现的带复选框的列表框。 [范例](../../../../example/Windows/ListView/checklist.html)
+	* treeview 树视图控件 [范例](../../../../example/Windows/TreeView/treeview.html)
+	* splitter 拆分条控件。使用控件的 split 函数拆分多个控件，参数也可以是控件数组，每个控件数组必须包含位于拆分条同一侧的控件。 [范例](../../../../example/Windows/Controls/splitter.html)
+	* tab 简单选项卡控件，样式比较简单。 [范例](../../../../example/Windows/Tab/TabControl.html) 。如有更多需求可改用高级选项卡（  [win.ui.tabs](tabs/_.md) ）。
+	* syslink 这个控件的 text 文件属性支持 HTML 的超链接语法，可以包含普通文本或多个超链接。 [范例](../../../../example/Windows/Controls/syslink.html)
+	* atlax 用于创建 COM 控件，创建时在参数表的 text 字段指定类名。 [范例](../../../../example/COM/Advanced/InkEdit.html)
+	* bk 背景控件，无句柄不创建实际的窗口，仅用于背景排版，使用 GDI 绘图。
+	* bkplus 高级背景控件，无句柄不创建实际的窗口，仅用于背景排版，使用 GDI+ 绘图。 [范例](../../../../example/Graphics/drawBackground.html)
+	* calendar 日历控件，time 属性用于获取或设置 time 对象。
+	* datetimepick 日期时间控件，time 属性用于获取或设置 time 对象。
+	* ipaddress IP 地址控件，text 属性为 IP 地址文本格式，address 属性为 IP 地址数值格式。
+	* hotkey 热键控件，value 属性用于获取或设置设置，值为表示热键配置的数组。
+	* edit 文本框控件 
+	* richedit 富文本框控件，支持透明背景，text 属性读写普通文本，rtf 属性读写 RTF 格式文本。 [范例](../../../../example/Windows/edit/CHARFORMAT2.html)
+	* picturebox 图像控件，image 属性设置图像路径或图像数据，不支持 png 或动画 gif 。
+	* plus 高级图像控件，支持 png 或动画 gif，可设置丰富的外观样式，通过不同配置模拟不同类型的控件。在 aardio 中最为常用。 [指南](ctrl/plus.md)
+	* progress 进度条控件。 [范例](../../../../example/Windows/Controls/scroll.html)
+	* spin 微调按钮，可滚动选择数值，buddy 属性设置、获取伙伴 edit 控件。。 [范例](../../../../example/Windows/Controls/scroll.html)
+	* pick 取色控件。 [范例](../../../../example/System/Settings/sysColor.html)
+	* vlistview 虚表控件。 [范例](../../../../example/Windows/ListView/vlistview.html)
+	* trackbar 跟踪条控件。 [范例](../../../../example/Windows/Controls/scroll.html)
+
 
 ### 4. winform.add 函数的返回值：
 

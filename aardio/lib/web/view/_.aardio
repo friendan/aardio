@@ -335,26 +335,35 @@ class view {
 	waitEle = function(selector,callback,timeout){
 		if(!this.browser) return; 
 		
-		if(type.isString(callback)){
+		if(type.isString(callback)){//当前文档对象关闭退出等待
 			_dll.webview_do_script(this.browser,"external.waitEle('"+selector+"',"+(timeout:0)+").then( (el)=>{ ((function(){"+callback+'\n}).bind(el))() } )',null) 
 		}
-		elseif(callback){
+		elseif(callback){//当前文档对象关闭退出等待
 			var callbackId = this._jsEvalCallback.reg(callback); 
 			_dll.webview_do_script(this.browser,"external.waitEle('"+selector+"',"+(timeout:0)+").then( ()=>{ window.$aardioEvalCallback('"+selector+"',null,"+callbackId+")} ).catch( (e)=>{ window.$aardioEvalCallback(null,e,"+callbackId+")} )",null) 
 		}
-		else {
+		else {//页面跳转或网上退出等待
 			var url = this.$readyUrl;
+			
+			//异步
 			var resultOk,resultErr;
 			this.waitEle(selector,function(ok,err){
 				resultOk,resultErr = ok,err;
 			},timeout)
 			
+			//同步
 			return this._form.wait(function(){
 				if(this.$readyUrl!=url) return null,"页面已跳转";
 				return resultOk,resultErr;
 			},,timeout); 
 		} 
 	};
+	waitEle2 = function(selector,timeout){
+		return this._form.wait(function(){
+			var resultOk,resultErr = this.waitEle(selector,,timeout);
+			if(resultOk) return resultOk;
+		},,timeout); 	
+	}
 	wait = function(p,timeout){ 
 		return this._form.wait(function(){
 			var url = this.$readyUrl; 
@@ -698,7 +707,7 @@ namespace view{
 	https://github.com/webview/webview/blob/master/webview.h
 	https://github.com/MicrosoftEdge/WebView2Browser
 	*/
-	_dll = ..raw.loadDll( $"~\lib\web\view\.res\webview.dll",,"cdecl"); 
+	_dll = ..raw.loadDll( $"~\lib\web\view\.res\webview.dll","std.WebView2","cdecl"); 
 }
 
 /**intellisense()
@@ -742,10 +751,12 @@ cdpQuery(.(selector,parent) = 使用 WebView2 内置 CDP 接口查询节点。\n
 cdpQuery(.(selector,parent,callback) = 异步调用 WebView2 内置 CDP 接口查询节点。\n不等待 CDP 调用完成，而是在调用完成异步回调 callback 函数。\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n@callback 指定回调函数，\n回调参数@1为 CDP 返回的表对象，回调参数@2 为错误代码。\n成功返回 true，失败返回 null,错误代码
 cdpWaitQuery( = 使用 WebView2 内置 CDP 接口查询并等待 DOM 节点。\n调用内置 CDP（Chrome DevTools Protocol）接口，多个 WebView2 不会冲突。\n但同一用户数据目录不能在使用内置 CDP 接口的同时开放远程调试端口
 cdpWaitQuery(.(selector,parent,timeout) = 使用 WebView2 内置 CDP 接口接口查询并等待节点，\n@selector 指定 CSS 选择器，\n@parent 可选指定父节点或父节点的 nodeId。\n不指定父节点则 @parent 默认取页面根节点。\n可选用 @timeout 指定超时，单位毫秒，默认在窗口关闭前一直等待。\n成功返回表对象，失败返回 null,错误代码。\n超时错误代码为 0x102/*_WAIT_TIMEOUT*/
-waitEle( = 等待网页创建指定节点
-waitEle(.(selector) = 等待网页创建指定节点\n@selector 参数指定CSS选择器,\n省略参数@2时同步等待节点出现。\n\n成功返回 CSS 选择器，失败返回 null,错误对象（表对象或字符串）
+waitEle( = 等待网页创建指定节点。\nwaitEle 仅在当前网页等待，打开其他网页（指创建不同的 document ）则会退出等待。\n改用　waitEle2 函数可支持跨网页等待。。
+waitEle(.(selector) = 同步等待网页创建指定节点。\n网页文档对象关闭，或当前网址变更也会退出等待。\n@selector 参数指定CSS选择器,\n省略参数@2时同步等待节点出现。\n\n成功返回 CSS 选择器，失败返回 null,错误对象（表对象或字符串）
 waitEle(.(selector,callback,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n参数@2指定 aardio 回调函数,\n找到节点回调参数@1为选择器，\n失败回调参数@2为错误信息,回调参数@1为null,\n可选用参数@3指定超时，单位毫秒
-waitEle(.(selector,js,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n找到节点执行参数@2指定的 JavaScript 代码,\n执行JS代码时自动绑定this对象为找到的节点,\n可选用参数@3指定超时，单位毫秒
+waitEle(.(selector,js,timeout) = 异步等待网页创建指定节点\n@selector 参数指定CSS选择器,\n找到节点执行参数@2指定的 JavaScript 代码,\n执行 JS 代码时自动绑定 this 对象为找到的节点,\n可选用参数@3指定超时，单位毫秒
+waitEle2( = 同步等待网页创建指定节点。\n如果在等待过程中可能打开多个不同的网页，\n则应使用 waitEle2 而不是限于在单页面使用的 waitEle 函数。
+waitEle2(.(selector,timeout) = 同步等待网页创建指定节点。\n不同于 waitEle 仅在当前网页有效，\nwaitEle2 支持跨网页等待，网址变更也不会退出等待。\n除非关闭窗口，此函数会一直等待直到指定选择器的对象创建成功。\n\n参数 @selector 指定 CSS 选择器，\n可选用参数 @timeout 指定超时，单位毫秒。\n\n找到节点则返回 CSS 选择器，失败返回 null，错误信息
 adjust() = 调整页面大小到适合窗口
 external = @.external = {
 	__/*在 Javascript 中可通过全局变量 `aardio` 访问 ??.external 对象。

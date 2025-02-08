@@ -1,0 +1,38 @@
+﻿import com.interface;
+import com.interface.IDataObject;
+
+namespace  com.interface;
+
+class IDropTarget{
+	ctor(){
+		this = ..com.interface.IUnknown();
+	}; 
+	//POINT 结构体传值参数可展开为 x,y 两个参数（aardio 中结构体只能传址）。
+	pointer DragEnter = "int(ptr pDataObj,INT grfKeyState,int x,int y, INT &pdwEffect)"; 
+	pointer DragOver = "int(INT grfKeyState,int x,int y,INT &pdwEffect)"; 
+	pointer DragLeave = "int()"; 
+	pointer Drop = "int(ptr pDataObj,INT grfKeyState,int x,int y,INT &pdwEffect)"; 
+	
+	register = function(hwnd){ 
+		return ::Ole32.RegisterDragDrop(hwnd[["hwnd"]]||hwnd,owner);	 
+	}
+	
+	revoke = function(hwnd){
+		return ::Ole32.RevokeDragDrop(hwnd[["hwnd"]]||hwnd);	
+	} 
+}
+
+IDropTarget.IID =  "{00000122-0000-0000-C000-000000000046}";
+
+IDropTarget.create = function(target){
+	return ..com.interface(target,"IDropTarget");
+}
+
+/*****intellisense()
+com.interface.IDropTarget.create() = !stdIDropTarget.
+end intellisense*****/
+
+/*****intellisense(!stdIDropTarget)
+register(__/*窗口或控件对象*/) = 注册指定窗口为可接受拖放的窗口。\n成功返回 0，失败返回错误代码（可传入 lasterr 函数获取错误信息）
+revoke(__/*窗口或控件对象*/) = 撤消注册的拖放窗口。
+end intellisense*****/

@@ -31,7 +31,7 @@
 
 "等式"与"恒等式"最大的不同是"等式"允许类型自动转换。与逻辑值有关的类型自动转换规则：
 
-1. 在逻辑运算中，非 0. 非 null、非 false 为 true，反之为 false。  
+1. 在条件判断中，非 0. 非 null、非 false 为 true，反之为 false。  
   
 2. 使用 [等式运算符](..\operator\equality.md) 比较 2 个值时：  
     - 任意值与 true,false 比较则先转换为布尔值。  

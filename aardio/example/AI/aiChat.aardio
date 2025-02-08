@@ -1,0 +1,58 @@
+//AI 聊天简版
+//调用 AI 大模型指南： doc://library-guide/std/web/rest/aiChat.html
+//AI 调用本地函数: file://~/example/AI/function-calling.aardio
+//超级热键 + AI 编码助手: file://~/example/AI/aiHotkey.aardio
+//轻量 AI 聊天界面，支持数学公式： file://~/example/AI/aardioAgent.aardio
+
+import console.int; 
+console.showLoading(" Thinking "); 
+
+//1. 第一步：调用 web.rest.aiChat 创建 REST 客户端，用于调用服务端 HTTP 接口
+//---------------------------------------------------------------------
+import web.rest.aiChat;
+var aiClient = web.rest.aiChat(   
+	/*
+	下面的测试密钥 24 小时后失效，
+	DeepSeek 的 key 充 10 元估计能用一年，请自己申请一个吧！
+	*/
+	key =   '\0\48\67\91\29\5\81\84\83\83\4\5\81\81\6\1\86\4\9\84\1\9\1\82\2\86\0\0\83\7\81\6\7\5\86\86\82';
+	url = "https://api.deepseek.com/v1";//接口地址
+	model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+	temperature = 0.5;//温度
+	maxTokens = 1024,//最大回复长度
+)
+
+//2. 第二步：创建消息队列，必须在这里保存对话，不然 AI 的回复没有上下文。
+//---------------------------------------------------------------------
+var msg = web.rest.aiChat.message();
+
+//可调用 msg.system() 函数添加系统提示词。
+msg.system("你是桌面智能助手。");
+
+//添加用户提示词
+msg.prompt( "请输入问题:" );
+
+//3. 第三步：发送请求，调用聊天接口。
+//---------------------------------------------------------------------
+/* 
+如果参数 2 指定增量输出回调函数，则启用流式应答（打字效果）。
+可选用参数 3 指定一个表，表中可指定要添加的其他请求参数。
+*/
+var resp,err = aiClient.messages(msg,
+	function(deltaText,reasoning){
+		
+		//推理模型会首先传 reasoning，同时 deltaText 为空字符串
+		if(reasoning) {
+			return console.writeColorText(reasoning,0xA);
+		}
+		
+		//回复完成则 为 null 。
+		console.writeText(deltaText)
+		
+		//如果需要输入增量输入到目标窗口
+		//key.sendString(deltaText)
+	}
+);
+
+//流式应答 resp 为布尔值，否则调用成功 resp 为应答对象，失败则为 null 值。
+console.error(err);

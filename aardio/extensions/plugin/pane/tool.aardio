@@ -265,7 +265,7 @@ mainForm.btnDocument.oncommand = function(id,event){
 }
 
 mainForm.btnAiChat.oncommand = function(id,event){
-	ide.createProcess("~\example\Web\REST\aiChat.aardio");
+	ide.createProcess("~/example/AI/aardioAgent.aardio");
 }
 
 mainForm.btnAiChat.skin({

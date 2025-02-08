@@ -219,7 +219,7 @@ tonumber("123_456") //返回的是123
 ##  `“\”,"/"` 应用程序根目录
 
 
-在 aardio 中[文件路径](../../library-guide/builtin/io/path.md)如果以单个斜杆或反斜杆开始表示[『应用程序根目录』](../../library-guide/builtin/io/path.md)。
+在 aardio 中[文件路径](../../library-guide/builtin/io/path.md)如果以单个斜杠或反斜杠开始表示[『应用程序根目录』](../../library-guide/builtin/io/path.md)。
 
 
 『应用程序根目录』指启动程序文件所在目录，在开发时指 aardio 工程目录，在发布后指启动 EXE 目录。

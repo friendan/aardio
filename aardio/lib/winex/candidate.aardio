@@ -1,0 +1,145 @@
+﻿//candidate 输入候选窗
+import winex;
+import process;
+import sys.input;
+
+namespace winex.candidate;
+
+var inputClasses = {
+	"SoPY_Comp":"sopy",
+	"SoWB_Comp":"sowb",
+	"QQPinyinCompWndTSF":"qqpy",
+	"QQWubiCompWndII":"qqwb",
+	"PalmInputUICand":"palm",
+	"BAIDU_CLASS_IME_87C946A9-47CC-4068-A02B-9381C1F11B24":"baidu",
+	"INPUT_MAIN_WND_CLASS":"2345", 
+	"VNDDSKIN_CAND":"flypy",
+	"yong_input":"yong"
+}
+
+var candidateWindows = {}
+list = function(visible){
+	var layoutOrTips;
+	
+	if(!(candidateWindows.microsoft && ..win.isWindow(candidateWindows.microsoft))){
+		candidateWindows.microsoft = null;
+		
+		for processEntry in ..process.each( "TextInputHost.exe" ) {
+			var hwnd = ..winex.findEx2("Windows.UI.Core.CoreWindow",,"ApplicationFrameWindow",,processEntry.th32ProcessID)
+ 			if(hwnd){
+ 				candidateWindows.microsoft = hwnd;
+ 				if(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,"microsoft";
+ 				}
+ 			} 
+		} 		
+	}
+	elseif(visible && ..winex.isVisible(candidateWindows.microsoft )){
+ 		return candidateWindows.microsoft ,"microsoft";
+ 	}
+	
+	for hwnd,title,threadId,processId in ..winex.each( "<wetype\.flutter\.setting>|<SoPY_Comp>|<SoWB_Comp>|<yong_input>|<QQPinyinCompWndTSF>|<QQWubiCompWndII>|<PalmInputUICand>|<@BAIDU_CLASS_IME_87C946A9-47CC-4068-A02B-9381C1F11B24@>|<BaseGui>|<INPUT_MAIN_WND_CLASS>|<@Microsoft.IME.UIManager.CandidateWindow.Host@>|<VNDDSKIN_CAND>|<ATL\:\x+>" ) { 
+		
+		var cls = ..win.getClass(hwnd);
+		if(cls == "wetype.flutter.setting"){
+			if(title == "wetype_candidate"){
+				candidateWindows.wetype = hwnd;
+				
+				if(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,"wetype";
+ 				}
+			} 
+		} 
+		elseif(cls == "BaseGui"){ 
+			if(candidateWindows.xunfei!=hwnd){
+				if(..win.getStyleEx(hwnd)&0x8000088 && title==""){
+					var path = ..process.getPath(processId)
+					if(!#path || ..io.splitpath(path).name=="iFlyInput"){
+						if(!layoutOrTips) layoutOrTips = ..sys.input.getEnabledLayoutOrTips(true);
+						if(layoutOrTips["0804:{B722B5D7-0C4C-4933-A7B9-DF8C91F2C643}{0C7479AF-F27F-488C-A46B-5BDA6BF43E50}"]){
+							candidateWindows.xunfei = hwnd;
+							
+							if(visible && ..winex.isVisible(hwnd)){
+ 								return hwnd,"xunfei";
+ 							}
+						} 
+					}
+				}
+			} 
+			elseif(visible && ..winex.isVisible(hwnd)){
+ 				return hwnd,"xunfei";
+ 			}
+		} 
+		elseif(cls="Microsoft.IME.UIManager.CandidateWindow.Host"){
+			var hwnd2 = ..winex.findEx(hwnd , ,"Microsoft\.IME\.CandidateWindow\.View");
+			if(hwnd2){
+				candidateWindows.microsoft = hwnd2;
+				
+				if(visible && ..winex.isVisible(hwnd2)){
+ 					return hwnd2,"microsoft";
+ 				}
+			} 
+		} 
+		elseif(cls="BAIDU_CLASS_IME_87C946A9-47CC-4068-A02B-9381C1F11B24"){
+			if(title == "inputBar"){
+				candidateWindows.baidu = hwnd;
+				
+				if(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,"baidu";
+ 				} 
+			}  
+		}
+		elseif(cls="yong_input"){
+			if(..win.getStyleEx(hwnd)&0x8080088 ){
+				candidateWindows.yong = hwnd;
+				if(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,"yong";
+ 				} 
+			}  
+		}
+		else {
+			var t = inputClasses[cls];
+			if(t){
+				candidateWindows[t] = hwnd;  
+				if(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,t;
+ 				}
+			}
+			else {
+				if( candidateWindows.rime != hwnd ){
+					if(..string.startWith(cls,"ATL:")){
+						if(..win.getStyleEx(hwnd)&0x8080088 && title=="" && ..win.getOwner(hwnd)){ 
+							if(!layoutOrTips) layoutOrTips  =  ..sys.input.getEnabledLayoutOrTips(true);
+							if(layoutOrTips["0804:{A3F4CDED-B1E9-41EE-9CA6-7B4D0DE6CB0A}{3D02CAB6-2B8E-4781-BA20-1C9267529467}"]){
+								candidateWindows.rime = hwnd;
+								
+								if(visible && ..winex.isVisible(hwnd)){
+ 									return hwnd,"rime";
+ 								}
+							} 
+						}
+					}
+				}
+				elseif(visible && ..winex.isVisible(hwnd)){
+ 					return hwnd,"rime";
+ 				}
+			}
+			
+		} 
+	} 	
+	
+	if(!visible){
+		return candidateWindows;		
+	}
+
+}
+
+visible = function(){
+	return list(true);  
+}
+
+/*****intellisense()
+winex.candidate = 用于检测输入法候选窗。\n相关库 sys.input, key.ime, key.ime.stateBar 。
+winex.candidate.list() = 不指定参数时获取输入法候选窗口列表，返回 table 对象。\n返回表的键名为输入法 ID，值为候选窗口句柄。
+winex.candidate.visible() = 返回当前正在显示的输入法候选窗口句柄，返回值 2 为输入法 ID。\n未显示输入法候选窗时无返回值。
+end intellisense*****/

@@ -1,0 +1,26 @@
+//UIA 探测工具： file://~/tools/Spy/inspect.aardio
+
+//导入 .NET 类  
+import System.Windows.Automation; 
+Automation = System.Windows.Automation;
+AutomationElement = Automation.AutomationElement;
+
+//直接获取当前输入焦点窗口的 UIA 节点对象
+var ele = AutomationElement.RootElement.FocusedElement;
+assert(err,"输入焦点窗口没有找到 UIA 节点");
+
+//也可改调用更方便的 winex.editor.getText() 函数获取文本。
+if(ele.Current.ControlType == Automation.ControlType.Edit){
+	try {
+		//获取 Pattern 失败会抛出异常
+		var textPattern = editBox.GetCurrentPattern(Automation.TextPattern.Pattern);
+		
+		//获取全部文本
+		var text = textPattern.DocumentRange.GetText(-1);
+
+		print(text);
+	}	
+	catch(e){
+		print(e);
+	}
+}

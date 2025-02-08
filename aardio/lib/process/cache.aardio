@@ -53,7 +53,7 @@ namespace process.cache{
 			if(!reg) continue;
 			
 			for(fullpath,unusedValue,t in reg.eachValue()) {
-				fullpath = ..string.match(fullpath,"([a-zA-Z].+\.<@@exe@>)");
+				fullpath = ..string.match(fullpath,"([a-zA-Z\{].+\.<@@exe@>)");
 				if(fullpath) lst[fullpath] = true; 
 			}
 			reg.close();

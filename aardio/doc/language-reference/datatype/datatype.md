@@ -83,7 +83,6 @@
 
 - buffer 可读写字节数组（缓冲区） <a id="buffer" href="#buffer">&#x23;</a>
 
-
     buffer 是使用 raw.buffer() 函数分配的可读写、固定长度的内存，用于存取各种二进制数据。
 
     可用下标操作符  `[]`  读写内存中指定索引的字节码（ 8 位无符号数值 ）。可以用 # 操作符取字节数组长度。 不支持连接操作符，但支持调用 raw.concat,string.concat,string.join 等函数以不同方式拼接。 
@@ -124,13 +123,27 @@
 
    请参考《库函数文档》：[《内置库 / 纤程》](../../library-reference/fible/md) 
 
-- cdata	内核对象 
+- cdata	内核对象，托管指针 <a id="cdata" href="#cdata">&#x23;</a>
 
-    aardio 内核对象，例如 math.size64, [io.file](../../library-guide/builtin/io/file.md) 对象。
+    cdata 类型对象是由 aardio 内核创建的对象，cdata 对象都指定了元表并由元表提供访问 cdata 对象的属性与方法。
+    
+    在原生静态类型中 cdata 对象则表示为一个托管指针。
+    
+    在原生接口中 cdata 与 pointer 的作用相同都是表示内存地址的指针值。cdata 与 pointer 类型的区别：
+
+    - cdata 表示的指针称为托管指针，指向由 aardio 内核分配的内存，这块内存的生存周期由 aardio 自动管理，不使用时将由 aardio 自动回收。托管指针不允许直接转换为数值。
+    - pointer 表示的指针称为祼指针，指向任意内存地址，aardio 不负责自动管理祼指针指向的内存。这个数据类型唯一的作用是表明这是一个指向内存地址的数值。允许将 pointer 指针与数值进行双向转换。
+
+    例如 math.size64, [io.file](../../library-guide/builtin/io/file.md) 对象都属于 cdata 类型 。
+
+    创建一个 buffer 对象并指定元表则该对象的数据类型会变为 cdata 。
 
 - pointer 指针 <a id="pointer" href="#pointer">&#x23;</a>
 
     内存指针一般用于存储内存地址.但有时候也可能用于存储句柄地址或者无效的内存地址，内存指针给你最大的自由，同时也带来最大的风险，应谨慎使用。
+
+    pointer 指针也称为裸指针，区别于 cdata 内核对象表示的托管指针。
+
     * 动态指针：
 
         动态指针是一种特殊的指针。
@@ -190,7 +203,7 @@ var num = !!0;
 
 aardio 也允许数据类型自动转换，规则如下:
   
-1. 在逻辑运算中，非 0. 非 null、非 false 值为 true，反之为 false。  
+1. 在条件判断中，非 0. 非 null、非 false 值为 true，反之为 false。  
   
 2. 使用 [等式运算符](..\operator\equality.md) 比较 2 个值时：  
     - 任意值与 true,false 比较则先转换为布尔值。  

@@ -36,9 +36,29 @@ if(string.endWith(request.path,".md",true)){
 		htmlTitle = "范例"
 		var code = string.load("~"+request.path ); 
 		if(code){  
+			code = ..string.replace(code,"@@file://~/example/","doc://example/");
+			
 			htmlBody = `<a href="javascript:void(0)" onclick="javascript:external.openExample('`
 				+ string.repline("~"+request.path,"\\","/") 
-				+`')">在 aardio 编辑器中打开</a>` + markdown.renderCode(code,"aardio");  
+				+`')">在代码编辑器中打开</a>` 
+				 
+			for title,link in string.gmatch(code,"!\N\s*<//>\s*(\N+?)<<：>|\:>?\s+<//\s*>?(<https>|<http>|<doc>\://[^\s()]+)") { 
+				if(string.find(title,":") && !string.find(title,"\a\.\a\w+\(") && !string.indexOf(title,"//")){
+					title = string.match(title,"《\s*(.+)\s*》") || title;
+					
+					htmlBody = htmlBody	++ ` | <a href="`+link+`">`+title+`</a>` 
+				} 
+			}
+		 	
+			for title,link in string.gmatch(code,"!\N\s*<//>?!(\N+?)<<：>|\:>?\s+(<https>|<http>|<doc>\://[^\s()]+)") { 
+				if(string.find(title,":" )&& !string.find(title,"\a\.\a\w+\(") && !string.indexOf(title,"//") ){
+					title = string.match(title,"《\s*(.+)\s*》") || title;
+					
+					htmlBody = htmlBody	++ ` | <a href="`+link+`">`+title+`</a>`
+				}
+			}
+			
+			htmlBody = htmlBody	++ markdown.renderCode(code,"aardio");   
 		}
 	}
 	else {
@@ -57,11 +77,45 @@ elseif( string.startWith(request.path,"/example/") ){
 	htmlTitle = "范例"
 	var code = string.load("~"+request.path ); 
 	if(code){  
+		
+		code = ..string.replace(code,"@@file://~/example/","doc://example/");
+	 
 		htmlBody = `<a href="javascript:void(0)" onclick="javascript:external.openExample('`
-			+ string.repline("~"+request.path,"\\","/") 
-			+`')">在 aardio 编辑器中打开</a>` + markdown.renderCode(code,"aardio") ;  
+				+ string.repline("~"+request.path,"\\","/") 
+				+`')">在代码编辑器中打开</a>` 
+				 
+		for title,link in string.gmatch(code,"!\N\s*<//>\s*(\N+?)<<：>|\:>?\s+<//\s*>?(<https>|<http>|<doc>\://[^\s()]+)") { 
+			if(string.find(title,":") && !string.find(title,"\a\.\a\w+\(") && !string.indexOf(title,"//") ){
+				title = string.match(title,"《\s*(.+)\s*》") || title;
+				
+				htmlBody = htmlBody	++ ` | <a href="`+link+`">`+title+`</a>` 
+			} 
+		}
+		 
+		for title,link in string.gmatch(code,"!\N\s*<//>?!(\N+?)<<：>|\:>?\s+(<https>|<http>|<doc>\://[^\s()]+)") { 
+			if(string.find(title,":") && !string.find(title,"\a\.\a\w+\(") && !string.indexOf(title,"//") ){
+				title = string.match(title,"《\s*(.+)\s*》") || title;
+				
+				htmlBody = htmlBody	++ ` | <a href="`+link+`">`+title+`</a>`
+			}
+		}
+			
+		htmlBody = htmlBody	++ markdown.renderCode(code,"aardio");  
+			
 	} 
 }
+
+htmlBody = string.replace(htmlBody
+	,"\<code\>(<@@Ctrl@>|<@@Shift@>|<@@Alt@>|<Fn>|<[Ff]\d>!\W.*?)\</code\>"
+	,function(kbd){
+		var items = string.splitEx(kbd,"\s*\+\s*"); 
+		for(i,v in items){
+			items[i] = "<kbd>"+v+"</kbd>"
+		} 
+		
+		return string.join(items,"+");
+	}
+)	
 
 ?>
 <!DOCTYPE html>

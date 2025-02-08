@@ -1953,8 +1953,8 @@ className = 运行时类名
 hwnd = 控件句柄
 id = 控件ID
 text = 控件文本
-animation = 是否允许自动播放 GIF 动画，\n指定为 false 禁止自动播放
-disabledText = @.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250';text=''}__/*指定文本时,禁用此控件,并显示指定文本,\n指定一个数组时,控件将创建动画逐帧显示数组里的文字图标,\n如果控件配置了iconStyle属性,则使用iconText属性显示数组内的文字图标,\n指定为null时,启用此控件,并恢复控件禁用之前的text、iconText属性*/
+animation = 是否允许自动播放 GIF 动画，\n指定为 false 禁止自动播放。
+disabledText = @.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250';text=''}__/*指定文本时，禁用此控件并显示指定文本。\n指定一个字符串数组时，控件将创建动画逐帧显示数组里的文字图标。\n如果控件配置了 iconStyle 属性,则用图标文本（iconText）显示文字图标。\n\n此属性指定为 null 时启用此控件，并恢复控件禁用之前的 text、iconText 属性*/
 getForm() = 如果是窗体返回自身\n如果是控件则返回_parentForm\n!winform.
 isForm = 标准库中所有控件以及窗体对象都拥有此同名函数\n窗体返回true,控件返回false
 getForm() = 标准库中所有控件都拥有此同名函数用于返回控件所在窗口,\n窗口对象实现了同名函数用于返回窗口自身
@@ -2041,7 +2041,7 @@ reloadScale() = 按设计时位置参数、重新调整控件位置以适应窗�
 threadCallable() = 开启此控件的跨线程调用功能
 x = 前景x坐标,仅用于point绘图模式,\n1、0到1之间的小数表示百分比，负数表示右侧反向坐标
 y = 前景y坐标,仅用于point绘图模式,\n1、0到1之间的小数表示百分比，负数表示底部反向坐标
-measureString() = 返回文本输出后的区出大小,返回值为RECTF对象\n可选在参数中指定要输出的文本,不指定则取当前显示文本,\n!rectf.
+measureString() = 返回文本输出后的区块大小,返回值为 RECTF 对象\n可选在参数中指定要输出的文本,不指定则取当前显示文本,\n!rectf.
 fitContent () = 控件调整大小调整到适应当前显示字数
 textPadding = @.textPadding = {
 	left = 0;

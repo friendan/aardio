@@ -1,8 +1,9 @@
 ﻿升级包制作=maker.aardio
 COM 常量查看工具=comExport.aardio
-GUID 生成器=guid.aardio
+GUID 生成与转换=guid.aardio
 缩进转换=indent.aardio
 aardio 文件编译=dumpcode.aardio
 上传代码=paste.aardio
 JSON / table 互转=json2table.aardio
-合并到代码段=joinlines.aardio
+JSON 编辑器=~\example\WebUI\web.view\OtherApps\json-editor.aardio
+合并代码段=joinlines.aardio

@@ -1,8 +1,10 @@
-﻿修改颜色样式=CHARFORMAT2.aardio
+﻿回车自动缩放=onOk.aardio
+系统拖放=oleCallback.aardio
 查找替换=findReplace.aardio
 换行规则=line.aardio
-修改边距行距=lineSpacing.aardio
+修改颜色样式=CHARFORMAT2.aardio
 插入超链接=onHyperlink.aardio
+修改边距行距=lineSpacing.aardio
 存取RTF文件=richedit_change.aardio
 响应通知/右键菜单=richedit_menu.aardio
 点击全选=selectAllOnFocus.aardio

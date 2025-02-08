@@ -1,0 +1,212 @@
+﻿//loading 加载动画
+import thread.event;
+import winex;
+
+namespace winex;
+ 
+class loading{
+ 
+ 	ctor(title,hwndParent,style){
+ 	 
+ 		if(lastLoading){
+ 			lastLoading.close()
+ 			lastLoading = null;
+ 		}
+ 		lastLoading = this;
+ 		
+ 		hwndParent = hwndParent[["hwnd"]] || hwndParent;
+ 		if(!hwndParent) {
+ 			hwndParent = ..winex.getFocus() || ..win.getForeground()
+ 		}
+ 		var caretRc,hwndFocus = ..winex.getCaret(hwndParent)
+ 		 
+ 		this.eventStop = ..thread.event(,true,false);
+ 	 
+ 		var form = __LOADING_FORM.get();
+ 		if(form) form.close();
+ 		
+ 		..thread.invoke( 
+			function(hwndParent,caretRc,hwndFocus,eventStop,threadFormProgress,title,style){
+			 	import winex;
+				if(!caretRc) {
+					import winex.caret;
+					caretRc,hwndFocus = ..winex.caret.getEx(hwndParent);
+				} 
+				
+				import fonts.fontAwesome;
+				import win.ui;
+				import win.ui.shadow;
+				
+				var frmProgress = ..win.form(parent=hwndParent,right=134;bottom=23;border="none";exmode="none";mode="popup";)
+				frmProgress.add(
+				btnStop={cls="close";left=106;top=0;right=130;bottom=24;db=1;dr=1;dt=1;notify=1;z=2};
+				btnThinking={cls="plus";text=(title||"请稍候");left=5;top=0;right=106;bottom=27;align="left";color=3947580;db=1;dl=1;dr=1;dt=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF007';textPadding={left=25};z=1}
+				editThinking={cls="edit";left=36;top=34;right=457;bottom=145;autohscroll=false;bgcolor=15790320;color=5921370;edge=1;multiline=1;vscroll=1;z=3}
+				)
+				
+				frmProgress.getThinkingHwnd = function(deltaText){
+					frmProgress.editThinking.orphanWindow()
+					return frmProgress.editThinking.hwnd;
+				}
+				
+				frmProgress.isCanceled = function(){
+					return !frmProgress.valid;
+				}
+				
+				var form = threadFormProgress.get();
+ 				if(form) form.close(); 
+ 				
+				threadFormProgress.set(frmProgress)
+				
+				frmProgress.btnStop.hide = false;
+				frmProgress.btnThinking.skin(style||{
+					color={
+						active=0xFF00FF00;
+						default=0xFF3C3C3C;
+						hover=0xFFFF0000		
+					}
+				})
+				
+				frmProgress.onExitSizeMove = function(wParam,lParam){
+					..winex.attach(hwndParent,function(){
+						..win.setFocus(hwndFocus || hwndParent)
+					}) 	 
+				}
+
+				frmProgress.onMouseDown = function(){ 
+					frmProgress.hitCaption()
+				}
+				frmProgress.btnThinking.notify = false;
+				
+				frmProgress.btnThinking.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+				frmProgress.btnStop.oncommand = function(id,event){ 
+					eventStop.set()
+					frmProgress.close();
+					..win.setFocus(hwndParent)
+				}
+				
+				frmProgress.onClose = function(hwnd,message,wParam,lParam){
+					eventStop.set()
+		    		..win.quitMessage();
+		    		threadFormProgress.release()
+				}
+				
+				
+				if(caretRc){
+					frmProgress.enableDpiScaling("init");
+					var x,y = caretRc.left,caretRc.top;
+					if(caretRc.type=="java"){
+						//必须在创建窗口后再调整，避免抢焦点后 caretRc 不准确
+						x,y = frmProgress.dpiScale(x,y)
+					}
+				
+					var x1,y1 = frmProgress.dpiScale(110,8)
+					frmProgress.setPos(caretRc.left+x1,caretRc.top-frmProgress.height-frmProgress.dpiScale(y1));
+				}
+				  
+				win.ui.shadow(frmProgress,,3);
+				
+				if( ..thread.delay(100) && frmProgress.valid){
+					frmProgress.show(4/*_SW_SHOWNOACTIVATE*/);	
+					
+					..winex.attach(hwndParent,function(){
+						..win.setFocus(hwndFocus || hwndParent)
+					}) 
+ 					
+					..win.loopMessage();	 
+				}
+				else {
+					..winex.attach(hwndParent,function(){
+						..win.setFocus(hwndFocus || hwndParent)
+					}) 
+				}
+				
+				eventStop.set()
+				 
+			},hwndParent,caretRc,hwndFocus,this.eventStop,__LOADING_FORM,title,style
+		);	
+		
+		while( ..thread.delay(10 )) {
+			var form = __LOADING_FORM.get() 
+			if(form){
+				break;
+			}
+		}
+		
+		..table.gc(this,"close");		
+ 	}; 
+ 	
+ 	thinking = function(reasoning){ 
+ 		if(!this.hwndThinking){
+ 			var form = __LOADING_FORM.get()
+			if(form) this.hwndThinking = form.getThinkingHwnd();
+			else return false;
+			
+			if(!this.hwndThinking) return false;
+ 		}
+
+ 		var hwnd = this.hwndThinking;
+ 		if(!..win.isWindow(hwnd)){
+ 			return false;
+ 		} 
+
+		var len = ::SendMessage(hwnd,0xE/*_WM_GETTEXTLENGTH*/ ); 
+		::User32.SendMessage(hwnd,0xB1/*_EM_SETSEL*/,len+1 ,len+1);
+		::User32.SendMessage(hwnd,0xC2/*_EM_REPLACESEL*/,,reasoning);
+		return true;; 
+ 	};
+ 	
+ 	close = function(){ 
+ 		var form = __LOADING_FORM.get()
+		if(form) form.close(); 
+		
+		if(lastLoading===this){
+			lastLoading = null;
+		}
+ 	};
+ 	
+ 	isCanceled = function(){
+ 		return owner.eventStop.waitOne(0);
+ 	};
+ 
+	@_meta	
+}
+
+namespace loading{
+	
+	__LOADING_FORM =  ..thread.var("std.winex.loading.FFEC7EE3-3AE4-41AA-9FB4-6B5E3082365E");
+	
+	_meta = { 
+ 		_serialize = function(kernelCall){
+ 			return ..thread.serializeForm( __LOADING_FORM.get() ,true); 
+ 		}
+ 	} 
+ 	
+ 	close = function(){ 
+ 		var form = __LOADING_FORM.get();
+ 		if(form){
+ 			form.close();
+ 		}
+ 		
+ 		if(lastLoading){
+ 			lastLoading.close();
+ 		}
+ 	}
+ 	
+ 	valid = function(){
+ 		return lastLoading && lastLoading.isCanceled();
+ 	} 
+}
+
+
+/*****intellisense()
+winex.loading = 创建加载动画窗口。\n同线程不会同时创建多个 winex.loading 。\n同进程中创建动画窗口总会关闭之前的动画窗口。\n如果之前创建了动画窗口会自动关闭。\n动画窗口会创建独立的线程，不阻塞当前线程。
+winex.loading.close() = 如果创建了动画窗口，则关闭该窗口。\n支持关闭其他线程创建的 winex.loading 窗口。\n\n如果导入了 winex.loading，\nweb.rest.aiChat 在退出 messages 时会自动调用此函数。
+winex.loading.valid() = 当前线程是否有正在显示的动画窗口。
+winex.loading( = 创建多线程动画窗口。\nwinex.loading 对象可传入其他线程直接使用。\n所有线程都可以调用 winex.loading.close 关闭此动画窗口。
+winex.loading(.(title,hwndOwner,style) = 可选用参数 @1 指定标题，不要超过 4 个字。\n可选用参数 @2 指定所有者窗口。\n可选用参数 @3 自定义样式，样式格式与 plus 控件 skin 函数参数相同。
+winex.loading() = !winexLoading.
+!winexLoading.isCanceled() = 用户是否已取消操作（关闭进度动画窗口）
+!winexLoading.close() = 关闭加载动画窗口，允许重复调用。\n对象回收时也会自动调用此函数。
+!winexLoading.thinking(__/*处理进度*/) = 参数指定描述处理进度的增量字符串，例如推理过程。\n进度窗口关闭时返回 false，否则返回 true。
+end intellisense*****/ 

@@ -3,23 +3,20 @@ import ide;
 import inet.url;
 import fsys;
 import key;
- 
-if(key.getStateX("SHIFT")){ 
-	ide.createProcess("~\example\Web\REST\aiChat.aardio");
-	return; 
-} 
 
-var hwnd = ...;
+var hwnd = ...; 
+if(!hwnd) return;
 
 import win.ui.ctrl.edit;
-var edit = win.ui.ctrl.edit();
-edit.hwnd = hwnd;
-
-var text = edit.selText
-if(#text){
-	text = string.trim(text);
+var codeEdit = win.ui.ctrl.edit();
+codeEdit.hwnd = hwnd;
+ 
+var selText = codeEdit.selText;
+if(#selText) selText = string.trim(selText);
 	
-	var op = string.match(text,"^\s*(<\p+>|<@/*DSG{{*/@>|<DSG>|<%\[\]>)\s*$");
+if(#selText){ 
+	
+	var op = string.match(selText,"^\s*(<\p+>|<@/*DSG{{*/@>|<DSG>|<%\[\]>)\s*$");
 	if(op){
 		 
 		var url = "doc://guide/language/special-characters.html"
@@ -67,18 +64,18 @@ if(#text){
 		return; 
 	}
 	
-	if(string.find(text,"^\\\w$")){
+	if(string.find(selText,"^\\\w$")){
 		ide.openDocument("doc://library-guide/builtin/string/patterns.html"+"#classes");
 		return;
 	}
 	
 	
-	text = string.trim(text,".");
-	var libPath = string.match(text,"^!\w(\w[\.\w]+)\.[^\.\s]+!\W$");
+	selText = string.trim(selText,".");
+	var libPath = string.match(selText,"^!\w(\w[\.\w]+)\.[^\.\s]+!\W$");
 	var builtin = {table=1;string=1;raw=1;io=1;com=1;math=1;time=1;thread=1;fiber=1;global=1;ide=1};
 	
-	var filePath = io.libpath(text) || (#libPath && io.libpath(libPath) );
-	if(text == "win.form" || text == "winform" || text == "mainForm"
+	var filePath = io.libpath(selText) || (#libPath && io.libpath(libPath) );
+	if(selText == "win.form" || selText == "winform" || selText == "mainForm"
 		|| libPath == "winform" || libPath == "mainForm"){
 		filePath = ..io.libpath("win.ui");
 	}
@@ -121,13 +118,13 @@ if(#text){
 		"self":"doc://language-reference/namespace.html",
 	}
  
-	if( mapUrl[text] ){
-		url = mapUrl[text] ;
+	if( mapUrl[selText] ){
+		url = mapUrl[selText] ;
 	}
-	elseif(text=="lambda"  || text = "λ"){
+	elseif(selText=="lambda"  || selText = "λ"){
 		url = "doc://language-reference/function/lambda.html";
 	}
-	elseif(text=="lambda"  || text = "λ"){
+	elseif(selText=="lambda"  || selText = "λ"){
 		url = "doc://language-reference/function/lambda.html";
 	}
 	elseif(filePath){
@@ -137,8 +134,8 @@ if(#text){
         filePath = string.replace(filePath,"\\","/");
         url = "doc://"+filePath;	
 	}
-	elseif(builtin[text]){
-		url = "doc://library-reference/"+text+"/_.html"
+	elseif(builtin[selText]){
+		url = "doc://library-reference/"+selText+"/_.html"
 	} 
 	elseif( #libPath && builtin[libPath] ){ 
 		url = "doc://library-reference/"+libPath+"/_.html"
@@ -146,15 +143,16 @@ if(#text){
 	
 	if(url){
 		if(!string.indexOf(url,"#")){
-			url = ..inet.url.appendExtraInfo(url,{q=text});	
+			url = ..inet.url.appendExtraInfo(url,{q=selText});	
 		}
 		
 		ide.openDocument(url); 
 		return;	
 	}
 	
+	/***************
 	var url = inet.url.appendExtraInfo("http://api.aardio.com/search",{
-		q = '```aardio \n' + text + '\n```';
+		q = '```aardio \n' + selText + '\n```';
 	})
 	
 	raw.execute( url,"","open",5/*_SW_SHOW*/,..io.fullpath("~/")
@@ -162,6 +160,374 @@ if(#text){
 	)
 
 	return;
+	***************/	
 }
 
-ide.openDocument("doc://main.md");
+global.onError = function( err,over ){ 
+ 
+    if(!over){
+        import debug;
+        var stack = debug.traceback(,"调用栈",3);
+    }
+    
+    codeEdit.selText = '\n' + err + '\n' 
+}
+
+import ide;
+import web.rest.aiChat; 
+import key;
+import fsys.table;
+var config = fsys.table(io.appData("aardio/ide/aiChat/~"));
+
+for(i,cfg in config.itemData){
+	if(cfg.f1){
+		config = cfg;
+		break;
+	}
+}
+
+//创建 AI 会话消息队列 
+var msg = web.rest.aiChat.message(); 
+
+//自动生成 aardio 编程助手系统提示词 
+msg.aardioSystem();	
+						 
+var leftText = codeEdit.leftText();
+if(!leftText) return; 
+
+if(#config.systemPrompt){
+	msg.system(config.systemPrompt);
+}
+
+var projPath = ide.getProjectPath();
+if(#projPath) begin 
+
+	import fsys.file;
+	var file = fsys.file(projPath,"r");
+	if(file) begin 
+	
+		if(file.size() < 20000) begin 
+			
+			var xml = file.readAll();
+				
+			var project = '\r\n\r\n'+"
+## aardio 源文件与工程文件
+
+aardio 代码文件的后置名为 `.aardio`，可包含 UTF-8 编码的源代码，也可以包含编译后的二进制代码。
+
+aardio 工程文件的后置名为 `.aproj`，其内容是 XML 格式的工程配置，也使用  UTF-8 编码 。  
+"
+		
+			project = project + '\r\n\r\n用户当前在 aardio 开发环境中打开的工程文件路径是: "'+projPath+'"\r\n'
+	 		
+			project = project + '\r\n\r\n用户当前打开的工程文件内容如下：'
+			
+			project = project + '\r\n\r\n```xml\r\n' + xml +  '\r\n```\r\n\r\n'
+			
+			var desc = /*****
+	
+工程文件各 XML 节点的作用与含义：
+	
+- project 元素指定工程配置，并作为工程根目录包含其他 folder 或 file 元素。
+
+project 元素的属性 ui 指定图形界面。 
+
+    * 如果 ui 为 "win" 则为图形界面发布后运行默认不显示控制台。
+    * 如果 ui 为"console" 则为控制台程序发布后运行时默认显示控制台窗口。
+
+project 元素的属性 dstrip 指定是否移除调试符号。 
+
+    * `dstrip="true"` 则发布后移除调试信息，生成的文件更小但错误信息会缺少调试信息（例如文件名行号）。
+
+- folder 元素为工程中的虚拟目录
+
+如果 folder  的属性 embed 为 "true" 则该目录发布后嵌入 EXE 资源文件，aardio 中很多函数和库都自动支持这种嵌入资源而不需要额外修改代码。例如对于 `string.load("/res/test.txt")`，无论参数指定的文件是不是 EXE 资源文件函数的返回值都是一样的，这是 aardio 的一个主要特性。
+
+如果 folder 元素的属性 local 为 "true" 则表示这是一个本地目录（通常也是 Web  前端工程的发布目录），发布为 EXE 时将添加该目录下的所有文件。这种目录在工程中不显示子级文件或目录，右键菜单的『同步本地目录』也是无效的。 
+
+如果 folder 元素的属性 ignored 为 "true" 是指这个目录在发布时被忽略（ignored）。这种目录通常用来指向包含 Web 前端工程源码的目录，工程本身其实并不需要这些多余的目录，生成 EXE 时也会忽略这种目录。
+
+- file 元素则表示添加到工程中的文件
+
+在工程根目录下只能有一个应用程序启动文件, 文件路径必须是 `main.aardio` 或以  `.main.aardio` 结束。除了启动文件，工程根目录只能包含 folder 元素。
+
+*****/
+		
+			project = project + desc + '\r\n\r\n';
+			
+			var codePath = ide.getActiveDocPath();
+			if(#codePath && ..string.endWith(codePath,".aardio",true) ){
+				project = project + '\r\n\r\n用户当前正在编辑的文件为: "'+codePath+'"\r\n'
+			} 
+			
+			msg.system(project); 
+		
+		end;
+		
+		file.close()
+	
+	end;
+end;
+
+if(#selText){
+	var b,e = codeEdit.getsel();
+	if( !(b&&e) ) return; 	
+  
+	var sysPrompt = "
+
+## 任务
+
+用户当前 """"""选中代码"""""" 在 """"""前置代码"""""" 与 """"""后置代码"""""" 中间。
+你需要根据上下文（指 """"""前置代码"""""" 与 """"""后置代码"""""") 解答用户关于""""""选中代码"""""" 的疑问，帮助用户实现其需求。
+你的主要目标是解答关于 """"""选中代码"""""" 的问题，在回复中不必再包含  """"""前置代码"""""" 与 """"""后置代码"""""" 这此已知且重复的内容。
+
+## 前置代码
+
+```aardio
+"+(codeEdit.leftText(b-1):"")+"
+```
+
+## 选中代码
+
+```aardio
+"+selText+"
+```
+
+## 后置代码
+
+```aardio
+"+(codeEdit.rightText():"")+"
+```
+
+"
+	ide.createProcess("~/example/AI/aardioAgent.aardio",{
+		_ASK_AI_SYSTEMP_PROMPT = sysPrompt;
+		_ASK_AI_USER_PROMPT = "帮我看看 """"""选中代码"""""" ";
+	})
+	
+	return;
+}
+
+msg.prompt("
+
+## 任务
+
+分析上下文（""""""前置代码""""""与""""""后置代码""""""）插入新的代码（续写与补全）。 
+
+## 要求
+
+- 请直接返回插入的代码，回复不要包含前置代码或后置代码 
+- 你插入的代码应在前置代码与后置代码中间，可以承上而启下。
+- 回复请不要使用 Markdown 代码块包围生成的代码。 
+
+## 前置代码
+
+```aardio
+import console;
+
+//在控制台输出一句话
+console.log(""Hello
+```
+
+## 后置代码
+
+```aardio
+console.pause();
+```
+")
+
+//利用小样本学习，以 AI 助手的角色教它一遍，胜过写千万句提示词
+msg.assistant(`,world!")`);
+
+//下面是真正的问题。
+msg.prompt("
+
+## 任务
+
+分析上下文（""""""前置代码""""""与""""""后置代码""""""）插入新的代码（续写与补全）。
+
+## 前置代码
+
+```aardio
+"+leftText+"
+```
+
+## 后置代码
+
+```aardio
+"+(codeEdit.rightText():"")+"
+```
+
+")
+
+var firstKeyEnter;
+if(string.find(leftText,"<//>|<# >|<!\N[ \t]*#>|<#:>\N*[ \t]*$")){
+	..key.send('\n')
+	firstKeyEnter = true;
+}
+else { 
+	if(string.find(leftText,`[^=,]\s*\{\s*$`) ){//语句块开始标记
+		..key.send('\n')
+		firstKeyEnter = true;
+	}
+	if(string.find(leftText,`!\N[ \t]*<var\s*[\w,_\s]+\=\s*>?[\w_.]*[ \t]*%()[ \t]*;?[ \t]*$`) ){//完成的函数调用。
+		..key.send('\n')
+		firstKeyEnter = true;
+	}
+	elseif(string.find(leftText,`(/(\*+)![^*].+?![*]\2/);?[ \t]*$`) ){
+		..key.send('\n')
+		firstKeyEnter = true;
+	}
+}
+
+var lastIndent = ..string.match(codeEdit.lineText()||leftText,"!\N([ \t]+)\N+$")
+
+
+var cfgNew = {
+	key = config.key;
+	url = config.url;
+	model = config.model;
+	temperature = config.temperature; 
+	userAgent = config.userAgent;
+	proxy = config.proxy;
+	proxyBypass = config.proxyBypass;
+	httpFlags = config.httpFlags;
+}
+
+
+for(k,v in cfgNew){ 
+	if(v=="")cfgNew[k] = null;
+}
+
+if(!#cfgNew.key){
+	cfgNew = table.assign(cfgNew,{  
+		url = "https://ai.aardio.com/api/v1/";
+		model = "aardio";
+		temperature = 0.1;
+		key = "free";
+	});	
+} 
+
+cfgNew.userAgent = "Mozilla/5.0 (Windows NT "+ _WIN_VER_MAJOR +"."+_WIN_VER_MINOR+"; aardio; rv:"+_AARDIO_VERSION+") like Gecko";	
+var ai = web.rest.aiChat(cfgNew);
+ai.referer = "https://aardio.com";
+ai.setHeaders({ "X-Title":"aardio"}); 
+
+import winex.loading;
+var loading = winex.loading("正在思考",codeEdit);
+
+var origCode = codeEdit.text;
+var origCaretPos = codeEdit.caretPos;
+
+var codeBlockTag;
+var responseText = "";
+ 
+firstLine = true;
+var ok,err = ai.messages(msg,function(delta,reasoning){
+	
+	if(reasoning){ 
+		return loading.thinking(reasoning);;
+	}
+	
+	if( loading.isCanceled() ) { 
+		codeEdit.selectAll();
+		codeEdit.selText = origCode;  
+		codeEdit.setFocus(origCaretPos);
+		return false; 
+	}
+	
+	//移除多余的代码块标记
+	if(responseText && delta){
+		responseText = responseText ++ delta;
+		if( (responseText == '```aardio\n') || (responseText == '```aardio\r\n')){
+			responseText = null;
+			codeBlockTag = true;
+			return;
+		}
+		else if(..string.startWith('```aardio\n',responseText) ){
+			return;
+		}
+		else if(..string.startWith('```aardio\r\n',responseText) ){
+			return;
+		}
+		elseif(..string.startWith(responseText,'```aardio\n',)){
+			delta = ..string.right(responseText,-( (#'```aardio\n') + 1));
+			responseText = null;
+			codeBlockTag = true;
+			responseText = null;
+		}
+		elseif(..string.startWith(responseText,'```aardio\r\n',)){
+			delta = ..string.right(responseText,-( (#'```aardio\r\n')+ 1));
+			responseText = null;
+			codeBlockTag = true;
+			responseText = null;
+		}
+		else {
+			delta = responseText
+			responseText = null;
+		}
+	} 
+	
+	
+	if(delta){
+		if(#lastIndent){
+			if(firstLine){
+				if(..string.match(delta,"^[ \t]")){
+					 
+					if(firstKeyEnter){
+						delta = ..string.trimleft(delta);
+						if(#delta)lastIndent = null;
+					}
+					else {
+						lastIndent = null;
+					} 
+				}
+				
+				if(#delta){
+					firstLine = null;
+				} 
+			}
+			elseif(#lastIndent){
+				delta = ..string.replace(delta,"\n",'\n'+lastIndent);
+			}
+		}	
+		codeEdit.selText = delta;
+	}
+ 
+	if(delta===null){
+		
+		//移除多余的代码块标记
+		if(codeBlockTag){
+			var caretPos = codeEdit.caretPos;
+			codeEdit.setsel(caretPos-3,caretPos);
+			if(codeEdit.selText = '```\n'){
+				codeEdit.selText = "";
+			}
+			else {
+				codeEdit.setsel(caretPos-2,caretPos);
+				if(codeEdit.selText = '```'){
+					codeEdit.selText = "";
+				}
+				else { 
+					codeEdit.setsel(caretPos);
+				} 
+			} 
+		}  
+	}
+} );
+
+if(err){
+	//获取错误对象（解析 JSON 格式的错误信息）
+	var errObject = ai.lastResponseError()
+	if(errObject){
+		if(errObject[["error"]][["type"]] == "authentication_error" ){
+			codeEdit.selText = `请打开『aardio 工具 / 问 AI』配置有效的密钥，获取密钥： https://aardio.com/vip/`
+		}
+		else {
+			codeEdit.selText = web.json.stringify(errObject,true,false);
+		}		
+	}
+	else {
+		codeEdit.selText = err;
+	}
+} 

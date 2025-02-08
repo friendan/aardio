@@ -10,7 +10,7 @@ isHung = function(hwnd,timeout=500){
 	return ( ::User32.IsHungAppWindow(hwnd) ) or  
 		( ! ::SendMessageTimeout(hwnd,0x0/*_WM_NULL*/, , ,0x2/*_SMTO_ABORTIFHUNG*/,timeout,0 ) ); 
 } 
-  
+
 var getWindow = win.getWindow;
 match = function(hwnd,text,cls,id,timeout){ 
 
@@ -472,11 +472,12 @@ getFocus = function(hwnd,real){
 	if(!leaf || leaf == hwnd ){ return hwnd;}
 }
 
-getCaret = function(hwnd){
+getCaret = function(hwnd){ 
 	var info = getUiInfo(hwnd); 
+ 
 	if(info[["hwndCaret"]] && ( info.flags & 1/*_GUI_CARETBLINKING*/ ) ){
 		info.rcCaret.hwnd = info[["hwndCaret"]];
-		return ..win.toScreenRect(info[["hwndCaret"]],info.rcCaret)
+		return ..win.toScreenRect(info[["hwndCaret"]],info.rcCaret),(info.hwndFocus||hwnd);
 	} 
 }
 
@@ -707,7 +708,7 @@ attach(.(hwndAttach,proc) = 执行参数@proc指定的回调函数,\n@hwndAttach
 attachThread(__/*外部线程ID*/) = 绑定当前线程到外部线程并共享输入处理机制。\n返回值为是否成功附加。\n注意此函数会重置键盘状态。\n\n附加输入线程后立即调用 win.setFocus 可能偶尔会无效，可延时至少几十毫秒
 attachThread(__/*外部线程ID*/,false) = 解除附加\n返回值为是否成功解除
 getFocus(__/*可选指定父窗口句柄*/)=获取输指定参数@1指定句柄的窗口输入焦点所在的控件句柄，\n不指定参数@1获取前台窗口、输入焦点所在的控件句柄。\n\n如果参数@2为 true 则取不到输入焦点时返回 null，\n否则返回叶级窗口或自身
-getCaret(__/*可选指定窗口句柄*/)=获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体，该结构体增加 hwnd 属性存放光标所在窗口句柄。\n失败返回 null\n\n不是所有窗口都支持，\nwinex.caret.get 函数会尝试以更多的方法获取输入光标
+getCaret(__/*可选指定窗口句柄*/)=获取指定参数@1指定句柄的窗口光标区块位置，\n不指定参数获取前台窗口光标区块位置。\n成功返回 ::RECT 结构体，该结构体增加 hwnd 属性存放光标所在窗口句柄。\n失败返回 null\n\n不是所有窗口都支持，\nwinex.caret.get 函数会尝试以更多的方法获取输入光标。\n第二个返回值返回焦点窗口句柄。
 getCaret()=!rect.
 findMenu(.(窗口句柄,"菜单标题",->->->) = 参数@2开始可以指定1个或任意个菜单匹配参数,\n菜单匹配参数可以是菜单项标题,也可以是菜单项序号,\n第一个菜单项序号为1\n找到子菜单则返回子菜单,\n否则返回当前菜单句柄与菜单项命令ID
 findSubMenu(.(菜单句柄,"菜单标题",->->->) = 参数@2开始可以指定1个或任意个菜单匹配参数,\n菜单匹配参数可以是菜单项标题,也可以是菜单项序号,\n第一个菜单项序号为1\n找到子菜单则返回子菜单,\n否则返回当前菜单句柄与菜单项命令ID

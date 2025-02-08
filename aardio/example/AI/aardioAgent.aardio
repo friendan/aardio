@@ -1,0 +1,1312 @@
+import win.ui;
+import fonts.fontAwesome;
+/*DSG{{*/
+var winform = win.form(text="aardio - AI 编程助手";right=759;bottom=620;bgcolor=16447992;border="none")
+winform.add(
+bk={cls="bk";text="aardio - AI 编程助手";left=21;top=3;right=198;bottom=23;align="left";dl=1;dt=1;z=15};
+bkPrompt={cls="plus";left=5;top=461;right=754;bottom=615;bgcolor=16777215;border={radius=12};clip=1;clipBk=false;db=1;disabled=1;dl=1;dr=1;z=1};
+bkTitle={cls="bk";left=0;top=0;right=764;bottom=27;bgcolor=14408409;dl=1;dr=1;dt=1;forecolor=6052699;linearGradient=0;z=2};
+btnClear={cls="plus";text="清除";left=589;top=586;right=655;bottom=616;align="left";bgcolor=16777215;color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF014';notify=1;textPadding={left=25};z=5};
+btnCopy={cls="plus";text="复制";left=203;top=587;right=267;bottom=617;align="left";bgcolor=16777215;color=3947580;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0C5';notify=1;textPadding={left=25};z=10};
+btnSearch={cls="plus";text="联网搜索";left=20;top=586;right=111;bottom=616;align="left";bgcolor=16777215;color=3947580;db=1;dl=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF26B';notify=1;textPadding={left=25};z=16};
+btnSend={cls="plus";text="问 AI";left=660;top=586;right=732;bottom=616;align="left";bgcolor=16777215;color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0AA';notify=1;textPadding={left=25};z=4};
+btnSetting={cls="plus";text="设置";left=512;top=586;right=579;bottom=616;align="left";bgcolor=16777215;color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF013';notify=1;textPadding={left=25};z=6};
+btnSnap={cls="plus";text="分享";left=138;top=587;right=202;bottom=617;align="left";bgcolor=16777215;color=3947580;db=1;disabled=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF030';notify=1;textPadding={left=25};z=12};
+chkFix={cls="plus";text="更正";left=276;top=586;right=336;bottom=617;align="left";bgcolor=16777215;db=1;dr=1;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome')};iconText='\uF0C8 ';notify=1;textPadding={left=24};z=11};
+editMaxTokens={cls="edit";left=427;top=591;right=470;bottom=614;align="right";db=1;dr=1;edge=1;z=8};
+editPrompt={cls="richedit";left=8;top=466;right=751;bottom=580;autohscroll=false;bgcolor=16777215;db=1;dl=1;dr=1;link=1;multiline=1;vscroll=1;z=3};
+spinMaxTokens={cls="spin";left=471;top=592;right=491;bottom=614;db=1;dr=1;z=7};
+splitter={cls="splitter";left=-7;top=457;right=760;bottom=462;bgcolor=13750737;db=1;dl=1;dr=1;horz=1;z=13};
+static={cls="static";text="回复长度：";left=352;top=589;right=418;bottom=612;align="right";bgcolor=16777215;center=1;db=1;dr=1;z=9};
+wndBrowser={cls="custom";text="自定义控件";left=5;top=27;right=753;bottom=455;ah=1;db=1;dl=1;dr=1;dt=1;z=14}
+)
+/*}}*/
+
+import fsys.table;
+var config = fsys.table(io.appData("aardio/ide/aiChat/~"))
+
+//创建显示聊天消虑的 Web 浏览器窗口
+import web.form.chat;
+var wb = web.form.chat(winform.wndBrowser);
+wb.enableKatex(config.katex);
+
+//清除上下文
+var resetMessages = function(){
+	
+	wb.clear(); 
+
+	//自动生成 aardio 编程助手系统提示词
+	wb.aardioSystem(config.systemPromp);	
+	
+	wb.aiSystemPropmptSupperHotkeys = null;
+	wb.aiSystemPropmptStringPatterns = null;
+	wb.aiSystemPropmptWebView = null;
+	wb.aiSystemPropmptPython = null; 
+	wb.aiSystemPropmptWinform = null;
+	wb.aiSystemPropmptNet = null;
+	wb.aiSystemPropmptPlus = null;
+	wb.aiSystemPropmptFile = null;
+	wb.aiSearched = null;
+
+	import ide;
+	var projPath = ide.getProjectPath();
+	if(!#projPath) return;
+	
+	import fsys.file;
+	var file = fsys.file(projPath,"r");
+	if(!file) return;
+	
+	if(file.size() < 20000){
+		file.close();
+		return;
+	}
+	
+	var xml = file.readAll();
+		
+	var project = '\r\n\r\n'+"
+## aardio 源文件与工程文件
+
+aardio 代码文件的后缀名为 `.aardio`，可包含 UTF-8 编码的源代码，也可以包含编译后的二进制代码。
+
+aardio 工程文件的后缀名为 `.aproj`，其内容是 XML 格式的工程配置，也使用  UTF-8 编码 。  
+"
+
+	project = project + '\r\n\r\n用户当前在 aardio 开发环境中打开的工程文件路径是: "'+projPath+'"\r\n'
+	 
+	project = project + '\r\n\r\n用户当前打开的工程文件内容如下：'
+	
+	project = project + '\r\n\r\n```xml\r\n' + xml +  '\r\n```\r\n\r\n'
+	
+	var desc = /*****
+	
+工程文件各 XML 节点的作用与含义：
+	
+- project 元素指定工程配置，并作为工程根目录包含其他 folder 或 file 元素。
+
+project 元素的属性 ui 指定图形界面。 
+
+    * 如果 ui 为 "win" 则为图形界面发布后运行默认不显示控制台。
+    * 如果 ui 为"console" 则为控制台程序发布后运行时默认显示控制台窗口。
+
+project 元素的属性 dstrip 指定是否移除调试符号。 
+
+    * `dstrip="true"` 则发布后移除调试信息，生成的文件更小但错误信息会缺少调试信息（例如文件名行号）。
+
+- folder 元素为工程中的虚拟目录
+
+如果 folder  的属性 embed 为 "true" 则该目录发布后嵌入 EXE 资源文件，aardio 中很多函数和库都自动支持这种嵌入资源而不需要额外修改代码。例如对于 `string.load("/res/test.txt")`，无论参数指定的文件是不是 EXE 资源文件函数的返回值都是一样的，这是 aardio 的一个主要特性。
+
+如果 folder 元素的属性 local 为 "true" 则表示这是一个本地目录（通常也是 Web  前端工程的发布目录），发布为 EXE 时将添加该目录下的所有文件。这种目录在工程中不显示子级文件或目录，右键菜单的『同步本地目录』也是无效的。 
+
+如果 folder 元素的属性 ignored 为 "true" 是指这个目录在发布时被忽略（ignored）。这种目录通常用来指向包含 Web 前端工程源码的目录，工程本身其实并不需要这些多余的目录，生成 EXE 时也会忽略这种目录。
+
+- file 元素则表示添加到工程中的文件
+
+在工程根目录下只能有一个应用程序启动文件, 文件路径必须是 `main.aardio` 或以  `.main.aardio` 结束。除了启动文件，工程根目录只能包含 folder 元素。
+
+*****/
+	
+project = project + desc + '\r\n\r\n';
+
+	var codePath = ide.getActiveDocPath();
+	if(#codePath && ..string.endWith(codePath,".aardio",true) ){
+		project = project + '\r\n\r\n用户当前正在编辑的文件为: "'+codePath+'"\r\n'
+	} 
+
+	wb.system(project);
+}
+
+resetMessages();
+
+if(_ASK_AI_SYSTEMP_PROMPT){
+	wb.system(_ASK_AI_SYSTEMP_PROMPT);
+}
+
+if(_ASK_AI_USER_PROMPT){
+	winform.editPrompt.text = _ASK_AI_USER_PROMPT;
+}
+
+winform.btnClear.oncommand = function(id,event){
+	resetMessages();//清除聊天上下文
+	winform.editPrompt.setFocus();
+}
+
+winform.splitter.origTop = winform.splitter.top;
+
+//响应按键事件，输入用户提示词
+winform.btnSend.oncommand = function(id,event){
+	
+	var prompt = winform.editPrompt.text;
+	if(!#prompt){
+		wb.errorMessage("请先输入问题。")
+		winform.editPrompt.setFocus();
+		return;
+	}
+	
+	var tApiUrl = inet.url.split(config.url);
+	if(!tApiUrl){
+		wb.errorMessage(`错误的接口网址，;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点这里重新设置</a>`)
+		winform.editPrompt.setFocus();
+		return;
+	}
+	
+	//按钮显示等待动画
+	winform.btnSend.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+	winform.btnClear.disabled = true; 
+	winform.btnSnap.disabled = true;
+	winform.chkFix.disabled = true;
+	
+	wb.limit = config.msgLimit;
+	
+	var assistantMsg = wb.lastAssistantMessage();
+	if(assistantMsg && winform.chkFix.checked){
+		//Few-shot Learning
+		assistantMsg.content = ide.aifix.markdown(assistantMsg.content,true);
+	}
+	
+	
+	if(config.url && tApiUrl.host=="ai.aardio.com"){
+		//aardio 官方接口已经有更好更全的知识库，联网搜索是无意义的。
+	}
+	elseif(string.indexOf(prompt,`"""选中代码"""`)){
+	
+	}
+	elseif(wb.aiSearched){
+	
+	}
+	elseif( (config.search[["mode"]]=="exa" && config.search.exa )
+		||(config.search[["mode"]]=="bocha" && config.search.bocha ) ){
+			
+		wb.showLoading("正在联网搜索");
+		
+		import web.turndown; 
+		var ok = thread.invokeAndWait( function(wb,prompt,searchConfig){
+				import web.rest.jsonClient;;
+				
+				if(searchConfig.mode=="exa"){
+					//导入 Exa 索接口 
+					var exaClient = web.rest.jsonClient(); 
+					exaClient.setHeaders({ "x-api-key": searchConfig.exa.key} )
+					var exa = exaClient.api("https://api.exa.ai/");
+					
+					//搜索
+					var searchData,err = exa.search({
+    					query:"aardio 编程语言文档 范例 " + prompt,
+    					contents={text= true},
+    					numResults: searchConfig.exa.count || 2, 
+    					includeDomains: searchConfig.exa.includeDomains,
+    					excludeDomains: !searchConfig.exa.includeDomains ? searchConfig.exa.excludeDomains : null,
+    					type:"keyword" //一般 keyword 搜索就够了（价格低一些）
+					}) 
+					
+					var ret  = searchData[["results"]]
+					if(ret){
+						wb.url(ret);	
+						return true;
+					}
+					elseif(err){
+						wb.errorMessage(err); 
+					}		
+				}
+				elseif(searchConfig.mode=="bocha"){
+					var bochaClient = web.rest.jsonClient(); 
+					bochaClient.setAuthToken(searchConfig.bocha.key);
+					var bocha = bochaClient.api("https://api.bochaai.com/v1/{method}-search");
+					
+					//搜索
+					var searchData,err = bocha.web({ 
+    					"query": "aardio 编程语言文档 范例 " + prompt,
+    					"freshness": "noLimit",
+    					"answer": false,
+    					"stream": false,
+    					"count":  searchConfig.bocha.count || 2; //返回的搜索结果数量，不必要太多，前两三条就可以了
+					})
+					
+					//将搜索结果添加到系统提示词
+					var ret = searchData[["data"]][["webPages"]][["value"]]
+					if(ret){
+						wb.url(ret);	
+						return true;
+					}
+					elseif(err){
+						wb.errorMessage(err);
+					}	
+				} 		
+			},wb,prompt,config.search) 
+			
+			if(!ok){
+				
+				winform.btnSend.disabledText = null;
+				winform.btnClear.disabled = false; 
+				winform.btnSnap.disabled = false;
+				winform.chkFix.disabled = false;
+				
+				return;
+			}
+			
+			wb.aiSearched = true;
+			wb.showLoading("正在思考")
+	}
+	
+    var knowledge = ""
+	prompt = string.replace(prompt,"https?\://[^\s\)]+",
+		function(url){
+			wb.showLoading("正在读取："+url)
+
+			import web.turndown;
+			var md,err = web.turndown.httpGet(url)
+			if(!#md) return;
+			
+			md = '\r\n\r\n用户输入的参考网址：' + url 
+				+  '\r\n\r\n下面是自该网址获取的' +(err?" Markdown ":"文本")+'格式内容：'
+				+  '\r\n\r\n' + md +'\r\n\r\n------------------------\r\n\r\n'
+		 
+			knowledge = knowledge ++ md;
+		});
+	
+	if(#knowledge){
+		wb.system(knowledge)
+		
+		if(string.match(prompt,`^\s*(https?\://[^\s()"']+)\s*$`)){
+			prompt = "解读分析与总结要点 " + prompt;
+		}
+	} 
+
+	//输入 AI 提示词
+	wb.prompt( prompt );
+	winform.editPrompt.text = "";
+
+	config.maxTokens = winform.spinMaxTokens.pos;
+	
+	winform.splitter.splitAt(winform.splitter.origTop);
+	
+	//创建多线程向服务端发送请求
+	thread.invoke( 
+		function(wb,config){
+			for(k,v in config){ 
+				if(v==="")config[k] = null;
+			} 
+			
+			if(!#config.key){
+				config = table.assign(config,{  
+					url = "https://ai.aardio.com/api/v1/";
+					model = "aardio";
+					temperature = 0.1;
+				});	
+			} 
+			
+			//导入调用 HTTP 接口的 REST 客户端
+			import web.rest.aiChat;
+			config.userAgent = "Mozilla/5.0 (Windows NT "+ _WIN_VER_MAJOR +"."+_WIN_VER_MINOR+"; aardio; rv:"+_AARDIO_VERSION+") like Gecko";
+			
+			var client = web.rest.aiChat(config);
+			client.referer = "https://aardio.com";
+			client.setHeaders({ "X-Title":"aardio"}); 
+   
+			var ok,err = client.messages(wb.chatMessage,function(deltaText,deltaReasoning){
+				if(#deltaReasoning){
+					wb.showThinking(deltaReasoning);
+					return;
+				}
+				
+				wb.assistant(deltaText);
+			} );
+	
+			if(err){
+				//获取错误对象（解析 JSON 格式的错误信息）
+				var errObject = client.lastResponseError()
+				if(errObject[["error"]][["type"]] == "authentication_error" ){
+					wb.errorMessage(`API 密钥错误！<a href="https://aardio.com/vip/">点这里获取密钥</a>，&nbsp;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点这里设置新密钥</a>`)
+				}
+				else {
+					wb.errorMessage(err)
+				}
+			}  
+			elseif(!ok){
+				wb.errorMessage("错误代码：" + ( client.lastStatusCode : "未知 " + (client.lastResponseString() || "")))
+			}
+			elseif(config.usage){
+				var last = client.lastResponseObject()
+				 
+				if(last){
+					 
+					var out = ""
+					
+					var usage = last.usage || last["amazon-bedrock-invocationMetrics"]
+					if(usage){
+						var cTokens,pTokens,cacheTokens;
+						if(client.apiMode=="aliyun"){
+							usage = usage[["models"]][[1]];
+							cTokens = usage.output_tokens
+							pTokens = usage.input_tokens;
+						}
+						else {
+							cTokens = usage.completion_tokens || usage["outputTokenCount"]
+							pTokens = usage.prompt_tokens || usage.inputTokenCount || usage.input_tokens;
+							cacheTokens = usage.prompt_cache_hit_tokens
+						}
+					  
+						if(cTokens){
+							out = out + '回复 tokens:<code>' + ..math.size64(cTokens).format() + "</code> "
+						}
+						 
+						if(pTokens){
+							out = out + '提示 tokens:<code>' + ..math.size64(pTokens).format() + "</code> "
+						}
+						
+						if(cacheTokens){
+							out = out + '缓存 tokens:<code>' + ..math.size64(cacheTokens).format() + "</code> "
+						} 
+						
+						if( string.match( config.url,"<@@https://api.deepseek.com/v1@>" )){
+							
+							if( config.model!="deepseek-reasoner"){ 
+								if( time() < time("2025/02/09 00:00:00")){
+									out = out + '本次费用:<code>' 
+										+ math.round(((pTokens-cacheTokens)*1+cacheTokens*0.1+cTokens*2)/1000000,3) 
+										+  " 元 </code>"	
+								}
+								else {
+									out = out + '本次费用:<code>' 
+										+ math.round(((pTokens-cacheTokens)*2+cacheTokens*0.5+cTokens*8)/1000000,3) 
+										+  " 元 </code>"	 
+								} 
+							}
+							else {
+								out = out + '本次费用:<code>' 
+										+ math.round(((pTokens-cacheTokens)*4+cacheTokens*1+cTokens*16)/1000000,3) 
+										+  " 元 </code>"	
+							}
+							
+						} 
+						elseif( string.match( config.url,"<@@https://openrouter.ai/api/v1@>" )){
+							if( config.model=="anthropic/claude-3.5-sonnet"){
+								out = out + '本次费用:<code>' 
+									+ math.round((pTokens*3+cTokens*15)/1000000,3) 
+									+  " 美元 </code>"	
+							} 
+							elseif( ..string.endWith(config.model,":free") ){
+								out = out + "本次费用:<code> 0 美元 </code>"
+							}
+						} 
+						elseif( string.match( config.url,"<@@https://api.siliconflow.cn/v1@>" )){
+						 
+							if( config.model=="deepseek-ai/DeepSeek-V3"){ 
+								if( time() < time("2025/02/09 00:00:00")){
+									out = out + '本次费用:<code>' 
+										+ math.round((pTokens*1+cTokens*2)/1000000,3) 
+										+  " 元 </code>"	
+								}
+								else {
+									out = out + '本次费用:<code>' 
+										+ math.round((pTokens*2+cTokens*8)/1000000,3) 
+										+  " 元 </code>"	 
+								} 
+							}
+							elseif( config.model == "deepseek-ai/DeepSeek-R1") {
+								out = out + '本次费用:<code>' 
+										+ math.round((pTokens*4+cTokens*16)/1000000,3) 
+										+  " 元 </code>"	
+							}
+						} 
+					}
+					
+					if(last.error){
+						wb.errorMessage( last.error[["message"]] || ..web.json.stringify(last.error,true,false) ) 
+					}
+					else {
+						wb.errorMessage(#out ? out : "模型未提供 token 用量")
+					} 
+				}
+				else { 
+					wb.errorMessage("模型未提供 token 用量")
+				} 
+			}
+			 
+		},wb,config//将参数传入线程
+	)
+	
+	winform.btnCopy.disabled = false;
+}
+
+//在 AI 回复结束后回调此函数
+wb.onWriteEnd = function(){
+	winform.btnSend.disabledText = null;//关闭等待动画
+	winform.btnClear.disabled = false;
+	winform.btnCopy.disabled = false;
+	winform.btnSnap.disabled = false;
+	winform.chkFix.disabled = false;
+	winform.editPrompt.setFocus();
+}
+
+//在 AI 回复结束以前回调此函数，自动修正 aardio 代码块中的常见幻觉错误
+import ide.aifix;
+wb.beforerWriteEnd = function(markdown){
+	if(winform.chkFix.checked) { 
+		return ide.aifix.markdown(markdown,true);
+	}
+	return markdown;
+}
+
+//导出 aardio 函数到网页 JavaScript 中。
+wb.external = {
+	updateApiKey = function(){
+		winform.btnSetting.oncommand();
+	} 
+}
+
+import key;
+import win.clip;
+winform.btnCopy.oncommand = function(id,event){
+	var md = wb.lastMarkdown();
+	if(!#md) return winform.msgboxErr("消息为空。");
+	
+	if(key.getState("CTRL")){
+		
+		var found;
+		for indent,_,code in string.gmatch(md,"!\N([ \t]*)(```+)<aardio>(.+?)!\N\s*\2![^`\S]") { 
+			
+			if(#indent){ 
+				text = string.replace(text,"\n+"+indent,'\n');
+			}	
+		
+			if(winform.chkFix.checked) code = ide.aifix(code,true);
+		    win.clip.write( code );
+		    found = true;
+		}
+		
+		if(!found){
+			return winform.msgboxErr("没有找到代码块。");	
+		} 
+	}
+	else{
+		if(winform.chkFix.checked) md = ide.aifix.markdown(md,true);
+		win.clip.write( md )
+	}
+	
+	winform.btnCopy.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250';text=''} 
+	thread.delay(800);
+	winform.btnCopy.disabledText = null;
+	
+	winform.editPrompt.setFocus();
+}
+
+//设置接口地址与 API 令牌的窗口
+winform.btnSetting.oncommand = function(id,event){
+	var frmSetting = win.form(text="aardio - 设置 AI 聊天助手";right=685;bottom=589;border="dialog frame";exmode="none";max=false;min=false;mode="popup")
+	frmSetting.add(
+		btnAdd={cls="plus";left=18;top=473;right=52;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF067';notify=1;textPadding={left=25};z=11};
+		btnEdit={cls="plus";left=93;top=473;right=127;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF044';notify=1;textPadding={left=25};z=13};
+		btnRemove={cls="plus";left=56;top=473;right=90;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF1F8';notify=1;textPadding={left=25};z=12};
+		btnSave={cls="button";text="更新配置";left=489;top=531;right=659;bottom=576;z=5};
+		chkF1={cls="checkbox";text="设为 F1 键编码助手";left=283;top=218;right=655;bottom=238;z=26};
+		chkKatex={cls="checkbox";text="解析数学公式";left=55;top=526;right=159;bottom=546;z=16};
+		chkUsage={cls="checkbox";text="显示 token 计数";left=181;top=526;right=349;bottom=546;z=25};
+		editApiKey={cls="edit";left=284;top=104;right=662;bottom=131;edge=1;password=1;z=2};
+		editApiUrl={cls="combobox";left=284;top=31;right=662;bottom=57;edge=1;items={};mode="dropdown";z=19};
+		editModel={cls="edit";left=284;top=68;right=662;bottom=95;edge=1;z=6};
+		editProxy={cls="edit";left=283;top=180;right=661;bottom=207;edge=1;z=20};
+		editSystemPrompt={cls="edit";left=283;top=247;right=664;bottom=484;edge=1;hscroll=1;multiline=1;vscroll=1;z=22};
+		groupbox={cls="groupbox";text="选择当前配置：";left=9;top=6;right=675;bottom=513;edge=1;z=1};
+		lbMsgLimit={cls="static";left=423;top=546;right=451;bottom=566;transparent=1;z=17};
+		lbTemperature={cls="static";left=633;top=140;right=659;bottom=160;transparent=1;z=18};
+		lstConfig={cls="listbox";left=18;top=34;right=187;bottom=464;edge=1;hscroll=1;items={};vscroll=1;z=10};
+		static={cls="static";text="模型 ID：";left=196;top=72;right=279;bottom=93;align="right";transparent=1;z=3};
+		static2={cls="static";text="API key：";left=196;top=107;right=279;bottom=128;align="right";transparent=1;z=4};
+		static3={cls="static";text="不会联网读取系统提示词内的超链接，建议直接添加文档内容";left=282;top=489;right=649;bottom=508;color=5921370;transparent=1;z=24};
+		static4={cls="static";text="接口地址：";left=196;top=38;right=279;bottom=59;align="right";transparent=1;z=7};
+		static5={cls="static";text="temperature：";left=196;top=141;right=279;bottom=162;align="right";transparent=1;z=9};
+		static6={cls="static";text="上下文轮数：";left=33;top=560;right=128;bottom=592;align="right";transparent=1;z=15};
+		static7={cls="static";text="代理服务器：";left=196;top=184;right=279;bottom=205;align="right";transparent=1;z=21};
+		static8={cls="static";text="系统提示词：";left=200;top=248;right=283;bottom=269;align="right";transparent=1;z=23};
+		tbMsgLimit={cls="trackbar";left=132;top=552;right=415;bottom=582;max=100;min=0;z=14};
+		tbTemperature={cls="trackbar";left=283;top=137;right=633;bottom=167;max=100;min=0;z=8}
+	)
+	 
+	frmSetting.editModel.setCueBannerText("模型名前加 @ 使用 Anthropic 接口，否则使用 OpenAI 接口")
+	frmSetting.editProxy.setCueBannerText("socks=127.0.0.1:1081");
+	frmSetting.editSystemPrompt.limit = -1;
+	
+	frmSetting.editApiUrl.items = {
+		"https://ai.aardio.com/api/v1",
+		"https://api.deepseek.com/v1",
+		"https://openrouter.ai/api/v1",
+		"https://api.siliconflow.cn/v1",
+		"https://api.anthropic.com/v1",
+		"https://generativelanguage.googleapis.com/v1beta", 
+		"https://api.x.ai/v1",
+		"https://api.openai.com/v1", 
+		"https://ark.cn-beijing.volces.com/api/v3/bots",
+		"https://ark.cn-beijing.volces.com/api/v3",
+		"https://api.lkeap.cloud.tencent.com/v1",
+		"https://dashscope.aliyuncs.com/api/v1/",
+		"http://localhost:11434/v1/"
+	}
+	
+	frmSetting.editApiUrl.onListChange = function(){ 
+		var url = frmSetting.editApiUrl.selText;
+
+		if(url=="https://ai.aardio.com/api/v1"){
+			frmSetting.editModel.text = "aardio"
+		}
+		elseif(url=="https://api.deepseek.com/v1"){
+			frmSetting.editModel.text = "deepseek-chat"
+		}
+		elseif(url=="https://api.siliconflow.cn/v1"){
+			frmSetting.editModel.text = "deepseek-ai/DeepSeek-V3"
+		}
+		elseif(url=="https://openrouter.ai/api/v1"){
+			frmSetting.editModel.text = "google/gemini-2.0-flash //或 anthropic/claude-3.5-sonnet"
+		}
+		elseif(url=="https://api.anthropic.com/v1"){
+			frmSetting.editModel.text = "@claude-3-5-sonnet-latest"
+		}
+		elseif(url=="https://generativelanguage.googleapis.com/v1beta"){
+			frmSetting.editModel.text = "gemini-2.0-flash"
+		}
+		elseif(url=="https://api.x.ai/v1"){
+			frmSetting.editModel.text = "grok-2-1212"
+		}
+		elseif(url=="https://api.openai.com/v1"){
+			frmSetting.editModel.text = "chatgpt-4o-latest"
+		}
+		elseif(url=="https://ark.cn-beijing.volces.com/api/v3/bots"){
+			frmSetting.editModel.text = "bot- //智能体  ID"
+		}
+		elseif(url=="https://ark.cn-beijing.volces.com/api/v3"){
+			frmSetting.editModel.text = "ep- //接入点 ID"
+		}
+		elseif(url=="https://dashscope.aliyuncs.com/api/v1/"){
+			frmSetting.editModel.text = "qwen-coder-plus //也可以指定智能体应用 ID" 
+		}
+		elseif(url=="https://api.lkeap.cloud.tencent.com/v1"){
+			frmSetting.editModel.text = "deepseek-r1 //或者 deepseek-v3" 
+		}
+		elseif(url=="http://localhost:11434/v1/"){
+			frmSetting.editModel.text = "qwen:0.5b //Ollama 本地模型"
+		}
+	}
+
+	frmSetting.tbMsgLimit.setRange(3,100);
+	frmSetting.tbTemperature.setRange(0,10);
+	frmSetting.tbTemperature.oncommand = function(id,event,pos){
+ 	
+		var pos = frmSetting.tbTemperature.pos; 
+		frmSetting.tbTemperature.tooltip = pos / 10; 
+		frmSetting.lbTemperature.text = pos / 10; 
+	}
+	
+	frmSetting.tbMsgLimit.oncommand = function(id,event,pos){
+ 	
+		frmSetting.lbMsgLimit.text = frmSetting.tbMsgLimit.pos;;  
+	}
+
+	import win.ui.listEdit;
+	var listEdit = win.ui.listEdit(frmSetting.lstConfig);
+	listEdit.editBox.setCueBannerText("请输入配置名",true);
+
+	if(!#config.itemNames) {
+		config.itemNames = {"默认"}
+		config.itemData = {{
+			url = config.url || "https://ai.aardio.com/api/v1/";
+			key = config.key;
+			model = #config.model ? config.model : "aardio";
+			temperature = config.temperature;		
+		}};
+	}
+	
+	frmSetting.lstConfig.onSelChange = function(){
+		var selIndex = frmSetting.lstConfig.selIndex; 
+		
+		if(config.selItem && config.selItem != selIndex){
+			//保存上一个配置
+			var configItem = {
+				url = frmSetting.editApiUrl.text;
+				key = string.trim(frmSetting.editApiKey.text,`"' 	`);
+				model = ..string.match(frmSetting.editModel.text,"\s*(\S+)");
+				temperature = frmSetting.tbTemperature.pos / 10;
+				msgLimit = frmSetting.tbMsgLimit.pos;
+				proxy = string.trim(frmSetting.editProxy.text);
+				systemPrompt = frmSetting.editSystemPrompt.text;
+				f1 = frmSetting.chkF1.checked;
+			}  
+			
+			if(configItem.f1){
+				for(i,cfg in config.itemData){
+					 cfg.f1 = null;
+				} 
+			}
+		
+			config.itemData[config.selItem] = configItem; 		
+		} 
+		
+		//加载下一个配置
+		var selIndex = frmSetting.lstConfig.selIndex; 
+		var configItem = config.itemData[selIndex] || {};
+		frmSetting.chkF1.checked = configItem.f1;
+		
+		frmSetting.editApiUrl.text = configItem.url;
+		 
+		import string.escape2;
+		configItem.key = ..string.escape2.unescape(configItem.key)
+		frmSetting.editApiKey.text = ..string.escape2.escape(configItem.key)
+   
+		frmSetting.editProxy.text = configItem.proxy;
+		frmSetting.editSystemPrompt.text = configItem.systemPrompt;
+	
+		if(configItem.temperature===null) configItem.temperature = 0.1; 
+		frmSetting.tbTemperature.pos = configItem.temperature * 10;
+		frmSetting.tbTemperature.tooltip = configItem.temperature; 
+		frmSetting.lbTemperature.text = configItem.temperature; 
+		
+		frmSetting.tbMsgLimit.pos = configItem.msgLimit || 15;
+		frmSetting.lbMsgLimit.text = configItem.msgLimit || 15; 
+		
+		frmSetting.editModel.text = configItem.model; 
+		
+		config.proxy = null;
+		table.assign(config,configItem);
+		
+		config.itemData[selIndex] = configItem;
+		config.itemNames = frmSetting.lstConfig.items; 
+		config.itemData = table.slice(config.itemData,1,#config.itemNames);
+		config.selItem = selIndex; 
+		  
+		config.save();	
+	}
+	
+	frmSetting.lstConfig.items = config.itemNames;
+	frmSetting.lstConfig.selIndex = config.selItem || 1;
+	frmSetting.lstConfig.onSelChange();
+	frmSetting.chkKatex.checked = config.katex;
+	frmSetting.chkUsage.checked = config.usage;
+	
+	//保存并更新配置
+	import inet.url;
+	frmSetting.btnSave.oncommand = function(id,event){
+ 	
+		var configItem = {
+			url = frmSetting.editApiUrl.text;
+			key = string.trim(frmSetting.editApiKey.text,`"' 	`);
+			model = ..string.match(frmSetting.editModel.text,"\s*(\S+)");
+			temperature = frmSetting.tbTemperature.pos / 10;
+			msgLimit = frmSetting.tbMsgLimit.pos;
+			proxy = string.trim(frmSetting.editProxy.text);
+			systemPrompt = frmSetting.editSystemPrompt.text;
+			f1 = frmSetting.chkF1.checked;
+		} 
+		
+		if(configItem.f1){
+			for(i,cfg in config.itemData){
+				cfg.f1 = null;
+			} 
+		}
+		
+		import string.escape2;
+		configItem.key = ..string.escape2.unescape(configItem.key)
+		
+		if(!#configItem.proxy){
+			configItem.proxy = null;
+		}
+		
+		var tUrl = inet.url.split(configItem.url); 
+		if(tUrl[["host"]]=="api.anthropic.com"){
+			if(configItem.model[1]!='@'#){
+				configItem.model = '@' + configItem.model;
+			}
+		}
+		elseif(tUrl[["host"]]=="generativelanguage.googleapis.com"){
+			configItem.url = "https://generativelanguage.googleapis.com/v1beta"
+		}
+		
+		var selIndex = frmSetting.lstConfig.selIndex;
+		config.selItem = selIndex; 
+		config.itemData[selIndex] = configItem;
+		
+		config.proxy = null;
+		table.assign(config,configItem);  
+		
+		config.katex = frmSetting.chkKatex.checked;
+		wb.enableKatex(config.katex);
+		
+		config.usage = frmSetting.chkUsage.checked;
+		config.save();
+		
+		frmSetting.endModal();
+		
+		if(!wb.started()){
+			resetMessages();
+		}
+		else {
+			
+			var md = wb.getMarkdown();
+			if(winform.chkFix.checked){
+				md = ide.aifix.markdown(md,true)
+			}
+			
+			wb.write(md);
+		}
+		
+		
+		thread.delay(100)
+		winform.editPrompt.setFocus();
+	}
+	
+	frmSetting.btnEdit.oncommand = function(id,event){
+		listEdit.beginEdit();
+	}
+	
+	frmSetting.btnAdd.oncommand = function(id,event){
+		listEdit.beginEdit(0);	
+	}
+	
+	frmSetting.btnRemove.oncommand = function(id,event){
+		if(frmSetting.lstConfig.count==1){
+			return frmSetting.msgboxErr("只有一个配置方案时不允许删除！");
+		}
+		
+		var selIndex = frmSetting.lstConfig.selIndex;
+		 
+		..table.remove(config.itemData,selIndex);
+		..table.remove(config.itemNames,selIndex);
+		frmSetting.lstConfig.delete(selIndex)
+		
+		selIndex = selIndex<=frmSetting.lstConfig.count ? selIndex : selIndex -1;
+		  
+		config.selItem = null;
+		frmSetting.lstConfig.selIndex = selIndex;
+		frmSetting.lstConfig.onSelChange() 
+	}	
+	
+	listEdit.onEditChanged = function(newText,selIndex){
+		config.itemNames = frmSetting.lstConfig.items; 
+		
+		frmSetting.lstConfig.selIndex = selIndex;
+		frmSetting.lstConfig.onSelChange();
+		
+		config.save();	
+	}
+	
+	frmSetting.btnAdd.skin({
+		color={
+			active=0xFF00FF00;
+			default=0xFF3C3C3C;
+			disabled=0xFF6D6D6D;
+			hover=0xFFFF0000		
+		}
+	})
+	
+	frmSetting.btnRemove.skin({
+		color={
+			active=0xFF00FF00;
+			default=0xFF3C3C3C;
+			disabled=0xFF6D6D6D;
+			hover=0xFFFF0000		
+		}
+	})
+	
+	frmSetting.btnEdit.skin({
+		color={
+			active=0xFF00FF00;
+			default=0xFF3C3C3C;
+			disabled=0xFF6D6D6D;
+			hover=0xFFFF0000		
+		}
+	})
+	
+	if(wb.documentMode<11){
+		frmSetting.chkKatex.checked = false;
+		frmSetting.chkKatex.disabled = true;
+	}
+	
+	frmSetting.doModal(winform);
+	winform.editPrompt.setFocus();
+}
+
+winform.chkFix.checked = true;
+winform.chkFix.oncommand = function(id,event){
+	var md = wb.getMarkdown();
+	if(owner.checked){
+		md = ide.aifix.markdown(md,true)
+	}
+	
+	wb.write(md);
+	
+	winform.editPrompt.setFocus();
+}
+
+var tip = /*
+- 在代码编辑器按 `F1` 键可调用`当前编码助手`帮您续写或补全代码（如有选区则打开文档）。
+	* 建议在输入光标前用`行注释`说明需求，再按 `F1` 键。 
+	* 使用第三方密钥因无法接入专业版 aardio 知识库，生成的回复与代码质量会严重下降。
+	* <a href="https://aardio.com/vip/">点此购买专业版密钥（API Key）</a> &nbsp;<a href="javascript:void(0)" onclick="javascript:external.updateApiKey()">点此设置新密钥</a> 
+- 聊天界面可联网读取提示词内的网页链接，并自动转换为 Markdown 格式文本。
+- 按住 `Ctrl` 键点下面的 `复制` 按钮可复制 AI 最后一次输出的代码块。
+- 按住 `Ctrl` 键点下面的 `分享` 可截长屏到剪贴板。 
+- 按住 `Ctrl+Enter` 可直接发送问题 。
+*/
+
+wb.write(tip)
+
+//默认设置输入框焦点
+winform.editPrompt.setFocus();
+
+winform.splitter.ltMin = 200;
+winform.splitter.rbMin = 150;
+
+var scrollbarHeight = ::User32.GetSystemMetrics(3/*_SM_CYHSCROLL*/)
+winform.editPrompt.onOk = function(ctrl,alt,shift){ 
+	if(ctrl){
+		winform.btnSend.oncommand();
+		return true; 
+	} 
+	
+	var pt = ::POINT()
+	::User32.GetCaretPos(pt) 
+	
+	var lineCount = winform.editPrompt.lineCount;
+	var lineHeight = math.ceil(pt.x / lineCount + winform.dpiScale(5)); 
+	  
+	if(pt.y+(lineHeight+scrollbarHeight)*3>winform.editPrompt.height){  
+ 
+		winform.wndBrowser.setRedraw(false)
+		winform.splitter.splitMove(-lineHeight) 
+		winform.wndBrowser.setRedraw(true) 
+	}
+}
+
+//拆分界面
+winform.splitter.split(winform.wndBrowser,{winform.bkPrompt,winform.editPrompt});
+
+winform.editPrompt.enablePopMenu(function(){
+	return { 
+		
+		{ '问 AI（发送）\tCtrl+Enter';  function(id){
+			winform.btnSend.oncommand();
+		}; 0};  
+		
+		{ /*分隔线*/ };
+		{ (wb.aiSystemPropmptStringPatterns?"已自动":"")+"插入 模式匹配语法文档";  function(id){
+			winform.editPrompt.selText = " [aardio 模式匹配语法](https://www.aardio.com/zh-cn/doc/library-guide/builtin/string/patterns.html.md) "
+		}; wb.aiSystemPropmptStringPatterns?1/*_MF_GRAYED*/: 0};
+		{ (wb.aiSystemPropmptWebView?"已自动":"")+"插入 web.view 指南（网页相关）";  function(id){
+			winform.editPrompt.selText = " [web.view 使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/web/view/_.html.md) "
+		}; wb.aiSystemPropmptWebView?1/*_MF_GRAYED*/: 0};
+		{ "插入 web.rest 指南（HTTP 相关）";  function(id){
+			winform.editPrompt.selText = " [web.rest 使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/web/rest/client.html.md) "
+		}; 0};
+		{ "插入 多线程入门";  function(id){
+			winform.editPrompt.selText = " [多线程开发入门](https://www.aardio.com/zh-cn/doc/guide/language/thread.html.md) "
+		}; 0};  
+		{ "插入 高级选项卡指南（多窗口）";  function(id){
+			winform.editPrompt.selText = " [高级选项卡指南](https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/tabs/_.html.md) "
+		}; 0};  
+		{ (wb.aiSystemPropmptPlus?"已自动":"")+"插入 plus 控件指南（界面美化）";  function(id){
+			winform.editPrompt.selText = " [plus 控件使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/ctrl/plus.html.md) "
+		}; wb.aiSystemPropmptPlus?1/*_MF_GRAYED*/: 0}; 
+		{ "插入 自定义控件指南";  function(id){
+			winform.editPrompt.selText = " [自定义控件使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/win/ui/ctrl/custom.html.md) "
+		}; 0};  
+		{ (wb.aiSystemPropmptPython?"已自动":"")+"插入 调用 Python 文档";  function(id){
+			winform.editPrompt.selText = " [aardio 调用 Python 入门指南](https://www.aardio.com/zh-cn/doc/library-guide/ext/python/_.html.md) "
+		}; wb.aiSystemPropmptPython?1/*_MF_GRAYED*/: 0};
+		{ (wb.aiSystemPropmptNet?"已自动":"")+"插入 调用 NET 文档";  function(id){
+			winform.editPrompt.selText = " [aardio 调用 .NET 入门指南](https://www.aardio.com/zh-cn/doc/library-guide/std/dotNet/_.html.md) "
+		}; wb.aiSystemPropmptNet?1/*_MF_GRAYED*/: 0};
+		{ (wb.aiSystemPropmptSupperHotkeys?"已自动":"")+"插入 超级热键文档";  function(id){
+			winform.editPrompt.selText = " [超级热键使用指南](https://www.aardio.com/zh-cn/doc/library-guide/std/key/hotkey.html.md) "
+		}; wb.aiSystemPropmptSupperHotkeys?1/*_MF_GRAYED*/: 0};  
+		{ "插入原生接口文档（调用 DLL）";  function(id){
+			winform.editPrompt.selText = " [原生类型](https://www.aardio.com/zh-cn/doc/library-guide/builtin/raw/datatype.html.md)  [结构体](https://www.aardio.com/zh-cn/doc/library-guide/builtin/raw/struct.html.md)  [声明原生 API](https://www.aardio.com/zh-cn/doc/library-guide/builtin/raw/api.html.md)  [原生回调函数](https://www.aardio.com/zh-cn/doc/library-guide/builtin/raw/callback.html.md) "
+		}; 0}; 
+		{ "快速检索相关文档";  function(id){
+			var q = winform.editPrompt.selText;
+			if(!#q) q = winform.editPrompt.text;
+			
+			if(#q){
+				import inet.url;
+				raw.execute("https://www.aardio.com/zh-cn/doc/?q="+inet.url.encode(q));
+			}
+		}; #owner.text==0 ? 1/*_MF_GRAYED*/ : 0}; 	
+		{ /*分隔线*/ };
+		{ "导出对话到 *.jsonl";  function(id){
+			import fsys.dlg;
+			var path = fsys.dlg.save("*.jsonl|*.jsonl||");
+			if(!path) return;
+			
+			var file,err = io.file(path,"w+b");
+			if(!file) return winform.msgboxErr(err);
+			 
+			var chatMessage = wb.chatMessage;
+			for(i=1;#chatMessage;1){
+				var msg = chatMessage[i]
+				var line  = web.json.stringify(msg,false,false);
+				line = string.crlf(line,"")
+				file.write(line,'\r\n');
+			}
+			file.close();
+			
+		}; #wb.chatMessage<2 ? 1/*_MF_GRAYED*/ : 0}; 	
+	}
+})
+
+global.onError = function( err,over ){ 
+    if(!over){
+        import debug;
+        var stack = debug.traceback(,"调用栈",3);
+        err = string.concat(err,stack);
+    }
+    
+    if( _STUDIO_INVOKED ) {
+    	import win;
+    	win.msgboxErr(err);
+    }
+}
+
+winform.spinMaxTokens.buddy = winform.editMaxTokens;
+winform.spinMaxTokens.setRange(1,1024*8);
+winform.spinMaxTokens.pos = config.maxTokens || 1024;
+winform.spinMaxTokens.inc = 1024;
+
+winform.beforeDestroy = function(){
+    config.maxTokens = winform.spinMaxTokens.pos;
+}
+
+
+winform.btnSnap.oncommand = function(id,event){
+	import fsys.dlg;
+	import web.form.snap; 
+	
+	if(key.getState("CTRL")){
+		winform.btnSnap.disabled = true;
+		
+		web.form.snap(wb,function(bmp){
+				var hbmp = bmp.copyHandle();
+				win.clip.writeBitmap(hbmp,true);
+				return true;
+		} );  
+	}
+	else{
+		var path = fsys.dlg.save("*.jpg|*.jpg","AI 聊天助手 - 保存对话截图",,winform);
+		winform.editPrompt.setFocus();
+		
+		if(!path) return;
+		 
+		winform.btnSnap.disabled = true;
+		
+		web.form.snap(wb,path); 
+		winform.editPrompt.setFocus();
+	}
+	
+	wb.doScript(`document.documentElement.scrollTop = document.documentElement.scrollHeight + 50;`);
+ 
+	thread.delay(1000);
+	winform.btnSnap.disabled = false;
+	
+	winform.editPrompt.setFocus();
+}
+
+winform.btnSearch.oncommand = function(id,event){
+
+	var frmSearch = win.form(text="AI 联网搜索接口配置";right=852;bottom=434;bgcolor=16777215;border="dialog frame";max=false)
+	frmSearch.add(
+	btnSave={cls="plus";text="保存 / 测试搜索";left=657;top=389;right=811;bottom=419;align="left";color=3947580;db=1;dr=1;font=LOGFONT(h=-13);iconColor=5724159;iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF0AA';notify=1;textPadding={left=25};z=15};
+	chkBoCha={cls="plus";text="启用博查联网搜索";left=24;top=248;right=235;bottom=279;align="left";db=1;dl=1;font=LOGFONT(h=-15);iconStyle={align="left";font=LOGFONT(h=-15;name='FontAwesome')};iconText='\uF0C8 ';notify=1;textPadding={left=24};z=3};
+	chkExa={cls="plus";text="启用 exa.ai 联网搜索";left=23;top=15;right=242;bottom=51;align="left";dl=1;dt=1;font=LOGFONT(h=-15);iconStyle={align="left";font=LOGFONT(h=-15;name='FontAwesome')};iconText='\uF0C8 ';notify=1;textPadding={left=24};z=2};
+	editBochaCount={cls="edit";text="2";left=114;top=331;right=409;bottom=363;db=1;dl=1;edge=1;multiline=1;num=1;z=16};
+	editBochaKey={cls="edit";password=1;left=114;top=289;right=409;bottom=321;db=1;dl=1;edge=1;multiline=1;z=5};
+	editExaCount={cls="edit";text="2";left=114;top=106;right=409;bottom=138;dl=1;dt=1;edge=1;multiline=1;num=1;z=7};
+	editExaExcludeDomains={cls="edit";left=114;top=191;right=409;bottom=223;db=1;dl=1;dt=1;edge=1;multiline=1;z=11};
+	editExaIncludeDomains={cls="edit";left=114;top=149;right=409;bottom=181;dl=1;dt=1;edge=1;multiline=1;z=9};
+	editExaKey={cls="edit";password=1;left=114;top=64;right=409;bottom=96;dl=1;dt=1;edge=1;multiline=1;z=1};
+	editQuery={cls="edit";left=46;top=391;right=630;bottom=423;db=1;dl=1;dr=1;edge=1;multiline=1;z=13};
+	editResult={cls="richedit";left=427;top=23;right=836;bottom=378;db=1;dr=1;dt=1;edge=1;hscroll=1;link=1;multiline=1;vscroll=1;z=14};
+	lbBochaCount={cls="static";text="最大网页数：";left=-8;top=339;right=101;bottom=366;align="right";db=1;dl=1;transparent=1;z=17};
+	lbBochaKey={cls="static";text="API key：";left=15;top=294;right=101;bottom=321;align="right";db=1;dl=1;transparent=1;z=6};
+	lbExaCount={cls="static";text="最大网页数：";left=-11;top=114;right=101;bottom=141;align="right";dl=1;dt=1;transparent=1;z=8};
+	lbExaKey={cls="static";text="API key：";left=14;top=71;right=101;bottom=98;align="right";dl=1;dt=1;transparent=1;z=4};
+	lbExcludeDomains={cls="static";text="排除域名：";left=34;top=199;right=101;bottom=226;align="right";db=1;dl=1;dt=1;transparent=1;z=12};
+	lbIncludeDomains={cls="static";text="搜索域名：";left=34;top=156;right=101;bottom=183;align="right";dl=1;dt=1;transparent=1;z=10};
+	lnkBocha={cls="syslink";text='<a href="https://open.bochaai.com/">bochaai.com</a>';left=263;top=254;right=406;bottom=272;bgcolor=16777215;db=1;dl=1;z=19};
+	lnkExa={cls="syslink";text='<a href="https://exa.ai/">exa.ai</a>';left=269;top=25;right=412;bottom=43;bgcolor=16777215;dl=1;dt=1;z=18}
+	) 
+	
+	frmSearch.editResult.text = /*
+- 每次清除上下文之前仅联网搜索一次。
+大模型的上下文是有限的，注意首次的提示词对搜索友好。
+
+- 已限定使用对 aardio 问题效果最好的 exa.ai 站内搜索，
+改用 ImTip 自带的 AI 助手可修改选项或使用其他 AI 接口。
+
+- 使用 aardio 官方 AI 接口自动忽略此功能，
+F1 键沉浸式 AI 助手自动忽略此功能，"""选中代码""" 上下文问答自动忽略此功能。
+aardio 的 AI 接口已自带更快效果更好 aardio 知识库。
+
+立即开通 aardio 专业版 AI 接口，更快更好更智能！
+https://aardio.com/vip/
+*/
+	
+	//找不到有意义的文档，暂时禁用。
+	frmSearch.lnkBocha.hide = true;
+	frmSearch.chkBoCha.hide = true;
+	frmSearch.editBochaKey.hide = true;
+	frmSearch.editBochaCount.hide = true;
+	frmSearch.lbBochaKey.hide = true;
+	frmSearch.lbBochaCount.hide = true;
+	
+	frmSearch.chkBoCha.oncommand = function(id,event){
+		if(frmSearch.chkBoCha.checked){
+			frmSearch.chkExa.checked = false;
+		}
+	}
+	
+	frmSearch.chkExa.oncommand = function(id,event){
+		if(frmSearch.chkExa.checked){
+			frmSearch.chkBoCha.checked = false;
+		}
+	}
+	
+	if(!config.search){
+		config.search = {}
+	};
+	if(config.search.mode = "exa"){
+		frmSearch.chkExa.checked = true;
+	}
+	elseif(config.search.mode = "bocha"){
+		frmSearch.chkBoCha.checked = true;
+	}
+	
+	if(config.search.exa){
+		frmSearch.editExaKey.text = config.search.exa.key;
+		frmSearch.editExaCount.text  = config.search.exa.count;
+	 	
+		if(#config.search.exa.includeDomains){
+			frmSearch.editExaIncludeDomains.text  = string.join(config.search.exa.includeDomains,",");
+		}
+		else {
+			frmSearch.editExaIncludeDomains.text = "www.aardio.com"
+		}
+		
+		if(#config.search.exa.excludeDomains){
+			frmSearch.editExaExcludeDomains.text  = string.join(config.search.exa.excludeDomains,",");
+		} 
+	}
+	
+	frmSearch.editExaIncludeDomains.text = "www.aardio.com";
+	frmSearch.editExaIncludeDomains.disabled = true;
+	frmSearch.editExaExcludeDomains.disabled = true; 
+	
+	if(config.search.bocha){
+		frmSearch.editBochaKey.text = config.search.bocha.key;
+		frmSearch.editBochaCount.text  = config.search.bocha.count; 
+	}
+	
+	frmSearch.btnSave.oncommand = function(id,event){
+	 
+		config.search.exa = {
+			key = frmSearch.editExaKey.text;
+			count = tonumber(frmSearch.editExaCount.text);
+			includeDomains = #frmSearch.editExaIncludeDomains.text ? string.split(frmSearch.editExaIncludeDomains.text,",") : null;
+			excludeDomains = #frmSearch.editExaExcludeDomains.text ? string.split(frmSearch.editExaExcludeDomains.text,",") : null;
+		}
+		
+		if(#config.search.exa.includeDomains){
+			if(#config.search.exa.excludeDomains){
+				config.search.exa.excludeDomains = null;
+				frmSearch.editExaExcludeDomains.showErrorTip("指定包含域名以后，不能再指定排除域名");
+				return;
+			}
+		}
+		
+		config.search.bocha = {
+			key = frmSearch.editBochaKey.text;
+			count = tonumber(frmSearch.editBochaCount.text);	
+		}
+		
+		
+		if(frmSearch.chkExa.checked){
+			config.search.mode = "exa"
+		}
+		elseif(frmSearch.chkBoCha.checked){
+			config.search.mode = "bocha"	
+		}
+		else {
+			config.search.mode = null;
+			return;
+		}
+		
+		if(!#frmSearch.editQuery.text){
+			frmSearch.editQuery.showInfoTip("已保存设置，但测试搜索的内容为空");
+			return ; 
+		}
+		
+		frmSearch.btnSave.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
+		frmSearch.editResult.text = ""
+		
+		thread.invoke( function(frmSearch){ 
+			import web.rest.jsonClient; 
+			
+			if(frmSearch.chkExa.checked){
+				//导入 Exa 索接口 
+				var exaClient = web.rest.jsonClient(); 
+				exaClient.setHeaders({ "x-api-key": frmSearch.editExaKey.text} )
+				var exa = exaClient.api("https://api.exa.ai/");
+				
+				//搜索
+				var searchData,err = exa.search({
+    				query:"aardio 编程语言: " + frmSearch.editQuery.text,
+    				contents={text= true},
+    				numResults: tonumber( frmSearch.editExaCount.text ),
+    				type:"keyword" //一般 keyword 搜索就够了（价格低一些）
+				}) 
+				
+				var ret  = searchData[["results"]]
+				if(ret){
+					frmSearch.editResult.print(ret);	
+				}
+				elseif(err){
+					frmSearch.editResult.print(err);
+				}		
+			}
+			elseif(frmSearch.chkBoCha.checked){
+				var bochaClient = web.rest.jsonClient(); 
+				bochaClient.setAuthToken(frmSearch.editBochaKey.text);
+				var bocha = bochaClient.api("https://api.bochaai.com/v1/{method}-search");
+				
+				//搜索
+				var searchData,err = bocha.web({ 
+    				"query": "aardio 编程语言: " + frmSearch.editQuery.text,
+    				"freshness": "noLimit",
+    				"answer": false,
+    				"stream": false,
+    				"count":  tonumber( frmSearch.editBochaCount.text ); //返回的搜索结果数量，不必要太多，前两三条就可以了
+				})
+				
+				//将搜索结果添加到系统提示词
+				var ret = searchData[["data"]][["webPages"]][["value"]]
+				if(ret){
+					frmSearch.editResult.print(ret);	
+				}
+				elseif(err){
+					frmSearch.editResult.print(err);
+				}	
+			} 
+			
+			frmSearch.btnSave.disabledText = null;
+		},frmSearch)
+	}
+	
+	var chkStyle = {
+		color={
+			active=0xFF00FF00;
+			default=0xFF000000;
+			disabled=0xEE666666;
+			hover=0xFFFF0000		
+		};
+		checked={
+			iconText='\uF14A'		
+		};
+	}
+	
+	frmSearch.btnSave.skin({
+		color={
+			active=0xFF00FF00;
+			default=0xFF3C3C3C;
+			disabled=0xFF6D6D6D;
+			hover=0xFFFF0000		
+		}
+		iconColor = {
+			disabled=0xFF6D6D6D;
+		}
+	})
+	
+	frmSearch.chkBoCha.skin(chkStyle); 
+	frmSearch.chkExa.skin(chkStyle);
+	frmSearch.doModal(winform);
+	
+	winform.editPrompt.setFocus();
+}
+
+
+//按钮外观样式
+winform.btnClear.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+//按钮外观样式
+winform.btnSend.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+//按钮外观样式
+winform.btnSetting.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.btnSearch.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.btnCopy.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.btnSnap.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+})
+
+winform.chkFix.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000000;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	};
+	checked={
+		iconText='\uF14A';	
+		color={
+			active=0xFF00FF00;
+			default=0xFF000000;
+			disabled=0xFF999999;
+			hover=0xFFFF0000		
+		};	
+	}
+})
+
+import win.ui.simpleWindow;
+win.ui.simpleWindow(winform);
+
+winform.bkPrompt.directDrawBackgroundOnly();
+winform.show();
+
+win.loopMessage();

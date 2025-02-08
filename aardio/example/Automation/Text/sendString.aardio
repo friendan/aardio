@@ -1,7 +1,12 @@
 //自动化 - 发送字符串
+//教程: doc://library-guide/std/key/sendString.md
+//doc://example/Automation/Text/sendString.aardio
+//doc://example/Languages/Python/Python%203.x/QuickStart.md
+import winex; 
 import process;
+import winex.editor;
 import key;
-
+ 
 //运行程序，并等待主窗口
 process("notepad.exe").waitMainWindow();
 
@@ -11,20 +16,14 @@ thread.delay(1000);
 //发送全选组合键
 key.combine("CTRL","A");
 
-//发送文本
+//发送文本。兼容性最好。但换行发回车键，制表符发 tab 键，其他控制字符忽略。
 key.sendString("直接发送字符串。");
 
 //打字效果
-key.send( "这样就可以实现打字效果了。",200);
+key.sendString( "这样就可以实现打字效果了。",200);
+ 
+//仅支持 EM_REPLACESEL 消息的经典编辑框效果最好，回车与制表符都以纯文本方式发送。 
+winex.sendString("发送字符串，替换当前选区。")  
 
-/*
-其他发送字符串函数：
-
-winex.say();
-winex.sayIme();
-winex.sayAnsi();
-winex.sayImeAnsi();
-winex.sendString();
-winex.setText();
-winex.key.send();
-*/ 
+//自动选择合适的发送方式 
+winex.editor.sendString("发送字符串，替换当前选区。")  

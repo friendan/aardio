@@ -1,6 +1,6 @@
 //列表视图（listview）控件 - CSV 导入导出
 import win.ui;
-import string.database;
+import string.csv;
 import fsys.dlg;
 /*DSG{{*/
 var winform = win.form(text="CSV 导入导出示例";right=759;bottom=469)
@@ -19,7 +19,7 @@ winform.btnImport.oncommand = function(id,event){
     var path = fsys.dlg.open("CSV 文件|*.csv|所有文件|*.*||","选择要导入的 CSV 文件");
     if(!path) return;
      
-    var db = string.database(" ",,"#");
+    var db = string.csv(" ",,"#");
     var dataTable = db.load(path);  
     
     //如果 CSV 有注释，尝试提取列标题  
@@ -40,7 +40,7 @@ winform.btnExport.oncommand = function(id,event){
     if(!path) return;
     
     // 创建 CSV 数据库
-    var csv = string.database();
+    var csv = string.csv();
     
     // 保存 CSV 到文件
     csv.save(path,dataTable);  

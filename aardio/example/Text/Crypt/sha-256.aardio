@@ -1,0 +1,18 @@
+﻿//SHA-256
+import crypt.rsa;
+
+//直接返回 16 进制大写结果
+var hex = crypt.sha256("test",true);
+
+//用 crypt.rsa() 或 crypt(,0x18/*_PROV_RSA_AES*/) 创建对象才能支持 SHA-256 算法,
+var rsa  = crypt.rsa()
+
+//哈希对象
+var sha256 = crypt.rsa().createHashBySha256(); 
+sha256.hashData("test");//添加数据
+var hex = sha256.getHexValue();  
+
+//计算文件哈希
+var rsa  = crypt.rsa();
+var hex = rsa.hashFile("\sha-256.aardio",true,0x800C/*_CALG_SHA_256*/) 
+print( hex );

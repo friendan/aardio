@@ -3,81 +3,177 @@ namespace raw;
  
 var convert = ..raw.convert;
 class interface{
-	ctor( inObject,itface,cal="stdcall" ){   
-		if(!inObject) error("无效的接口(参数@1)",2);
-		var inObjectType = type(inObject);
-		if( inObjectType == "number" ) inObject = topointer(inObject);
+	ctor(implObject,declInterface,callingConvention="stdcall"){
 		
-		var outStruct;
-		var itfaceType = type(itface);	
+		//允许省略 implObject 参数且不占用参数位置
+		if(declInterface===null) declInterface,implObject = implObject,{};  
+		elseif(implObject===null) implObject = {};
+		
+		//implObject 可以为指针、表示内存地址的数值、托管指针以及其他兼容原生指针参数的对象
+		var implObjectType = type(implObject);
+		if( implObjectType == "number" ) implObject = topointer(implObject);
+		
+		var declStruct;
+		var itfaceType = type(declInterface);
+		
+		//如果接口声明是字符串则将其转换为 struct	
 		if( itfaceType == "string" ) {
 			var s = {}; 
-			outStruct = {}
-			for r,f,a in ..string.gmatch(itface ,"(\S+)\s+(\S+)(%())") { 
+			declStruct = {}
+			for r,f,a in ..string.gmatch(declInterface ,"(\S+)\s+(\S+)(%())") { 
 				..table.push(s,"ptr " + f);
-				outStruct[f] = r ++ a;
+				declStruct[f] = r ++ a;
 			}
-			outStruct._struct = ..string.join(s,';' );
+			declStruct._struct = ..string.join(s,';' );
 		}
+		//如果接口声明是类则将其实例化为 struct
 		elseif( itfaceType == "class" ) {
-			outStruct = itface();
+			declStruct = declInterface();
 		}
 		else {
-			error("参数@2类型错误",2);
+			error("参数 @2 类型错误",2);
 		}
 		
-		var outObjectFuncProto = {};
-		for( k,proto in outStruct){  
-			if( type(proto) != "string" ) continue;
-			outObjectFuncProto[k] = proto;
+		var rawPrototypes = {};
+		for( declName,funcPrototype  in declStruct){
+			if( type(funcPrototype) == "string" && declName!="_struct" ){
+				rawPrototypes[declName] = funcPrototype ;
+			}
 		}
 		
-		if( (inObjectType == "table") && (!inObjectType@) ){
-			var createCallback = ..raw["to"+cal];
-			if( !createCallback ) error("实现接口仅支持stdcall,cdecl,fastcall调用约定!",2);
+		//实现原生接口
+		if( (implObjectType == "table") && (!implObjectType@) ){
+			var createCallback = ..raw["to"+callingConvention];
+			if( !createCallback ) error("实现接口仅支持 stdcall, cdecl, fastcall 调用约定!",2);
 			 
-			for( k,proto in outObjectFuncProto){  
-				ptr = inObject[k];
-				if( (!proto) || ( type(ptr) != "function" )   ){ 
-					continue; 
-				} 
-				outStruct[k] = createCallback(function(p,...){ return inObject[k](...)} 
-					, ..string.replace(proto,"\(","(ptr,"),this);
-				this[k] = inObject[k];
-			} 
-			 
-			this.__vtbl = ..raw.buffer(outStruct);
-			this.__thisPointer = ..raw.buffer({ pointer __vtbl = this.__vtbl });
-		}
-		else {
-			outStruct = convert( convert( inObject,{ pointer __vtbl } ).__vtbl ,outStruct ) ;
-			
-			var app = ..raw.module(cal); 
-			var proto; 
-			for(k,ptr in outStruct){
-				if(( type(ptr) != "pointer" ) || ( type(k) != "string" ) ){
-					if(k!="_struct") this[k] = ptr;
+			var method;
+			var replThisArg1 = lambda(p)p=="("?"(ptr,":"(ptr)";
+ 	 
+ 	 		var vtblFunctions = {}
+			for(declName,declValue in declStruct){
+				
+				//获取原生函数原型声明
+				funcPrototype = rawPrototypes[declName]; 
+				
+				//获取接口声明中的非原生函数（函数内部应使用 owner 访问这里绑定的 this 对象）
+				if( type(declName) != "string" || !funcPrototype ){
+					if(declName!="_struct") this[declName] = declValue;
 					continue;
 				}
-				proto = outObjectFuncProto[k];
-				if( !#proto ){ 
-					var safefunc = app[ptr];
-					this[k] = function(...){ 
-						var ret = safefunc(inObject,...)
+				  
+				//获取实现表的非原生函数（函数内部应使用 owner 访问这里绑定的 this 对象）
+				method = implObject[declName]; 
+				if( method && ( type(method) != "function" )   ){ 
+					continue; 
+				} 
+				this[declName] = method;
+				
+				//创建原生回调函数
+				declStruct[declName] = createCallback(
+					function(p,...){
+						if(owner[declName]) return invoke(owner[declName],owner,...);
+						return 0;
+					},
+					..string.replace(funcPrototype ,"<(\s*)>|\(", replThisArg1 ),
+					this);
+				
+				//保持引用原生回调函数，避免提前回收	
+				vtblFunctions[declName] = declStruct[declName]; 
+			} 
+			 
+			this.__vtbl = ..raw.buffer(declStruct);
+			this.__thisPointer = ..raw.buffer({ pointer __vtbl = this.__vtbl });
+			this.__vtblFunctions = vtblFunctions;
+		}
+		//导入原生接口
+		else { 
+			var app = ..raw.module(callingConvention); 
+			var implStruct = convert( convert( implObject,{ pointer __vtbl } ).__vtbl ,declStruct ) ;
+			this.__thisPointer = implObject;//保持引用
+			
+			var funcPrototype; 
+			for(funcName,funcPtr in implStruct){
+				
+				//添加接口声明中的非原生函数（函数内部应使用 owner 访问这里绑定的 this 对象）
+				if(( type(funcPtr) != "pointer" ) || ( type(funcName) != "string" ) ){
+					if(funcName!="_struct") this[funcName] = funcPtr;
+					continue;
+				}
+				
+				//获取原生函数原型声明
+				funcPrototype  = rawPrototypes[funcName];
+				
+				//免声明调用（用空字符串而不是 null 定义函数原型以避免删除成员）
+				if( !#funcPrototype  ){ 
+					var safefunc = app[funcPtr];
+					this[funcName] = function(...){ 
+						var ret = safefunc(implObject,...)
 						return ret;
 					} 
 					continue; 
 				}
-				this[k] = app.api(ptr,proto,cal,inObject);//声明API时,可选使用第四个参数指定this指针
-			}
-			
-			this.__thisPointer = inObject;//gc
+				
+				//导入原生函数
+				this[funcName] = app.api(funcPtr,funcPrototype ,callingConvention,implObject);//声明API时,可选使用第四个参数指定this指针
+			} 
 		}
 	}
 	@{_topointer = this.__thisPointer}
 } 
 
 /**intellisense()
-raw.interface = 用于将接口指针绑定到原生接口\nC++类中的成员函数请使用virtual关键字声明为虚函数\n接口类中的自定义函数必须用 owner 代替this,\nowner才是实例对象,this指向的是接口定义结构体
-raw.interface() = @.interface( __/*接口指针或地址数值*/,"\n	void getName(string &buffer,int len);\n	bool getInfo(struct &pInfo); \n	","thiscall"\n)
+raw.interface = 原生接口类。\n兼容 C++ 类定义中用 virtual 关键字声明的成员函数。\n兼容 COM 原生接口，com.interface 内部调用 raw.interface 。
+raw.interface( = 如果参数 @1 指定原生接口对象指针或指针地址则导入原生对象接口。\n如果参数 @1 指定纯表（无元表）或省略参数 @1（不用保留参数占位）则实现原生对象接口。
+raw.interface(.(implPtr,declInterface,callingConvention) = @.interface(__/*参数 @implPtr 指定原生接口指针或地址数值。\n参数 @declInterface 指定接口声明，这是一个类（class）或字符串。\n参数 @3 可省略，默认为 "stdcall" 。\n*/,"\n	void getName(string &buffer,int len);\n	bool getInfo(struct &pInfo); \n	","thiscall"\n)
+raw.interface(.(implTable,declInterface,callingConvention) = 实现原生接口。\n参数 @1 必须是纯表（不能有元表），并定义与接口匹配的成员函数（被调用时忽略未定义成员）。\n参数 @declInterface 指定接口声明，这是一个类（class）或字符串。\n可选参数 @3 可指定 "stdcall", "cdecl", "fastcall" 调用约定，默认为 "stdcall"。。
+raw.interface(.(declInterface,callingConvention) = 实现原生接口。\n参数 @declInterface 指定接口声明，这是一个类（class）或字符串。\n可选参数 @2 可指定 "stdcall", "cdecl", "fastcall" 调用约定，默认为 "stdcall"。\n创建对象后，可添加与接口匹配的成员函数。\n未定义成员在被调用时忽略并直接返回 0。
 end intellisense**/
+
+//@guide [范例 - 使用 thiscall 调用 C++ 对象](doc://example/Languages/CPP/thiscall.html?q=raw.interface%28)
+
+/**details(展开用法说明)
+原生对象指的是 C++ 这种原生语言实现的对象。
+原生接口声明定义了原生对象提供哪些成员函数，以及这些成员函数的原型。
+
+所有可用的原生类型请参考文档：
+doc://library-guide/builtin/raw/datatype.html
+
+原生接口声明一般指的是一个类。
+com.interface 名字空间下面的所有类都是 COM 原生接口声明类。 
+com.interface 内部调用 raw.interface ，这种接口声明类的格式是兼容的。
+
+以下是 IUnknown 接口声明类：
+
+```aardio
+class IUnknown{
+    ptr QueryInterface = "int(struct iid,ptr &ptr)" ;
+    ptr AddRef = "int()" ;
+    ptr Release ="int()" ;
+}
+```
+原生接口声明类必须创建一个结构体，
+所有成员的原生类型必须是 ptr，而值必须用一个字符串声明原生函数原型。
+原型里使用的原生类型与声明原生 API 使用的类型相同，
+
+关于原生类型：doc://library-guide/builtin/raw/datatype.html
+
+原生接口声明可以用一个字符串表示，每行声明一个成员函数原型。
+参考：[范例 - 使用 thiscall 调用 C++ 对象](doc://example/Languages/CPP/thiscall.html?q=raw.interface%28)
+
+示例：
+
+```aardio
+this = raw.interface( pTest,"
+    void getName(string &buffer,int len);
+    void getInfo(struct &pInfo); 
+    ","thiscall"  
+)
+```
+
+用字符串声明接口时 aardio 会将其自动转换为前述的接口声明类。
+这种写法只是将函数名直接写在原型里了，并且每行字符串表示一个成员函数。
+
+com.interface 里则不支持用字符串声明接口类的方法，
+因为所有 COM 接口类声明都必须定义 IID 静态成员，并且必须继承自 com.interface.IUnknown 。
+这就要求 COM 接口声明必须是类（ 但 com.interface 的参数支持用类名称表示 com.interface 下已导入的声明类 ）。
+end details**/

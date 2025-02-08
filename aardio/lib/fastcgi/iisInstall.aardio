@@ -12,11 +12,21 @@ namespace fastcgi.iisInstall{
 		return;
 	}
 
-    var appDomain = ..dotNet.appDomain();
-	var serverManager = appDomain.load("Microsoft.Web.Administration").new("ServerManager");
+	var responseBufferLimit;
 
+	if( ..console.askYesNo("是否需要修改默认缓冲区大小？
+FastCGI 的默认缓冲区大小为 4MB(0x400000)，
+在缓冲区未写满且输出未完成时不会立即发送数据到客户端，
+如果服务端需要执行耗时操作并且希望即时发送数据，那么应当减小输出缓冲或者将其设置为 0。
+如果希望单独设置个别目录的缓冲区大小请查看 aardio 文档 。") ){
+		responseBufferLimit = ..console.getNumber( "请输入数值:" )
+	} 
+	
 	var domain = ..console.getText( '请输入启用 FastCgiModule（aardio）的网站，直接回车安装到所有网站\n：' )
 	domain = ..string.trim(domain);
+	
+	..dotNet.import("Microsoft.Web.Administration");
+	var serverManager = ..Microsoft.Web.Administration.ServerManager();
 	
 	while(#domain){
 		var err;
@@ -27,9 +37,10 @@ namespace fastcgi.iisInstall{
 			
 			var updateSite = function(){
 				for(i=1;handlersCollection.Count;1){
-					var element = handlersCollection.Item[i-1]
-					if(element.Item["path"] == "*.aardio"){
-						element.Item["scriptProcessor"] = ..io._exepath;
+					var element = handlersCollection[i]
+					if(element["path"] == "*.aardio"){
+						element["scriptProcessor"] = ..io._exepath;
+						if(responseBufferLimit!==null) element["responseBufferLimit"] = responseBufferLimit;
 						return true;
 					} 
 				}	
@@ -37,11 +48,12 @@ namespace fastcgi.iisInstall{
 			
 			if(!updateSite()){
 				var addElement = handlersCollection.CreateElement("add");
-				addElement.Item["name"] = "aardio";
-				addElement.Item["path"] = "*.aardio";
-				addElement.Item["verb"] = "*";
-				addElement.Item["modules"] = "FastCgiModule";
-				addElement.Item["scriptProcessor"] = ..io._exepath;
+				addElement["name"] = "aardio";
+				addElement["path"] = "*.aardio";
+				addElement["verb"] = "*";
+				addElement["modules"] = "FastCgiModule";
+				addElement["scriptProcessor"] = ..io._exepath;
+				if(responseBufferLimit!==null) addElement["responseBufferLimit"] = responseBufferLimit;
 				handlersCollection.AddAt(0, addElement); 	
 			} 
 		}
@@ -63,9 +75,10 @@ namespace fastcgi.iisInstall{
 		var handlersCollection = handlersSection.GetCollection();
 		var updateHandler = function(){
 			for(i=1;handlersCollection.Count;1){
-				var element = handlersCollection.Item[i-1]
-				if(element.Item["path"] == "*.aardio"){
-					element.Item["scriptProcessor"] = ..io._exepath;
+				var element = handlersCollection[i]
+				if(element["path"] == "*.aardio"){
+					element["scriptProcessor"] = ..io._exepath;
+					if(responseBufferLimit!==null) element["responseBufferLimit"] = responseBufferLimit;
 					return true;
 				} 
 			}	
@@ -73,42 +86,52 @@ namespace fastcgi.iisInstall{
 			
 		if(!updateHandler()){
 			var addElement = handlersCollection.CreateElement("add");
-			addElement.Item["name"] = "aardio";
-			addElement.Item["path"] = "*.aardio";
-			addElement.Item["verb"] = "*";
-			addElement.Item["modules"] = "FastCgiModule";
-			addElement.Item["scriptProcessor"] = ..io._exepath;
+			addElement["name"] = "aardio";
+			addElement["path"] = "*.aardio";
+			addElement["verb"] = "*";
+			addElement["modules"] = "FastCgiModule";
+			addElement["scriptProcessor"] = ..io._exepath;
+			if(responseBufferLimit!==null) addElement["responseBufferLimit"] = responseBufferLimit;
 			handlersCollection.AddAt(0, addElement);			
-		}
-
+		} 
 	}
+	
+	var appHostConfig = serverManager.GetApplicationHostConfiguration();
+	var fastCgiSection = appHostConfig.GetSection("system.webServer/fastCgi"); 
+	var appsCollection = fastCgiSection.GetCollection();
+	
+	var findFastCgiApp = function(){
+		for(i=1;appsCollection.Count;1){
+			var element = appsCollection[i]
+			if(element["fullPath"] == ..io._exepath){
+				return true;
+			} 
+		}	
+	}
+			
+	if(!findFastCgiApp()){
+		var appElement = appsCollection.CreateElement("application");
+		appElement["fullPath"] = ..io._exepath;
+		appElement["arguments"] = "";
+		appElement["instanceMaxRequests"] = 10000;
+		appElement["requestTimeout"] = 300;
+		appElement["maxInstances"] = 8;
+		appElement["idleTimeout"] = 300;
+		appElement["activityTimeout"] = 600;
+		appElement["protocol"] = "NamedPipe";	
+		appElement["flushNamedPipe"] = false;
+		appsCollection.AddAt(0, appElement);		
+	} 
 	 
 	if(_WIN_64){
 		var appPools = serverManager.ApplicationPools;
 		for(i=1;appPools.Count;1){
-			var pool = appPools.Item[i-1]
+			var pool = appPools[i]
 			if(pool.Name){
-				appPools.Item[pool.Name].Enable32BitAppOnWin64 = true;
+				appPools[pool.Name].Enable32BitAppOnWin64 = true;
 			} 
 		} 
 	}
-	
-/*
-	var appHostConfig = serverManager.GetApplicationHostConfiguration();
-	var fastCgiSection = appHostConfig.GetSection("system.webServer/fastCgi");
-	var fastCgiCollection = fastCgiSection.GetCollection();
-	var applicationElement = fastCgiCollection.CreateElement("application");
-	applicationElement["fullPath"] = ..io._exepath;
-	applicationElement["arguments"] = "";
-	applicationElement["maxInstances"] = 8; 
-	applicationElement["idleTimeout"] = 300;
-	applicationElement["activityTimeout"] = 30;
-	applicationElement["requestTimeout"] = 90; 
-	applicationElement["instanceMaxRequests"] = 10000;
-	applicationElement["protocol"] = "NamedPipe";
-	applicationElement["flushNamedPipe"] = false;
-	fastCgiCollection.Add(applicationElement);	
-*/
 	
 	serverManager.CommitChanges(); 
 	

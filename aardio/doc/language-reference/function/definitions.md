@@ -117,7 +117,7 @@ var n = func( 5 )
 ```aardio
 var function func( i ){ 
 	if (  i <= 0   ) return  i 
-	else return func(  i-1 )  //报错找不到 fun 函数  
+	else return func(  i-1 ) 
 }
 
 //调用递归函数

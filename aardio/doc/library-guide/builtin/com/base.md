@@ -35,7 +35,6 @@ win.msgbox( str )
 
 ## 三、动态接口、原生接口 <a id="interface" href="#interface">&#x23;</a>
 
-
 COM 对象有两种类型的接口,一种是动态语言用到的 IDispatch 接口,一种是静态语言用到的原生接口。在 aardio 中可同时支持双接口,在 aardio 中我们将 IDispatch 接口称为动态接口,而非 IDispatch 类接口称为原生接口。
 
 ### 1. 动态接口对象 <a id="IDispatch" href="#IDispatch">&#x23;</a>
@@ -100,36 +99,148 @@ winform.show();
 win.loopMessage();
 ```
   
-### 2. 原生接口对象 <a id="IUnknown" href="#IUnknown">&#x23;</a>
+### 2. 原生接口对象 <a id="raw" href="#raw">&#x23;</a>
 
+注意 COM 对象可以实现多个接口，也就是说可以同时实现 IDispatch 接口或其他原生接口。如果要通过非 IDispatch 接口去访问 COM 对象则需要使用 COM 对象指针。
 
-- COM 对象指针
+在 aardio 里有两种 COM 对象指针：
+* pointer 类型的原生裸指针，COM 指针的引用计数与管理相对较复杂，直接操作这种指针较为麻烦，如果没有小心遵守复杂的 COM 规则可能会直接导致程序崩溃。
+* 由 aardio 内核对象封装的 IUnknown 托管指针，aardio 数据类型为 cdata，元类型为 "com.IUnknown" 。IUnknown 指针会按 COM 规则自动管理引用计数，不再使用时可自动回收释放，也可以调用  com.Release() 显式释放。 
 
-  注意 COM 对象可以实现多个接口，也就是说可以同时实现 IDispatch 接口或其他原生接口。
+有关的库函数：
+* 使用[com.GetPointer](com.md#topointer) 可以获取一个 com.IDispatch 对象的 IUnknown 接口原生指针.  
+* 也可以使用[com.GetIUnknown](com.md#GetIUnknown) 函数获取 com.IDispatch 对象的 com.IUnknown 内核对象.  
+* com.IUnknown 内核对象可自动释放,或调用.而 pointer 类型 IUnknown 原生指针则必须手工调用 com.Release() 显式释放  
+* 使用[com.GetIUnknown](com.md#GetIUnknown)函数也可以将一个 poineter 指针转换为com.IUnknown 内核对象.  
+* 使用 com.IsIUnknown 数可以判断一个对象是否 com.IUnknown 内核对象。
 
-  如果要通过非 IDispatch 接口去访问 COM 对象则需要使用 COM 对象指针。
+我们可以将 COM 对象的内存指针通过 com.interface 转换为原生接口对象，这样的对象就具有接口声明的方法。
 
-  在 aardio 里有两种 COM 对象指针：
-  * pointer 类型的原生裸指针，COM 指针的引用计数与管理相对较复杂，直接操作这种指针较为麻烦，如果没有小心遵守复杂的 COM 规则可能会直接导致程序崩溃。
-  * 由 aardio 内核对象封装的 IUnknown 指针，aardio 数据类型为 cdata，元类型为 "com.IUnknown" 。IUnknown 指针会按 COM 规则自动管理引用计数，不再使用时可自动回收释放，也可以调用  com.Release() 显式释放。 
+com.interface 主要用于不支持 IDispatch 接口的 COM 对象，或者必须用特定的原生 COM 接口去操作的对象。与 IDispatch 动态接口不同的是，com.interface 创建的原生接口对象必须定义 COM 函数的原型显式地声明调用参数与返回值的类型，所以每一个 COM 原生接口都要写接口声明。
 
-  有关的库函数：
-  * 使用[com.GetPointer](com.md#topointer) 可以获取一个 com.IDispatch 对象的 IUnknown 接口原生指针.  
-  * 也可以使用[com.GetIUnknown](com.md#GetIUnknown) 函数获取 com.IDispatch 对象的 com.IUnknown 内核对象.  
-  * com.IUnknown 内核对象可自动释放,或调用.而 pointer 类型 IUnknown 原生指针则必须手工调用 com.Release() 显式释放  
-  * 使用[com.GetIUnknown](com.md#GetIUnknown)函数也可以将一个 poineter 指针转换为com.IUnknown 内核对象.  
-  * 使用 com.IsIUnknown 数可以判断一个对象是否 com.IUnknown 内核对象.
+所有的 COM 原生接口声明都是  com.interface 名字空间下面的类。
 
-- COM 原生接口对象
+首先看一下 com.interface.IUnknown 的定义：
 
-  aardio 支持 COM 原生接口。
+```aardio
+class com.interface.IUnknown{
+    ptr QueryInterface = "int(struct iid,ptr &ptr)" ;
+    ptr AddRef = "int()" ;
+    ptr Release ="int()" ;
+}
+```
 
-  COM 原生接口是基于指定的原生接口定义对 COM 指针进行操作的对象。
+其他所有 COM 原生接口都必须继承自 com.interface.IUnknown 。
 
-  在标准库的 com.interface 名字空间下可找到很多这类原生接口，可查看源码了解如何定义 COM 原生接口。
+以 com.interface.IDropTarget 为例：
   
-  COM 原生接口使用的参数的数据类型与调用原生 API 相类似，参考 raw 库 [相关文档](../raw/datatype.md) 即可。
+```aardio
+import com.interface;
+import com.interface.IDataObject;
 
-  在 aardio 中使用 COM 原生接口的情况其实很罕见，一般不必要学习。
-  
+namespace  com.interface;
 
+class IDropTarget{
+	ctor(){
+		this = ..com.interface.IUnknown();
+	}; 
+	pointer DragEnter = "int(ptr pDataObj,INT grfKeyState,int x,int y, INT &pdwEffect)"; 
+	pointer DragOver = "int(INT grfKeyState,int x,int y,INT &pdwEffect)"; 
+	pointer DragLeave = "int()"; 
+	pointer Drop = "int(ptr pDataObj,INT grfKeyState,int x,int y,INT &pdwEffect)"; 
+	
+	register = function(hwnd){ 
+		return ::Ole32.RegisterDragDrop(hwnd[["hwnd"]]||hwnd,owner);	 
+	}
+	
+	revoke = function(hwnd){
+		return ::Ole32.RevokeDragDrop(hwnd[["hwnd"]]||hwnd);	
+	} 
+}
+
+IDropTarget.IID =  "{00000122-0000-0000-C000-000000000046}";
+
+```
+
+上面是一个非常典型的 COM 原生接口类声明，要点：
+
+- 构造函数里必须写 `this = ..com.interface.IUnknown();` 以继承  IUnknown 接口。
+- 类的静态成员 IID 必须指定 GUID。如果 IID 指定 GUID 字符串，aardio 会在使用接口时自动将其转换为  win.guid 结构体。
+- 接口声明类必须创建一个结构体，每个成员函数尾须是 ptr 类型指针，并且每个函数都用一个字符串描述函数原型。原型里使用的原生类型与声明原生 API 使用的类型相同。请参考：[所有可用的原生类型文档](../../../library-guide/builtin/raw/datatype.md)
+
+如果要将指针转换为 aardio 接口对象，则必须将指针作为 com.interface 的第一个参数，并在第二个参数里指定接口声明类。
+
+示例：
+
+```aardio
+var comObj = com.interface(implObjectOrPtr,declInterface) 
+```
+
+- 参数 implObjectOrPtr 可指定 COM 对象、COM 对象指针、com.IUnknown 托管指针。
+- 参数 declInterface 必须指定 com.interface 名字空间下的接口声明类，或者用字符串指定 com.interface 名字空间已导入的声明类名称。
+
+如果要实际 COM 原生接口，则第一个参数指定一个纯表。
+
+示例：
+
+```aardio
+var comObj = com.interface(implTable,declInterface) 
+```
+
+- 参数 implTable 是一个纯表（元表）, 并定义与接口匹配的成员函数（被调用时忽略未定义成员）。
+- 参数 declInterface 必须指定 com.interface 名字空间下的接口声明类，或者用字符串指定 com.interface 名字空间已导入的声明类名称。
+
+
+也可以不写 implTable，并对返回的对象添加要实现的成员函数。
+
+示例：
+
+```aardio
+var comObj = com.interface(implTable,declInterface) 
+
+//实现接口要求的函数
+comObj.Method = function(){
+
+}
+```
+
+创建 IDropTarget 接口的示例：
+
+```aardio
+import com.interface.IDropTarget;
+var dropTarget = com.interface("IDropTarget");
+```
+
+为了提供友好的智能提示，我们可以添加类似 com.interface.IDropTarget.create 这样的函数。
+
+以下是一个较完整的示例：
+
+```aardio
+import com.interface.IDropTarget;
+
+//实现 COM 原生接口对象
+var dropTarget = com.interface.IDropTarget.create({
+
+	DragEnter = function(dataObj,keyState,x,y,effect){
+
+    //导入 COM 原生接口对象
+		var dataObj = com.interface.IDataObject(dataObj)
+		
+		
+		return 0,1;
+	}
+	
+	DragOver = function(keyState,x,y,effect){
+			return 0,1/*_DROPEFFECT_COPY*/;
+	} 
+	
+	Drop = function(dataObj,keyState,x,y,effect){
+		var dataObj = com.interface.IDataObject(dataObj)
+	}	
+})
+```
+
+> 要特别注意：无论是在一个原生接口的声明类还是在接口实现表中，成员函数内部应当始终用 owner 访问当前对象。这是因为一个原生接口对象可能拥有来自声明类或实现表等不同来源的成员函数，owner 可以指向引用当前函数的实例对象。
+
+com.interface 内部基于 raw.interface 。  
+请参考：[ 原生接口类 raw.interface 使用指南](../raw/interface.md)

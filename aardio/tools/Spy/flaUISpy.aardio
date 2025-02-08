@@ -2,13 +2,13 @@
 import fonts.fontAwesome;
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="FlaUI 探测器（FlaUISpy）";left=-2;top=100;right=522;bottom=464)
+var winform = win.form(text="FlaUI 探测器（FlaUISpy）";left=-2;top=100;right=522;bottom=576)
 winform.add(
 btnCtrlParent={cls="plus";text="上级控件";left=282;top=105;right=387;bottom=129;align="left";color=8388608;dr=1;dt=1;iconColor=32768;iconStyle={align="left";font=LOGFONT(name='FontAwesome');padding={left=5}};iconText='\uF122';notify=1;textPadding={left=21};z=17};
 btnHelp={cls="plus";text="教程";left=436;top=18;right=493;bottom=42;align="left";color=8388608;dr=1;dt=1;iconStyle={align="left";font=LOGFONT(h=-14;name='FontAwesome')};iconText='\uF059 ';notify=1;textPadding={left=16;bottom=1};z=24};
 btnQuery={cls="plus";left=459;top=134;right=485;bottom=158;align="left";color=8388608;dr=1;dt=1;iconColor=32768;iconStyle={font=LOGFONT(name='FontAwesome')};iconText='\uF002';notify=1;textPadding={left=21};z=20};
-chkCtrl={cls="checkbox";text="按 Ctrl + 移动鼠标启动探测";left=312;top=327;right=501;bottom=349;db=1;dr=1;z=15};
-editCode={cls="richedit";left=77;top=165;right=494;bottom=314;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;tabstop=1;vscroll=1;z=13};
+chkCtrl={cls="checkbox";text="按 Ctrl + 移动鼠标启动探测";left=312;top=446;right=501;bottom=468;db=1;dr=1;z=15};
+editCode={cls="richedit";left=77;top=165;right=494;bottom=434;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;tabstop=1;vscroll=1;z=13};
 editControlName={cls="edit";left=78;top=78;right=493;bottom=99;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;tabstop=1;z=12};
 editControlType={cls="edit";left=78;top=105;right=271;bottom=128;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;tabstop=1;z=11};
 editHwnd={cls="edit";left=78;top=18;right=168;bottom=41;dl=1;dt=1;edge=1;hidesel=1;multiline=1;readonly=1;tabstop=1;z=8};
@@ -20,12 +20,12 @@ lbHwnd={cls="static";text="窗口句柄:";left=10;top=20;right=73;bottom=37;alig
 lbName={cls="static";text="Name:";left=0;top=78;right=73;bottom=95;align="right";dl=1;dt=1;z=2};
 lbPid={cls="static";text="进程ID:";left=174;top=19;right=221;bottom=41;align="right";dl=1;dt=1;z=4};
 lbProcessInfo={cls="static";left=360;top=100;right=495;bottom=122;dr=1;dt=1;transparent=1;z=14};
-lbTip={cls="static";left=198;top=380;right=509;bottom=399;color=255;db=1;dl=1;dr=1;z=23};
-plusCur={cls="plus";left=22;top=316;right=54;bottom=348;background="\.res\1.gif";db=1;dl=1;notify=1;repeat="center";z=5};
-radioUia2={cls="radiobutton";text="UIA2";left=135;top=379;right=195;bottom=396;db=1;dl=1;hide=1;z=22};
-radioUia3={cls="radiobutton";text="UIA3";left=73;top=379;right=133;bottom=396;checked=1;db=1;dl=1;hide=1;z=21};
+lbTip={cls="static";left=200;top=507;right=511;bottom=526;color=255;db=1;dl=1;dr=1;z=23};
+plusCur={cls="plus";left=22;top=435;right=54;bottom=467;background="\.res\1.gif";db=1;dl=1;notify=1;repeat="center";z=5};
+radioUia2={cls="radiobutton";text="UIA2";left=137;top=506;right=197;bottom=523;db=1;dl=1;hide=1;z=22};
+radioUia3={cls="radiobutton";text="UIA3";left=75;top=506;right=135;bottom=523;checked=1;db=1;dl=1;hide=1;z=21};
 static={cls="static";text="启动文件:";left=5;top=49;right=73;bottom=66;align="right";dl=1;dt=1;z=6};
-static2={cls="static";text="请拖动左侧瞄准器图标到目标控件";left=64;top=328;right=293;bottom=353;db=1;dl=1;dr=1;z=7};
+static2={cls="static";text="请拖动左侧瞄准器图标到目标控件";left=64;top=447;right=293;bottom=472;db=1;dl=1;dr=1;z=7};
 static3={cls="static";text="示例代码:";left=-7;top=164;right=73;bottom=181;align="right";dl=1;dt=1;z=16};
 static4={cls="static";text="XPath:";left=0;top=135;right=73;bottom=152;align="right";dl=1;dt=1;z=18}
 )
@@ -44,34 +44,24 @@ import string.template;
 var codeTemplate = string.template();
 codeTemplate.template = /***
 import FlaUI.${uia};
-var uia = FlaUI.${uia}.${uia}Automation();
-
-//自窗口句柄直接获取窗口对象
-//var window = uia.FromHandle(${hwnd}); 
-
-//启用模式匹配语法搜索窗口
-//var window = uia.FindWindow("${exe}","${classPattern}","${titlePattern}");
-
-//查找窗口
-var window = uia.FindWindow("${exe}","@${class}","@${title}");
-
-if(window){
+//查找窗口，禁用模式匹配语法搜索窗口（首字符为 `@`）
+var window = FlaUI.FindWindow("${exe}","@${class}","@${title}");
+if(!window) error("未找到窗口");
 	
-	//前置窗口
-	window.Focus();
-	
-	//查找控件 ${xpath}
-	var ctrl  = window.FindFirstByXPath(`${shortXPath}`);
- 
-	//移动鼠标
-	mouse.move(${x},${y},ctrl);
-	
-	//单击鼠标
-	mouse.click(${x},${y},ctrl);
-	
-	//输入字符串
-	//key.sendString("发送内容")
-}	
+//前置窗口
+window.Focus();
+
+//查找控件
+var ctrl  = window.FindFirstByXPath(`${shortXPath}`);
+
+//移动鼠标到 UIA 节点内的相对坐标
+mouse.move(${x},${y},ctrl);
+
+//单击鼠标
+mouse.click(${x},${y},ctrl);
+
+//输入字符串
+//key.sendString("发送内容")
 ***/
     
 var validPattern = function(str){

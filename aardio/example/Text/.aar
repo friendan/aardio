@@ -12,5 +12,5 @@
 字符串列表 =list.aardio
 进制转换=radix-convert.aardio
 快速关键字搜索=string.keywords.aardio
-哈希加密=Hash
+编码加密=Crypt
 Markdown=Markdown

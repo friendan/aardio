@@ -1,5 +1,18 @@
-//VK 虚拟键码表
+//VK 虚拟键名称与代码
 namespace key 
+
+/**details(展开用法说明)
+虚拟键名在 key.VK 名字空间定义（通常与键盘上显示的名称相同）。
+key 库函数可以直接用字符串表示 key.VK 名字空间的键名。
+
+例如：`key.press("ENTER")` 等价于 `key.press(key.VK.ENTER)` 。
+
+虚拟键码常用在键名前加上 `_VK_` 前缀的自动完成常量表示。
+例如在 aardio 编辑器中输入  `_VK_ENTER`，
+然后利用 aardio 编辑器的自动补全模板（或按 `Ctrl+J`）可自动转换为 `0xD/*_VK_ENTER*/`。
+end details**/
+
+//@guide [虚拟键名称与代码](doc://library-guide/std/key/virtual-key-names.html)
   
 VK = {
 /*intellisense(key.VK)*/

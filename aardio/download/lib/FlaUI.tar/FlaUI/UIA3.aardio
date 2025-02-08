@@ -12,6 +12,7 @@ dotNet.import("FlaUI.UIA3");
 
 FlaUI[["UIA"]] = FlaUI.UIA3
 FlaUI[["UIA"]][["UIAAutomation"]] = FlaUI.UIA3.UIA3Automation;
+FlaUI.UIA3[["Automation"]] = FlaUI.UIA3.UIA3Automation; 
 
 FlaUI.UIA3.UIA3Automation[["ctor"]] = function(automation){
 	automation[["By"]] = class {
@@ -90,6 +91,8 @@ FlaUI.UIA3.UIA3Automation[["ctor"]] = function(automation){
 		}	
 	};
 }
+
+FlaUI[["$UIA.Automation.Instance"]] = FlaUI.UIA3.UIA3Automation();
 
 /*****intellisense()
 FlaUI.UIA3.UIA3Automation = UIA3Automation

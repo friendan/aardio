@@ -1,23 +1,55 @@
-//窗口程序 - 文件拖放
+/*
+普通窗口拖放： doc://example/Windows/Effects/DnD.aardio
+richedit 拖放： doc://example/Windows/Edit/oleCallback.aardio
+web.view 拖放： doc://example/WebUI/web.view/dnd.aardio
+web.form 拖放： doc://example/WebUI/web.form/dnd.aardio
+web.layout 拖放： doc://example/WebUI/HTMLayout/exchange.aardio
+web.sciter 拖放： doc://example/WebUI/Sciter.JS/exchange.aardio
+文件拖放： doc://example/Windows/Effects/onDropFiles.aardio
+*/
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="窗口程序 - 文件拖放";right=759;bottom=469)
-winform.add(
-edit={cls="edit";left=69;top=34;right=693;bottom=377;autohscroll=false;edge=1;multiline=1;vscroll=1;z=1}
-)
+var winform = win.form(text="接收系统拖放的文本";right=759;bottom=469)
+winform.add()
 /*}}*/
 
-/*
-拖放会触发 onDropFiles 事件。
-定义此事件会自动执行 ::Shell32.DragAcceptFiles(winform.hwnd,true) 以启用拖放支持。 
+import com.interface.IDropTarget;
+var dropTarget = com.interface.IDropTarget.create({
 
-要特别注意有管理权限的窗口不能接受拖放，新系统已经完全禁止了这种操作。
-*/
-winform.onDropFiles = function(files){
-	winform.edit.print(files) 
-}
+		DragEnter = function(dataObj,keyState,x,y,effect){
+	
+			//导入 COM 原生接口对象
+			var dataObj = com.interface.IDataObject(dataObj)
+			
+				if(dataObj.isText()){
+					//第二个返回值指定接受拖放效果，不指定或返回 0 则表示拒绝拖放。
+					return 0,1/*_DROPEFFECT_COPY*/;
+				}
+			
+			//COM 原生接口返回 0 表示成功，也可以不写，省略默认返回 0 。
+			return 0; 
+		}
+		
+		DragOver = function(keyState,x,y,effect){
+				return 0,1/*_DROPEFFECT_COPY*/;
+		} 
+		
+		Drop = function(dataObj,keyState,x,y,effect){
+			var dataObj = com.interface.IDataObject(dataObj) 
+			var txt =  dataObj.getText();
+			
+			if(txt){
+				winform.text = "系统拖放文本：" + txt;
+			}
+			return 0,1; 
+		}	
+		
+		DragLeave = function(){} 
+		} 
+)
 
-winform.text = "请拖放一个或多个文件到窗口上"
+//允许窗口支持系统拖放。
+dropTarget.register(winform)
 
-winform.show() 
+winform.show();
 win.loopMessage();

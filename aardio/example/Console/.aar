@@ -3,6 +3,7 @@
 响应按键=kb.aardio
 加载动画与进度=loading.aardio
 倒计时=Countdown.aardio
+控制台菜单=menu.aardio
 兔子总数为多少=RabbitCount.aardio
 出牌=PlayCards.aardio
 打印乘法表=MultiplicationTable.aardio

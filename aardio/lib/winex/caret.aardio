@@ -4,7 +4,7 @@ import winex.accObject;
 
 namespace winex.caret;
 
-if(_WIN10_LATER){
+if(_WIN7_LATER){
 	import System.Windows.Automation.3;
 }
 var cursorInfo = {INT cbSize = 20; INT flags; pointer hCursor;struct pt = ::POINT() };
@@ -18,6 +18,7 @@ get = function(hwnd){
 	
 	var caret;
 	var uiInfo = ..winex.getUiInfo(hwnd);
+
 	if(!uiInfo) {
 		caret = ..winex.accObject.getCaret(hwnd);
 		if(caret) return caret,hwnd;
@@ -46,10 +47,10 @@ get = function(hwnd){
 			
 		if(hFocus){
 			
-			if(_WIN10_LATER){
+			if(_WIN7_LATER){
 				caret = ..System.Windows.Automation.GetCaret(hwndTarget);
 				if(caret){
-					cacheUiaSupported[hwndTarget] = true; 
+					cacheUiaSupported[hwndTarget] = ..raw.buffer(1);
 					return caret,hFocus;
 				}  
 			}
@@ -82,10 +83,37 @@ getPos = function(offsetX,offsetY){
     return x,y;
 }
 
+getEx = function(hwnd,ownerForm){
+	if(!hwnd) hwnd = ::User32.GetForegroundWindow();
+	if(!hwnd) return;
+	
+	var wndClass = ..win.getClass(hwnd)
+	
+	if(..string.find(wndClass,"HwndWrapper\[\N+?;;\x[\x\-]+\x\]")){
+		return ..winex.wpfCaret.get(hwnd);
+	}
+	elseif(..string.startWith(wndClass,"SunAwt") && ..java[["accessBridge"]]){
+			
+		//JAB loading ...
+		var getCaretEx = ..java.accessBridge.isJavaWindow(hwnd,this);
+		if(getCaretEx){
+			var rc,hFocus =  getCaretEx(hwnd,ownerForm);
+			if(rc) rc.type = "java";
+			f(rc) return rc,hFocus;
+		}  
+	}
+	
+	return get()
+}
+
+
 /**intellisense()
-winex.caret = 结合 winex.getUiInfo,winex.accObject.getCaret,::User32.GetCursorInfo\nSystem.Windows.Automation.3 等多种接口获取当前输入光标位置
-winex.caret.get( = 获取输入光标位置
-winex.caret.get(.(hwnd) = 在 @hwnd 指句柄的窗口获取输入光标位置，\n不指定参数则获取前台窗口输入光标。\n\n成功返回 ::RECT 结构体，失败返回 null。\n返回结构体的值使用屏幕坐标。\n如果获取到真实输入光标大小则返回结构体的 right,bottom 为非 0 值，\n如果为 I 光标位置则 right,bottom 值为 0。\n返回结构体的 hwnd 成员为输入光标所在窗口句柄。\n\n第 2 个返回值为输入焦点窗口句柄
+winex.caret = 结合 winex.getUiInfo,winex.accObject.getCaret,::User32.GetCursorInfo\nSystem.Windows.Automation.3 等多种接口获取当前输入光标位置。
+winex.caret.get( = 获取输入光标的屏幕位置。\n需要支持 WPF 窗口与 java.accessBridge 请改用 winex.caret.getEx 函数。\n改用 winex.editor.getText 函数可获取输入光标所在插入点的字符位置。
+winex.caret.get(.(hwnd) = 在 @hwnd 指定句柄的窗口获取输入光标位置。\n不指定参数则获取前台窗口输入光标。\n\n成功返回 ::RECT 结构体，失败返回 null。\n返回结构体的值使用屏幕坐标。\n如果获取到真实输入光标大小则返回结构体的 right,bottom 为非 0 值，\n如果为 I 光标位置则 right,bottom 值为 0。\n返回结构体的 hwnd 成员为输入光标所在窗口句柄。\n如果返回的是鼠标输入指针所在位置，则 type 字段值为 "cursor"。\n\n第 2 个返回值为输入焦点窗口句柄
 winex.caret.get() = !rect.
+winex.caret.getEx( = 获取输入光标的屏幕位置。\n支持 WPF 窗口与提前导入的 java.accessBridge.。\nWPF 窗口需要改用 winex.wpfCaret.get 函数。\n改用 winex.editor.getText 函数可获取输入光标所在插入点的字符位置。
+winex.caret.getEx(.(hwnd,ownerForm) = 在 @hwnd 指定句柄的窗口获取输入光标位置。\n不指定参数则获取前台窗口输入光标。\nownerForm 参数必须指定所有者窗口或控件对象（不能䏌句柄）。\n不导入 java.accessBridge 不需要指定 ownerForm 。\n\n成功返回 ::RECT 结构体，失败返回 null。\n返回结构体的值使用屏幕坐标。\n如果获取到真实输入光标大小则返回结构体的 right,bottom 为非 0 值，\n如果为 I 光标位置则 right,bottom 值为 0。\n返回结构体的 hwnd 成员为输入光标所在窗口句柄。。\n如果返回的是鼠标输入指针所在位置，则 type 字段值为 "cursor"。。\n如果返回的是 Java 接口取到的光标位置，则 type 字段值为 "java"。\n\n第 2 个返回值为输入焦点窗口句柄
+winex.caret.getEx() = !rect.
 winex.caret.getPos(.(offsetX,offsetY) = 返回输入光标或选区文本所在坐标，失败则返回鼠标指针坐标。\n返回值为分别表示 x,y 坐标的两个数值。\n可选用 offsetX,offsetY 参数分别指定返回 x,y 坐标的偏移值。
 end intellisense**/

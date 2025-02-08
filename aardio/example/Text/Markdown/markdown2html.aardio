@@ -1,4 +1,5 @@
-//markdown 转换为 HTML
+//Markdown 转换为 HTML
+//HTML 转 Markdown: file://~/example/Web/HTML/html2md.aardio
 
 var md = /*
 # 列表
@@ -27,4 +28,9 @@ import string.markdown;
 var markdown = string.markdown();
 
 var html = markdown.render(md); 
-print(html); 
+print(html);
+
+/*
+import web.form.simpleMarkdown;
+web.form.simpleMarkdown().write(html).doModal();
+*/

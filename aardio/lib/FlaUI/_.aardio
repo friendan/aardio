@@ -84,6 +84,29 @@ FlaUI[["FromPoint"]]  = function(parentNode,x,y){
 	return result;
 }
 
+FlaUI[["FromHwnd"]] = function(hwnd){
+	if(type(hwnd)!="number") error("参数必须是窗口句柄",2);
+	
+	var automation = FlaUI[["$UIA.Automation.Instance"]] 
+	if(!automation) error( "请先导入 FlaUI.UIA3 或  FlaUI.UIA2",2);
+	
+	return automation.FromHwnd(hwnd);
+}
+
+FlaUI[["FindWindow"]]  = function(pid,cls,title,timeout){
+	var automation = FlaUI[["$UIA.Automation.Instance"]] 
+	if(!automation) error( "请先导入 FlaUI.UIA3 或  FlaUI.UIA2",2);
+	
+	return automation.FindWindow(pid,cls,title,timeout);	
+}
+
+FlaUI[["By"]]  = function(option){
+	var automation = FlaUI[["$UIA.Automation.Instance"]] 
+	if(!automation) error( "请先导入 FlaUI.UIA3 或  FlaUI.UIA2",2);
+	
+	return automation.By(option);	
+}
+
 var AutomationElementExtensions = FlaUI.AutomationElements.AutomationElementExtensions;
 FlaUI[["As"]] = function(t,ele){
 	if(type.isString(t)){
@@ -139,6 +162,12 @@ FlaUI.UIA = 如果导入 FlaUI.UIA3 则指向 FlaUI.UIA3。\n如果未导入 Fla
 FlaUI.UIA = 如果导入 FlaUI.UIA3 则指向 FlaUI.UIA3。\n如果未导入 FlaUI.UIA3 ，但导入 FlaUI.UIA2 ，则指向 FlaUI.UIA2
 FlaUI.UIA.UIAAutomation = 如果导入 FlaUI.UIA3 则此函数实际指向 FlaUI.UIA3.UIA3Automation。\n如果未导入 FlaUI.UIA3 ，但导入 FlaUI.UIA2 ，则指向 FlaUI.UIA2.UIA2Automation。
 FlaUI.UIA.UIAAutomation() = 创建 UIAAutomation 对象。\n\n!stdFlaUIA3Automation.
+FlaUI.UIA.FindWindow( = 查找窗口对象
+FlaUI.UIA.FindWindow(.(进程,窗口类名,标题,超时) = 所有参数可选（至少指定一个查找条件）。\n参数@1可指定 process 对象、进程ID、EXE文件名、EXE路径。\n窗口类名、标题都支持模式匹配语法。\n超时可选指定一个单位为毫秒的数值
+FlaUI.UIA.FindWindow() = !stdFlaUIElement.
+FlaUI.FindWindow( = 查找窗口对象
+FlaUI.FindWindow(.(进程,窗口类名,标题,超时) = 所有参数可选（至少指定一个查找条件）。\n参数@1可指定 process 对象、进程ID、EXE文件名、EXE路径。\n窗口类名、标题都支持模式匹配语法。\n超时可选指定一个单位为毫秒的数值
+FlaUI.FindWindow() = !stdFlaUIElement.
 end intellisense*****/
 
 /*****intellisense(FlaUI)
@@ -156,6 +185,8 @@ enum = @FlaUI.enum(parentNode,function(flaUiNode,flaUiParent,index,level){
 }
 FromPoint(.(parentNode,x,y) = 自 @x,@y 参数指定的坐标查找并返回节点。\n@parentNode 参数指定父节点或 FlaUI.GetMainWindow 等函数返回的窗口对象
 FromPoint() = !stdFlaUIElement.
+FromHwnd(__) = 自参数@1指定的窗口句柄获取节点
+FromHwnd() = !stdFlaUIElement.
 Debug.GetXPathToElement( = 获取节点的 XPath 路径
 Debug.GetXPathToElement(.(node,root) = 参数@node 指定当前节点。\n可选用 @root 参数指定根节点
 Input.Mouse.Position = 当前鼠标位置。\nSystem.Drawing.Point 对象
@@ -201,6 +232,14 @@ AsCheckBox() = !FlaUICheckBox.
 AsRadioButton() = !FlaUIRadioButton.
 AsButton() = !FlaUIButton.
 AsLabel() = !FlaUILabel.
+By(condition) = @.By(\n	ControlType = "Edit";\n	Name = "输入";__/*创建节点搜索条件。\n表参数@1 中每个键值对指定一个匹配条件，多个条件为 And 关系。\n返回对象提供 And,Or,Not 函数，\nAnd,Or 可以此函数创建的其他搜索条件对象作为参数*/\n)
+By() = !stdFlaUICondition.
+end intellisense*****/
+
+/*****intellisense(!stdFlaUICondition)
+Not() = 逻辑取反
+Or(__) = 逻辑或，参数 @1 可指定 By 函数返回的其他搜索条件对象
+And(__) = 逻辑与，参数 @1 可指定 By 函数返回的其他搜索条件对象
 end intellisense*****/
 
 /*****intellisense(!stdFlaUIApp)

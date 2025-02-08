@@ -34,12 +34,37 @@ class stateBar{
 			
 			var hForeground = ..win.getForeground();
 			if(!hForeground) return;
-			
+		 
 			if(lastForeground!=hForeground){
 				this.getCaretEx = null;
 				
+				var wndClass = ..win.getClass(hForeground);
+				if(..string.find(wndClass,"HwndWrapper\[\N+?;;\x[\x\-]+\x\]")){
+					import winex.wpfCaret;
+					this.getCaretEx = ..winex.wpfCaret.get;
+				}
+				elseif(..string.startWith(wndClass,"SunAwt") && ..java[["accessBridge"]]){
+					this.getCaretEx = ..java.accessBridge.isJavaWindow(hForeground,this);
+					if(!this.getCaretEx){
+						this.getCaretEx = function(hwnd){
+							
+							//JAB loading ...
+							var getCaretEx = ..java.accessBridge.isJavaWindow(hForeground,this);
+							if(getCaretEx){
+								this.getCaretEx = getCaretEx;
+							}
+							else {
+								getCaretEx = ..winex.caret.get;
+							}
+							
+							return getCaretEx(hwnd);
+						}
+						
+					}
+				}
+				
 				if(this.onImeForegroundWindow){
-					if(this.onImeForegroundWindow(hForeground)===false){
+					if(this.onImeForegroundWindow(hForeground,wndClass)===false){
 						this.hide = true;
 						this.imePrevState = null;
 						
@@ -335,13 +360,18 @@ class stateBar{
 			this.paddingRight = cfg.paddingRight : 0;
 			this.paddingTop = cfg.paddingTop : 0;
 			this.paddingBottom = cfg.paddingBottom : 0; 
+			this.quirksMode = tonumber(cfg.quirksMode) : 0; 
 		
 			..table.assign(this,cfg);
 			
 			if(cfg.iconStyle) this.iconStyle = ..table.clone(cfg.iconStyle); 
 			else this.iconStyle = null;
 			
-			if(cfg.openStyle) this.openStyle = ..table.clone(cfg.openStyle);
+			if(cfg.openStyle) {
+				this.openStyle = ..table.clone(cfg.openStyle);
+				if(this.openStyle[1]) this.openStyle[1].quirksMode = null;
+				if(this.openStyle[0]) this.openStyle[0].quirksMode = null;
+			}
 			else this.openStyle = null;
 			
 			if(cfg.border) this.border = ..table.clone(cfg.border);
@@ -372,8 +402,7 @@ class stateBar{
 				if(!this.imeWatchingTimerId) return;
 				enabled = true;
 			}
-			
-			
+
 			lastForegroundDisabled = true;
 			lastForeground=hForeground;
 			lastFocusWnd = null;
@@ -440,7 +469,7 @@ class stateBar{
 }
 
 /**intellisense()
-key.ime.stateBar = 通用输入法状态跟踪提示，\n可跟踪输入光标或鼠标文本指针位置并即时显示输入法状态。\n详细说明与用法请参考开源软件 ImTip
+key.ime.stateBar = 通用输入法状态跟踪提示。\n可跟踪输入光标或鼠标文本指针位置并即时显示输入法状态。\n如果导入 java.accessBridge 则自动支持 Java 窗口。\n详细说明与用法请参考开源软件 ImTip
 key.ime.stateBar( = 创建输入法状态栏，返回 plus 控件
 key.ime.stateBar(.(winform) = 参数 @winform 指定所有者窗体，不可省略
 key.ime.stateBar() = !ui_ctrl_plus.

@@ -681,10 +681,11 @@ delay = function (msDelay,msSleep) {
 	delayCount--; 
 } 
 
-wait = function(func,hwnd,timeout,interval=100){   
+wait = function(func,hwnd,timeout,interval,...){   
 	var ret,ret2,ret3; 
 	var tkBegin = time_tick();
-
+	interval = interval===null?100:interval;
+	
 	var endTick = interval ? ( time_tick() + interval ) ;
 	var ret,tk;
 	var msg = {};
@@ -705,7 +706,7 @@ wait = function(func,hwnd,timeout,interval=100){
 		}
 		
 		if( !endTick || ( tk > endTick ) ){ 
-			ret,ret2,ret3 = func(); 
+			ret,ret2,ret3 = func(...); 
 			if( (ret !== null) || (ret2 !== null) )
 				return ret,ret2,ret3; 
 			
@@ -941,7 +942,7 @@ peekPumpInputMessage(.(msg) = 检测消息队列,如果有键盘鼠标、或绘�
 pumpMessage() = 等待并处理一个窗口消息\n注意如果没有参数,此函数会一直等待
 isDialogMessage(hwnd,msg) = 处理对话框控制键消息
 delay(__) = 在界面线程中延时并同时处理窗口消息,\n如果程序退出返回null,否则返回true,\n\n第一个可选参数指定延时值(毫秒),\n即使无参数或参数为0,此函数仍然会至少执行一次消息检查),\n该参数如果为0则忽略第二个参数(此时处理速度最快),默认值为0,\n\n第二个可选参数指定插入的休眠时间(毫秒),\n休眠时间越小则处理速度越快,休眠时间越大则占用CPU就越少\n\n如果不需要消息循环时(例如控制台程序),建议使用sleep函数延时,\n\n如果用于耗时循环中响应用户操作,\n建议使用速度更快的win.peekPumpMessage 或 win.peekPumpInputMessage
-wait(.(等待函数,窗口句柄,超时,延时间隔) = 循环执行等待函数,并等待返回值\n直到等待函数返回非空值,或存在第二个返回值,或参数@2指定的窗口关闭\n等待函数返回的值就是win.wait的返回值,\n如果指定超时,超过指定毫秒时返回null,\n除等待函数以外,所有参数可选
+wait(.(等待函数,窗口句柄,超时,延时间隔,->->->) = 循环执行等待函数,并等待返回值\n直到等待函数返回非空值,或存在第二个返回值,或参数@2指定的窗口关闭\n等待函数返回的值就是win.wait的返回值,\n如果指定超时,超过指定毫秒时返回null,\n除等待函数以外,所有参数可选。\n延时间隔之后的所有参数将作为调用等待函数的参数。
 getCursorPos() = 返回当前鼠标所在位置的x,y坐标,\n返回值有两个
 getMessagePos(lParam) = 返回鼠标所在窗口坐标,\nlParam必须是窗口回调函数中的lParam参数
 getMessagePos() = 返回鼠标所在屏幕坐标,\n表示上一次获取的窗口消息时鼠标占用的点

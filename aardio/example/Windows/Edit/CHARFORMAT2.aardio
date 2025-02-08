@@ -12,20 +12,12 @@ richedit={cls="richedit";left=25;top=15;right=716;bottom=398;edge=1;multiline=1;
 winform.button.oncommand = function(id,event){
 	
 	/*
-	追加文本，支持任意个文本参数。
-	可插入任意个样式表参数，如果指定了样式表，函数返回前恢复默认样式。
-	样式表指定 CHARFORMAT2 结构体部分需要修改的字段即可。
-	用法细节参考库函数文档。
+	追加文本，支持任意个文本参数或样式表参数。
+    每个样式都会修改后面文本的样式，如果指定了样式表，函数返回前会恢复默认样式。 
+	样式表可指定 CHARFORMAT2 结构体或者部分需要修改的字段即可。
 	
-	常用字段：
-	- backColor: 背景颜色，GDI 颜色格式（ 0xBBGGRR ）。
-	- textColor: 字体颜色，GDI 颜色格式（ 0xBBGGRR ）。
-	- faceName: 字体名 
-	- point: 字体大小，以 pt 为单位
-	- italic = 是否斜体，仅用于写入样式。 
-	- strikeout = 是否显示删除线，仅用于写入样式。   
-	- underlineType: 下划线类型 
-	- underline = 是否粗体，仅用于写入样式。 
+	请参考文档:
+	doc://library-guide/std/win/ui/ctrl/charformat2.html 
 	*/
 	winform.richedit.appendText( 
 		{ textColor = 0xFF0000 },
@@ -42,23 +34,8 @@ winform.button.oncommand = function(id,event){
 	下面这样写也可以，等于传了一个表参数并省略了外层大括号{}。
 	函数会自动展开参数表的数组成员作为其他调用参数，可指定多个文本参数。
 	*/
-	winform.richedit.appendText( textColor = 0xFF0000, "蓝色文本" ) 
-	
-	//下面这样写作用一样
-	winform.richedit.appendText( { textColor = 0xFF0000, "蓝色文本"} ) 
-	
-	//下面这样写也行
-	winform.richedit.appendText({ 
-    	textColor = 0x00FF00;  // 使用 RGB 颜色值（0xBBGGRR 格式）,这里是绿色
-    	text = "这是绿色文本";
-	})
+	winform.richedit.appendText( textColor = 0xFF0000, "蓝色文本" )  
 }
-
-//使用 TO 文本对象（COM 对象）设置样式
-var textDoc = winform.richedit.createTextDocument()
-textDoc.Selection.Text = "红色加粗"
-textDoc.Selection.Font.ForeColor = gdi.RGB(255,0,0)  // 红色
-textDoc.Selection.Font.Bold = textDoc.tomTrue  // 加粗
 
 winform.show();
 win.loopMessage();

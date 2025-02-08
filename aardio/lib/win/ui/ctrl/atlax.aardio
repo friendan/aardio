@@ -64,7 +64,7 @@ namespace atlax {
 !atlAxWin.className = 运行时类名
 !atlAxWin.hwnd = 控件句柄
 !atlAxWin.id = 控件ID
-!atlAxWin.text = 控件文本
+!atlAxWin.text = 控件文本。\n在创建控件的构造参数中使用 text 段指定要创建的 COM 对象类名。
 !atlAxWin.getForm() = 如果是窗体返回自身\n如果是控件则返回_parentForm\n!winform.
 !atlAxWin.isForm = 窗体返回true,控件返回false
 !atlAxWin._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
@@ -123,3 +123,14 @@ namespace atlax {
 win.ui.ctrl.atlax() = 静态文本控件\n!atlAxWin.
 win.ui.ctrl.atlax = 静态文本控件支持库
 end intellisense***/
+
+/**details(用法步骤)
+
+请参考[使用自定义控件类](doc://library-guide/std/win/ui/ctrl/custom.html#cls)
+
+atlax 控件用法步骤：
+
+1. 拖一个 custom 控件放到界面上,控件类名改为"atlax"
+2. 然后在 atlax 控件的文本属性中指定要创建的 COM 类名，例如 "InkEd.InkEdit"
+
+end details**/

@@ -1,0 +1,50 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="richedit 处理回车事件，自动缩放编辑框高度。";right=756;bottom=469)
+winform.add(
+richedit={cls="richedit";left=5;top=314;right=749;bottom=461;db=1;dl=1;dr=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=1};
+splitter={cls="splitter";left=5;top=305;right=749;bottom=310;db=1;dl=1;dr=1;frame=1;horz=1;z=3};
+wndBrowser={cls="custom";text="自定义控件";left=3;top=6;right=747;bottom=301;db=1;dl=1;dr=1;dt=1;z=2}
+)
+/*}}*/
+
+//拆分界面: doc://library-guide/std/win/ui/ctrl/splitter.html
+winform.splitter.split(winform.wndBrowser,winform.richedit);
+
+//创建 Markdown 渲染窗口
+import web.form.simpleMarkdown;
+var wb = web.form.simpleMarkdown(winform.wndBrowser);
+
+//输入时同步输出 Markdown
+import win.debounce;
+winform.richedit.onChange = win.debounce(function(){ 
+	wb.write(winform.richedit.text) 
+},500)
+
+var scrollbarHeight = ::User32.GetSystemMetrics(3/*_SM_CYHSCROLL*/)
+
+//按回车键回调此函数
+winform.richedit.onOk = function(ctrl,alt,shift){ 
+ 
+ 	//获取输入光标的客户端坐标
+	var pt = ::POINT()
+	::User32.GetCaretPos(pt)
+	
+	//计算行高
+	var lineCount = winform.richedit.lineCount;
+	var lineHeight = math.ceil(pt.x / lineCount + winform.dpiScale(5));  
+	
+	//是否要增加高度
+	if(pt.y+(lineHeight+scrollbarHeight)*2.5>winform.richedit.height){  
+ 
+		winform.wndBrowser.setRedraw(false)
+		winform.splitter.splitMove(-lineHeight) 
+		winform.wndBrowser.setRedraw(true) 
+	}
+}
+
+winform.splitter.ltMin = 400;//拆分条上方控件最小高度
+winform.splitter.rbMin = 150;//拆分条下方控件最小高度
+
+winform.show();
+win.loopMessage();

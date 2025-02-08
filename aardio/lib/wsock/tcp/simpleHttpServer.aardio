@@ -856,7 +856,7 @@ namespace simpleHttpServer{
 /**intellisense()
 wsock.tcp.simpleHttpServer.documentRoot = 网站应用程序根目录,默认为"/",\n只能设置为硬盘上实际存在的目录,\n改变此目录,会同时改变\n服务端代码中的应用程序根目录以及用户库目录,\n如果只是相将所有请求路径转向某个目录,应当改用 documentBase 属性\n如果网站在嵌入资源目录中,应当改用 documentBase 属性
 wsock.tcp.simpleHttpServer.documentBase = 网站根目录,\n不会修改应用程序根目录,支持硬盘目录与资源目录,\n这个属性应当设置为应用程序根目录下的相对路径,\n例如 "/res/web/"\n\n注意： request.path 前面包含 documentBase 目录。\n而 request.pathInfo 忽略 documentBase 目录
-wsock.tcp.simpleHttpServer.defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杆结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杆才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
+wsock.tcp.simpleHttpServer.defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杠结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杠才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
 wsock.tcp.simpleHttpServer.mainThread(app) =  @.mainThread( \n    function(response,request,session){ \n         response.loadcode( request.path __/*可省略,可增加多个模板参数,\n在被调用文件的函数外部可使用owner参数获取首个模板参数,\n也可以使用...获取多个模板参数*/ );\n    } 	\n);
 wsock.tcp.simpleHttpServer.mainThread() = !stdHttpSimpleServerMain.
 wsock.tcp.simpleHttpServer.startUrl( =  查找可用端口创建 HTTP 服务器线程，返回返回完整 URL\n此服务端限制使用本机IP 127.0.0.1 访问,并随机分配端口不会出现端口冲突\n如果HTTP服务器已启动则直接返回URL而不是重复启动服务器,\n注意当前线程结束时,此服务器线程会自动退出
@@ -875,7 +875,7 @@ wsock.tcp.simpleHttpServer() = !stdHttpSimpleServer.
 !stdHttpSimpleServer.run( httpProc ) = @.run( \n    function(response,request,session){ \n         response.loadcode( request.path __/*可省略,可增加多个模板参数,\n在被调用文件的函数外部可使用owner参数获取首个模板参数,\n也可以使用...获取多个模板参数*/ );\n    } 	\n);
 !stdHttpSimpleServer.documentRoot = 网站应用程序根目录,默认为"/",\n在启动服务端之前设置才会生效,\n\n只能设置为硬盘上实际存在的目录,\n改变此目录,会同时改变\n服务端代码中的应用程序根目录以及用户库目录,\n如果只是相将所有请求路径转向某个目录,应当改用 documentBase 属性\n如果网站在嵌入资源目录中,应当改用 documentBase 属性
 !stdHttpSimpleServer.documentBase = 网站根目录,\n在启动服务端之前设置才会生效,\n不会修改应用程序根目录,支持硬盘目录与资源目录,\n这个属性应当设置为应用程序根目录下的相对路径,\n例如 "/res/web/"\n\n注意： request.path 前面包含 documentBase 目录。\n而 request.pathInfo 忽略 documentBase 目录
-!stdHttpSimpleServer.defalutDocument = 默认文档，默认为"main.aardio",\n在启动服务端之前设置才会生效,\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杆结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杆才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
+!stdHttpSimpleServer.defalutDocument = 默认文档，默认为"main.aardio",\n在启动服务端之前设置才会生效,\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杠结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杠才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
 !stdHttpSimpleServer.onThreadCreated() = @.onThreadCreated = function(documentRoot,urlRoot){
 	__/*一个HTTP服务监听线程准备就绪时触发此事件*/
 }
@@ -895,7 +895,7 @@ end intellisense**/
 /**intellisense(!stdHttpSimpleServerMain)
 documentRoot = 网站应用程序根目录,默认为"/",\n只能设置为硬盘上实际存在的目录,\n改变此目录,会同时改变\n服务端代码中的应用程序根目录以及用户库目录,\n如果只是相将所有请求路径转向某个目录,应当改用 documentBase 属性\n如果网站在嵌入资源目录中,应当改用 documentBase 属性
 documentBase = 网站根目录,\n不会修改应用程序根目录,支持硬盘目录与资源目录,\n这个属性应当设置为应用程序根目录下的相对路径,\n例如 "/res/web/",\n\n注意： request.path 前面包含 documentBase 目录。\n而 request.pathInfo 忽略 documentBase 目录
-defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杆结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杆才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
+defalutDocument = 默认文档，默认为"main.aardio",\n\n如果访问硬盘上存在的目录,request.path 尾部不加斜杠会自动跳转到以斜杠结束的路径\n\n如果访问嵌入资源目录,只有 request.path 以斜杠才会访问默认文档,\n对于访问嵌入资源文件,建议指定完整的文件路径,\n默认文档主要是用于硬盘上的网站
 onThreadCreated() = @.onThreadCreated = function(documentRoot,urlRoot){
 	__/*一个HTTP服务监听线程准备就绪时触发此事件*/
 }

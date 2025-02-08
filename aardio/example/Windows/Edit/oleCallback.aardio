@@ -1,0 +1,54 @@
+/*
+普通窗口拖放： doc://example/Windows/Effects/DnD.aardio
+web.view 拖放： doc://example/WebUI/web.view/dnd.aardio
+web.form 拖放： doc://example/WebUI/web.form/dnd.aardio
+web.layout 拖放： doc://example/WebUI/HTMLayout/exchange.aardio
+web.sciter 拖放： doc://example/WebUI/Sciter.JS/exchange.aardio
+文件拖放： doc://example/Windows/Effects/onDropFiles.aardio
+*/
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="富文本框自定义系统拖放操作";right=555;bottom=356)
+winform.add(
+richedit={cls="richedit";text="请拖动文本到这里";left=29;top=111;right=518;bottom=318;edge=1;multiline=1;z=1};
+static={cls="static";left=37;top=40;right=521;bottom=73;transparent=1;z=2}
+)
+/*}}*/
+
+//必须先导入此接口，细节请参考 IRichEditOleCallback 接口文档。
+import com.interface.IRichEditOleCallback;
+
+winform.richedit.oleCallback(
+	
+	
+	GetDragDropEffect = function(drag,grfKeyState,effect){
+		
+		/*所有 COM 实现的原生接口，第一个返回值为 0 表示执行成功。
+		返回值 2 指定拖放效果（effect），不指定则鼠标指针显示禁止拖放图标。*/
+		return 0,1/*_DROPEFFECT_COPY*/
+	}
+
+	QueryAcceptData = function(ptrDataObj,format,reco,really,hMetaPict){
+	
+		/*really 表示放开鼠标，接收拖放数据*/
+		if(really){
+			
+			/*用法请参考 com.interface.IDataObject 库参考文档*/
+			var dataObj = com.interface.IDataObject(ptrDataObj);
+			var txt = dataObj.getText();
+			
+			if(txt){
+				winform.static.text = "成功拦截了拖放文本：" + txt;
+			}
+			
+			/*返回 0 继续默认处理，文本放入控件，返回 _S_FALSE 阻止默认处理。*/
+			return 1/*_S_FALSE*/
+		}
+		
+		return 0; 
+	}
+)
+
+winform.show();
+win.loopMessage();
+	

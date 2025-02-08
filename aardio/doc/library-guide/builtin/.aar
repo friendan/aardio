@@ -1,7 +1,8 @@
-math - 数学函数=math.md
-com - 组件对象=com
-io - 输入输出=io
-raw - 原生接口=raw
-string  字符串操作=string
+﻿string - 字符串操作=string
 table - 表=table
+thread - 多线程=thread
+com - 组件对象=com
+raw - 原生接口=raw
+io - 输入输出=io
+math - 数学函数=math.md
 time - 日期时间=time

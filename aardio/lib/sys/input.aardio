@@ -20,7 +20,7 @@ getDescription = function(v){
 	}
 }
 
-getLayoutOrTips = function(enabled){
+getLayoutOrTips = function(enabled,description){
 	var count  = dll.EnumEnabledLayoutOrTip(userReg,sysReg,softReg,null,0)
 	if(!count) return;
 	
@@ -45,6 +45,12 @@ getLayoutOrTips = function(enabled){
 				}
 			}
 		}
+		
+		if(description){
+			for(i=#profiles;1;-1){
+				profiles[i].description = getDescription(profiles[i].id)
+			}	
+		}
 		return profiles;
 	}
 }
@@ -56,6 +62,11 @@ getEnabledLayoutOrTips = function(){
 	for(i,t in tips) ret[t.id] = t.profileType;
 	return ret;
 }
+
+find = function(pattern){
+	var tips = getLayoutOrTips(true,true); 
+	for(i,t in tips)  if(..string.find(t.description,pattern))return t; 
+} 
 
 setDefault = function(v,flags){
 	if(::Bcp47Langs) ::Bcp47Langs.SetInputMethodOverride(v?v:"");
@@ -74,9 +85,10 @@ disable(.(layoutOrTip,enabled) = 禁用与启用键盘布局或输入法，\n@la
 getDescription( = 返回键盘布局或输入法描述
 getDescription(.(layoutOrTip) = 返回键盘布局或输入法描述\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n例如 "0409:00000409" 为英文键盘
 getLayoutOrTips( = 返回所有键盘布局与输入法的数组
-getLayoutOrTips(.(enabled) = 返回所有键盘布局与输入法的数组，\n如果参数 @1 为 true，则不返回已禁用的元素。\n数组成员为 LAYOUTORTIPPROFILE 结构体，\n详细用法请查看函数源码\n\n一般可使用简化了的 getEnabledLayoutOrTips 函数
+getLayoutOrTips(.(enabled,description) = 返回所有键盘布局与输入法的数组。\n如果参数 @1 为 true，则不返回已禁用的元素。\n如果参数 @2 为 true，则返回数组中的每个元素都包含描述（ description ）字段。\n数组成员为 LAYOUTORTIPPROFILE 结构体，\n详细用法请查看函数源码。\n\n一般可使用简化了的 getEnabledLayoutOrTips 函数
 getEnabledLayoutOrTips() = 返回一个包含所有启用的输入法或键盘布局状态的表，\n键为键盘布局或输入法的 ID，例如 "0409:00000409" ，\n值为如下类型之一，\n键盘布局的值为 2 _LOTP_KEYBOARDLAYOUT，输入法的值为 1 _LOTP_INPUTPROCESSOR
 setDefault(.(layoutOrTip,flags) = 设置默认输入法，\n@layoutOrTip 使用字符串指定键盘布局或输入法，\n@flags 参数不必指定\n\n仅支持 Win10,Win11 或之后的操作系统，\n必须提前导入库： win.rt.bcp47\n\n系统设置每个应用窗口使用不同输入法才能实时看到效果，\n可用 SystemParametersInfo 修改该设置（参考 ImTip 源码）
+find(__/*输入法名称*/) = 使用参数 @1 指定的输入法显示名称查找已启用的输入法信息。\n参数支持部分匹配与模式匹配。
 ? = 可不用声明直接在此输入函数名并调用 input.dll 的 API 函数 
 end intellisense**/
 

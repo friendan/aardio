@@ -1,5 +1,5 @@
 import string.args;
-var __process__ = ..process;
+var __processTable__ = ..process;
 
 class process { 
 	ctor( pid , parameters, startInfo,... )begin
@@ -174,6 +174,9 @@ class process {
 			}
 		}
    	end;
+   	waitForInputIdle = function(timeout){
+   		WaitForInputIdle(this.handle, timeout or 0xFFFFFFFF); 
+   	};
 	suspend = function(){
 		if(this.handle){
 			::Ntdll.NtSuspendProcess( this.handle )  
@@ -668,7 +671,7 @@ class process {
 	@_meta; 
 }
 
-if( __process__ ) ..table.mix( process,__process__);
+if( __processTable__ ) ..table.mix( process/*class*/,__processTable__/*table*/);
  
 import sys.info;
 namespace process{
@@ -1213,6 +1216,16 @@ namespace process{
 		return hwnd,pid;
 	}
 	
+	fromWindowHandle = function(hwnd){
+		var pid = {int v}
+		var tid = ::User32.GetWindowThreadProcessId(hwnd,pid);
+		if( !pid.v ) return;
+		
+		var p = ..process(pid.v);
+		p.tid = tid;
+		return p;
+	}
+	
 	findId = function(exename){
 		var pid;
 		for entry in each(exename)  {
@@ -1280,6 +1293,7 @@ process.shell() = !process.
 process.shellAs() = !process.
 process.is(__) = 传入参数是否 process 对象
 !process.stillActive() = 进程是否仍在运行
+!process.waitForInputIdle(__/*超时间隔*/) = 等待进程完成初始化并等待用户输入的空闲状态（没有待处理输入）。\n超时间隔以毫秒为单位，省略参数则一直等待。\n\n默认会在创建进程时被自动调用此函数，\n除非创建进程的 startInfo 参数的 waitInputTimeout 字段为 0,\n或者 startInfo 参数的  suspended字段为 true 。
 !process.getInfo( = 获取进程信息
 !process.getInfo(.() = 获取进程信息
 !process.getInfo(.(infoClass,infoStruct) = 如果参数 infoClass 指定非 null 数值，\n并且 infoStruct 指定结构体。\n在 Win8 以及之后系统获取信息到该结构体。\n成功返回原结构体。\n\n此用法内部调用 ::Kernel32.GetProcessInformation\n细节请参考该 API 文档
@@ -1366,6 +1380,8 @@ process.is(__) = 传入参数是否 process 对象
 !process.emptyWorkingSet() = 将工作集中的内存尽可能移动到页面文件中,\n可在最小化或程序空闲时调用以释放活动内存，\n不建议频繁调用此函数
 ?process = !process.
 ?process.each = !processEntry.
+process.fromWindowHandle(__/*hwnd*/) = 自参数 @1 指定的窗口句柄获取进程对象。\n返回进程的 pid 属性为进程 ID，tid 属性为窗口线程所在线程 ID。\n失败返回 null 。
+process.fromWindowHandle() = !process.
 end intellisense**/
 
 /**intellisense(process)
@@ -1380,13 +1396,13 @@ shell( = 并运行应用程序，返回 process 进程对象。\n个别系统 64
 shell(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数,\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
 executeEx(.("__", parameters="",operation="open",showCmd,workDir,hwnd,fmask) = 运行 EXE 应用程序,返回 SHELLEXECUTEINFO 结构体,\n参数 @1 指定要运行的执行程序路径,\n参数 @2 可用一个字符串或字符串数组指定启动参数。\n所有参数用法与 process.execute 函数相同。\n关于 @fmask 详细用法请参考本函数源码（一般用不到）。\n除参数 @1 以外所有参数可选
 execute( = 运行exe应用程序,成功返回进程ID,\n参数详细用法请参考本函数源码以及 WINAPI 中 ShellExecuteEx 函数用法\n运行 UWP 应用请使用 com.shell.activateApp 函数\n\nraw.execute 提供了与本函数类似的功能。\n\n个别系统 64 位程序，需要改用 process.wow64.execute 以避免目录重定向。
-execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数 @1 为程序路径或系统命令。\n\n可选参数 @parameters 可以是字符串或字符串数组，用于指定启动参数。\n如果指定数组则由 string.args.join 自动处理转义并支持命名参数。\n如果启动参数只指定一个文件路径，为避免可能包含空格或以反斜杆结尾等需要转义的情况，\n建议写为 process.execute(exePath,{path}) 这种格式，让 aardio 自动处理转义。\n\n可选参数 @operation 为启动模式\n可选参数 @showCmd 使用 _SW_ 前缀常量，与win.show参数用法相同。\n可选参数 @workdir 为工作目录\n可选参数 @hwnd 可指定父窗口句柄
+execute(.("__", parameters="",operation="open",showCmd,workDir,hwnd) = 参数 @1 为程序路径或系统命令。\n\n可选参数 @parameters 可以是字符串或字符串数组，用于指定启动参数。\n如果指定数组则由 string.args.join 自动处理转义并支持命名参数。\n如果启动参数只指定一个文件路径，为避免可能包含空格或以反斜杠结尾等需要转义的情况，\n建议写为 process.execute(exePath,{path}) 这种格式，让 aardio 自动处理转义。\n\n可选参数 @operation 为启动模式\n可选参数 @showCmd 使用 _SW_ 前缀常量，与win.show参数用法相同。\n可选参数 @workdir 为工作目录\n可选参数 @hwnd 可指定父窗口句柄
 executeWait(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待应用程序关闭\n除参数@1以外所有参数可选，所有参数用法与 process.execute 相同
 executeWaitInput(.("__", parameters="",operation="open",showCmd,workDir=",hwnd=0) = 运行exe应用程序\n并等待进程初始化完成并接受输入\n除参数@1以外所有参数可，所有参数用法与 process.execute 相同
 executeInvoke(.(path, parameters,operation,showCmd,workDir,hwnd) = 创建临时的后台线程运行应用程序\n在打开程序前退出主线程可能无法执行操作,\n参数与 process.execute 函数用法一样,除指定参数@1或参数@2,其他所有参数可选
 openUrl(__) = 调用默认浏览器打开网址,用于窗口程序,\n如果不用这个方法创建线程去打开网址,可能会出现界面卡顿不流畅的现象,\n在打开网址前退出主线程可能无法执行操作\n控制台程序应调用 process.execute 以避免后台线程不能阻止控制台关闭
 exploreSelect("__/*文件路径*/") = 打开资源管理器，选定参数 @1 指定的文件路径。
-explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杆`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。\n\n内置函数 raw.explore 与 process.explore 用法相同。
+explore(.(path,args,->->->) = 使用资源管理器（Explorer.exe）打开文件或目录。\n\n第一个参数 @path 指定文件路径，可为空值（ null ）。\n注意 Explorer.exe 不解析标准的命令行参数转义符，这一点与其他程序不同。\n如参数 @path 尾部有双反斜杠`\\`则为无效路径并打开默认目录（打开我的文档，XP系统报错）。\n如参数 @path 指定为 ","或"file:" 则打开“此电脑（This PC）”。\n如参数 @path 使用`shell:::`前缀则可以指定特殊路径的 CLSID。\n\n可用第二个参数 @args 或更多参数指定 Explorer.exe 命令行选项，\n例如指定  "/select" 在资源管理器选择指定路径。\n注意 "/n" 等选项在新系统中是无意义的，Explorer 将总是打开新窗口。\n\n内置函数 raw.explore 与 process.explore 用法相同。
 regAs(`__/*命令参数*/`) = 以管理权限执行 reg 命令
 findExe("__/*文件路径*/") = 查找文件关联的可执行程序
 isExe("__/*文件路径*/") = 检测目标文件是否可执行文件。\n如果是可执行文件返回"PE32"或"PE64"\n第二个返回值为子系统,GUI为2,CUI为3\n失败或参数为 null 返回 null。\nraw.pefile 对象的 isPe32 属性也可用于区分 32 位与 64 位执行文件。
@@ -1429,7 +1445,7 @@ showWindow = 显示参数，\n支持以_SW_ 前缀的常量\n_SW_HIDE 表示隐�
 stdInput = 标准输入（可用于创建管道）
 stdOutput = 标准输出（可用于创建管道）
 stdError = 标准错误输出(可用于创建管道) 
-waitInputTimeout = 进程启动后等待初始化完成的最大超时\n默认为0xFFFFFFFF(无限等待),设为0则不等待
+waitInputTimeout = 进程启动后自动调用 waitForInputIdle 等待进入输入空闲状态的最大超时。\n默认为0xFFFFFFFF(无限等待),设为0则不等待
 creationFlag = @.creationFlag = CREATE__ //创建进程的参数,参考API CreateProcess的说明
 inheritHandles = 默认值为真,所有有可被继承属性的内核对象都会被复制到子进程(实际上是内核对象引用计数加一)
 environment = 新进程的环境变量\n以键值对组成的字符串,多个键值对间请以'\0'分隔\n键与值之间以=号分隔\n也可以传入包含键值对的表对象

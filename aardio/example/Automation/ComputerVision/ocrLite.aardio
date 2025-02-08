@@ -1,7 +1,7 @@
 //屏幕找字完整版
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="string.ocrLite简单演示";right=796;bottom=504)
+var winform = win.form(text="string.ocrLite 屏幕找字";right=796;bottom=504)
 winform.add(
 button={cls="button";text="识别剪贴板图像";left=528;top=423;right=712;bottom=477;db=1;dr=1;z=2};
 edit={cls="edit";left=497;top=36;right=764;bottom=403;db=1;dr=1;dt=1;edge=1;hscroll=1;multiline=1;vscroll=1;z=3};
@@ -9,7 +9,12 @@ plus={cls="plus";left=25;top=36;right=474;bottom=403;db=1;dl=1;dr=1;dt=1;repeat=
 )
 /*}}*/
 
-//相关 OCR 范例："~/example/Languages/dotNet/Apps/OCR.aardio"
+/*
+屏幕找字简版 doc://example/Automation/ComputerVision/ocrUwp.html
+简单 OCR: doc://example/Automation/ComputerVision/soImage.ocr.example.html
+.NET OCR 范例: file://~/example/Languages/dotNet/Apps/OCR.aardio
+*/
+
 import string.ocrLite;
 import string.ocrLite.defaultModels;
 import win.clip;

@@ -8,4 +8,4 @@ UTF-16 API=utf16.md
 回调函数=callback.md
 内存 DLL=memdll.md
 远程 CALL=remoteApi.md
-
+原生接口类=interface.md

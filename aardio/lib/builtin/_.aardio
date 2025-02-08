@@ -146,7 +146,8 @@ var conPause;
 print = function(s,...){ 
 	if( s!==null ){
 		if(!wbp) {
-			if(_STUDIO_INVOKED && !conPause && wbp === null && type(s)=="string" && s[1]=='<'# ){ 
+			if(_STUDIO_INVOKED && !conPause 
+				&& wbp === null && type(s)=="string" && s[1]=='<'# ){ 
 				global.import("web.form");
 				wbp = web.form( win.form(text="aardio - webform";right=759;bottom=469;maxmize=1),,,,true );
 				wbp.external = wbp._form;
@@ -180,8 +181,12 @@ __beforeUnload =  function(){
 		for(hwnd,winform in win._form._forms){
 			::DestroyWindow(hwnd); 
 		}; 
+		
+		//考虑 messageOnly 线程或仅仅引用了 win.ui 的库
+		if(..win.isClosed()) return;
 	}
-	elseif(conPause) execute("pause");
+	
+	if(conPause) execute("pause");
 }
 
 time.gmt = function(t,f){
@@ -257,6 +262,9 @@ type.isFile = function(obj){
 ::User32.GetSystemMetrics(__) =  返回系统系统与数值有关的设置,宽高有关的数值以像素为单位,\n参数以 _SM_ 前缀的常量指定要获取的设置索引
 ::User32.GetWindowThreadProcessId(.(hwnd,pid) = 返回 @hwnd 参数指定窗口句柄的窗口所在线程 ID,\n@pid 如果不为 null 则必须传入结构体 {addr value},\n也可以改用 win.getThreadProcessId 函数
 ::User32.DestroyWindow(__) = 销毁窗口，\n参数指定窗口句柄，也就是窗口对象的 hwnd 属性。\n销毁窗口不会触发窗口的 onClose 事件，\n但会触发 onDestroy 事件
+::User32.GetKeyState(__) = 自当前线程消息队列中检测指定按键的是否按下，不一定是物理按键的真实状态。\n仅可用于 U I线程，即使线徎或进程不是前台焦点，函数仍然可以工作，\n\n参数 @1 使用数值指定虚拟键码。\n返回值为 16位数值，最高位表示指定按键是否按下。\n可将返回值与 0x8000 做按位与运算取最高位。\n返回值的最低位表示 NumLk,CapsLk,ScrLk 的开关状态。\nkey.getState 内部调用此函数。
+::User32.GetAsyncKeyState(__) = 参数 @1 使用数值指定虚拟键码。\n返回值为 16位数值，最高位表示指定物理按键是否按下。\n应当将返回值与 0x8000 做按位与运算取最高位。\n\n物理按键状态并不一定等于特定界面线程中的按键状态。\n此函数忽略键盘映射，可用于非 UI 线程，\n并且不能用于检测按键开关状态（nmlk,scrlk,capslk）。\nkey.getStateX 内部调用此函数。
+::User32.GetCaretPos(__) = 获取输入光标的控件客户区坐标。\n参数必须是接收输出值的 ::POINT 结构体。\n成功返回非零值。\n\n使用 winex.caret 可获取屏幕坐标。
 ::User32.? = 可不用声明直接在此输入函数名并调用API函数\n\n一、传入参数规则：\n1、null参数不可省略\n2、32位整数类型，小于32位的整数、以及枚举类型都可以直接在API参数中写数值。\n3、对于任何数值类型的指针（输出参数）一律使用结构体表示，例如double * v 表示为{ double v }\n4、数组使用结构体表示\n5、所有结构体传给API的都是指针地址，都是输出参数并增加返回值\n\n二、返回值规则：\n1、返回值默认为int类型,可用 >>> 0 强制转为无符号数,\n2、可以使用[API尾标]改变返回值为其他类型\n\n三、所有可用的【API尾标】:\n::User32.ApiNameW() 切换到Unicode版本，字符串UTF8-UTF16双向转换\n::User32.ApiNameA() 切换到ANSI版本,字符串不作任何转换\n::User32.ApiNameL() 返回值为64位LONG类型\n::User32.ApiNameP() 返回值为指针类型\n::User32.ApiNameD() 返回值为double浮点数\n::User32.ApiNameF() 返回值为float浮点数\n::User32.ApiNameB() 返回值为C++中的8位bool类型\n注意【尾标】前必须是小写字母
 ::Kernel32.? = 可不用声明直接在此输入函数名并调用API函数\n\n一、传入参数规则：\n1、null参数不可省略\n2、32位整数类型，小于32位的整数、以及枚举类型都可以直接在API参数中写数值。\n3、对于任何数值类型的指针（输出参数）一律使用结构体表示，例如double * v 表示为{ double v }\n4、数组使用结构体表示\n5、所有结构体传给API的都是指针地址，都是输出参数并增加返回值\n\n二、返回值规则：\n1、返回值默认为int类型,可用 >>> 0 强制转为无符号数,\n2、可以使用[API尾标]改变返回值为其他类型\n\n三、所有可用的【API尾标】:\n::Kernel32.ApiNameW() 切换到Unicode版本，字符串UTF8-UTF16双向转换\n::Kernel32.ApiNameA() 切换到ANSI版本,字符串不作任何转换\n::Kernel32.ApiNameL() 返回值为64位LONG类型\n::Kernel32.ApiNameP() 返回值为指针类型\n::Kernel32.ApiNameD() 返回值为double浮点数\n::Kernel32.ApiNameF() 返回值为float浮点数\n::Kernel32.ApiNameB() 返回值为C++中的8位bool类型\n注意【尾标】前必须是小写字母
 ::FILETIME() = FILETIME 结构体,\n用于表示自 1601年1月1日 开始以 100纳秒 为间隔的数值。\n100纳秒 也就是 0.0001毫秒。\n\n此结构体包含 2 个 32 无符号位整数字段：dwLowDateTime,dwHighDateTime。\n\n标准库 fsys.time 可创建 ::FILETIME 兼容结构体，\n并且提供了更多功能

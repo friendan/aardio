@@ -1,2 +1,5 @@
 超级热键=hotkey.md
+虚拟键名称与代码=virtual-key-names.md
 输入法状态检测=imeState.md
+输入法状态提示=ime.stateBar.md
+发送文本=sendString.md

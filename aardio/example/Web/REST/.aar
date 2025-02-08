@@ -1,6 +1,4 @@
 ﻿入门=QuickStart.aardio
-AI 聊天助手=aiChat.aardio
-AI 聊天简版=aiChatCon.aardio
 HTTP 客户端=http.aardio
 自动模式匹配=match.aardio
 设置 HTTP 头=headers.aardio

@@ -1,6 +1,6 @@
 
 
-# aardio 编程语言快速入门 —— 语法速览
+# aardio 语法速览
 
 ## 第一个对话框
 
@@ -9,22 +9,20 @@ import win;
 win.msgbox("Hello, World!");
 ```
 
-win.msgbox 可以在对话框中将任意类型的参数显示为字符串，还可以显示表对象与数组的内容。
+win.msgbox 可将任意类型参数显示为字符串，可显示表对象与数组的内容。
 
 aardio 中除 raw,string,table,math,io,time,thread 等无需导入的内置库以外，其他所有库（标准库或扩展库）都必须先用 `import` 语句导入后才能使用。例如在上面我们用 `import win` 导入了窗口函数库。
 
 
 ##  第一个控制台程序
 
-一个最简单的控制台程序：
-
 ```aardio
 print("Hello, World!");
 ```
 
-在 aardio 中 [print](../../language-reference/builtin-function/print.md) 是一个模板输出函数，可以被重写并指向不同的实际输出函数，在默认情况下 print 函数向控制台窗口输出内容，并且可以自动打开控制台，在退出非界面线程前自动暂停控制台。
+在 aardio 中 [print](../../language-reference/builtin-function/print.md) 是一个模板输出函数，可以被重写并指向不同的实际输出函数，在默认情况下 print 函数向控制台窗口输出内容，并可自动打开控制台，在退出非界面线程前自动暂停控制台。
 
-一个更为正式与完整的控制台程序需要用到 console 库，示例：
+更为正式与完整的控制台程序需要用到 console 库，示例：
 
 ```aardio
 //导入库
@@ -74,7 +72,7 @@ winform.button.oncommand = function(){
 //显示窗口
 winform.show();
 
-//启动界面线程的消息循环，保持窗口显示，并响应用户操作
+//启动界面线程的消息循环（消息泵）
 win.loopMessage();
 ```
 
@@ -173,7 +171,7 @@ aardio 已经默认加载了一些常用的系统 DLL 对象，例如 `::User32`
 ```aardio
 var info = {
     INT size = 8;
-    INT time;
+    INT tick;
 }
 ::User32.GetLastInputInfo( info )
 ```
@@ -183,7 +181,7 @@ var info = {
 ```aardio
 var ok,info = ::User32.GetLastInputInfo( {
     INT size = 8;
-    INT time;
+    INT tick;
 } );
 ```
 
@@ -303,18 +301,18 @@ console.pause();
 ##  字符串
 
 ```aardio
-var rawString = "双引号包含的是原始字符串（ raw string literals ），不处理转义。
+var rawString = "双引号包含的是原始字符串，不处理转义。
 可直接包含换行符，不能包含回车符。
 可以用 "" 表示一个双引号。";
 
 
-var rawString2 = `反引号的包含的是原始字符串（ raw string literals ），不处理转义。
+var rawString2 = `反引号的包含的是原始字符串，不处理转义。
 可直接包含换行符，不能包含回车符。
 可以用 `` 表示一个反引号。`;
 
 
-var escapedString = '单引号包含的是转义字符串（ escaped string literals ） ，处理转义
-忽略回车换行，反斜杆作为转义符使用
+var escapedString = '单引号包含的是转义字符串，处理转义
+忽略回车换行，反斜杠作为转义符使用
 例如 \r\n 表示回车换行';
 
 
@@ -355,7 +353,6 @@ aardio 在很多地方都支持自动编码转换，例如调用 Unicode(UTF-16)
 
 在调用 `::User32.MessageBox` 时，aardio 会自动检测并优先使用 Unicode 版本的 `::User32.MessageBoxW` 函数。当然，也可以主动在 API 函数名后加上大写的 `W` 尾标声明这是 Unicode 版本函数（即使该函数名尾部并没有 `W`，也可以添加 `W` 尾标）。
 
-  
 
 ##  字符串连接
 
@@ -370,6 +367,13 @@ var str = "字符串1" + "字符串2";
 
 //用 string.concat() 函数连接支持多参数，支持 null 值
 var str = string.concat("字符串1","字符串2")
+```
+
+##  数组转字符串
+
+```aardio
+//合并字符符，参数 2 指定换行符作为分隔符，单引号包含转义字符串
+var str = string.join({"字符串1","字符串2"},'\n')
 ```
 
 ##  读写文件
@@ -491,7 +495,7 @@ table（表）是 aardio 中唯一的复合数据类型，除了非复合的基�
 
 2.  表可以包含有序数组
 
-    如果表中不定个数的成员的“键”是从1开始、有序、连续的数值，那么这些成员构成一个有序数组。aadio 中如果不加特别说明，数组一般特指有序数组，所有数组函数默认都是用于有序数组。
+    如果表中不定个数的成员的“键”是从1开始、有序、连续的数值，那么这些成员构成一个有序数组。aardio 中如果不加特别说明，数组一般特指有序数组，所有数组函数默认都是用于有序数组。
 
     ```aardio
     //在表中创建数组
@@ -522,7 +526,7 @@ table（表）是 aardio 中唯一的复合数据类型，除了非复合的基�
 
 4. 表的常量字段
 
-    注意如果键名以下划线开始，则为常量字段（值为`非 null`时不可修改） —— 可通过元属性 `_readonly` 禁用此规则，详细说明请参考[语法手册](../../language-reference/datatype/table/meta.md#_readonly)。例如 `var tab = {}; tab@ = {_readonly = false} //添加元表设置元属性 _readonly 为 false  `。
+    如果键名以下划线开始，则为常量字段（值为`非 null`时不可修改） —— 可通过元属性 `_readonly` 禁用此规则，详细说明请参考[语法手册](../../language-reference/datatype/table/meta.md#_readonly)。例如 `var tab = {}; tab@ = {_readonly = false} //添加元表设置元属性 _readonly 为 false  `。
 
 5. 表的类 JavaScript 写法
 
@@ -542,7 +546,7 @@ table（表）是 aardio 中唯一的复合数据类型，除了非复合的基�
 
     如果函数的参数是一个普通的表构造器（ 构造表对象的字面值 ），并且第一个元素以等号分隔键值对，则可省略最外层的 `{}` 。例如 `console.dump({a = 123,b=456})` 可以简写为 `console.dump(a = 123,b=456)`。
 
-    这种写法很像一些编程语言里的命名参数，但在 aardio 里并没有命名参数，这种写法在 aardio 里创建了一个表对象作为唯一的调用实参。
+    这种写法很像命名参数，但 aardio 并没有命名参数，本质只是创建了一个表对象作为唯一的调用实参。
     
     注意：
 
@@ -579,7 +583,7 @@ var item = tab[["a"]];
 
 tab = null;
 
-//无论操作对象存储的是什么值，直接下标 [[]]  操作失败返回 null 而不是报错。
+//无论操作对象存储的是什么值，直接下标 [[]]  失败返回 null 而不是报错。
 item = tab[["a"]];
 ```
 
@@ -587,13 +591,13 @@ item = tab[["a"]];
 
 未定义的变量值默认为 null 。  
   
-如果对象本身是 null 值，使用点号、普通下标获取成员值会报错，改用直接下标 `[[]]` 则不会报错，而是会返回 null 值。
+如果对象本身是 null 值，对其使用点号、普通下标会报错，对基使用直接下标 `[[]]` 则不会报错而是会返回 null 值。
 
 用 # 操作符获取 null 值长度返回 0 而不是报错。
 
 将表对象的成员赋值为 null 就可以删除该成员。
 
-在逻辑运算中，null 值为 false。
+在条件判断中，null 值为 false。
 
 
 ##  取数组或字符串长度
@@ -611,6 +615,41 @@ print("null 值长度为 0",#n);
 
 使用 `#` 操作取数组或字符串的值，也可以取 null 值的长度（ 返回 0 ）。
 
+## 日期时间
+
+```aardio
+//获取系统运行毫秒数
+var tk = time.tick();
+
+//获取当前时间
+var now = time()
+
+/*
+创建时间对象。
+- 参数 @1 可以是数值时间戳，字符串
+- 参数 @2 指定时间格式化串，省略则默认为'%Y/%m/%d %H:%M:%S'，字符串解析为时间的规则宽松，空白、标点、字母、中文等都可以匹配任意个数同类字符。忽略首尾不匹配的字符以及完整日期后不匹与的字符。
+- 可选用参数 @3 指定格式化语言，例如 "enu"
+*/
+var tm = time("2017-05-27T16:56:01Z",'%Y/%m/%d %H:%M:%S') 
+
+//自时间戳（秒）创建时间对象
+var tm2 = time(123456)
+
+//转换为 UTC 时间
+var tm3 = tm.utc(true)
+
+//解析 RFC 1123 格式，RFC 850 格式时间
+var tm3 = time.gmt("Sun,07Feb2016 081122 +7")
+
+//解析 ISO8601 时间
+var tm4 = time.iso8601("20170822 123623 +0700")
+
+//解析 ISO8601 时间（14 位数字或 12 位数字）
+var tm5 = time("20170822123623")
+
+print(tm5);
+```
+
   
 ##  if 语句
 
@@ -622,7 +661,7 @@ if (enabled) {
 }
 ```
 
-注意在逻辑运算中，非 `0`、非 `null`、非 `false` 为 `true`，反之为 `false`。
+注意在条件判断中，非 `0`、非 `null`、非 `false` 为 `true`，反之为 `false`。
 
 如果要准确判断一个变量的值是否为 `true` 或 `false` ，则应使用恒等操作符，如下：
 
@@ -647,13 +686,13 @@ console.pause(true);
 
 ##  逻辑操作符
 
-逻辑非 既可以用 `not` 也可以用 `!` 。
+逻辑非操作符可以使用 `not` 或 `!` 。
 
-逻辑与 既可以用 `and`  也可以用 `&&` 或者 `?` 。
+逻辑与操作符可以使用 `and`  、`&&` 或者 `?` 。
 
-逻辑或 既可以用 `or`  也可以用 `||` 或者 `:`  。
+逻辑或操作符可以使用 `or` 、 `||` 或者 `:`  。
 
-aardio 语句在设计时试图兼容其他语言的一些基本语法，所以很多语法有类似上面的替代写法。
+为了兼容其他语言的习惯,aardio 提供了多种逻辑操作符的写法。
 
 ##  三元运算符
 
@@ -687,7 +726,7 @@ var num,str = add(1, 2);
 var str = tostring( ( add(1, 2) )  );
 ```
 
-> 要特别注意 aardio 函数如果指定默认参数，形参中指定的默认值只能定义为布尔值、字符串、数值之一，其他默认值必须在函数体中编码指定。
+> 需要注意的是: aardio 函数的默认参数只能是布尔值、字符串或数值,其他类型的默认值需要在函数体内部进行处理。
 
 ## for 循环语句（ Numeric for ）
 
@@ -707,7 +746,7 @@ for(i = initialValue;finalValue;incrementValue){
 - 循环增量 `incrementValue` 用可负数表示递减循环，省略则默认为 1 。 
 - `finalValue` 必须是确定的数值 。
 
-【重要】 **aardio 使用基于数值范围的 `for` 循环，全部循环参数都必须是数值表达式，没有`条件（condition-expression）`与`迭代（iteration-expression）`部分。** 
+【重要】 **aardio 使用基于数值范围的 `for` 循环，所有循环参数都必须是数值表达式，不支持`条件（condition-expression）`和`迭代（iteration-expression）`。** 
 
 示例：  
 
@@ -779,7 +818,7 @@ while (i < 100) {
 ```aardio
 import console;
 
-//用法 1: 循环参数中使用 var 语句、循环前执行语句、条件判断语句
+//用法 1: 
 while(
     var i; //初始化循环变量
     i =  console.getNumber( "请输入数值,输入100退出:" ); //每次循环前要执行的单个语句
@@ -789,7 +828,7 @@ while(
 }
 
 
-//用法 2: 循环参数中仅保留一个 var 语句，其他参数省略。
+//用法 2: 仅保留一个 var 语句，其他参数省略。
 while(
     var i =  console.getNumber( "请输入数值,输入0退出:" )
     ) {
@@ -798,13 +837,13 @@ while(
 
 
 
-//用法 3:  循环参数中省略 var 语句（分隔的分号不能省略），仅保留循环前执行语句、循环条件表达式
+//用法 3:  省略 var 语句（分号不能省略）
 var i = 0;
 while( ;i++; i<10 ) {
     console.log(i)
 }
 
-//用法 4: 循环参数中省略省略 var 语句与循环前执行语句，仅保留循环条件表达式
+//用法 4: 仅保留循环条件表达式
 while(i>0){
     i--;
     console.log(i);
@@ -821,7 +860,7 @@ console.pause(true);
 ```aardio
 import console;
 
-//要注意循环参数中条件表达式在后，而循环增量语句位置在前，并且增量语句在每次循环之前执行。
+//while var 循环参数中条件表达式在后，而循环增量语句位置在前，增量语句在每次循环之前执行。
 while( var i = 0; i++ ; i < 5  ) {
     console.log( i )
 }
@@ -833,9 +872,9 @@ console.pause(true);
 ##  break label, continue label, break N, continue N 语句
 
 
-break 语句中断并退出当前循环语句。
+break 语句中断当前循环。
 
-continue 语句跳过当前循环体剩下的部分，继续执行下一次循环。
+continue 语句跳过当前循环体剩下的部分，继续下一次循环。
 
 aardio 也支持 break N,continue N 中断或继续指定的上级循环，N 表示循环层级（1 为本层循环，2 为上层循环，依次计数 …… ）。
 
@@ -878,7 +917,7 @@ class className{
     //属性
     propertyName = "value";
    
-    //定义方法(成员函数)，必须写为名值对格式，不能等略等号或 function 关键字。
+    //定义方法(成员函数)，必须写为名值对格式，不能省略等号或 function 关键字。
     method = function(v){
         this.value = this.value + v;
         return this.value;
@@ -901,17 +940,11 @@ var v = object.method(5);
 var num = className.staticNum;
 ```
 
-类内部可以用 `this` 访问当前创建的实例对象。
-
-类总是先调用构造函数 `ctor` 才会初始化其他成员。
-
-
-每个类都有自己的名字空间。
-
-类创建的所有实例共享同一名字空间。
-
-类名字空间的成员也就是类的静态成员。
-
+- 类内部可以用 `this` 访问当前实例对象。
+- 类总是先调用构造函数 `ctor` 然后再初始化其他成员。
+- 每个类都有自己的名字空间。
+- 类创建的所有实例共享同一名字空间。
+- 类名字空间的成员也就是类的静态成员。
 
 ## self,this,owner 对象
 
@@ -919,9 +952,9 @@ var num = className.staticNum;
 
 `this` 在类内部表示当前创建的实例对象。
 
-每个函数都有自己的 `owner` 参数（ 无法使用外部函数的 `owner` 参数 ）。如果用点号作为成员操作符获取并调用对象的成员函数，则点号前面的对象是被调用成员函数的 `owner` 参数，否则被调用函数的 `owner` 参数为 `null`。例如 `obj.func()` 调用 `obj` 的成员函数 `func` ，则 `obj` 是 `obj.func` 的 `owner` 参数。
+每个函数都有自己的 `owner` 参数。如果用点号作为成员操作符获取并调用对象的成员函数，则点号前面的对象是被调用成员函数的 `owner` 参数，否则被调用函数的 `owner` 参数为 `null`。例如 `obj.func()` 调用 `obj` 的成员函数 `func` ，则 `obj` 是 `obj.func` 的 `owner` 参数。
 
-注意一个独立的 aardio 代码文件编译后也相当于一个匿名的函数。独立运行的 aardio 代码文件 `owner` 参数默认为 `null` ，使用 `import` 语句加载的库文件， `owner` 参数为加载路径、或资源文件数据。
+一个独立的 aardio 代码文件编译后也相当于一个匿名的函，其 `owner` 参数默认为 `null` 。使用 `import` 语句加载库文件时， `owner` 参数为库路径（ 或资源文件数据 ）。
 
 `owner` 在元方法中表示左操作数。
 

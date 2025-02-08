@@ -35,7 +35,5 @@ var md = turndownService.turndown(
 
 console.log(md);
 
-//Markdown 转换为 HTML
-//import string.gfmark; 
-//var html = string.gfmark.render(md);
-//console.log(html);
+//Markdown 转换为 HTML: file://~/example/Text/Markdown/markdown2html.aardio
+//Word 转换为 HTML: file://~/example/WebUI/web.view/OtherApps/docx.aardio

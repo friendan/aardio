@@ -1,0 +1,77 @@
+/*
+调用 Word VBA: doc://example/Languages/VBA%20JSA/Word.html
+Word 修改集合值: doc://example/COM/Advanced/Collection.html
+*/
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="web.view（WebView2）- 显示 Office 或 WPS 文档（*.docx）";right=966;bottom=622)
+winform.add()
+/*}}*/
+
+import web.view;
+var wb = web.view(winform);
+ 
+//方法一：使用 mammoth.js 转换 Word 文档（*.docx）为 HTML 格式
+//HTML 转 Markdown:  file://~/example/Web/HTML/html2md.aardio
+wb.html = /********
+<!doctype html>
+<html><head>
+	<meta charset="utf-8"> 
+	<script src="https://cdn.bootcdn.net/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+	<script> 
+	loadWord = async(docData)=>{  
+		if(!docData) return;
+		
+		var buf = new Uint8Array(docData.data).buffer;
+		
+		var result = await mammoth.convertToHtml({arrayBuffer:buf});
+		document.body.innerHTML = result.value;
+	}
+	</script>
+</head>
+<body style="margin:50px"></body></html>
+********/
+
+/*
+//方法二：使用 docx-preview.js 预览 Word 文档（*.docx） 
+wb.html = /********
+<!--lib uses jszip-->
+<script src="https://cdn.bootcdn.net/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+<?
+//实际使用请将 docx-preview.min.js 下载到本地或直接写到这里
+import web.rest.github;
+var js = web.rest.github.getContent("VolodymyrBaydalka/docxjs/blob/master/dist/docx-preview.min.js")
+print(js);
+?>
+</script>
+<script> 
+        
+loadWord = async(docData)=>{  
+	if(!docData) return;
+	
+	var docData = new Uint8Array(docData.data).buffer; 
+	await docx.renderAsync(docData, document.getElementById("container")) 
+}
+	
+</script>
+<body> 
+    <div id="container"></div> 
+</body>
+********/
+*/
+
+wb.wait();
+
+wb.xcall("loadWord", //免费但显示效果不及 Word
+	string.loadBuffer("/Microsoft Word 文档.docx")
+)
+
+/*
+//方法三：可预览 10 MB 内 Office 文件，限外网可访问的 docx 文件网址
+wb.go("https://view.officeapps.live.com/op/view.aspx",// https://view.xdocin.com/view 
+	{ src = "docx 文件网址" });
+*/
+
+winform.show();
+win.loopMessage();

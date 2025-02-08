@@ -1,0 +1,8 @@
+﻿调用大模型 API=aiChat.aardio
+调用本地函数=function-calling.aardio
+AI 搜索=search.aardio
+Token 计数=llmTokens.aardio
+自动续写补全=aiHotkey.aardio
+aardio 编程助手=aardioAgent.aardio
+lmarena=lmarena.aardio
+Ollama 本地模型=ollama.aardio

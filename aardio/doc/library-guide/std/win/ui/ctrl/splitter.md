@@ -1,5 +1,7 @@
 # 使用拆分控件( splitter )
 
+> [控件参考](../../../../../library-reference/win/ui/ctrl/splitter.html) [使用范例](../../../../../example/Windows/Controls/splitter.html)
+
 ## 使用拆分条控件的要点
 
 1. 使用控件的 split 函数拆分多个控件。

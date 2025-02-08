@@ -1,0 +1,159 @@
+/*
+高级选项卡入门指南: doc://library-guide/std/win/ui/tabs/_.md 
+web.view 快速入门指南: doc://library-guide/std/web/view/_.html
+多选项卡切换 flexbox 在线工具: doc://example/WebUI/web.view/OtherApps/flexbox.aardio
+*/
+import fonts.fontAwesome;
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="高级选项卡操作浏览器控件示例";right=1040;bottom=642;bgcolor=16777215;border="none")
+mainForm.add(
+caption={cls="bkplus";text="AI";left=35;top=12;right=92;bottom=31;color=15780518;dl=1;dt=1;font=LOGFONT(h=-16);z=5};
+logo={cls="bkplus";text='\uF00B';left=6;top=9;right=35;bottom=34;color=15780518;dl=1;dt=1;font=LOGFONT(h=-18;name='FontAwesome');z=4};
+nav1={cls="plus";text="Gemini";left=86;top=5;right=195;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF007';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=3};
+nav2={cls="plus";text="Poe";left=196;top=5;right=283;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF288';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=8};
+nav3={cls="plus";text="ChatGPT";left=283;top=5;right=400;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF0E6';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=6};
+nav4={cls="plus";text="lmarena";left=401;top=5;right=511;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF24E';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=7};
+nav5={cls="plus";text="perplexity";left=512;top=5;right=639;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF002';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=10};
+nav6={cls="plus";text="translate";left=639;top=5;right=758;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF268';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=9};
+nav7={cls="plus";text="example";left=759;top=5;right=878;bottom=40;align="left";color=16777215;dl=1;dt=1;font=LOGFONT(h=-16);iconStyle={align="left";font=LOGFONT(h=-19;name='FontAwesome');padding={left=12;top=4}};iconText='\uF268';notify=1;paddingLeft=1;paddingRight=1;paddingTop=3;textPadding={left=39;bottom=1};x=0.5;y=0.2;z=11};
+tabPanel={cls="static";left=0;top=40;right=1040;bottom=643;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;z=1};
+titleBar={cls="bkplus";left=0;top=0;right=1042;bottom=41;bgcolor=14977280;dl=1;dr=1;dt=1;z=2}
+)
+/*}}*/
+
+import win.ui.simpleWindow;
+win.ui.simpleWindow( mainForm );
+
+import win.ui.tabs;
+var tabs = win.ui.tabs( mainForm.nav1,mainForm.nav2,mainForm.nav3,mainForm.nav4,mainForm.nav5,mainForm.nav6,mainForm.nav7  );
+	
+import web.view; 
+/*
+这里的 mainForm.tabPanel 是一个 static 控件，
+如果是 custom 控件则会被 win.ui.tabs 自动设为标签页容器。
+用 custom 控件创建的标签页容器支持多子窗口，也就支持在子窗口创建多个 web.view 控件以实现打开多个网页。
+如果希望只创建一个 web.view 控件实例，用于切换多个网址，可以用下面的方法。
+*/
+var wb = web.view(mainForm.tabPanel,{
+	extensions = true;//启用扩展
+	language =  "zh-CN"; //中文语言
+	startArguments = {
+		proxyServer = "SOCKS5://127.0.0.1:1081";//指定代理服务器
+	};
+	userDataDir = ..io.appData("/aardio/webview2/user-data/" + ..io._exefile);//会话数据目录
+})
+
+wb.onDocumentInit = function(url){ 
+	if(url=="https://lmarena.ai/?model=claude-3-5-sonnet-20241022"){
+		return;
+	}
+	
+	//恢复并启用所有选项
+	tabs.disabledText = null;
+} 
+
+tabs.onSelchange = function(idx,tab,form){
+	//当前选项切换到禁用状态并显示动画文本，其他选项自动禁止响应事件。
+	tabs.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'} 
+	
+	//因为 tab 已被禁用，默认不会再调用 tab.oncommand
+	tab.oncommand();
+}	
+
+mainForm.nav1.oncommand = function(){
+	wb.go("https://aistudio.google.com/prompts/new_chat")
+}
+
+
+mainForm.nav2.oncommand = function(){
+	wb.go("https://poe.com/aardio-ai")
+}
+
+
+mainForm.nav3.oncommand = function(){
+	wb.go("https://chatgpt.com/")
+}
+
+mainForm.nav4.oncommand = function(){
+	
+	wb.go("https://lmarena.ai/?model=claude-3-5-sonnet-20241022");
+	
+	//wb.waitEle2 可跨网页等待，网址变更不会退出。
+	wb.waitEle2("#notice_markdown");
+	wb.doScript(`document.querySelectorAll("#notice_markdown").forEach(node => {
+    	node.style.display = "none";
+	});`);
+	
+	//wb.waitEle 限制在单个网页内有效，打开其他网页则会取消等待。
+	wb.waitEle("#leaderboard_markdown",`
+	document.querySelectorAll("#leaderboard_markdown").forEach(node => {
+    	node.style.display = "none";
+	});`); 
+ 	
+	wb.waitEle("#ack_markdown",`
+	document.querySelectorAll("#ack_markdown").forEach(node => {
+    	node.style.display = "none";
+	});`);
+	
+	wb.waitEle("footer","this.style.display='none'");
+	
+	tabs.disabledText = null;
+} 
+
+mainForm.nav5.oncommand = function(){
+	wb.go("https://perplexity.ai")
+}
+
+import win.clip;
+mainForm.nav6.oncommand = function(){
+	var txt = win.clip.read();
+	if(#txt && !string.find(txt,":") && string.find(txt,"\a") ){
+		txt = inet.url.encode(txt);
+	}
+	else {
+		txt = ""
+	}
+	
+	wb.go("https://translate.google.com/?hl=zh-CN&sl=en&tl=zh-CN&op=translate&text="+txt);
+	wb.waitEle("header","this.parentNode.style.display = 'none'");
+  	wb.waitEle("body > c-wiz > div > div","this.style.display = 'none'");
+  	wb.waitEle(".cJ1Ndf","this.style.display = 'none'");
+  	wb.waitEle(".VlPnLc","this.style.display = 'none'");
+  	wb.waitEle("nav","this.parentNode.style.display = 'none'; 
+  		document.documentElement.scrollTop = document.documentElement.scrollHeight");
+} 
+
+mainForm.nav7.oncommand = function(){  
+	wb.go("https://www.example.com" ); 
+} 
+
+wb.cdp("Page.enable");
+wb.cdpSubscribe("Page.javascriptDialogOpening",function(dlg){   
+	return function(){
+		wb.cdp("Page.handleJavaScriptDialog",{accept=true})
+		
+		if(tabs.selText=="lmarena"){
+			wb.doScript(`document.documentElement.scrollTop = document.documentElement.scrollHeight;`);
+		}
+	} 
+})  
+
+//设置选项卡样式
+tabs.skin({
+	foreground={
+		active=0xFFFFFFFF;
+		default=0x00FFFFFF;
+		hover=0x38FFFFFF
+	};
+	color={
+		default=0xFFFFFFFF; 
+	};
+	checked={
+		foreground={default=0xFFFFFFFF;}; 
+		color={default=0xFF42A875;};
+	}
+})
+
+mainForm.show();
+return win.loopMessage(); 

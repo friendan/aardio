@@ -1,3 +1,6 @@
-UIA=UIA.aardio
+﻿入门=UIA.aardio
+查找节点=Find.aardio
+获取节点属性=UIA-Property.aardio
+获取文本=textPattern.aardio
+操作计算器=calc.aardio
 UIAComWrapper=UIA3.aardio
-属性=UIA-Property.aardio

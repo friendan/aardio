@@ -1,12 +1,20 @@
 ﻿import web.mshtml;
 import fsys.codepage;
+import string.html;
+import inet.http;
 
 namespace web;
 
-var wb = ..web.mshtml();
+var wb;
 
 class turndown{
+	
 	ctor(...){
+		if(!wb){
+			wb = ..web.mshtml();
+			wb.loadcode(`<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge" /><style type="text/css">html,body{ height:100%; margin:0; }</style><script type="text/javascript"><?=owner.js?></script></head><body></body></html>`,{js=$"~\lib\web\turndown\turndown.js"})	
+		}
+		
 		if(type.isString(...)){
 			this = wb.jsNew("TurndownService",wb.eval(...) );
 		}
@@ -135,24 +143,93 @@ for (var j = 0; j < allElements.length; j++) {
 		this[["turndown"]] = this.turndownGfm;
 	};
 } 
+
+turndown.default = function(){
+	
+	var turndownService = web.turndown( codeBlockStyle = "fenced" );
+	
+	turndownService.remove('script');
+	turndownService.remove('style');
+	turndownService.remove('noscript');	
+	
+	//启用 gfm（GitHub Flavored Markdown）插件。
+	turndownService.useGfm()
+	
+	// 添加自定义规则处理带类名的代码块
+	turndownService.addRule('codeBlock', "{
+    	filter: function(node) {
+        	return node.nodeName === 'PRE' && node.classList.contains('code');
+    	},
+    	replacement: function(content, node) {
+        	var language = node.classList.item(1)  || ''; 
+        	language = language.replace(/^language-/, '');
+        	return '```' + language + '\n' + content.trim() + '\n```';
+    	}
+	}");
+	
+	return turndownService; 
+}
+
+turndown.httpGet = function(url){
+
+	if(type(url)==="table" && #url){
+		url = url[1];
+		url = url[["url"]] || url;
+		if(url && ..string.find(url,"(https?\://<www\.>?aardio\.com/zh\-cn/doc/?$") ){
+			url = url[2] || url;
+		}
+	}
+	
+	var snippet;
+	if(url[["url"]]){
+		if(url[["text"]]){
+			return url[["text"]],"text",url[["url"]];
+		}
+		
+		snippet = url[["snippet"]];
+	}
+	
+	url = url[["url"]] || url;
+	if(!#url) return; 
  
-wb.loadcode(`<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<style type="text/css">
-html,body{ height:100%; margin:0; } 
-</style>
-<script type="text/javascript">
-<?=owner.js?>
-</script>
-</head>
-<body></body>
-</html>`,{js=$"~\lib\web\turndown\turndown.js"})
+	var docUrl = ..string.match(url,"(https?\://<www\.>?aardio\.com/zh\-cn/doc/\S+)\.<html\.md>|<html>")
+	if( docUrl ){
+		url = docUrl + ".html.md"; 
+		var r,e = ..inet.http.get(url);
+		if(r) return r,,url; 	
+		return null,e;
+	}
+	else{ 
+		var html,err = ..inet.http.get(url);
+		if(html){ 
+			if(!_WIN10_LATER) return ..string.html.toText(html),"text",url;
+			
+			var md; 
+			try { 
+				var turndownService = ..web.turndown.default();
+				md = turndownService.turndown( 
+					html
+				); 
+			} 
+			catch(e){
+				err = e;
+			}
+			
+			if(#md) return md,,url 
+		}
+		
+		if(snippet){
+			return snippet,"text",url;
+		}
+		return null,err;	
+	}
+}
+
 
 /*****intellisense()
 web.turndown() = 创建 TurndownService 对象，用于将 HTML 转换为 Markdown。\n参数 @1 可用 aardio 表对象指定选项，\n也可用字符串参数指定包含描述 JS 选项对象的 JS 代码。\n!stdWebTurndown.
+web.turndown.default() = 使用默认设置创建 TurndownService 对象，用于将 HTML 转换为 Markdown。\n启用围栏样式代码块，默认移除 script,style,noscript 等节点。\n!stdWebTurndown.
+web.turndown.httpGet(__) = 获取参数 @1 指定网址的内容并转换为 Markdown 格式或者文本格式。\n参数 @1 也可以指定包含 url 字段的对象，或这样的对象数组。\n参数为 包含 url 字段的对象时如果同时包含 text 字段，则直接自 text 字段获取网页文本。\n如果指定数组参数，则仅取第一个数组成员作为参数。\n如果参数为空数组、空字符串、null 则返回 null。\n\n低于 Win10 的系统返回文本格式，第二个返回值为 "text"，\n否则返回 Markdown 格式内容。\n如果成功转换为 Markdown，则第二个返回值为 null，第三个返回值为实际抓取的 URL。\n此函数执行失败返回  null,错误信息 。
 end intellisense*****/
 
 /*****intellisense(!stdWebTurndown)

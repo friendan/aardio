@@ -1,7 +1,7 @@
-//web.view( WebView2 浏览器控件) - 禁止弹窗
+//web.view( WebView2 浏览器控件) - 拦截弹窗
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="禁止弹窗";right=818;bottom=507)
+var winform = win.form(text="web.view - 拦截网页弹窗";right=818;bottom=507)
 winform.add()
 /*}}*/
 
@@ -11,7 +11,7 @@ var wb = web.view(winform);
 //弹出新窗口触发
 wb.onNewWindow = function(url){
 	
-	//耗时操作应返回异步自动执行的函数（提前结束 onNewWindow）
+	//耗时操作应返回异步自动执行的函数（提前结束 onNewWindow ）
 	return function(){ 
 		//如果打开的是 file: 前缀网址，例如拖放文件到网页上。
  		var filePath = inet.url.getFilePath(url)
@@ -19,7 +19,7 @@ wb.onNewWindow = function(url){
  			winform.msgbox(filePath,"本地文件"); 	
  		}
  		else {
- 		 	//用 wb.location 代替 wb.go 以发送 HTTP referrer 请求头（引用网址）。 
+ 		 	//用 wb.location 代替 wb.go 跳转网页则当前页面设为 HTTP referrer 请求头。 
 			wb.location = url;
  		} 
  	}
@@ -27,9 +27,12 @@ wb.onNewWindow = function(url){
  
 wb.html = /**
 <!doctype html>
-<html><head><base target="_blank" /></head>
+<html><head>
+<base target="_blank" />
+</head>
+
 <body style="margin:50px">
-<a href="http://www.aardio.com"  ><span><span>aardio.com</span></span></a>
+<a href="http://www.aardio.com">aardio.com</a>
 <button onclick="window.open('http://www.aardio.com')" >aardio.com</button>
 **/
 

@@ -12,6 +12,8 @@ static3={cls="static";text="自动找图代码：";left=8;top=14;right=244;botto
 )
 /*}}*/
 
+//屏幕找图范例: doc://example/Automation/ComputerVision/findImage.example.html
+
 import mouse;
 import soImage; 
 import winex;

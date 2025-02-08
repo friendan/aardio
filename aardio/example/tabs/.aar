@@ -1,6 +1,7 @@
-高级选项卡=QuickStart.aardio
+﻿入门=QuickStart.aardio
 垂直选项卡=tabs-v.aardio
 水平选项卡=tabs-h.aardio
+操作浏览器控件=web.view.aardio
 实现弹出菜单=popup.aardio
 实现下拉框=dropdown.aardio
 自动完成=autoComplete.aardio

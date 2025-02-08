@@ -1,4 +1,6 @@
-﻿原子窗体一例=atom.aardio
+﻿文件拖放=onDropFiles.aardio
+系统拖放=DnD.aardio
+原子窗体一例=atom.aardio
 设置鼠标指针=cur.aardio
 毛玻璃效果=aero.aardio
 窗口动画演示=animate.aardio
@@ -9,4 +11,3 @@
 通知窗口 =popup.aardio
 跨进程调用函数=process.command.aardio
 透明渐变标题栏=simpleWindow3.aardio
-文件拖放=DnD.aardio

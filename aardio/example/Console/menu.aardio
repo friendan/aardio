@@ -1,0 +1,26 @@
+//控制台菜单
+import console;
+
+//1. 创建控制台菜单，用户输入数值后回车选择菜单项。
+var choiceIndex,choiceText = console.choice( {
+    "新建文件";
+    "打开文件";
+    "保存文件";
+    "退出程序";
+},"请输入序号：");
+ 
+console.log("您选择了:",choiceText,"索引号:",choiceIndex);
+
+//2. 创建控制菜单，用户按方向键选择菜单项。
+console.log("请使用方向键选择,回车确认,ESC 键取消:");
+
+var choiceIndex,choiceText = console.choice2( {
+    "新建文件";
+    "打开文件";
+    "保存文件";
+    "退出程序";
+});
+ 
+console.log("您选择了:",choiceText,"索引号:",choiceIndex);
+
+console.pause();

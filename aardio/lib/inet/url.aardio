@@ -29,7 +29,7 @@ appendExtraInfo = function(url,param){
 	var turl = split(url);
 	if(turl) {
 		if( #turl.extraInfo ) turl.extraInfo = turl.extraInfo + "&" + param;
-		else turl.extraInfo = "?" + param;
+		else turl.extraInfo =  param;
 		return tostring(turl);	
 	}
 	
@@ -128,8 +128,16 @@ stringifyParameters = function(param,cp,cmp){
 	if( lst[#lst] == '&' ) ..table.pop(lst)
 	return ..string.join(lst ); 
 } 
+     
+sortParameters = function(p,cmp){
+	var t = p;
+	if(type(t)!="table") t = splitParametersCs(p);
+	return stringifyParameters(t,,cmp)
+}
 
-splitParameters = function(param,delimiter,cp,arrKey){ 
+splitParametersCs = lambda(p,d,c,a)splitParameters(p,d,c,a,true)
+
+splitParameters = function(param,delimiter,cp,arrKey,caseSensitive){ 
     if( (param[1] == '?'#) && (delimiter===null) ) param = ..string.right(param,-2);
     
 	var list,k,v = {@{_readonly=false;_type="object"}};
@@ -138,7 +146,7 @@ splitParameters = function(param,delimiter,cp,arrKey){
 		k = #kv>0 ? decode(kv[1],cp) : kv[1];
 		if(!k) continue;
 		
-		k = ..string.lower(k);
+		if(!caseSensitive) k = ..string.lower(k);
 		if(#kv==2) {
 			
 			v = decode( kv[2],cp );
@@ -204,7 +212,8 @@ var _urlinfo = {
 		if(type(owner.extraInfo)=="table"){
 			push(t,"?",stringifyParameters(owner.extraInfo));
 		}
-		else {
+		elseif(owner.extraInfo) {
+			if(owner.extraInfo[1]!='?'#) push(t,"?");
 			push(t,owner.extraInfo);
 		}
 		
@@ -216,7 +225,7 @@ stringify = function(info){
 	return tostring( ..table.assign( split(),info) );
 }
 
-split = function(url){
+split = function(url,sortParam){
 	var info = {
  		INT size = 60;
  		ptr scheme;
@@ -254,10 +263,14 @@ split = function(url){
 		
 		if(#r.extraInfo){
 			var a,b = ..string.match(r.extraInfo,"(.*)#(.*)$")
-			if(a && b) {
+			if(a && b) { 
 				r.extraInfo = #a ? a : null;
 				r.location = #b ? b : null;
 			}
+				
+			if(sortParam && #r.extraInfo){
+				r.extraInfo = sortParameters(r.extraInfo); 
+			} 
 		}
 		return r;
 	}
@@ -298,11 +311,15 @@ append(.(url目录,url子路径,->->->) = 支持不定个数参数。\n第一个
 canonicalize(__/*URL*/) = URL规范化转换\n扩展和适当置换路径中包含的所有 .. 和 . 
 canonicalize("当前URL",_URL__) = URL规范化转换\n参数@3指定转换选项
 hashNum(__/*url*/) = 返回哈希数值
-split(__/*输入URL*/) = 拆分URL返回包含协议、路径、端口、参数等的表对象\n返回的表对象可以调用 tostring 重新生成 URL\n可传入空值以获取用于拼接URL的表
-split() = !inet_urlcrack. 
+split( = 拆分 URL 获取各部分的信息
+split(.(url,sortExtraInfo) = 拆分 URL 返回包含协议、路径、端口、参数等的表对象。\n返回的表对象可以调用 tostring 重新生成 URL。\n参数 @url 可传入空值以获取用于拼接 URL 的表。\n如果可选的参数 @sortExtraInfo 为 true ，\n则将 extraInfo 包含的请求参按以字段名称的字典序重新排序。
+split() = !inetUrlInfo. 
 stringify(urlInfo) = @.stringify(\n	scheme = "https";\n	user = "";\n	password ="";\n	host ="__/*使用参数表构建并返回URL字符串*/";\n	location = "";\n	extraInfo = {\n		name = value;\n	};\n)
-splitParameters( = 拆分URL参数并返回名值对组成的表对象\n名字都转换为小写,如果名字尾部有[]或[键名]则值转换为表\n如果只指定名字不指定值,则值为空字符串
+sortParameters(.(URL参数,排序函数) = 重新排序 URL 参数，首字符为问号时自动移除。\n参数 @1 可以指定包含名值对的表或者字符串格式的 URL 请求参数。\n可选用参数 @2 指定排序函数，排序函数的要求与用法与 table.eachName 相同
+splitParameters( = 拆分URL参数并返回名值对组成的表对象。\n名字都转换为小写，改用 inet.url.splitParametersCs 保留大小写。\n如果名字尾部有[]或[键名]则值转换为表。\n如果只指定名字不指定值,则值为空字符串
 splitParameters(.(URL参数,分隔符,输入UTF8编码,数组键名) = 拆分URL参数并返回表对象。\n分隔符支持模式语法,默认为'\&&'。\n如果不指定分隔符,并且首字符是?号，此函数自动移除首字符。\n使用 URL 解码键值文本,参数 @3 指定解码前是否UTF8编码，不指定则自动检测。\n参数 @4 可选指定一个总是返回数组值的参数名称数组，参数名尾部如果有点号加数值则自动移除。
+splitParametersCs( = 拆分URL参数并返回名值对组成的表对象。\n名字保留原大小写不变，如果名字尾部有[]或[键名]则值转换为表。\n如果只指定名字不指定值,则值为空字符串
+splitParametersCs(.(URL参数,分隔符,输入UTF8编码,数组键名) = 拆分URL参数并返回表对象。\n分隔符支持模式语法,默认为'\&&'。\n如果不指定分隔符,并且首字符是?号，此函数自动移除首字符。\n使用 URL 解码键值文本,参数 @3 指定解码前是否UTF8编码，不指定则自动检测。\n参数 @4 可选指定一个总是返回数组值的参数名称数组，参数名尾部如果有点号加数值则自动移除。
 stringifyParameters( = 将URL参数表转换为字符串
 stringifyParameters(.(参数表,输出代码页,排序函数) = 使用'='分隔键值对,使用'&&'分隔不同参数,\n如果值为表,则转换为多个键值对,键名后添加[]或[子键名]。\n如果值为函数则调用该函数取返回值。\n所有值转换为字符串并使用 UrlEncode 编码。\n参数@2指定输出编码（codepage）,默认为65001（UTF8代码页)\n省略排序函数则使用默认字典序排序
 encode(.(字符串,输出代码页) = 除字母数字以及-._~等非保留字符以外的字符进行URL编码,\n参数二指定输出编码(codepage),默认为65001(UTF8代码页)
@@ -316,14 +333,14 @@ getParams(__) = 返回 URL 的参数表，参数名都转为小写。\n参数 @1
 cmp(__) = 比较参数@1与参数@2指定的网址是否相同。\n相同则返回 0 ，否则返回其他数值。\n比较前进行 URL 解码，并调用 inet.url.canonicalize 规范格式，\n比较时忽略大小写
 end intellisense**/
 
-/*intellisense(!inet_urlcrack)
+/*intellisense(!inetUrlInfo)
 scheme = 协议，总是转换为小写
 schemeNum = 协议（数值）。\n可用值为 _INTERNET_SCHEME_ 前缀的常量定义。\n重新拼接 URL 时忽略此参数
 host = 域名
 user = 用户名
 password = 密码
 path = 文件路径;
-extraInfo = 附加参数\n如果有URL参数,这里首字符会是?号\n不包含#号后面的网页位置
+extraInfo = 附加的 URL 参数，\不包含`#`号后面的网页位置。\n如果有 URL 参数，这里首字符默认会是`?`号。\n如果拆分 URL 时指定了 sortExtraInfo 参数为 true，\n则 URL 参数按字段名称的字典序排序，并且首字符的号被移除。。\n\n在调用 tostring 将 对象重新合并为 URL 时：\n不要求 extraInfo 第一个字符是`?`号，合并时会自动判断是否要插入`?`号。\n如果 extraInfo指定表对象，则自动转换为字符串格式的请求参数。\n不同的参数按参数名字的字典序排序，并在前面添加`?`号。\n实际上就是自动调用 inet.url.stringifyParameters 。
 port = 端口
 location = URL中#号后面的网页位置,不包含#号
 end intellisense*/

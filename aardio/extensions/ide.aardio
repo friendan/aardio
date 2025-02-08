@@ -82,7 +82,7 @@ namespace ide{
 		
 		if(  ( !#askTitle ) || ..win.msgboxTest( askTitle ,"aardio") ){ 
 		
-			var mutex = ..process.mutex("{5C6E466D-0DF1-4ABC-BFAD-9B890AA358FC}.lock.import." + libName,false,false);
+			var mutex = ..process.mutex("{0A6F9303-F2A0-456E-936D-DB9BD4909987}.lock.import." + libName,false,false);
 			mutex.wait(); {
 			
 				if( ..string.endWith( downloadUrl,".tar.lzma",true) ){
@@ -453,6 +453,7 @@ libMan(__) = 打开库参考手册，并搜索参数 @1 指定的关键字
 killOnExit(__) = IDE 进程退出时自动关闭参数 @1 指定进程 ID 的进程
 show( = 在 IDE 窗口的前面显示参数 @1 指定的窗口。\n此函数在显示前临时设置窗口的所有者窗口（owner window）为 IDE 主窗口，\n在显示窗口后再将所有者窗口设为空。
 show(.(hwnd,flags) = 在 IDE 窗口的前面显示参数 @1 指定的窗口。\n参数 @1 指定窗口对象或窗口句柄。\n参数 @2 可选指定调用 win.show 的第 2 个选项参数，可使用 _SW 前缀常量。
+external = 如果此属性为 true 则表示：\n当前进程是由外部 EXE 而不是 aardio 开发环境启动，\n但当前线程的应用程序根目录设置为了 aardio 开发环境根目录。\n此时对 ide 库的调用将会被转发到 aardio 开发环境执行。
 end intellisense**/
 
 /**intellisense()

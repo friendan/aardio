@@ -46,7 +46,10 @@ thread.invoke(
 			//注意这里的 message 已经由 JSON 解析为单个对象
 			winform.edit.print("HTTP 服务端推送了事件",type(message))
 			winform.edit.print(message);
-		} ) 
+			
+			//返回 false 则停止接收数据
+			//return false; 
+		} )  
 		 
 	},url,winform
 )

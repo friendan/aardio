@@ -30,7 +30,7 @@ class richedit{
 				tParam.style |= 0x100/*_ES_NOHIDESEL*/
 			
 			if( (tParam.savesel === null ) || tParam.savesel )
-				tParam.style = tParam.style | 0x00008000/*_ES_SAVESEL*/
+				tParam.style = tParam.style | 0x8000/*_ES_SAVESEL*/
 				 
 			if( tParam.autoscroll !== null ){
 				if( tParam.autoscroll ){
@@ -73,12 +73,12 @@ class richedit{
 					var ctrl = ::GetKeyState( 0x11/*_VK_CONTROL*/ ) & 0x8000;
     				var alt = ::GetKeyState( 0x12/*_VK_ALT*/ ) & 0x8000;
     				var shift = ::GetKeyState( 0x10/*_VK_SHIFT*/ ) & 0x8000;
-    				if( ctrl || alt || shift ) return; 
-					
+    				
 					if(vk ===0xD/*_VK_RETURN*/ && this.onOk){
-						if(this.onOk()){ return true; }
+						if(this.onOk(ctrl,alt,shift)){ return true; }
 					}
 					
+					if( ctrl || alt || shift ) return; 
  					if( tParam.tabstop && ( vk == 0x9/*_VK_TAB*/ ) || (( vk == 0xD/*_VK_RETURN*/) && (!multiline)) ){
 						owner.tabNext(true); 
 						return true;
@@ -279,7 +279,7 @@ richedit._metaProperty =  metaProperty(
 		
 		cf2 = ..table.assign({link = true,underline = true,textColor = 0xFF0000},cf2)
 		
-		::SendMessageInt(owner.hwnd, 0x000045b/*EM_AUTOURLDETECT*/, 0, 0);
+		::SendMessageInt(owner.hwnd, 0x45b/*EM_AUTOURLDETECT*/, 0, 0);
 		owner.setSelCharformat(cf2);
 	 
 		if(!owner.$predefHyperLinks){
@@ -323,7 +323,7 @@ richedit._metaProperty =  metaProperty(
 			} 
 		}
 		_set = function( str ){ 
-			return ::User32.SendMessage(owner[["hwnd"]],0xC2/*_EM_REPLACESEL*/,,tostring(str))
+			return ::User32.SendMessage(owner[["hwnd"]],0xC2/*_EM_REPLACESEL*/,,str?tostring(str):"")
 		} 	
 	};
 	text = {
@@ -440,7 +440,7 @@ richedit._metaProperty =  metaProperty(
 	link =  {
 		_set = function(v){
 			owner.modifyEvent( , 0x4000000/*_ENM_LINK */ ) 
-			::SendMessageInt(owner.hwnd, 0x000045b/*EM_AUTOURLDETECT*/, v?1:0, 0);
+			::SendMessageInt(owner.hwnd, 0x45b/*EM_AUTOURLDETECT*/, v?1:0, 0);
 			
 			if(v){
 				owner.text = owner.text; 
@@ -511,6 +511,35 @@ richedit._metaProperty =  metaProperty(
 			}
 		}	
 	}; 
+	onClipFormat = {
+		_get = function(){   
+			return owner[["onClipFormat"]];
+		}
+		_set = function(v){ 
+			owner[["onClipFormat"]] = v;
+			if(v){
+				owner.modifyEvent( , 0x80/*_ENM_CLIPFORMAT*/ );
+			}
+			
+			owner.prenotify = {
+				[0x712/*_EN_CLIPFORMAT*/] = function(id,code,ptr){
+					var cf = ..raw.convert(ptr, {struct hdr = ::NMHDR();int format});
+					return owner.onClipFormat(cf.format)	
+				}
+			}
+		}	
+	}; 
+	oleCallback = function(v){
+		if(!..table.getByNamespace("com.interface.IRichEditOleCallback")){
+			error("请先导入 com.interface.IRichEditOleCallback 接口库！",2);
+		}
+		
+		var oleCb = ..com.interface(v,"IRichEditOleCallback");
+		
+		if( owner.sendMessage(0x446/*_EM_SETOLECALLBACK*/,,oleCb) ){ 
+			return oleCb;
+		}
+	}; 
 	onProtected = {
 		_get = function(){   
 			return owner[["onProtected"]];
@@ -520,7 +549,7 @@ richedit._metaProperty =  metaProperty(
 			if(v) owner.modifyEvent(,0x200000/*_ENM_PROTECTED*/);
 			
 			owner.prenotify = {
-				[0x0704/*_EN_PROTECTED*/] = function(id,code,ptr){
+				[0x704/*_EN_PROTECTED*/] = function(id,code,ptr){
 					if(!owner.onProtected) return;
 					var enProtected = ..raw.convert(ptr,EN_CHARRANG());
 					return owner.onProtected(enProtected.chrg.cpMin+1,enProtected.chrg.cpMax,enProtected.msg,enProtected )	
@@ -751,7 +780,19 @@ richedit._metaProperty =  metaProperty(
 			return true; 
 		}
 	};
+	charFromPoint = function(x,y){
+        var r = ::User32.SendMessage(owner.hwnd,0x427/*_EM_CHARFROMPOS*/,,::POINT(x,y));
+        return r+1;
+    };
+    pointFromChar = function(idx){
+        if(idx===null) idx = owner.caretPos;
+        
+        var pt = ::POINT(x,y);
+        var r = ::User32.SendMessage(owner.hwnd,0x426/*_EM_POSFROMCHAR*/,pt,idx-1);
+        return pt.x,pt.y;
+    };
 }) 
+
 
 /**details(必读文档)
 
@@ -835,8 +876,8 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit.lineCount = 获取行数
 !richedit.setsel(.(起始位置,结束位置) = 设置选区,以字符为单位\n1为首字符，选区包含起始与结束位置\n如果结束位置小于开始位置,自动交换参数位置,\n注意richedit实际以＼n换行,输入字符中的＼r＼n作为一个字符计数\n可以用-1表示文本尾部
 !richedit.setsel(.(当前位置) = 无选区,\n移动光标到指定位置的字符后面
-!richedit.getsel() = 获取选区起始位置,结束位置\n选区包含起始与结束位置的字符，首字符位置为1\n开始位置在指定的字符前面,结束位置表示指定的字符后面\n只有一个返回值时表示无选区,并表示输入光标在指定字符后面\n返回0表示输入光标在最前面,并且无选区
-!richedit.selText = 获取或写入选区文本\n可写入UTF8或UTF16字符串，其他类型转为字符串写入
+!richedit.getsel() = 获取选区起始位置，结束位置。\n选区包含起始与结束位置的字符，首字符位置为 1 。\n开始位置在指定的字符前面，结束位置表示指定的字符后面。\n只有一个返回值时表示无选区，并表示输入光标在返回的字符位置后面。\n返回单个 0 表示输入光标在最前面，并且无选区。
+!richedit.selText = 获取或写入选区文本\n可写入 UTF-8 或 UTF-16 字符串。\n指定 null 值设为空字符串，其他类型转为字符串写入。
 !richedit.selLine = 获取或设置当前行,\n光标移动到该行开始处,并且滚动到该行,\n设为-1跳转到最后一行
 !richedit.modified = 文本内容是否已修改。\n修改 text 属性、以及调用 log,print 等函数不会自动变更此属性。\n用户输入、selText 变更、 appendTexxt,appendLink 调用都会变更此属性为 true。
 !richedit.getLength() = 获取文本长度\n注意是按字符计数，而不是按字节计数
@@ -970,8 +1011,8 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 		}
 	}	
 }
-!richedit.onOk() = @.onOk = function(){ 
-	__/*当前已按下回车,返回true阻止默认事件*/
+!richedit.onOk() = @.onOk = function(ctrl,alt,shift){ 
+	__/*在控件内按下回车触发此事件，返回 true 阻止默认事件。\n回调参数分别表示对应按钮是否已同时按下。*/
 	return true; 	
 }
 !richedit.onCancel() = @.onCancel = function(){ 
@@ -999,6 +1040,10 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit.onFocusLost() = @.onFocusLost = function(){
 	__/*响应事件，文本框已失去输入焦点*/
 }
+!richedit.onClipFormat() = @..onClipFormat = function(format){
+	__/*特定的剪贴板格式发生粘贴。\nformat 为数值表示的剪贴板格式，可用 `_CF_` 前缀常量表示。\n例如 _CF_UNICODETEXT ，细节可参考 win.clip 名字空间的库。\n仅支持 Win8 之后的操作系统。*/
+}
+
 !richedit.adjust = @.adjust = function( cx,cy,wParam ) {	 \n	__/*窗口缩放时会自动触发此函数。\ncx 参数为窗口宽度,cy 参数为窗口高度,\nwParam 参数请参考 _WM_SIZE 消息参数说明,一般不用管。\n\n所有 win.form 创建的窗体和控件都支持此事件,\n重复赋值只会追加而不会覆盖此事件。\n一般不建议添加一个 wndproc 仅仅是为了处理  _WM_SIZE 消息，\n定义 adjust 事件是更好的选择。\n\n可主动调用此事件,省略参数时 cx,cy 参数默认设为窗口大小*/  \n}; 
 !richedit.preadjust = @.preadjust = function( cx,cy,wParam ) {	 \n	__/*窗口缩放后重绘前、触发 adjust 事件之前触发此事件。\n所有 win.form 创建的窗体和控件都支持此事件,\n与 adjust 事件不同，对 preadjust 重复赋值则覆盖而不是追加事件。 \n\ncx 参数为窗口宽度,cy 参数为窗口高度,\nwParam 为 _WM_SIZE 消息参数。*/  \n};
 !richedit.resize(.(宽度,高度) = 如果指定了参数则调整窗口大小,\n无论是否实际调整窗口大小,发送 _WM_SIZE 消息给窗口
@@ -1018,6 +1063,12 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit._defWindowProc(hwnd,message,wParam,lParam) = 用于在 wndproc 回调中提前调用默认消息回调函数,\n所有窗口和控件定义了 wndproc 回调以后会自动创建这个函数,\n调用此函数以后,wndproc 必须指定非 null 返回值,\n以避免再次重复调用默认回调函数
 !richedit.translateCommand() = 允许转发转发子窗口的命令（_WM_COMMAND）与通知（_WM_NOTIFY）消息，\n避免子窗口 oncommand，onnotify 等回调失效。\n同时会处理子窗口的 _WM_CTLCOLORSTATIC 等消息，\n以避免部分外观属性失效
 !richedit.valid = 窗口是否有效，\n窗口未关闭返回 true ，\n窗口已关闭或正在关闭返回 false
+!richedit.caretPos = 输入光标所在文本插入点位置，以字符为单位。\n有选区则返回选区最后一个字符的位置，\n无选区则返回插入点前面的字符位置。\n获取文本选区请改用 getsel 函数。
+!richedit.leftText(__) = 获取参数 @1 指定位置之前的文本，\n以字符为单位，负数自右侧倒计数。\n不指定参数获取输和光标所在插入点之前的文本。
+!richedit.rightText(__) = 获取参数 @1 指定位置之后的文本，\n以字符为单位，负数自左侧倒计数。\n不指定参数获取输和光标所在插入点之后的文本。
+!richedit.oleCallback(implTable) = @import com.interface.IRichEditOleCallback;\n\n??.oleCallback(\n	\n	__/*自定义 OLE 回调事件，细节请参考 IRichEditOleCallback 接口文档。\n使用此函数必须先导入 com.interface.IRichEditOleCallback 接口。*/\n	GetDragDropEffect = function(drag,grfKeyState,effect){\n		\n		/*所有 COM 实现的原生接口，第一个返回值为 0 表示执行成功。\n		返回值 2 指定拖放效果（effect），不指定则鼠标指针显示禁止拖放图标。*/\n		return 0,1/*_DROPEFFECT_COPY*/\n	}\n\n	QueryAcceptData = function(ptrDataObj,format,reco,really,hMetaPict){\n	\n		/*really 表示放开鼠标，接收拖放数据*/\n		if(really){\n			\n			/*用法请参考 com.interface.IDataObject 库参考文档*/\n			var dataObj = com.interface.IDataObject(ptrDataObj);\n			var txt = dataObj.getText();\n			\n			/*返回 0 继续默认处理，文本放入控件，返回 _S_FALSE 阻止默认处理。*/\n			return 1/*_S_FALSE*/\n		}\n		\n		return 0; \n	}\n)
+!richedit.charFromPoint(.(x,y) = 返回 x,y 指定的控件客户区坐标所在的字符索引，\n第一个字符索引为 1 。
+!richedit.pointFromChar(__) = 返回参数 @1 指定索引的字符所在的客户区坐标。\n第一个字符索引为 1，不指定参数则默认取当前输入光标所在字符位置。\n函数返回两个值，分别为坐标 x,y 。
 !TextDocument.tomTrue = 真值
 !TextDocument.tomFalse = 假值
 !TextDocument.tomToggle = 切换原来的值

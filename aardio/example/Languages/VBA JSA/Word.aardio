@@ -1,4 +1,9 @@
 ////aardio 调用 VBA/JSA 操作 Word
+/*
+Word 修改集合值: doc://example/COM/Advanced/Collection.html
+web.view 预览 Word 文档:  doc://example/WebUI/web.view/OtherApps/docx.html
+*/
+
 //以下代码兼容 WPS JS
 import console.int;
 import com.doc;

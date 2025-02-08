@@ -1,0 +1,33 @@
+﻿//number 数字键
+
+namespace key.number;
+
+is = function(vk){
+	return vk ? ( (vk>='0'# && vk<='9'# ) 
+				|| (vk>=0x60/*_VK_NUMPAD0*/ && vk<=0x69/*_VK_NUMPAD9*/ ) ) 	
+}
+
+var shiftSeparators = {
+	[0xBD/*_VK_OEM_MINU*/]="_";
+	[186/*_VK_SEMICOLON*/]=":"; 
+}
+var separators = { 
+	[190/*_VK_OEM_PERIOD*/]=".";
+	[188/*_VK_OEM_COMMA*/]=",";
+}
+
+getSeparator = function(vk){
+	if( ::User32.GetAsyncKeyState(0x10/*_VK_SHIFT*/) & 0x8000  ){
+		return shiftSeparators[vk];
+	}
+	
+	return separators[vk];
+}
+
+
+/*****intellisense()
+key.number = 数字按键
+key.number.is(__/*虚拟键码*/) = 检测参数 @1 指定的虚拟键码是否数字键。\n参数 @1 为 null 则返回 null。
+key.number.getSeparator(__/*虚拟键码*/) = 检测数值分隔符按键。\n如果参数 @1 指定的虚拟键码为`_:` 等按键，且当前已 Shift 键则返回对应字符；\n或者参数 @1 指定的虚拟键码为`.,` 等按键，并且当前未按下 Shift 键，\n则返回对应的字符。
+
+end intellisense*****/
