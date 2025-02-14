@@ -11,7 +11,6 @@
 		<file name="MATLAB" path="test\matlab.m" comment="test\matlab.m"/>
 	</folder>
 	<folder name="COM 类型库" path="typelib" embed="true" local="false" ignored="false">
-		<file name="语法说明" path="typelib\ODL 语法说明.html" comment="ODL 语法说明"/>
 		<file name="类型声明" path="typelib\typelib.odl" comment="ODL 接口描述文件"/>
 		<file name="类型库" path="typelib\typelib.tlb" comment="发布时自动编译的 TLB 类型库"/>
 	</folder>

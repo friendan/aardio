@@ -13,8 +13,7 @@ class ${COCLASS_NAME}Form{
 	this.button.oncommand = function(id,event){
 		/*
 		VB6 不支持后期绑定事件，需要在 odl 事件接口中明声明事件函数 
-		odl 语法很复杂，可以将我在 /typelib/typelib.odl 里提供的示例 IDispeatchExecutableWithEvent 
-		发给 ChatGPT 或 Copilot 按你的要求添加函数。
+		odl 语法很复杂，可以在 AI 助手中右键发送 ActiveX 开发文档，让 AI 写。
 		*/
 		this.externalEvent.onHello("hello")
 	}

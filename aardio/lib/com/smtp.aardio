@@ -14,8 +14,10 @@ class smtp{
 		with( this.objEmail.Configuration.Fields ) {
 			Item(_configUrl + "smtpserverport").Value = 25;
 			Item(_configUrl + "sendusing").Value  = 2;
-			Item(_configUrl + "smtpauthenticate").Value  = 1;//cdoAuthentication.cdoBasic
+			Item(_configUrl + "smtpauthenticate").Value  = 1;//cdoAuthentication.cdoBasic 
 		}
+		
+		this.objEmail.BodyPart.Charset = "utf-8"
 	};
 	@_metaProperty;
 }
@@ -151,10 +153,11 @@ namespace smtp{
 				return owner.getConfig("smtpusessl");
 			}
 			_set = function( value ){
-				owner.setConfig("smtpusessl",value); 
-			}  
+				owner.setConfig("smtpusessl",value);  
+				owner.setConfig("smtpserverport",value ? 465 : 25); 
+			}
 		}
-		tls = { 
+		tls = { //CDO 并不支持 。
 			_get = function(){  
 				return owner.getConfig("sendtls");
 			}
@@ -167,7 +170,7 @@ namespace smtp{
 				return owner.getConfig("smtpserver");
 			}
 			_set = function( value ){
-				owner.setConfig("smtpserver",value);
+				owner.setConfig("smtpserver",value); 
 			} 
 		}
 		port = {  
@@ -177,6 +180,7 @@ namespace smtp{
 			_set = function( value ){
 				assert(type(value)==type.number,"端口必须是一个整数值")
 				owner.setConfig("smtpserverport",value); 
+				owner.setConfig("smtpusessl",value == 465);
 			} 
 		}
 		authenticate = {  
@@ -271,15 +275,14 @@ namespace smtp{
 !com_smtp.Configuration.Fields.Item().Value = 配置值
 !com_smtp.Fields.Item(.("配置名") = 配置属性
 !com_smtp.Fields.Item().Value = 配置值 
-!com_smtp.port = SMTP 端口,默认明文发送端口 25，\n使用 SSL 端口 465 请同时指定 ssl 属性为 true，\n使用 TLS 端口 587 请同时指定 tls 属性为 true
+!com_smtp.port = SMTP 端口，默认明文发送端口 25，\n端口指定为 465 时自动启用 SSL，否则自动禁用 SSL。\n服务器上如果禁止使用 25 端口发邮件，改为 465 即可。
 !com_smtp.authenticate = 认证设置\n默认值为com.smtp.cdoAuthentication.cdoBasic
 !com_smtp.timeout = 超时值,以秒为单位
 !com_smtp.sendusing = 发送方式
 !com_smtp.send() = 发送邮件,\n可选使用一个false参数禁止更新配置参数
 !com_smtp.cc = 抄送
 !com_smtp.bcc = 密送
-!com_smtp.ssl = 是否启用 SSL，默认端口 465
-!com_smtp.tls = 是否启用 TLS，默认端口 587
+!com_smtp.ssl = 是否启用 SSL。\n启用 SSL 则自动设置端口为 465，禁用 SSL 时端口自动设为 25。
 !com_smtp.setMailHeader = @.setMailHeader(\n	["return-receipt-to"] = "回执电邮地址";\n	["disposition-notification-to"] = "回执电邮地址";\n) 
 !com_smtp.updateConfig() = 更新配置\n!com_smtp.
 com.smtp() = 使用CDO.Message创建SMTP邮箱发送客户端\n[CDO.Message]( https://learn.microsoft.com/en-us/previous-versions/office/developer/exchange-server-2003/ms872547%28v%3Dexchg.65%29 )\n!com_smtp.

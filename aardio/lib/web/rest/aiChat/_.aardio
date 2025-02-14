@@ -312,6 +312,32 @@ class aiChat{
 		
 		return ok,err;
 	};
+	listModels = function(){
+	
+		var url = this.config.url;
+		if(!#url) return;
+		
+		var apiUrlInfo = ..inet.url.split(url);
+		if(!apiUrlInfo) return;
+		
+		if( apiUrlInfo.host=="generativelanguage.googleapis.com" ){
+		 
+			var http = ..web.rest.jsonClient(,this.config.proxy);
+			http._http.setTimeouts(500,500,500);
+			
+			http.setHeaders({"x-goog-api-key":this.config.key});
+			var resp,err =  http.get("https://generativelanguage.googleapis.com/v1beta/models")
+			
+			var models = resp[["models"]];
+			if(#models){
+				models = ..table.map(resp[["models"]],lambda(v){"id":..string.match(v.name,"models/(\S+)"),object: "model"})
+			} 
+			
+			return models;
+		} 
+				
+		return this.bot.models.get()[["data"]]);
+	};
 	__endToolCalling__ = function(chatMessage){
 		var toolCalling = this.toolCalling;
 		this.toolCalling = null;
@@ -388,4 +414,5 @@ apiMode = 会自动设置为 "anthropic" 或 "aliyun", null 等值。\n不允许
 onDeltaToolCalling = @.onDeltaToolCalling = function(toolCalls,finishReason){
 	__/*自定义流式回复中的 tool_calls 处理方法。\n一般不建议定义或使用此回调函数，用法请参考库源码 */
 }
+listModels() = 返回接口支持的模型信息列表。\n有些服务端不支持这个接口。
 end intellisense*****/

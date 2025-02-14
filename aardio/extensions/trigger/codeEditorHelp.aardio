@@ -193,7 +193,10 @@ var msg = web.rest.aiChat.message();
 msg.aardioSystem();	
 						 
 var leftText = codeEdit.leftText();
-if(!leftText) return; 
+if(!#leftText) return; 
+else{
+	leftText = ..string.replace(leftText,"![\w\._$]<winform>|<mainForm>\.add\(\)\s+","");
+}
 
 if(#config.systemPrompt){
 	msg.system(config.systemPrompt);
@@ -272,6 +275,9 @@ end;
 if(#selText){
 	var b,e = codeEdit.getsel();
 	if( !(b&&e) ) return; 	
+	
+	var leftText = codeEdit.leftText(b-1);
+	var rightText = codeEdit.rightText();
   
 	var sysPrompt = "
 
@@ -284,7 +290,7 @@ if(#selText){
 ## 前置代码
 
 ```aardio
-"+(codeEdit.leftText(b-1):"")+"
+"+(leftText:"")+"
 ```
 
 ## 选中代码
@@ -296,7 +302,7 @@ if(#selText){
 ## 后置代码
 
 ```aardio
-"+(codeEdit.rightText():"")+"
+"+(rightText:"")+"
 ```
 
 "

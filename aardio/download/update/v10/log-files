@@ -11,7 +11,7 @@
 1074409109|730624|309720|config\CFG.BIN
 0|0|0|config\intellisense\
 0|0|0|config\lang\
-558016361|15|34|config\SYS.CFG
+254192185|15|34|config\SYS.CFG
 -1306171410|3514|746|config\SYS.THEME
 0|0|0|config\themes\
 848270498|126381|32335|config\intellisense\kernel.txt
@@ -33,7 +33,7 @@
 0|0|0|doc\language-reference\
 0|0|0|doc\library-guide\
 0|0|0|doc\library-reference\
-1985480718|3307|1832|doc\main.md
+-1171322372|3337|1839|doc\main.md
 0|0|0|doc\README\
 -2092713335|9456|2332|doc\style.css
 1415910307|6279|2048|doc\template.aardio
@@ -151,8 +151,9 @@
 1157651392|8930|3094|doc\library-guide\builtin\com\embed.md
 701036425|6566|2402|doc\library-guide\builtin\com\event.md
 -1620323846|2138|1024|doc\library-guide\builtin\com\ImplInterface.md
-141669326|19|39|doc\library-guide\builtin\com\activeX\.aar
+1541564150|43|61|doc\library-guide\builtin\com\activeX\.aar
 1530109470|5651|2209|doc\library-guide\builtin\com\activeX\odl.md
+1067474274|10972|4180|doc\library-guide\builtin\com\activeX\_.md
 1746747471|2995|2844|doc\library-guide\builtin\img\e.jpg
 -1467161955|8371|7520|doc\library-guide\builtin\img\radeg.jpg
 -1719996996|3270|2723|doc\library-guide\builtin\img\trigonometric.gif
@@ -405,7 +406,8 @@
 -375916643|24|43|example\aardio\Util\.aar
 -267884075|979|524|example\aardio\Util\func.aardio
 -172634474|271|203|example\AI\.aar
-1061347661|48008|12066|example\AI\aardioAgent.aardio
+0|0|0|example\AI\aardioAgent\
+-1963766161|36703|9872|example\AI\aardioAgent.aardio
 1461652307|2285|1288|example\AI\aiChat.aardio
 -496234169|4785|2297|example\AI\aiHotkey.aardio
 1232879088|3390|1616|example\AI\function-calling.aardio
@@ -413,6 +415,7 @@
 -1102981978|1466|817|example\AI\lmarena.aardio
 1662625243|4718|2147|example\AI\ollama.aardio
 1503748581|1383|811|example\AI\search.aardio
+-577852711|13803|3706|example\AI\aardioAgent\setting.aardio
 -76246576|163|159|example\Automation\.aar
 0|0|0|example\Automation\adb\
 0|0|0|example\Automation\ComputerVision\
@@ -1637,7 +1640,7 @@
 -823630779|2863|2894|extensions\plugin\view\res\images\panel-caption-back.png
 743936213|23558|4107|extensions\res\app.ico
 281533910|1964|718|extensions\trigger\aifix.aardio
-1848069741|15499|5057|extensions\trigger\codeEditorHelp.aardio
+-1495186266|15657|5117|extensions\trigger\codeEditorHelp.aardio
 2054796948|1178|523|extensions\trigger\copyCodeAsHtml.aardio
 1628538018|952|458|extensions\trigger\default.aproj
 318035403|1680|672|extensions\trigger\editDefault.aardio
@@ -1695,7 +1698,7 @@
 554586363|16606|14090|extensions\wizard\project2\forms\images\electron.jpg
 -2044221038|43192|35007|extensions\wizard\project2\forms\images\htmlayout.jpg
 608149045|15574|7812|extensions\wizard\project2\forms\images\winform.jpg
--1997740056|7317|2535|extensions\wizard\project2\forms\plus\activeX.aardio
+977853879|7316|2546|extensions\wizard\project2\forms\plus\activeX.aardio
 -1909902848|1850|1179|extensions\wizard\project2\forms\plus\bat.aardio
 -128040702|416|314|extensions\wizard\project2\forms\plus\first.aardio
 378912817|4352|1454|extensions\wizard\project2\forms\plus\icon.aardio
@@ -1820,7 +1823,7 @@
 -997115030|5913|5604|extensions\wizard\project2\template\plus\1\res\images\ppt.png
 2004313410|6199|6270|extensions\wizard\project2\template\plus\1\res\images\rss.png
 0|0|0|extensions\wizard\project2\template\plus\ActiveX\.build\
--162675223|1452|628|extensions\wizard\project2\template\plus\ActiveX\default.aproj
+1567777772|1357|606|extensions\wizard\project2\template\plus\ActiveX\default.aproj
 0|0|0|extensions\wizard\project2\template\plus\ActiveX\dist\
 0|0|0|extensions\wizard\project2\template\plus\ActiveX\lib\
 2135648897|1018|585|extensions\wizard\project2\template\plus\ActiveX\main.aardio
@@ -1831,7 +1834,7 @@
 1122809971|1813|469|extensions\wizard\project2\template\plus\ActiveX\.build\include\aardio.idl
 0|0|0|extensions\wizard\project2\template\plus\ActiveX\lib\aardioTestControl\
 1559596430|3895|1604|extensions\wizard\project2\template\plus\ActiveX\lib\aardioTestControl\Sample.aardio
--1199760882|909|627|extensions\wizard\project2\template\plus\ActiveX\lib\aardioTestControl\SampleForm.aardio
+-1573835135|833|575|extensions\wizard\project2\template\plus\ActiveX\lib\aardioTestControl\SampleForm.aardio
 -406250184|330|232|extensions\wizard\project2\template\plus\ActiveX\test\matlab.m
 676363620|819|502|extensions\wizard\project2\template\plus\ActiveX\test\net.aardio
 -696686411|416|321|extensions\wizard\project2\template\plus\ActiveX\test\test.aardio
@@ -2358,7 +2361,7 @@
 642049844|1472|693|lib\com\oleDb.aardio
 -1869965812|7971|2733|lib\com\picture.aardio
 1770873818|4885|1942|lib\com\shell.aardio
-1251404223|8215|2103|lib\com\smtp.aardio
+-143418771|8432|2197|lib\com\smtp.aardio
 1499728080|5100|1573|lib\com\tlbDoc.aardio
 943578949|1068|596|lib\com\typeAttrs.aardio
 1956301702|13807|3003|lib\com\wmi.aardio
@@ -2579,7 +2582,7 @@
 0|0|0|lib\golang\.res\aardio\jsonrpc\tcp\
 -1268986318|559|309|lib\golang\.res\aardio\jsonrpc\tcp\tcp.go
 -816137147|74135|15919|lib\ide\aifix.aardio
--230046072|8201|2911|lib\ide\command.aardio
+-597929879|8265|2919|lib\ide\command.aardio
 -1410374365|187|156|lib\ide\customCtrl.aardio
 85987739|1816|789|lib\ide\debug.aardio
 0|0|0|lib\ide\doc\
@@ -2648,7 +2651,7 @@
 -265926331|742|432|lib\process\chm.aardio
 1895747478|1372|719|lib\process\cmdline.aardio
 1175677799|3008|1134|lib\process\code.aardio
-1149200932|7143|2452|lib\process\command.aardio
+92172014|7208|2462|lib\process\command.aardio
 -1248755133|1214|731|lib\process\control.aardio
 0|0|0|lib\process\curl\
 -1542203795|2990|1328|lib\process\ffmpeg.aardio
@@ -2960,11 +2963,11 @@
 -192084535|7019|2619|lib\web\form\chat.aardio
 -1920838293|2619|1172|lib\web\form\menu.aardio
 -1635206826|1525|622|lib\web\form\query.aardio
-1626966923|17428|6132|lib\web\form\simpleMarkdown.aardio
+-1333632253|18093|6254|lib\web\form\simpleMarkdown.aardio
 1127302574|2643|1078|lib\web\form\snap.aardio
 -1734690316|2309|925|lib\web\form\sockpuppet.aardio
 -1175352145|5438|2066|lib\web\form\util.aardio
--532495853|70818|19902|lib\web\form\_.aardio
+-1559728239|70977|19956|lib\web\form\_.aardio
 0|0|0|lib\web\layout\.res\
 0|0|0|lib\web\layout\behavior\
 -1219824729|1463|837|lib\web\layout\debug.aardio
@@ -3013,7 +3016,7 @@
 -548782437|1438|766|lib\web\rest\xmlClient.aardio
 0|0|0|lib\web\rest\aiChat\.res\
 -83955580|7007|2745|lib\web\rest\aiChat\message.aardio
-1225909601|14730|4765|lib\web\rest\aiChat\_.aardio
+2064432216|15569|5012|lib\web\rest\aiChat\_.aardio
 -1058771668|8842|3883|lib\web\rest\aiChat\.res\aardio.md
 494869564|4590|1704|lib\web\rest\volcengine\client.aardio
 1459395805|11845|4069|lib\web\rpc\externalServer.aardio

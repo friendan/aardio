@@ -1,0 +1,395 @@
+import win.ui;
+/*DSG{{*/
+var frmSetting = win.form(text="aardio - 设置 AI 聊天助手";right=685;bottom=589;border="dialog frame";exmode="none";max=false;min=false;mode="popup")
+frmSetting.add(
+btnAdd={cls="plus";left=18;top=473;right=52;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF067';notify=1;textPadding={left=25};z=10};
+btnEdit={cls="plus";left=93;top=473;right=127;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF044';notify=1;textPadding={left=25};z=12};
+btnRemove={cls="plus";left=56;top=473;right=90;bottom=503;align="left";color=3947580;font=LOGFONT(h=-13);iconStyle={align="left";font=LOGFONT(h=-13;name='FontAwesome');padding={left=8}};iconText='\uF1F8';notify=1;textPadding={left=25};z=11};
+btnSave={cls="button";text="更新配置";left=489;top=531;right=659;bottom=576;z=5};
+chkF1={cls="checkbox";text="设为 F1 键编码助手";left=283;top=218;right=655;bottom=238;z=25};
+chkKatex={cls="checkbox";text="解析数学公式";left=55;top=526;right=159;bottom=546;z=15};
+chkUsage={cls="checkbox";text="显示 token 计数";left=181;top=526;right=349;bottom=546;z=24};
+editApiKey={cls="edit";left=284;top=70;right=636;bottom=97;edge=1;password=1;z=2};
+editApiUrl={cls="combobox";left=284;top=31;right=662;bottom=57;edge=1;items={};mode="dropdown";z=18};
+editModel={cls="combobox";left=284;top=110;right=662;bottom=136;edge=1;items={};mode="dropdown";vscroll=1;z=26};
+editProxy={cls="edit";left=283;top=180;right=661;bottom=207;edge=1;z=19};
+editSystemPrompt={cls="edit";left=283;top=247;right=664;bottom=484;edge=1;hscroll=1;multiline=1;vscroll=1;z=21};
+groupbox={cls="groupbox";text="选择当前配置：";left=9;top=5;right=675;bottom=512;edge=1;z=1};
+lbMsgLimit={cls="static";left=423;top=546;right=451;bottom=566;transparent=1;z=16};
+lbTemperature={cls="static";left=633;top=140;right=659;bottom=160;transparent=1;z=17};
+lnkVip={cls="plus";text="VIP";left=635;top=71;right=667;bottom=95;color=8388608;dr=1;dt=1;font=LOGFONT(h=-13);notify=1;textPadding={left=5};z=27};
+lstConfig={cls="listbox";left=18;top=34;right=187;bottom=464;edge=1;hscroll=1;items={};vscroll=1;z=9};
+static={cls="static";text="模型 ID：";left=194;top=112;right=277;bottom=133;align="right";transparent=1;z=3};
+static2={cls="static";text="API key：";left=194;top=75;right=277;bottom=96;align="right";transparent=1;z=4};
+static3={cls="static";text="不会联网读取系统提示词内的超链接，建议直接添加文档内容";left=282;top=489;right=649;bottom=508;color=5921370;transparent=1;z=23};
+static4={cls="static";text="接口地址：";left=194;top=38;right=277;bottom=59;align="right";transparent=1;z=6};
+static5={cls="static";text="temperature：";left=194;top=148;right=277;bottom=169;align="right";transparent=1;z=8};
+static6={cls="static";text="上下文轮数：";left=33;top=560;right=128;bottom=592;align="right";transparent=1;z=14};
+static7={cls="static";text="代理服务器：";left=194;top=185;right=277;bottom=206;align="right";transparent=1;z=20};
+static8={cls="static";text="系统提示词：";left=200;top=248;right=283;bottom=269;align="right";transparent=1;z=22};
+tbMsgLimit={cls="trackbar";left=132;top=552;right=415;bottom=582;max=100;min=0;z=13};
+tbTemperature={cls="trackbar";left=283;top=137;right=633;bottom=167;max=100;min=0;z=7}
+)
+/*}}*/
+
+import fsys.table;
+if(!config) config = fsys.table(io.appData("aardio/ide/aiChat/~"))
+
+frmSetting.editModel.setCueBannerText("模型名前加 @ 使用 Anthropic 接口，否则使用 OpenAI 接口")
+frmSetting.editProxy.setCueBannerText("socks=127.0.0.1:1081");
+frmSetting.editSystemPrompt.limit = -1;
+
+frmSetting.editApiUrl.items = {
+	"https://ai.aardio.com/api/v1",
+	"https://api.deepseek.com/v1",
+	"https://openrouter.ai/api/v1",
+	"https://api.siliconflow.cn/v1",
+	"https://api.anthropic.com/v1",
+	"https://generativelanguage.googleapis.com/v1beta", 
+	"https://api.x.ai/v1",
+	"https://api.openai.com/v1", 
+	"https://ark.cn-beijing.volces.com/api/v3/bots",
+	"https://ark.cn-beijing.volces.com/api/v3",
+	"https://api.lkeap.cloud.tencent.com/v1",
+	"https://dashscope.aliyuncs.com/api/v1/",
+	"http://localhost:11434/v1/"
+}
+
+frmSetting.editApiUrl.onFocusLost = function(){
+	var url = string.trim(frmSetting.editApiUrl.text,`"' 	`);
+	if(!..string.match(url,"^<@@http@>[sS]?\:")){
+		frmSetting.editApiUrl.text = "https://"+url;
+	}
+}
+
+var cacheModelList = {}
+frmSetting.editModel.onDropDown = function(){ 
+	var url = string.trim(frmSetting.editApiUrl.text,`"' 	`); 
+	var apiKey = string.trim(frmSetting.editApiKey.text,`"' 	`);
+
+	if(#url && #apiKey){
+		
+		if(!cacheModelList[url]){
+			var aiClient = web.rest.aiChat({
+				url = url;
+				key = apiKey;
+				proxy = string.trim(frmSetting.editProxy.text);
+				model = "";
+			});
+			aiClient._http.setTimeouts(500,500,500);
+			var models = aiClient.listModels();
+			
+			if(models[[1]][["id"]]){ 
+				cacheModelList[url] = ..table.map(models,lambda(v) v["id"] ) 
+			}	
+			else {
+				cacheModelList[url] = {}
+			}
+			
+		}
+		
+		if(#cacheModelList[url]){
+			frmSetting.editModel.autoComplete(cacheModelList[url],1 ); 
+			return;
+		}
+	
+	}	
+	
+	frmSetting.editModel.items = {};	
+}
+
+
+import web.rest.aiChat;
+frmSetting.editApiUrl.onListChange = function(){ 
+ 
+	frmSetting.lnkVip.disabled = true;
+	
+	var url = frmSetting.editApiUrl.selText;
+	if(url=="https://ai.aardio.com/api/v1"){
+		frmSetting.editModel.text = "aardio"
+		frmSetting.lnkVip.disabled = false;
+	}
+	elseif(url=="https://api.deepseek.com/v1"){
+		frmSetting.editModel.text = "deepseek-chat"
+	}
+	elseif(url=="https://api.siliconflow.cn/v1"){
+		frmSetting.editModel.text = "deepseek-ai/DeepSeek-V3"
+	}
+	elseif(url=="https://openrouter.ai/api/v1"){
+		frmSetting.editModel.text = "google/gemini-2.0-flash //或 anthropic/claude-3.5-sonnet"
+	}
+	elseif(url=="https://api.anthropic.com/v1"){
+		frmSetting.editModel.text = "@claude-3-5-sonnet-latest"
+	}
+	elseif(url=="https://generativelanguage.googleapis.com/v1beta"){
+		frmSetting.editModel.text = "gemini-2.0-flash"
+	}
+	elseif(url=="https://api.x.ai/v1"){
+		frmSetting.editModel.text = "grok-2-1212"
+	}
+	elseif(url=="https://api.openai.com/v1"){
+		frmSetting.editModel.text = "chatgpt-4o-latest"
+	}
+	elseif(url=="https://ark.cn-beijing.volces.com/api/v3/bots"){
+		frmSetting.editModel.text = "bot- //智能体  ID"
+	}
+	elseif(url=="https://ark.cn-beijing.volces.com/api/v3"){
+		frmSetting.editModel.text = "ep- //接入点 ID"
+	}
+	elseif(url=="https://dashscope.aliyuncs.com/api/v1/"){
+		frmSetting.editModel.text = "qwen-coder-plus //也可以指定智能体应用 ID" 
+	}
+	elseif(url=="https://api.lkeap.cloud.tencent.com/v1"){
+		frmSetting.editModel.text = "deepseek-r1 //或者 deepseek-v3" 
+	}
+	elseif(url=="http://localhost:11434/v1/"){
+		frmSetting.editModel.text = "qwen:0.5b //Ollama 本地模型"
+	}
+}
+
+frmSetting.tbMsgLimit.setRange(3,100);
+frmSetting.tbTemperature.setRange(0,10);
+frmSetting.tbTemperature.oncommand = function(id,event,pos){
+
+	var pos = frmSetting.tbTemperature.pos; 
+	frmSetting.tbTemperature.tooltip = pos / 10; 
+	frmSetting.lbTemperature.text = pos / 10; 
+}
+
+frmSetting.tbMsgLimit.oncommand = function(id,event,pos){
+
+	frmSetting.lbMsgLimit.text = frmSetting.tbMsgLimit.pos;;  
+}
+
+import win.ui.listEdit;
+var listEdit = win.ui.listEdit(frmSetting.lstConfig);
+listEdit.editBox.setCueBannerText("请输入配置名",true);
+
+if(!#config.itemNames) {
+	config.itemNames = {"默认"}
+	config.itemData = {{
+		url = config.url || "https://ai.aardio.com/api/v1/";
+		key = config.key;
+		model = #config.model ? config.model : "aardio";
+		temperature = config.temperature;		
+	}};
+}
+
+frmSetting.lstConfig.onSelChange = function(){
+	var selIndex = frmSetting.lstConfig.selIndex; 
+	
+	if(config.selItem && config.selItem != selIndex){
+		//保存上一个配置
+		var configItem = {
+			url = string.trim(frmSetting.editApiUrl.text,`"' 	`);
+			key = string.trim(frmSetting.editApiKey.text,`"' 	`);
+			model = ..string.match(frmSetting.editModel.text,"\s*(\S+)");
+			temperature = frmSetting.tbTemperature.pos / 10;
+			msgLimit = frmSetting.tbMsgLimit.pos;
+			proxy = string.trim(frmSetting.editProxy.text);
+			systemPrompt = frmSetting.editSystemPrompt.text;
+			f1 = frmSetting.chkF1.checked;
+		}  
+		
+		if(configItem.f1){
+			for(i,cfg in config.itemData){
+					cfg.f1 = null;
+			} 
+		}
+	
+		config.itemData[config.selItem] = configItem; 		
+	} 
+	
+	//加载下一个配置
+	var selIndex = frmSetting.lstConfig.selIndex; 
+	var configItem = config.itemData[selIndex] || {};
+	frmSetting.chkF1.checked = configItem.f1;
+	
+	frmSetting.editApiUrl.text = configItem.url;
+		
+	import string.escape2;
+	configItem.key = ..string.escape2.unescape(configItem.key)
+	frmSetting.editApiKey.text = ..string.escape2.escape(configItem.key)
+
+	frmSetting.editProxy.text = configItem.proxy;
+	frmSetting.editSystemPrompt.text = configItem.systemPrompt;
+
+	if(configItem.temperature===null) configItem.temperature = 0.1; 
+	frmSetting.tbTemperature.pos = configItem.temperature * 10;
+	frmSetting.tbTemperature.tooltip = configItem.temperature; 
+	frmSetting.lbTemperature.text = configItem.temperature; 
+	
+	frmSetting.tbMsgLimit.pos = configItem.msgLimit || 15;
+	frmSetting.lbMsgLimit.text = configItem.msgLimit || 15; 
+	
+	frmSetting.editModel.text = configItem.model; 
+	
+	config.proxy = null;
+	table.assign(config,configItem);
+	
+	config.itemData[selIndex] = configItem;
+	config.itemNames = frmSetting.lstConfig.items; 
+	config.itemData = table.slice(config.itemData,1,#config.itemNames);
+	config.selItem = selIndex; 
+		
+	config.save();	
+}
+
+frmSetting.lstConfig.items = config.itemNames;
+frmSetting.lstConfig.selIndex = config.selItem || 1;
+frmSetting.lstConfig.onSelChange();
+frmSetting.chkKatex.checked = config.katex;
+frmSetting.chkUsage.checked = config.usage;
+
+frmSetting.lnkVip.disabled = frmSetting.editApiUrl.text != "https://ai.aardio.com/api/v1" && frmSetting.editApiUrl.text != "https://ai.aardio.com/api/v1/"
+
+//保存并更新配置
+import inet.url;
+frmSetting.btnSave.oncommand = function(id,event){
+
+	var configItem = {
+		url = frmSetting.editApiUrl.text;
+		key = string.trim(frmSetting.editApiKey.text,`"' 	`);
+		model = ..string.match(frmSetting.editModel.text,"\s*(\S+)");
+		temperature = frmSetting.tbTemperature.pos / 10;
+		msgLimit = frmSetting.tbMsgLimit.pos;
+		proxy = string.trim(frmSetting.editProxy.text);
+		systemPrompt = frmSetting.editSystemPrompt.text;
+		f1 = frmSetting.chkF1.checked;
+	} 
+	
+	if(configItem.f1){
+		for(i,cfg in config.itemData){
+			cfg.f1 = null;
+		} 
+	}
+	
+	import string.escape2;
+	configItem.key = ..string.escape2.unescape(configItem.key)
+	
+	if(!#configItem.proxy){
+		configItem.proxy = null;
+	}
+	
+	var tUrl = inet.url.split(configItem.url); 
+	if(tUrl[["host"]]=="api.anthropic.com"){
+		if(configItem.model[1]!='@'#){
+			configItem.model = '@' + configItem.model;
+		}
+	}
+	elseif(tUrl[["host"]]=="generativelanguage.googleapis.com"){
+		configItem.url = "https://generativelanguage.googleapis.com/v1beta"
+	}
+	
+	var selIndex = frmSetting.lstConfig.selIndex;
+	config.selItem = selIndex; 
+	config.itemData[selIndex] = configItem;
+	
+	config.proxy = null;
+	table.assign(config,configItem);  
+	
+	config.katex = frmSetting.chkKatex.checked;  
+	config.usage = frmSetting.chkUsage.checked;
+	config.save();
+	
+	frmSetting.endModal(true); 
+	
+	thread.delay(100)
+}
+
+frmSetting.btnEdit.oncommand = function(id,event){
+	listEdit.beginEdit();
+}
+
+frmSetting.btnAdd.oncommand = function(id,event){
+	listEdit.beginEdit(0);	
+}
+
+frmSetting.btnRemove.oncommand = function(id,event){
+	if(frmSetting.lstConfig.count==1){
+		return frmSetting.msgboxErr("只有一个配置方案时不允许删除！");
+	}
+	
+	var selIndex = frmSetting.lstConfig.selIndex;
+		
+	..table.remove(config.itemData,selIndex);
+	..table.remove(config.itemNames,selIndex);
+	frmSetting.lstConfig.delete(selIndex)
+	
+	selIndex = selIndex<=frmSetting.lstConfig.count ? selIndex : selIndex -1;
+		
+	config.selItem = null;
+	frmSetting.lstConfig.selIndex = selIndex;
+	frmSetting.lstConfig.onSelChange() 
+}	
+
+listEdit.onEditChanged = function(newText,selIndex){
+	config.itemNames = frmSetting.lstConfig.items; 
+	
+	frmSetting.lstConfig.selIndex = selIndex;
+	frmSetting.lstConfig.onSelChange();
+	
+	config.save();	
+}
+
+frmSetting.btnAdd.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+frmSetting.btnRemove.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+frmSetting.btnEdit.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF3C3C3C;
+		disabled=0xFF6D6D6D;
+		hover=0xFFFF0000		
+	}
+})
+
+frmSetting.lnkVip.skin({
+	color={
+		active=0xFF00FF00;
+		default=0xFF000080;
+		disabled=0xFF999999;
+		hover=0xFFFF0000		
+	}
+}) 
+frmSetting.lnkVip.oncommand = function(id,event){
+	var apiKey = frmSetting.editApiKey.text;
+	if(!#apiKey){
+		frmSetting.msgboxErr("请先输入接口密钥（ API key ）")
+		frmSetting.editApiKey.setFocus();
+		return;
+	}
+	
+	import web.form;
+	var frmWeb = win.form(text="aardio - VIP 会员中心" )
+
+	var wb = web.form( frmWeb );
+	wb.external = {
+		openUrl = function(url){
+			import process;
+			process.openUrl(url);	
+			frmWeb.close(true);
+		} 
+	}
+	
+	frmWeb.show(3/*_SW_MAXIMIZE*/);
+	wb.post("https://ai.aardio.com/vip/",{apiKey=apiKey});
+}
+
+frmSetting.show();
+win.loopMessage();

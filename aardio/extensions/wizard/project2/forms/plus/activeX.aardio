@@ -1,4 +1,4 @@
-﻿import win.ui;
+import win.ui;
 /*DSG{{*/
 var winform = win.form(text="aardio + bat";right=759;bottom=469;parent=...)
 winform.add()
@@ -113,7 +113,7 @@ library <? = owner.libName ?> {
 			可将下面的 IDispatchExecutableEvent 换为 IDispatchExecutableWithEvent 。
 			并在下面明确添加接口函数。
 			
-			如果不会写，可将 IDispatchExecutableWithEvent 发给 ChatGPT 或 Copilot 写，
+			如果不会写，可以在 AI 助手中右键发送 ActiveX 开发文档，让 AI 写。
 			详细说明要添加的函数参数类型就可以。
 			
 			注意下面的 id（DISPID） 不要小于等于 0 也不要大于 10000。

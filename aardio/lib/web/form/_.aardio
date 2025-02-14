@@ -587,6 +587,8 @@ namespace form {
 		};
 		post = function(url,postdata,headers,target,flags){ 
 			if(!postdata)return owner.go(url); 
+			if(type(postdata)==="table") postdata = ..inet.url.stringifyParameters(postdata);
+			
 			owner._browser.Navigate( mapurl(url) ,( flags: 0 ) | 2/*_navNoHistory*/,target: "_self"
 				,{ _safearray = postdata/* 转换为字节数组*/ } 
 				,..web.joinHeaders( ( headers : 'Content-Type: application/x-www-form-urlencoded' ),owner.addHeaders ) 
@@ -1028,7 +1030,7 @@ web.form.ie11() = !wb.
 !wb.goDirectory(.("__/*本地目录*/") = 打开本地目录\n支持 shellFolderSelectionChanged 事件\n打开目录以后, document 属性会变为\n[IShellFolderViewDual 接口对象](https://docs.microsoft.com/en-us/windows/win32/api/shldisp/nn-shldisp-ishellfolderviewdual2)
 !wb.go( = 打开网址
 !wb.go(.("网址","HTTP头","目标框架") = 打开网址或本地路径\n注意驱动器根目录要以反斜杠结束,\n支持回车换行连接的字符串值、或包含键值对的表,\n指定的HTTP头将会使用 web.joinHeaders 函数转换为字符串\n目标框架一般可省略
-!wb.post(.("网址","POST数据","HTTP头","目标框架") = 自动提交表单数据,\nPOST数据使用&&连接键值对,例如:"k=v&&k2=v2",\nHTTP头支持回车换行连接的字符串值、或包含键值对的表,\n指定的HTTP头将会使用 web.joinHeaders 函数转换为字符串\n目标框架一般可省略
+!wb.post(.("网址","POST数据","HTTP头","目标框架") = 自动提交表单数据,\nPOST 数据可以传入包含名值对的表对象，也可以传入URL 参数格式的字符串，例如:"k=v&&k2=v2"。\nHTTP 头支持回车换行连接的字符串值、或包含键值对的表,\n指定的HTTP头将会使用 web.joinHeaders 函数转换为字符串\n目标框架一般可省略
 !wb.location = 当前网址
 !wb.host = 当前网址所在主机名 
 !wb.getFrame() = !jsGlobal.

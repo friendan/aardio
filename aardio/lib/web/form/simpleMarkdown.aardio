@@ -58,7 +58,21 @@ hr{box-sizing:content-box;overflow:hidden;background:0 0;border-bottom:1px solid
 </style>
 <script> 
 
+var isAutoScrolling = false; 
+var userHasScrolled = false;;
+var checkThinkTagName = false;
+
 window.lastInsertElement = function(){
+	if(checkThinkTagName){
+		var thinks = document.getElementsByTagName("think") 
+		checkThinkTagName = false;
+		
+		if(thinks.length>0){
+			thinks[0].innerHTML = thinks[0].innerText;
+			return thinks[0];
+		}		
+	}
+
 	return document.body.children[ document.body.children.length -1 ]
 }
 
@@ -68,12 +82,12 @@ function isScrollAtBottom(container) {
     return document.documentElement.scrollHeight - document.documentElement.scrollTop - document.documentElement.clientHeight <= threshold;
 }
 
-var isAutoScrolling = false; 
-var userHasScrolled = false;;
+
 
 window.showLoading = function(title){ 
 	isAutoScrolling = false; 
 	userHasScrolled = false;
+	checkThinkTagName = true;
 	
 	if(!title) title = "正在加载 "
 	if(window.interval){
@@ -309,8 +323,15 @@ window.onWriteEnd = function(){
     		this.$writeDeltaDone = null;
     		markdownText = markdownText ++ delta; 
     		
+    		var lastTagName = lastElement && lastElement.tagName;
+    		if(lastTagName=="THINK" && ..string.indexOf(markdownText,"</think>") ){
+    			markdownText = ..string.replace(markdownText,"\<think\>(.+?)\</think\>","<details><summary>推理过程</summary><blockquote>\1</blockquote></details>");
+    			lastTagName = null;	
+    		}
+    		
     		if(lastElement && 
-        		( (lastElement.tagName=="PRE"&&!..string.indexOf(delta,"`")) || !..string.find(delta,"\p")) ){
+        		( (lastTagName=="PRE"&&!..string.indexOf(delta,"`")) 
+        		    || lastTagName=="THINK" || !..string.find(delta,"\p") ) ){
         		 
         		..table.push(deltaCatch,delta);
         		if(#deltaCatch>5){
@@ -325,7 +346,7 @@ window.onWriteEnd = function(){
         		this.body.innerHTML = html; 
          		
          		if(#delta){
-         			lastElement = this.script.lastInsertElement(null) 
+         			lastElement = this.script.lastInsertElement(null)
          		}
     		}
     		

@@ -138,8 +138,10 @@ namespace command {
 		var ret;
 		if(commandTable[-1]){
 			ret = commandTable[-1][idx] ? ..table.remove(commandTable[-1],idx);
-		} 
-		mmap.seek("set"); 
+			mmap.seek("set"); 
+			mmap.writeTable(commandTable);  
+		} else mmap.seek("set");
+		
 		mutex.release();
 		return ret;
 	}
