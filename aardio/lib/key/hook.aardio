@@ -112,16 +112,16 @@ end details**/
 /**intellisense()
 key.hook = 低级键盘钩子。\n\n低级键盘钩子只能用于包含窗口消息循环的界面线程。\n键盘钩子所在的界面线程如果有阻塞钩子消息的耗时操作，可能导致遗漏键盘消息。\n耗时操作阻塞键盘钩子消息超过一秒或注册表限制的更小时间，系统可能导致钩子失效。\n建议将阻塞消息循环的耗时操作应当放到后台工作线程内执行。
 key.hook() = 创建低级键盘钩子\n!stdKeyHook.
-!stdKeyHook.proc = @.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){
+!stdKeyHook.proc = @.proc = function(msg,vkCode,scanCode,injected,flags,timeStamp,extraInfo){
 	if( injected ) return;//忽略模拟按键
 	 
-    var kn = key.getName( vkcode );
+    var vkName = key.getName( vkCode );
     select(msg) {
     	case 0x100/*_WM_KEYDOWN*/ ,0x104/*_WM_SYSKEYDOWN*/{
-    	    io.print("按下",kn)
+    	    io.print("按下",vkName)
     	}
     	case 0x101/*_WM_KEYUP*/,0x105/*_WM_SYSKEYUP*/{
-    	    io.print("弹起",kn)
+    	    io.print("弹起",vkName)
     	}  
     }   
     

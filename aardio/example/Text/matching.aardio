@@ -31,7 +31,7 @@ var url = console.getText( "请输入网址:" )
 
 import inet.url;
 console.log("直接用标准库函数检测字符串是否网址",inet.url.is(url) );  
-console.log("简单检测是否以http开始（忽略大小写）",string.startWith(url,"http",true) );
+console.log("简单检测是否以http开始（忽略大小写）",string.startsWith(url,"http",true) );
 
 console.log("使用模式匹配检测字符串是否以https:或http:开始（忽略大小写）"
 	,string.match(url,"^<@@https@>|<@@http@>\:") 

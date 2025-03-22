@@ -39,7 +39,7 @@ var expr = result.ExpiredTime;
 print(apiKey)
 ```
 
-## 调用火山方舟的豆包知识库接口 <a id="knowledge " href="#knowledge ">&#x23;</a>
+## 调用火山方舟的豆包知识库接口 <a id="knowledge" href="#knowledge ">&#x23;</a>
 
 
 ```aardio 
@@ -52,7 +52,7 @@ var http  = web.rest.volcengine.client(
 	secretAccessKey = "sk"; 
 	region =  "cn-north-1"; 
 	service = "air";
-	accountId = "2101785731"//鼠标放到火山头像上显示的账号ID
+	accountId = "账号ID"//鼠标放到火山头像上显示的账号ID
 );
 
 //声明 API 
@@ -60,16 +60,16 @@ var air = http.api("https://api-knowledgebase.ml_platform.cn-beijing.volces.com/
 
 //发送请求。参数训明: https://www.volcengine.com/docs/84313/1350012
 var resp,err = air.search_knowledge({
-	name="aardio";
-	project="default";
+	name="知识库名称";
+	project="default";//项目名称
 	dense_weight=0.5;
-	limit=3; 
+	limit=4; //限制最大返回结果数量
 	post_processing={
 		get_attachment_link=false;
 		rerank_only_chunk=false;
 		rerank_switch=false		
 	};
-	query="aardio 如何解析 JSON"	
+	query="这里写需要搜索知识库的用户问题"	
 })
 
 //获取数据

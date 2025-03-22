@@ -190,6 +190,7 @@ win.ui.ctrl.listbox() = 列表框\nlistbox 默认会自动调整高度以对齐�
 !listbox.width = 宽度
 !listbox.height = 高度\nlistbox 默认会自动调整高度以对齐项目行高,\n在创建参数中添加 integralHeight = false 可禁止此特性
 !listbox.count = 列表项数目
+!listbox.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。\n\n以 `.` 前导的 `.hide()` 作为成员函数被调用时，\n作用等价于将 hide 属性设为 null 。
 !listbox.hitTest(.(x坐标,y坐标,是否屏幕坐标) = 该函数返回指定坐标的句柄,参数三可省略,默认为false.\n如果不指定任何参数,则自动获取当前消息坐标
 !listbox.selectRange(1,__) = 选中指定范围\n如果不指定任何参数,取消选区
 !listbox.setSelected(1__/*项索引*/) = 选中指定项,索引为0则选定全部\n该函数仅在开启控件多选模式下有效\n单选模式下请使用selIndex属性替代

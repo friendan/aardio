@@ -113,7 +113,7 @@ if process.adb.connecter(){
 				  
 			}
 			elseif(eventType = "EV_KEY"){ 
-				 if(..string.startWith(eventCode,"KEY_",true) ){
+				 if(..string.startsWith(eventCode,"KEY_",true) ){
 				 	if(value==="DOWN"){
 				 		winform.edit.printf(`process.adb.key("%s")`,eventCode);
 				 	}

@@ -10,14 +10,10 @@ console.showLoading(" Thinking ");
 //1. 第一步：调用 web.rest.aiChat 创建 REST 客户端，用于调用服务端 HTTP 接口
 //---------------------------------------------------------------------
 import web.rest.aiChat;
-var aiClient = web.rest.aiChat(   
-	/*
-	下面的测试密钥 24 小时后失效，
-	DeepSeek 的 key 充 10 元估计能用一年，请自己申请一个吧！
-	*/
-	key =   '\0\48\67\91\29\5\81\84\83\83\4\5\81\81\6\1\86\4\9\84\1\9\1\82\2\86\0\0\83\7\81\6\7\5\86\86\82';
-	url = "https://api.deepseek.com/v1";//接口地址
-	model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+var aiClient = web.rest.aiChat(
+	key =   '\0\1\96';
+	url = "https://ai.aardio.com/api/v1/";//接口地址
+	model = "test-model-id";//模型名称首字符为 @ 则使用 Anthropic 接口
 	temperature = 0.5;//温度
 	maxTokens = 1024,//最大回复长度
 )

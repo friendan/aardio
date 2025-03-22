@@ -122,7 +122,7 @@ for(name,ctrl in winform.eachControl("plus") ){
     	}
     	
     }
-    if(string.startWith(name,"chk") ){
+    if(string.startsWith(name,"chk") ){
    
      	ctrl.skin(
     		color = { 
@@ -145,7 +145,7 @@ for(name,ctrl in winform.eachControl("plus") ){
 
 		clrCtrl.checkColorCtrl = ctrl;
 		ctrl.styleCtrlName = name;
-		if(string.startWith(name,"chkBd") ){
+		if(string.startsWith(name,"chkBd") ){
 			ctrl.oncommand = function(id,event){
 				winform.chkPreviewBackground.checked = false;
 				
@@ -195,7 +195,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
     
 	var style = previewStyle;
 	var styleStateTitle = ""
-	if( string.endWith(styleCtrlName,"Checked") ){
+	if( string.endsWith(styleCtrlName,"Checked") ){
 		if(!style.checked) style.checked = {} 
 		style = style.checked;
 		styleStateTitle = "(勾选后)"
@@ -222,7 +222,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 		styleStateTitle = "默认状态" + styleStateTitle;
 	}
 		
-	if(string.startWith(styleCtrlName,"chkBg")){
+	if(string.startsWith(styleCtrlName,"chkBg")){
 		if(!style.background)style.background={};
 		style.background[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：背景色 " + styleStateTitle;
@@ -230,7 +230,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 			style.background = null;
 		}
 	}
-	elseif(string.startWith(styleCtrlName,"chkFg")){
+	elseif(string.startsWith(styleCtrlName,"chkFg")){
 		if(!style.foreground)style.foreground={};
 		style.foreground[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：背景色 " + styleStateTitle;
@@ -238,7 +238,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 			style.foreground = null;
 		}
 	}
-	elseif(string.startWith(styleCtrlName,"chkTxt")){
+	elseif(string.startsWith(styleCtrlName,"chkTxt")){
 		if(!style.color)style.color={};
 		style.color[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：文本色 " + styleStateTitle;
@@ -761,7 +761,7 @@ winform.bindConfig( config.winform,{
 } );
 
 for(name,ctrl in winform.eachControl("plus") ){ 
-	if(string.startWith(name,"chk") ){
+	if(string.startsWith(name,"chk") ){
     	ctrl.oncommand ();
 	}
 }
@@ -784,22 +784,22 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 		}
 		
 		var tab;
-		if( string.startWith(name,"cBg") ){
+		if( string.startsWith(name,"cBg") ){
 			clrName = "背景"
 			clrNameEn = "background"
 			tab = bg;
 		}
-		elseif( string.startWith(name,"cFg") ){
+		elseif( string.startsWith(name,"cFg") ){
 			clrName = "前景"
 			clrNameEn = "foreground"
 			tab = fg;
 		}
-		elseif( string.startWith(name,"cTxt") ){
+		elseif( string.startsWith(name,"cTxt") ){
 			clrName = "文本"
 			clrNameEn = "text"
 			tab = txt;
 		}
-		elseif( string.startWith(name,"cBd") ){
+		elseif( string.startsWith(name,"cBd") ){
 			clrName = "边框"
 			clrNameEn = "border"
 			tab  = border;
@@ -808,7 +808,7 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 			continue ;
 		}
 		
-		if( string.endWith(name,"Checked") ){
+		if( string.endsWith(name,"Checked") ){
 			clrName = clrName+"/勾选"
 			clrNameEn = clrNameEn + "/checked"
 			tab = tab.chk;

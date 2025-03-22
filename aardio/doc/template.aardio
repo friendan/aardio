@@ -3,18 +3,18 @@ import string.markdown;
 var markdown = string.markdown();
 
 var htmlTitle,htmlBody;
-if(string.endWith(request.path,".html",true)){
+if(string.endsWith(request.path,".html",true)){
 	request.path = string.left(request.path,-6) + ".md"
 }
 
-if(string.endWith(request.path,".md",true)){
+if(string.endsWith(request.path,".md",true)){
 	if(request.path == "/search-results.md"){
 		var md = thread.get("doc://search-results.html") : "搜索结果为空！";
 		
 		htmlTitle = string.match(md,"\n\s*\#\s+(\N+)") ||  string.match(md,"\n\s*\#\#\s+(\N+)") || "aardio 文档" ;
 		htmlBody = markdown.render(md);
 	}
-	elseif( string.startWith(request.path,"/library-reference/") ){
+	elseif( string.startsWith(request.path,"/library-reference/") ){
 		var libPath = string.replace(request.path,"^/library-reference/","~/lib/");
 		libPath = fsys.path.replaceExt(libPath,".aardio");
 		
@@ -30,7 +30,7 @@ if(string.endWith(request.path,".md",true)){
 			htmlBody = markdown.render(md); 		
 		} 
 	}
-	elseif( string.startWith(request.path,"/example/") ){ 
+	elseif( string.startsWith(request.path,"/example/") ){ 
 		request.path = string.left(request.path,-4) + ".aardio" 
 		 
 		htmlTitle = "范例"
@@ -73,7 +73,7 @@ if(string.endWith(request.path,".md",true)){
 		}
 	}  
 } 
-elseif( string.startWith(request.path,"/example/") ){ 
+elseif( string.startsWith(request.path,"/example/") ){ 
 	htmlTitle = "范例"
 	var code = string.load("~"+request.path ); 
 	if(code){  

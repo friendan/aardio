@@ -446,6 +446,9 @@ class client{
 	setCookie = function(...){
 		return ..inet.setCookie(...);
 	};
+	setTimeouts = function(...){
+		this._http.setTimeouts(...);
+	}; 
 	close = function(){
 		this._http.close();
 	};
@@ -626,6 +629,7 @@ web.rest.client(.(config) = 创建 REST 客户端。\n可选用一个表参数�
 !web_restClient.lastRequestUrl = 获取最后一次请求的 URL。\n允许的 beforeRequestHeaders 事件中修改此属性以改变请求地址。 
 !web_restClient.lastRequestMethod = 最后一次请示使用的HTTP方法
 !web_restClient.lastRequestInfo = 最后一次请示使用的所有参数信息
+!web_restClient.setTimeouts(.(连接超时,请求超时,接收超时) = 设置超时,以亳秒为单位（1秒为1000毫秒）。
 !web_restClient.strictParsing = 对于 JSON 客户端，如果此属性设为 true：\n且服务器响应头未声明 JSON 类型，返回数据第一个字符不是 { 也不是 [，\n则直接返回包含服务器响应数据的字符串。\n\n此属性值默认为 null
 !web_restClient._http = inet.http客户端，用于执行 http 请求\n!inet_http.
 !web_restClient.close() = 关闭对象释放资源

@@ -257,12 +257,11 @@ window.onWriteEnd = function(){
 				eleThinking = this.getEle("loading");
 				if(eleThinking){
 					eleThinking.outerHTML = `<blockquote id="thinking"></blockquote>`;
+					..com.Release(eleThinking);
 				}
 				else {
 					this.body.insertAdjacentHTML("beforeEnd",`<blockquote id="thinking"></blockquote>`);
 				}
-				
-				..com.Release(eleThinking);
 				
 				eleThinking = this.getEle("thinking");
 				delta = ..string.replace(delta,"<\<br\>>|<\s*>","");
@@ -284,6 +283,7 @@ window.onWriteEnd = function(){
 		
 		this.writeDelta = function(delta){
 			if(eleThinking){
+				if(!#delta) return;
 				
 				markdownText = ..string.concat(markdownText,
 					`<details><summary>推理过程</summary><blockquote>`+eleThinking.innerHTML +`</blockquote></details>`);
@@ -301,6 +301,11 @@ window.onWriteEnd = function(){
     		    deltaCatch = {};
          		if(#markdownText) {
          		    
+         		    var space,codeOpenTag = ..string.match(markdownText,"!\N([ \t]*)(```+)(<\a\w*><.\2?!>+)$") 
+					if(codeOpenTag){
+						markdownText = markdownText + '\r\n' + (space||"") ++ codeOpenTag;
+					}
+					
          			var html;
          			if(this.beforerWriteEnd){
          				var md = this.beforerWriteEnd(markdownText);
@@ -353,10 +358,19 @@ window.onWriteEnd = function(){
     		return this;
 		}
 		
-		this.BeforeNavigate2=function( pDisp, url,flags,target,postData,headers,cancel ) { 
+		this.BeforeNavigate2 = function( pDisp, url,flags,target,postData,headers,cancel ) { 
  			..raw.execute(url);
 			return url, flags, target, postData, headers,true;
 		} 
+		
+		this.NewWindow3 = function(ppDisp,cancel,dwFlags,bstrUrlContext,bstrUrl ) { 
+    		..thread.invoke( 
+        		function(url){
+            		..raw.execute(url);
+        		},bstrUrl
+    		)
+    		return ppDisp,true;
+		};
 		
 	} }; 
 }

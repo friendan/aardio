@@ -99,7 +99,7 @@ winform.btnBuild.oncommand = function(id,event){
 	} 
 	
 	if(!#outpath) return;
-	if(!..string.endWith(outpath,".asar",true)){
+	if(!..string.endsWith(outpath,".asar",true)){
 		winform.msgboxErr("输出文件必须以.asar作为文件名后缀");
 		winform.editOutPath.setFocus();
 		return;

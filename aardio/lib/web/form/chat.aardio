@@ -30,11 +30,29 @@ class chat{
         	content  = content;
     	});
 	};
-	prompt = function(content){
-		this.pushMessage({ 
-        	role = "user"; 
-        	content  = content;
-    	});
+	prompt = function(content,imageUrl){
+		
+		if(imageUrl){
+			content = {
+        		{
+        			"type": "text",
+        			"text": content
+      			},
+      			{
+        			"type": "image_url",
+        			"image_url": {
+          				"url": imageUrl
+        			}
+      			}
+        	} 
+		}
+		
+		this.pushMessage(
+    		{ 
+        		role = "user"; 
+        		content  = content;
+    		}
+		);
 	};
 	assistant = function(content){
 		this.pushMessage(content);  
@@ -56,13 +74,31 @@ class chat{
 					lastastAssistant[["content"]] = ..string.replace(lastastAssistant[["content"]] ,"\<think\>(.+?)\</think\>","");
 				}
 				
-				if(..string.find(msg.content,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
+				var txtContent;
+				var content = msg.content;
+				if(..table.isArray(content)){
+					txtContent = "";
+					for(i=1;#content;1){
+						var item = content[i];
+						if(item.type=="text"){
+							txtContent = ..string.concat(txtContent,item.text)
+						}
+						elseif(item.type=="image_url"){
+							txtContent = ..string.concat(txtContent,..string.concat("![](",item.image_url[["url"]],")") )
+						}
+					} 
+				}
+				else {
+					txtContent = content;
+				}
+				
+				if(..string.find(txtContent,"<#+\s+>|<!\N\s*[-+*]>|<!\N\s*\d+\.\s+>|<`>|<===>|<\-\-\->")){
 					this.writeDelta('\n\n<span class="chat-role user">我</span>\n
-    				<div class="chat-prompt">\n'+msg.content + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+    				<div class="chat-prompt">\n'+txtContent + '\n</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
 				}
 				else{
     				this.writeDelta('\n\n<span class="chat-role user">我</span>\n
-    				<div class="chat-prompt">'+msg.content + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
+    				<div class="chat-prompt">'+txtContent + '</div>\n\n<span class="chat-role assistant">AI</span>\n\n');
     			}
     				
     			this.showLoading("正在思考 ");
@@ -114,7 +150,8 @@ started() = 是否已经发起对话。\n发起对话指的是消息队列中包
 clear() = 清除会话记录
 errorMessage(__/*错误信息*/) = 显示错误信息
 assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
-prompt(__/*提示词*/) = 添加并显示用户提示词
+prompt(.(content) = 添加用户提示词。\ncontent 可以是字符串，也可以是对象数组。\n请参考调用模型与接口的文档了解支持的对象格式。
+prompt(.(txtContent,imageUrl) = 添加并显示用户 @txtContent 参数指定的文本提示词。\n可选用 @imageUrl 指定图像网址，\n本地图像可调用 inet.urlData 转换为 Data URL（Base64) 格式。\n注意请参考接口文档了解调用模型是否支持图像。
 system(__/*提示词*/) = 添加并显示系统提示词
 url(__) = 获取参数 @1 指定网址的内容并转换为 Markdown 格式或者文本格式提示词。\n参数 @1 也可以指定包含 url 字段的对象，或这样的对象数组。\n参数为 包含 url 字段的对象时如果同时包含 text 字段，则直接自 text 字段获取网页文本。\n如果参数 @1 指定数组参数，则将所有数组成员作为参数获取目标内容。\n如果参数为空数组、空字符串、null 则返回 null。\n成功返回添加的提示词，失败返回  null,错误信息 。\n\n如果提前导入 web.turndown 库则支持自动转换 HTML 为 Markdown 格式文本。
 aardioSystem( = 自动创建 aardio 编程助手系统提示词。\n除函数自带的基本的 aardio 助手提示词以外，EXE 目录下必须存在待添加的文档。
@@ -136,4 +173,7 @@ beforerWriteEnd = @.beforerWriteEnd = function(markdown){
 }
 showLoading(.(title) = 显示加载动画，可选用 title 指定标题。
 showThinking(.(reasoning) = 显示推理过程，reasoning 参数指定 AI 返回的推理响应文本。
+doModal(.(ownerForm,showFlags) = 宿主窗口显示为模态对话框。\n可选用参数 @ownerForm 指定所有者窗口，\n参数 @showFlags 可选用 _SW_ 前缀常量指定显示选项。
+show(.(true) = 显示窗口
+show(.(false) = 隐藏窗口
 end intellisense*****/

@@ -71,7 +71,7 @@ namespace imTip{
 
 
 /*****intellisense()
-process.imTip(argv) = @.imTip(\n	chat = "__/*打开 ImTip 的 AI 聊天助手窗口\nchat 参数可为空字符或 AI 助手配置名称。\n可选用 q 参数指定需要立即发送的问题。*/",\n	q = ""\n)
+process.imTip(argv) = @.imTip(\n	chat = "__/*打开 ImTip 的 AI 聊天助手窗口\nchat 参数可为空字符或 AI 助手配置名称。\n可选用 q 参数指定需要立即发送的问题或对话数据文件（*. jsonl ）路径。*/",\n	q = ""\n)
 end intellisense*****/
 
 /*****intellisense(process.imTip)

@@ -259,7 +259,7 @@ project 元素的属性 dstrip 指定是否移除调试符号。
 			project = project + desc + '\r\n\r\n';
 			
 			var codePath = ide.getActiveDocPath();
-			if(#codePath && ..string.endWith(codePath,".aardio",true) ){
+			if(#codePath && ..string.endsWith(codePath,".aardio",true) ){
 				project = project + '\r\n\r\n用户当前正在编辑的文件为: "'+codePath+'"\r\n'
 			} 
 			
@@ -280,7 +280,6 @@ if(#selText){
 	var rightText = codeEdit.rightText();
   
 	var sysPrompt = "
-
 ## 任务
 
 用户当前 """"""选中代码"""""" 在 """"""前置代码"""""" 与 """"""后置代码"""""" 中间。
@@ -315,16 +314,15 @@ if(#selText){
 }
 
 msg.prompt("
-
 ## 任务
 
 分析上下文（""""""前置代码""""""与""""""后置代码""""""）插入新的代码（续写与补全）。 
 
 ## 要求
 
-- 请直接返回插入的代码，回复不要包含前置代码或后置代码 
-- 你插入的代码应在前置代码与后置代码中间，可以承上而启下。
-- 回复请不要使用 Markdown 代码块包围生成的代码。 
+- 回复的全部内容必须是适合放在前置代码与后置代码中间位置的代码。 
+- 回复不要再包含""""""前置代码""""""或""""""后置代码"""""" 。 
+- 回复的代码不需要用 Markdown 代码块标记包围。
 
 ## 前置代码
 
@@ -351,6 +349,12 @@ msg.prompt("
 ## 任务
 
 分析上下文（""""""前置代码""""""与""""""后置代码""""""）插入新的代码（续写与补全）。
+
+## 要求
+
+- 回复的全部内容必须是适合放在前置代码与后置代码中间位置的代码。 
+- 回复不要再包含""""""前置代码""""""或""""""后置代码"""""" 。 
+- 回复的代码不需要用 Markdown 代码块标记包围。
 
 ## 前置代码
 
@@ -427,7 +431,7 @@ var origCaretPos = codeEdit.caretPos;
 
 var codeBlockTag;
 var responseText = "";
- 
+
 firstLine = true;
 var ok,err = ai.messages(msg,function(delta,reasoning){
 	
@@ -445,27 +449,32 @@ var ok,err = ai.messages(msg,function(delta,reasoning){
 	//移除多余的代码块标记
 	if(responseText && delta){
 		responseText = responseText ++ delta;
+		
 		if( (responseText == '```aardio\n') || (responseText == '```aardio\r\n')){
 			responseText = null;
 			codeBlockTag = true;
 			return;
 		}
-		else if(..string.startWith('```aardio\n',responseText) ){
+		else if(..string.startsWith('```aardio\n',responseText) ){
 			return;
 		}
-		else if(..string.startWith('```aardio\r\n',responseText) ){
+		else if(..string.startsWith('```aardio\r\n',responseText) ){
 			return;
 		}
-		elseif(..string.startWith(responseText,'```aardio\n',)){
+		elseif(..string.startsWith(responseText,'```aardio\n',)){
 			delta = ..string.right(responseText,-( (#'```aardio\n') + 1));
 			responseText = null;
 			codeBlockTag = true;
 			responseText = null;
 		}
-		elseif(..string.startWith(responseText,'```aardio\r\n',)){
+		elseif(..string.startsWith(responseText,'```aardio\r\n',)){
 			delta = ..string.right(responseText,-( (#'```aardio\r\n')+ 1));
 			responseText = null;
 			codeBlockTag = true;
+			responseText = null;
+		}
+		elseif(..string.startsWith(responseText,'\n\n')){
+			delta = ..string.right(responseText,-3);
 			responseText = null;
 		}
 		else {
@@ -505,19 +514,26 @@ var ok,err = ai.messages(msg,function(delta,reasoning){
 		//移除多余的代码块标记
 		if(codeBlockTag){
 			var caretPos = codeEdit.caretPos;
-			codeEdit.setsel(caretPos-3,caretPos);
-			if(codeEdit.selText = '```\n'){
+			codeEdit.setsel(caretPos-4,caretPos);
+		 
+			if(codeEdit.selText = '\n```\n'){
 				codeEdit.selText = "";
 			}
-			else {
-				codeEdit.setsel(caretPos-2,caretPos);
-				if(codeEdit.selText = '```'){
+			else{
+				codeEdit.setsel(caretPos-3,caretPos);
+				if(codeEdit.selText = '```\n' || codeEdit.selText = '\n```'){
 					codeEdit.selText = "";
 				}
-				else { 
-					codeEdit.setsel(caretPos);
+				else {
+					codeEdit.setsel(caretPos-2,caretPos);
+					if(codeEdit.selText = '```'){
+						codeEdit.selText = "";
+					}
+					else { 
+						codeEdit.setsel(caretPos);
+					} 
 				} 
-			} 
+			}
 		}  
 	}
 } );

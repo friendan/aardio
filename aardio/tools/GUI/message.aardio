@@ -384,10 +384,10 @@ pre code, pre tt {
 
 import process;
 wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
-	if( ..string.startWith(url,"javascript:",true) ) return;
+	if( ..string.startsWith(url,"javascript:",true) ) return;
 	
 	var id = ..string.match(url,"\#(.+)$"); 
-	if( id && !..string.startWith(url,"http",true) ) {
+	if( id && !..string.startsWith(url,"http",true) ) {
 		var ele = wb.getEle(id);
 		if( ele ){
 			var x,y,cx,cy = wb.getPoint(ele);
@@ -411,7 +411,7 @@ winform.btnSearch.oncommand = function(id,event){
  		winform.editKeyWord.showWarningTip("请输入要查询的消息值或消息ID,16进制消息值请以0x为前缀。")
  		return; 
  	}
- 	if(kw && string.startWith(kw,"0x",true)){
+ 	if(kw && string.startsWith(kw,"0x",true)){
  		kw = string.format("0x%04x",tonumber(kw));
  	}
  	

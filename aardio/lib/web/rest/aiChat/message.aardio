@@ -105,7 +105,21 @@ class message{
 			);			
 		} 
 	};
-	prompt = function(content){ 
+	prompt = function(content,imageUrl){ 
+		if(imageUrl){
+			content = {
+        		{
+        			"type": "text",
+        			"text": content
+      			},
+      			{
+        			"type": "image_url",
+        			"image_url": {
+          				"url": imageUrl
+        			}
+      			}
+        	} 
+		}
 		this.push(
     		{ 
         		role = "user"; 
@@ -158,7 +172,9 @@ end intellisense*****/
 started() = 是否已经发起对话。\n发起对话指的是消息队列中包含非 system 角色的消息。
 clear() = 清除会话记录。
 assistant(__/*增量文本*/) = 显示并记录 AI 接口返回的增量文本。\n参数必须是文本或者表示输出完成的 null 值。
-prompt(__/*提示词*/) = 添加并显示用户提示词。
+prompt( = 添加提示词。
+prompt(.(content) = 添加用户提示词。\ncontent 可以是字符串，也可以是对象数组。\n请参考调用模型与接口的文档了解支持的对象格式。
+prompt(.(txtContent,imageUrl) = 添加并显示用户 @txtContent 参数指定的文本提示词。\n可选用 @imageUrl 指定图像网址，\n本地图像可调用 inet.urlData 转换为 Data URL（Base64) 格式。\n注意请参考接口文档了解调用模型是否支持图像。
 system(__/*提示词*/) = 添加并显示系统提示词。
 url(__) = 获取参数 @1 指定网址的内容并转换为 Markdown 格式或者文本格式提示词。\n参数 @1 也可以指定包含 url 字段的对象，或这样的对象数组。\n参数为 包含 url 字段的对象时如果同时包含 text 字段，则直接自 text 字段获取网页文本。\n如果参数 @1 指定数组参数，则将所有数组成员作为参数获取目标内容。\n如果参数为空数组、空字符串、null 则返回 null。\n成功返回添加的提示词，失败返回  null,错误信息 。\n\n如果提前导入 web.turndown 库则支持自动转换 HTML 为 Markdown 格式文本。
 aardioSystem( = 自动创建 aardio 编程助手系统提示词。\n除函数自带的基本的 aardio 助手提示词以外，EXE 目录下必须存在待添加的文档。
@@ -183,11 +199,12 @@ namespace message{
 		
 		var snippet;
 		if(url[["url"]]){
-			if(url[["text"]]){
-				return url[["text"]],"text",url[["url"]];
+			var rawText = url[["text"]] || url[["raw_content"]];
+			if(rawText){
+				return rawText,"text",url[["url"]];
 			}
 			
-			snippet = url[["snippet"]];
+			snippet = url[["snippet"]] || url[["content"]];
 		}
 		
 		url = url[["url"]] || url;

@@ -5,9 +5,9 @@ console.showLoading(" Thinking ");
 //创建 AI 客户端
 import web.rest.aiChat;
 var aiClient = web.rest.aiChat(   
-	key = "***************";//获取 Key https://platform.deepseek.com
-	url = "https://api.deepseek.com/v1";//大模型接口地址，兼容 OpenAI 或 Anthropic  聊天接口
-	model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
+	key =   '\0\1\96';
+	url = "https://ai.aardio.com/api/v1/";//接口地址
+	model = "test-model-id";//模型名称首字符为 @ 则使用 Anthropic 接口
 	temperature = 0.1;//温度
 	maxTokens = 1024,//最大回复长度
 )

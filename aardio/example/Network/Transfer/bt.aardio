@@ -32,8 +32,8 @@ wb.onNewWindow = function(url){
 	//如果打开的是 file: 前缀网址。
  	var filePath = inet.url.getFilePath(url)
  	if(filePath){
- 		if( ..string.endWith(filePath,".torrent",true)
- 			|| ..string.endWith(filePath,".aria2",true)
+ 		if( ..string.endsWith(filePath,".torrent",true)
+ 			|| ..string.endsWith(filePath,".aria2",true)
  		){
  			aria2.taskAdd(filePath);
  			return true;

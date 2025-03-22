@@ -154,7 +154,7 @@ defaultTestUrl = function(name){
     if(! inet.url.is(url) ) return;
     
     var turl = inet.url.split(url);
-    if( string.startWith(url,"http://eu.httpbin.org/",true) ){
+    if( string.startsWith(url,"http://eu.httpbin.org/",true) ){
         url = "http://eu.httpbin.org/" + name;
         winform.editUrl.text = url;
         return url;

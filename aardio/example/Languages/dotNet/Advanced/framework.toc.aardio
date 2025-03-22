@@ -60,7 +60,7 @@ winform.button.oncommand = function(id,event){
 					if( moniker && string.find(moniker,"netframework-"+netVersion)){
 						if(ele.dd[1]){
 							assembly = ele.dd[1].innerText() 
-							if(..string.endWith(assembly,".dll")){
+							if(..string.endsWith(assembly,".dll")){
 								break;
 							} 
 						}

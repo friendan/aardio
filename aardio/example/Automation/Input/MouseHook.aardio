@@ -7,11 +7,11 @@ edit={cls="edit";left=13;top=12;right=426;bottom=382;edge=1;multiline=1;z=1}
 /*}}*/
 
 import mouse.hook;
-var hook = mouse.hook();
+var mouseHook = mouse.hook();
 
-//录制回调函数
-hook.proc = function(msg,x,y,mouseData,injected,flags,timeStamp,extraInfo){
-	if( injected ) return; //模拟鼠标不处理
+//鼠标钩子回调函数
+mouseHook.proc = function(msg,x,y,mouseData,injected,flags,timeStamp,extraInfo){
+	if( injected ) return; //不处理模拟鼠标事件
   
     select(msg) {
     	case 0x201/*_WM_LBUTTONDOWN*/{
@@ -38,6 +38,10 @@ hook.proc = function(msg,x,y,mouseData,injected,flags,timeStamp,extraInfo){
     	case 0x20C/*_WM_XBUTTONUP*/{
     	    winform.edit.print("侧键弹起",x,y,::HIWORD(mouseData) == 1 ? "XBUTTON1" : "XBUTTON2") 	
     	}
+    	case 0x20A/*_WM_MOUSEWHEEL*/{
+    		var distance  = mouseData>>16 / 120/*_WHEEL_DELTA*/
+    		winform.edit.print("鼠标滚轮",x,y,distance>0?"向上滚动":"向下滚动") 	
+    	}
     }   
 } 
 
@@ -45,7 +49,7 @@ winform.wndproc = function(hwnd,message,wparam,lparam){
     if( message = 0xA1/*_WM_NCLBUTTONDOWN*/ ){
         if( wparam == 20/*_HTCLOSE*/ ){ 
         	//鼠标按下关闭按钮、释放鼠标以前及时关闭钩子,避免 XP 系统关闭窗体时出现的卡顿
-            hook.close() 
+            mouseHook.close() 
         }
     }  
 }  

@@ -70,7 +70,7 @@ winform.editPs1Path.setCueBannerText('请输入 *.ps1 脚本文件路径')
 import process.wow64;
 winform.btnOpenPsIse.oncommand = function(id,event){
 	var path = io.fullpath(winform.editPs1Path.text);
-	if(!(io.exist(path) && string.endWith(path,".ps1",true))){
+	if(!(io.exist(path) && string.endsWith(path,".ps1",true))){
 		return winform.editPs1Path.editBox.showErrorTip("请指定正确的 *.ps1 脚本文件路径");
 	}
 	

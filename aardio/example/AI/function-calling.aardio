@@ -17,14 +17,10 @@ web.rest.aiChat 支持 OpenAI 兼容接口的 function calling 功能。
 deepseek-chat 目前已支持 function calling，R1 暂不支持。
 */
  
-var aiClient = web.rest.aiChat(
-	/*
-	下面的测试密钥 24 小时后失效，
-	DeepSeek 的 key 充 10 元估计能用一年，请自己申请一个吧！
-	*/
-	key =   '\0\48\67\91\29\5\81\84\83\83\4\5\81\81\6\1\86\4\9\84\1\9\1\82\2\86\0\0\83\7\81\6\7\5\86\86\82';
-	url = "https://api.deepseek.com/v1";//接口地址
-	model = "deepseek-chat"; 
+var aiClient = web.rest.aiChat( 
+	key =   '\0\1\96';
+	url = "https://ai.aardio.com/api/v1/";//接口地址
+	model = "test-model-id";//模型名称首字符为 @ 则使用 Anthropic 接口
 	temperature = 0.5,//DeepSeek 似乎温度小于 0.5 则不鸟 function calling 提供的信息
 	tools = { //关键在于增加 tools 字段声明可以调用的本地函数，细节请参考 API 文档。
         {

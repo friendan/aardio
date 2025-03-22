@@ -1,0 +1,43 @@
+//创建 AI 聊天界面
+import web.form.chat;
+var chatUi = web.form.chat();
+chatUi.showLoading(" 正在思考");
+
+//创建 AI 对话线程
+thread.invoke( 
+	function(chatUi){
+		
+		//创建 AI 客户端
+		import web.rest.aiChat;
+		var aiClient = web.rest.aiChat(
+			key =   '\0\1\96';
+			url = "https://ai.aardio.com/api/v1/";
+			model = "test-model-id";
+		)
+		
+		//添加系统指令。
+		chatUi.system("你是桌面智能助手。");
+		
+		//添加用户提示词
+		chatUi.prompt( "Python 从一循环到十怎么写？" );
+		
+		//调用聊天接口。
+		aiClient.messages(chatUi.chatMessage,
+			function(deltaText,reasoning){
+				
+				//输出思考过程
+				if(reasoning) { 
+					chatUi.showThinking(reasoning);
+				}
+				
+				//输出回复，自带高性能 Markdown 解析器。
+				chatUi.writeDelta(deltaText);
+			}
+		);
+		
+	},chatUi //将窗口对象作为参数传入工作线程
+)
+	
+//显示模态窗口
+chatUi.doModal()
+

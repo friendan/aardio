@@ -87,7 +87,7 @@ import win.ui;
 var winform = win.form(text="窗口标题")
 
 import web.view;
-var wb = web.view(winform);//创建 WebView2 浏览器控件，参数指定宿主窗口（win.form 或 custom 控件对象）
+var wb = web.view(winform);//创建 WebView2 浏览器控件
 
 // 导出 aardio 函数到 JavaScript 中
 wb.external = {
@@ -378,6 +378,8 @@ var str = string.join({"字符串1","字符串2"},'\n')
 
 ##  读写文件
 
+直接读写文件全部数据：
+
 ```aardio
 //写文件
 string.save("/test.txt","要保存在文件的字符串");
@@ -386,6 +388,39 @@ string.save("/test.txt","要保存在文件的字符串");
 //读文件
 var str = string.load("/test.txt");
 ```
+
+使用 io.file 读写文件：
+
+```aardio
+//创建文件对象
+var file = io.file("/example.txt","w+b");
+
+//写入结构体
+file.write({int x=1,int y=2});
+
+//写入文本
+file.write("写入内容",'\r\n');
+
+//移到文件指针
+file.seek("set",0);
+
+//读取结构体
+var struct = file.read({int x=1,int y=2});
+print(struct.x,struct.y);
+
+//读取文本行
+var line = file.read("%s");
+print(line);
+
+//关闭文件
+file.close();
+```
+
+fsys.file 的基本用法与 io.file 类似，但 fsys.file 基于 ::Kernel32.CreateFile 并且支持指定文件、管道等系统句柄参数。
+
+fsys.stream 的基本用法与 io.file 类似， 但 fsys.stream 实现了  COM 接口 IStream ，并可以创建内存文件流。
+
+当调用函数 `type.isFile( file )` 时如果参数 file 为 io.file,fsys.file,fsys.stream 之一都会返回 true 。
 
 ##  文件路径
 
@@ -614,6 +649,76 @@ print("null 值长度为 0",#n);
 ```
 
 使用 `#` 操作取数组或字符串的值，也可以取 null 值的长度（ 返回 0 ）。
+
+## 数组操作
+
+```aardio
+//创建长度为 3 的数组（多维数组可指定多个长度参数），初始值为 0
+var arr = table.array(3,0); //等价于 {0,0,0}
+
+//创建数组，添加从 1 循环到 10 步进为 2 的数值。
+var arr = table.range(1,10,2); //等价于 {1,3,5,7,9}
+
+//创建数组
+var arr = {1, 2, 3, "hello"};
+
+//在末尾添加元素
+table.push(arr, "world");
+
+//删除末尾元素
+var last = table.pop(arr);
+
+// 在开头添加元素
+table.unshift(arr, 0);
+
+// 删除开头元素
+var first = table.shift(arr);
+
+// 在索引 2 处插入元素
+table.insert(arr,"aardio", 2);
+
+// 删除索引 3 处的元素 
+table.remove(arr, 3);  
+
+// 查找元素
+var index = table.find(arr, "hello"); 
+
+// 遍历数组
+for(i=1;#arr;1){
+	print( arr[i] );
+}
+```
+
+## 查找替换字符串
+
+aardio 与查找替换字符串有关的函数基本都支持模式匹配。
+模式匹配比正则表达式更简洁、速度更快。
+
+与正则表达式的重要区别是：
+- 不允许对`()` 包含的捕获组使用任何模式运算符。
+- 模式匹配使用尖括号`<>`包含非捕获组，非捕获组可以嵌套，但不能包含捕获组。
+
+请参考：[模式匹配快速入门](pattern-matching.md)
+
+查找字符串示例
+
+```aardio
+var str = "abc 123";
+var letters, numbers = string.match(str, "^(\a+)\s+(\d+)$");
+print(letters, numbers)
+```
+
+替换字符串示例：
+
+```aardio 
+var str = "1hello 2world";
+//将每个单词前面的数字移动到单词后面
+str = string.replace(str, "(\d)(\a+)","\2\1");
+print(str)
+```
+
+注意在替换字符串中 `\1` 到 `\9` 表示向前引用捕获组。
+
 
 ## 日期时间
 
@@ -855,96 +960,65 @@ console.pause(true);
 
 参考：[while var 语法](../../language-reference/statements/looping.md#while-var)
 
-##  while var 实现计数循环
-
-```aardio
-import console;
-
-//while var 循环参数中条件表达式在后，而循环增量语句位置在前，增量语句在每次循环之前执行。
-while( var i = 0; i++ ; i < 5  ) {
-    console.log( i )
-}
-
-
-console.pause(true);
-```
-
-##  break label, continue label, break N, continue N 语句
-
-
-break 语句中断当前循环。
-
-continue 语句跳过当前循环体剩下的部分，继续下一次循环。
-
-aardio 也支持 break N,continue N 中断或继续指定的上级循环，N 表示循环层级（1 为本层循环，2 为上层循环，依次计数 …… ）。
-
-示例：
-
-```aardio
-import console;
-
-
-var i, j;
-for (i = 0; 2; 1 ) {
-
-
-   for (j = 0; 2; 1) {
-   
-      if (i == 1 && j == 1) {
-         break 2;//退出上一层循环，1 表示本层循环
-      }
-      else {
-         console.log("i = " + i + ", j = " + j);
-      }
-   }
-}
-console.pause(true);
-```
 
 ##  类
 
 ```aardio
+import console;
+
 //定义类
 class className{
-   
-    //构造函数
-    ctor(name,...){
-        this.name = name;
-        this.value = 0;
-        this.args = {...}; 
-    };
-   
-    //属性
-    propertyName = "value";
-   
-    //定义方法(成员函数)，必须写为名值对格式，不能省略等号或 function 关键字。
-    method = function(v){
-        this.value = this.value + v;
-        return this.value;
-    }
+	
+	//构造函数
+	ctor(name,...){ 
+		//通过  this 对象访问类的实例属性
+		this.property = "property value"; 
+		
+		this.args = {...}; 
+	};
+	
+	//属性
+	property = "value";
+	
+	//定义方法(成员函数)，必须写为名值对格式，不能省略等号或 function 关键字。
+	method = function(v){
+		if(v===null){
+			//在类内部可以直接访问类名字空间的静态成员
+			v = staticProperty; //等价于 self.staticProperty
+		}
+		
+		//访问外部全局名字空间必须加上 .. 前缀
+		..console.log("method",v);
+		
+		this.property = v; 
+	}
 }
 
 //打开类的名字空间
-namespace className{
-    staticVar = "类的静态变量值";
-    staticNum = 2;
+namespace className{
+	
+	staticProperty = "类的静态变量值";
+	
+	staticMethod = function(){
+		..console.log("staticMethod",staticProperty);
+	} 
 }
- 
+	
 //调用类创建对象
 var object = className();
 
-//调用对象的成员函数
-var v = object.method(5);
+//调用对象的方法（成员函数）
+var v = object.method("新的属性值");
 
-//访问类的静态成员
-var num = className.staticNum;
+//通过类名访问类的名字空间，通过类名字空间访问类的静态成员
+className.staticMethod();
+
+console.pause();
 ```
 
 - 类内部可以用 `this` 访问当前实例对象。
 - 类总是先调用构造函数 `ctor` 然后再初始化其他成员。
-- 每个类都有自己的名字空间。
-- 类创建的所有实例共享同一名字空间。
-- 类名字空间的成员也就是类的静态成员。
+- 类有自己的名字空间，类创建的所有实例共享同一名字空间，类名字空间的成员也就是类的静态成员。
 
 ## self,this,owner 对象
 
@@ -952,9 +1026,25 @@ var num = className.staticNum;
 
 `this` 在类内部表示当前创建的实例对象。
 
-每个函数都有自己的 `owner` 参数。如果用点号作为成员操作符获取并调用对象的成员函数，则点号前面的对象是被调用成员函数的 `owner` 参数，否则被调用函数的 `owner` 参数为 `null`。例如 `obj.func()` 调用 `obj` 的成员函数 `func` ，则 `obj` 是 `obj.func` 的 `owner` 参数。
+每个函数都有一个隐式传递的 `owner` 参数。如果用点号 `.` 作为成员操作符获取并调用对象的成员函数（ ownerCall 方式 ），则点号前面的对象是被调用成员函数的 `owner` 参数，否则被调用函数的 `owner` 参数为 `null`。 
 
-一个独立的 aardio 代码文件编译后也相当于一个匿名的函，其 `owner` 参数默认为 `null` 。使用 `import` 语句加载库文件时， `owner` 参数为库路径（ 或资源文件数据 ）。
+示例：
+
+```aardio
+obj = {
+	method = function(a,b){
+		print("owner,a,b",owner,a,b);
+	}
+}
+
+//这样调用（ ownerCall 方式 ）时 owner 参数指向 obj
+obj.method(123,456)
+
+//这样调用时 owner 参数为 null
+obj["method"](123,456)
+```
+
+一个独立的 aardio 代码文件编译后也相当于一个匿名的函，其 `owner` 参数默认为 `null` 。使用 `import` 语句加载库文件时， `owner` 参数为库路径或资源文件数据（ 如果是编译后的内嵌库则 owner 指向资源文件 ）。
 
 `owner` 在元方法中表示左操作数。
 
@@ -963,4 +1053,3 @@ var num = className.staticNum;
 aardio 允许用 `call`, `callex`, `invoke` 等函数调用其他函数并改变 `owner` 参数的值。
 
 请参考： [owner 参数](../../language-reference/function/owner.md)
-

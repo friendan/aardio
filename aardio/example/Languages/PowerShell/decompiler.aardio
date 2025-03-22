@@ -22,7 +22,7 @@ winform.onOk = function(){
 winform.cmdlets.onEditChange = function(){ 
     if(winform.cmdlets.data){
          var text = winform.cmdlets.text;
-    	 var items = table.filter( winform.cmdlets.data, lambda(v) string.startWith(v,text,true) ); 
+    	 var items = table.filter( winform.cmdlets.data, lambda(v) string.startsWith(v,text,true) ); 
     	 if(!#items){
     	 	items = table.filter( winform.cmdlets.data, lambda(v) string.find(v,"@@"+text) ); 
     	 }
@@ -48,7 +48,7 @@ winform.btnDecompile.oncommand = function(id,event){
 				result = string.trim(result);
 				winform.edit.text = result;
 				
-				if(..string.endWith(result,".dll",true) && io.exist(result)){
+				if(..string.endsWith(result,".dll",true) && io.exist(result)){
 					import dotNet.ilSpy; 
 					dotNet.ilSpy(result);
 				}

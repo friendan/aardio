@@ -208,7 +208,7 @@ wbLayout.onDataLoaded = function(lParam) {
     	INT dataType;
     	INT status; 
 	});
-	if( ! string.startWith(dataLoaded.uri,"data:",true) ){
+	if( ! string.startsWith(dataLoaded.uri,"data:",true) ){
 		wbLayout.loadFileCount = wbLayout.loadFileCount + 1; 
 	};
 	frmSourceCode.btnCreateProject.disabled = false;
@@ -255,7 +255,7 @@ winform.treeview.onnotify = function(id,code,ptr){
 		if( hItem ){ 
 			 winform.treeview.lastClickItem = hItem
 			 var path = winform.treeview.getItemText(hItem);
-			 if( (#path) ? string.endWith(path,".htm",true) ){ 
+			 if( (#path) ? string.endsWith(path,".htm",true) ){ 
 			 	loadHtmlFile()
 			 }
 		}

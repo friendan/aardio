@@ -44,7 +44,7 @@ wb.export({
 winform.cmbLangs.onEditChange = function(){ 
 
     var text = string.lower(winform.cmbLangs.text);
-    var items = table.filter( winform.languages : {}, lambda(v) string.startWith(v,text) ); 
+    var items = table.filter( winform.languages : {}, lambda(v) string.startsWith(v,text) ); 
     winform.cmbLangs.autoComplete(items);  
 }
 winform.cmbLangs.editBox.disableInputMethod();

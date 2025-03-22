@@ -17,8 +17,8 @@ class urlData{
 			data = path ? ..string.loadBuffer(path);
 			if(!data) error("参数 @1 未指定数据，且参数 @2 未指定有效的文件路径",2);
 		}
-		
-		return ..string.format('data:%s;base64,\r\n%s',mime,..crypt.encodeBin(data,,0x40000001/*_CRYPT_STRING_BASE64*/ ) )
+
+		return ..string.format('data:%s;base64,%s',mime,..crypt.encodeBin(data,,0x40000001/*_CRYPT_STRING_BASE64*/ ) )
 	}; 
 }
 

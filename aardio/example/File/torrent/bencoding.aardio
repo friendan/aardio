@@ -56,7 +56,7 @@ var updateTorrentName = function(filePath){
 
 winform.onDropFiles = function(files){
 	for i,path in table.eachIndex(files){
-		if(string.endWith(path,".torrent",true)){
+		if(string.endsWith(path,".torrent",true)){
 			updateTorrentName(path);
 		}
 	}

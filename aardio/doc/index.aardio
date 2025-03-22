@@ -35,9 +35,9 @@ explorer.dirFirst = false;
 var wb = web.form(winform.custom);
 wsock.tcp.simpleHttpServer.documentRoot = "~/doc"
 var startUrl = wsock.tcp.simpleHttpServer.startUrl(function(response,request){
-	if( string.endWith(request.path,".md") 
-		|| string.endWith(request.path,".html") 
-		|| string.startWith(request.path,"/example/") ){
+	if( string.endsWith(request.path,".md") 
+		|| string.endsWith(request.path,".html") 
+		|| string.startsWith(request.path,"/example/") ){
 		response.loadcode("/template.aardio");
 	}
 	else {
@@ -159,7 +159,7 @@ var markdown = string.markdown()
 
 explorer.onClick = function(filePath,hItem ){
     if( !fsys.isDir( filePath ) ) {
-        if(string.endWith(filePath,".url",true)){
+        if(string.endsWith(filePath,".url",true)){
         	raw.execute(filePath);
         	return;
         }
@@ -196,7 +196,7 @@ explorer.onRightClick = function(filePath,hItem,x,y){
     var isDir = fsys.isDir(filePath);
     if(!isDir){
         
-        if(string.endWith(filePath,".aardio",true)){ 
+        if(string.endsWith(filePath,".aardio",true)){ 
     		menu.add("打开源代码 ",
         		function(){
             		ide.openDocument(filePath);
@@ -238,7 +238,7 @@ explorer.onRightClick = function(filePath,hItem,x,y){
             			var md = ide.doc.libraryMd(filePath)
         				win.clip.write(md) 
         			}
-        			elseif(string.endWith(filePath,".md",true)){
+        			elseif(string.endsWith(filePath,".md",true)){
         				var md = string.load(filePath);
         				win.clip.write(md)
         			}
@@ -310,7 +310,7 @@ wb.preTranslateAccelerator = function(msg){
 }
 
 wb.translate = function( url ){
-	if(..string.startWith(url,"doc://",true)){
+	if(..string.startsWith(url,"doc://",true)){
 		url = wsock.tcp.simpleHttpServer.startUrl(string.right(url,-6));   
 	} 
 	
@@ -319,7 +319,7 @@ wb.translate = function( url ){
 
 winform.editUrl.onOk = function(){ 
 	var url = winform.editUrl.text;
-	if(..string.startWith(url,"doc://",true)){
+	if(..string.startsWith(url,"doc://",true)){
 		url = wsock.tcp.simpleHttpServer.startUrl(string.right(url,-6));   
 	} 	
 	
@@ -330,9 +330,9 @@ winform.editUrl.onOk = function(){
 
 wb.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
  
-	if( ..string.startWith(url,"javascript:",true) ) return;
+	if( ..string.startsWith(url,"javascript:",true) ) return;
 
-	if(..string.startWith(url,"http://127.0.0.1:",true)){ 
+	if(..string.startsWith(url,"http://127.0.0.1:",true)){ 
 		return url, Flags, TargetFrameName, PostData, Headers,false;
 	} 
 	 
@@ -353,7 +353,7 @@ winform.btnSearch.oncommand = function(id,event){
 		return;
 	}
 	
-	if(string.startWith(keyWord,"doc://",true)){
+	if(string.startsWith(keyWord,"doc://",true)){
 		winform.editKeyWord.text = "";
 		var url = wsock.tcp.simpleHttpServer.startUrl(string.right(keyWord,-6));   
 		wb.go(url);
@@ -432,11 +432,11 @@ winform.btnSearch.oncommand = function(id,event){
 	           	    var url = string.replace(docPath,"\\","/");
 	           	    url = string.left(url,-4) + ".html"
 	           	    
-	           	    if( string.endWith(docPath,"_.md") ) { 
+	           	    if( string.endsWith(docPath,"_.md") ) { 
                 		docPath = string.left(docPath,-6); 
             		}
             		
-            		if( string.endWith(docPath,".md") ) { 
+            		if( string.endsWith(docPath,".md") ) { 
                 		docPath = string.left(docPath,-4); 
             		}
             		
@@ -578,11 +578,11 @@ winform.btnSearch.oncommand = function(id,event){
 	           	    var url = io.joinpath("/library-reference",fsys.path.replaceExt(libPath,".html"));
 	           	    var url = string.replace(url,"\\","/");
 	           	    
-	           	    if( string.endWith(libPath,"_.aardio") ) { 
+	           	    if( string.endsWith(libPath,"_.aardio") ) { 
                 		libPath = string.left(libPath,-10); 
             		}
             		
-            		if( string.endWith(libPath,".aardio") ) { 
+            		if( string.endsWith(libPath,".aardio") ) { 
                 		libPath = string.left(libPath,-8); 
             		}
             		
@@ -733,7 +733,7 @@ wb.noScriptErr = true;
 var url;
 import inet.url;
 if(____search_doc__path){
-	if(string.startWith(____search_doc__path,"doc://")){
+	if(string.startsWith(____search_doc__path,"doc://")){
 		var tUrl = inet.url.split(____search_doc__path)
 		if(#tUrl.extraInfo){
 			var param = inet.url.splitParameters(tUrl.extraInfo)

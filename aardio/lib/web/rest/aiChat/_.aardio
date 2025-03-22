@@ -35,6 +35,24 @@ class aiChat{
 			if( cfg.maxTokens === null ){
 				cfg.maxTokens = 1024;
 			} 
+			
+			if(cfg.reasoning){
+				
+				if(cfg.reasoning.maxTokens){
+					if( cfg.maxTokens > 64000 ){
+						this.setHeaders({
+							"anthropic-beta":"output-128k-2025-02-19";
+							"x-api-key":cfg.key
+						});
+					}
+				
+					cfg.thinking = {
+						"type": "enabled",
+						"budget_tokens": cfg.reasoning.maxTokens;
+					}
+					cfg.temperature = 1;	
+				} 
+			}
 		}
 		elseif( (apiUrlInfo.host=="localhost" ) && (apiUrlInfo.port == 11434)){
 			cfg.url = "http://localhost:11434/v1/"
@@ -66,12 +84,38 @@ class aiChat{
 			if(cfg.key) this.setAuthToken( cfg.key );
 			
 			if( apiUrlInfo.host=="openrouter.ai" ){
-				cfg.includeReasoning = true;
+				if(!cfg.reasoning) cfg.reasoning = {};
+				else cfg.reasoning = {
+					max_tokens  = cfg.reasoning.maxTokens;
+					effort  = cfg.reasoning.effort;
+					exclude  = cfg.reasoning.exclude;
+				}
 			}
-			elseif( ( apiUrlInfo.host=="generativelanguage.googleapis.com" ) 
-				|| (apiUrlInfo.host=="api.openai.com" ) ) {
-				this.paramMaxTokens = "max_completion_tokens";
-			} 
+			else{
+				
+				if(cfg.reasoning){
+					if(..string.startWith(cfg.model,"claude",true)){
+						if(cfg.reasoning.maxTokens){
+							cfg.thinking = {
+        						"type": "enabled",
+        						"budget_tokens": cfg.reasoning.maxTokens;
+    						}
+    						cfg.temperature = 1;	
+						}
+					}
+					else {
+						cfg.reasoningEffort = cfg.reasoning[["effort"]];
+					}
+					
+					cfg.reasoning = null;	
+				}
+				 
+				
+				if( ( apiUrlInfo.host=="generativelanguage.googleapis.com" ) 
+					|| (apiUrlInfo.host=="api.openai.com" ) ) {
+					this.paramMaxTokens = "max_completion_tokens";
+				}
+			}
 		}
 		
 		if(cfg.sendToolCall!==null){
@@ -84,7 +128,7 @@ class aiChat{
 				this.sendToolCall = false;
 			}
 		}
-		
+	
 		this.bot = this.api(cfg.url);
 	}};
 	messages = function(chatMessage,writeDelta,newParams,endToolCalling){
@@ -99,9 +143,12 @@ class aiChat{
 				messages = chatMessage,
 				[this.paramMaxTokens] = cfg.maxTokens,
 				top_p = cfg.topP, 
-				tools = cfg.tools;
-				include_reasoning = cfg.includeReasoning;
-			}; 
+				tools = cfg.tools; 
+				reasoning = cfg.reasoning; 
+				reasoningEffort = cfg.reasoningEffort; 
+				stop = cfg.stop;
+				thinking = cfg.thinking;
+			};  
 			
 			if(endToolCalling && ..string.startWith(cfg.model,"deepseek")){
 				cfg.tools = null;
@@ -116,7 +163,7 @@ class aiChat{
 				receiveCallback = function(eventStream){
 				 
 					var data = eventStream[["data"]];  
-					var choice = data[["choices"]][[1]];  
+					var choice = data[["choices"]][[1]];   
 				 
 					if(choice){  
 					
@@ -229,9 +276,11 @@ class aiChat{
 				messages = chatMessage,
 				[this.paramMaxTokens] = cfg.maxTokens,
 				top_p = cfg.topP, 
-				tools = cfg.tools
+				tools = cfg.tools,
+				thinking = cfg.thinking;
+				stop_sequences = type.isString(cfg.stop)?{cfg.stop}:cfg.stop;
 			};
-			
+			 
 			var params = ..table.assign(cfg,newParams);
 
 			var receiveCallback;
@@ -242,7 +291,13 @@ class aiChat{
 					var data = eventStream.data; 
 					if(data){
 						if(data.type == "content_block_delta"){
-							return writeDelta(data.delta.text)
+							var delta = data.delta;
+							var dType = delta[["type"]];
+							if(dType=="thinking_delta"){
+								return writeDelta("",delta.thinking)
+							}
+							
+							return writeDelta(delta.text)
 						}
 						elseif(data.type == "message_stop"){
 							this.lastResponseDataObject = data; 
@@ -382,11 +437,14 @@ import web.rest.aiChat.message;
 
 /*****intellisense()
 web.rest.aiChat = 用于调用 Anthropic 或 OpenAI 兼容 AI 聊天接口。\n[范例](doc://example/Web/REST/aiChatCon.aardio)。\n如果需要 Web 聊天界面可参考 web.form.chat 库源码。
-web.rest.aiChat(config) = @.aiChat(\n	proxy = proxy,\n	model = "@claude-3-5-sonnet-latest",\n	temperature = 0.1,\n	maxTokens = 1024,\n	url = ""\n)__/*创建 AI 聊天客户端。参数说明：\nurl 指定 Anthropic 或 OpenAI 兼容接口网址，如果网址只有域名没有路径则自动追加"/v1"后缀。\n└── 接口网址兼容 Ollama，兼容豆包或通义智能体接口。\nmodel 指定模型名称，首字符为 @ 则使用 Anthropic 接口。\n可选用 proxy 指定代理服务器，代理格式: doc://library-guide/std/inet/proxy.md \ntemperature 指定温度。\nmaxTokens 限定最大回复长度。\n可指定 tools 参数以支持 function call 。*/
+web.rest.aiChat(config) = @.aiChat(\n	proxy = proxy,\n	model = "@claude-3-5-sonnet-latest",\n	temperature = 0.1,\n	maxTokens = 1024,\n	url = ""\n)__/*创建 AI 聊天客户端。参数说明：\nurl 指定 Anthropic 或 OpenAI 兼容接口网址，如果网址只有域名没有路径则自动追加"/v1"后缀。\n└── 接口网址兼容 Ollama，兼容豆包或通义智能体接口。\nmodel 指定模型名称，首字符为 @ 则使用 Anthropic 接口。\n可选用 proxy 指定代理服务器，代理格式: doc://library-guide/std/inet/proxy.md \n可选用 temperature 指定温度，可选用 topP 指定多样性和创造性 。\n一般不应同时指定 temperature 与 topP。\n可选用 maxTokens 限定最大回复长度。\n可选指定 tools 字段以支持 function call 。\n可选用字段 stop 指定停止输出的 token 或 token 数组。\n可选使用 reasoning.effort / reasoning.maxTokens 字段控制 OpenAI / Anthropic 推理强度。*/
 web.rest.aiChat() = !webRestAiChat.
 end intellisense*****/
 
 /*****intellisense(!webRestAiChat)
+setTimeouts(.(连接超时,请求超时,接收超时) = 设置超时,以亳秒为单位（1秒为1000毫秒）。
+extraParameters = 指定附加到所有请求参数中的默认参数\n该值应当是一个表,请求参数指定表对象时或为null才会附加extraParameters
+extraUrlParameters  = 指定附加到所有请求 URL 的默认参数。\n该值可以是一个表或字符串。\n表参数使用 inet.url.stringifyParameters 转换为字符串。\n表中的值如果是函数则每次请求都调用该函数取值
 messages( = 调用聊天会话接口。
 messages(.(msg,writeDelta,params) = 调用聊天会话接口。\nmsg 参数指定 web.rest.aiChat.message 对象。\n可选用 writeDelta 指定 AI 以流式回复时接收文本的回调函数。\n└── 回调参数为文本时则应输出增量回复，回调参数为 null 时完成输出。\n└── 不指定 writeDelta 参数则禁用流式回复，函数直接返回表对象。\n└── writeDelta 函数内返回 false 停止接收回复。\n参数 params 可选用一个表指定要发送的其他请求参数。
 lastResponseObject() = 获取最后一次服务器返回的对象（已将响应文本解析为对象），\n如果是 SSE 流式调用，返回最后一次接受的包含 token 计数的对象\n请求失败，或者下载文件时此属性值为空。

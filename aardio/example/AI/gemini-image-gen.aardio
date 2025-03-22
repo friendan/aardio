@@ -1,0 +1,65 @@
+import console;
+import process.imageView;
+import web.rest.jsonClient;
+import crypt;
+
+// 设置图像路径
+var imagePath = "/test.jpg";
+
+// 创建HTTP客户端，可用参数 2 指定代理服务器
+var http = web.rest.jsonClient();
+http.extraUrlParameters = {
+	key = "GEMINI_API_KEY";//修改为您的 API 密钥
+}
+
+// 创建API对象，官方接口为 https://generativelanguage.googleapis.com/v1beta/models
+var gemini = http.api("https://aardio.deno.dev/generativelanguage.googleapis.com/v1beta/models/{model}:{method}");
+
+// 读取图片并进行Base64编码
+var imageData = string.loadBuffer(imagePath);
+if(!imageData) {
+	console.error("无法读取图片文件:", imagePath);
+	return;
+}
+
+// 准备请求数据
+var requestData = {
+	contents = {
+		{
+			parts = {
+				{text = "这里写绘图或修改图像的提示词"},
+				{
+					inline_data = {
+						mime_type = "image/jpeg",
+						data = crypt.encodeBin(imageData)
+					}
+				}
+			}
+		}
+	},
+	generationConfig = {
+		responseModalities = {"Text", "Image"}
+	}
+};
+
+console.showLoading("正在生成图像");
+
+// 发送请求
+var resp,err = gemini["gemini-2.0-flash-exp-image-generation"].generateContent(
+	requestData
+);
+
+var imageBytes = resp[["candidates"]][[1]][["content"]][["parts"]][[1]][["inlineData"]][["data"]]
+if(imageBytes){
+	imageBytes = crypt.decodeBin(imageBytes);
+	
+	string.save("/gemini.jpg", imageBytes)
+	
+	
+	process.imageView("/gemini.jpg")
+}
+else {
+	console.error("API请求失败或返回数据格式不正确");
+	console.log(err);
+	console.pause(true);
+}

@@ -39,7 +39,7 @@ class aifix{
 		code = replace(code,'\u00A0',` `); 
 		code = replace(code,'\u200b',``);
 		
-		code = replace(code,"![\w._$]<let>|<const>|<local>(\s+\w+\s*=)","var \1"); 
+		code = replace(code,"![\w._$]<let>|<const>|<local>(\s+\w+<\s*,\s*\w+>*\s*=)","var \1"); 
 		code = replace(code,"![\w._$]<let>![^\w._$]","var"); 
 		code = replace(code,`\s+\.+\s+\"`,` + "`); 
 		code = replace(code,`\"\s+\.+\s`,`" + `); 
@@ -143,7 +143,7 @@ class aifix{
 		code = replace(code,"![\w.$_](for\s*\(?<\s*var>?\s*\a\w*\s*)\:=","\1=");
 		
 		//for i = 10 downto 1 无 step 类型
-	 	code = replace(code,"![\w.$_]for(\s*\(?\s*\a\w*\s+)\:?\=(\s+[^,;\r\n\{=]+?)\s+downto\s+(\s*[^,;\r\n\{=]+?)!\W<\s*step>?!"
+	 	code = replace(code,"![\w.$_]for(\s*\(?\s*\a\w*\s+)\:?\=(\s+[^,;\r\n\{=]+?)\s+[Dd]own\s*[Tt]o\s+(\s*[^,;\r\n\{=]+?)!\W<\s*step>?!"
 	 		,function(i,start,stop){
 	 			if ..string.find(stop,"!\wstep!\W") return;
 	 			return "for"+i+"="+start+" downto "+stop+" step -1";
@@ -600,7 +600,7 @@ class aifix{
 		code = replace(code,"![\w._$]import\s+os;",""); 
 		
 		//-------------------- 文件操作 --------------------------------------------
-		
+	
 		code = replace(code,`"[.\\/]*test.txt"`,`"/example.txt"`); 
 		code = replace(code,`"C\:\\?\\path\\?\\to\\?\\your\\?\\file(\.\a+)"`,`"/example.txt"`); 
 		code = replace(code,"path/to/your/file<.\a+>?","/example.txt");
@@ -625,6 +625,11 @@ class aifix{
 		code = replace(code,"![\w._$]fsys\.exists\(","io.exist(");
 		code = replace(code,"![\w._$]file\.openText\(","io.file(");
 		
+		code = replace(code,"![\w._$]io\.delete!\W","io.remove"); 
+		code = replace(code,"![\w._$]io\.writeFile!\W","string.save"); 
+		code = replace(code,"![\w._$]io\.readFile!\W","string.read"); 
+		code = replace(code,"![\w._$]path\.combine!\W","io.joinpath"); 
+		
 		var fsPath;
 		code =  replace(code,"![\w._$](fsys\.\a\w*)\.\a*[Oo]pen\a*!\W",function(fs){
 			
@@ -643,8 +648,8 @@ class aifix{
 		code = replace(code,`![\w_.$]io<.file>?\.open(\(\s*[^\s)]+.*?)`,"io.file\1"); 
 		code = replace(code,"!\w<fsys>|<io>\.file\.readAll\(","string.load(");  
 		
-		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.<readAll>|<readFile>|<readText>|<readbytes>|<read>\(","string.load("); 
-		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.writeFile\(","string.save("); 
+		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.<@@readAll@>|<@@readFile@>|<@@readText@>|<@@readbytes@>|<read@>\(","string.load("); 
+		code = replace(code,"!\w<fsys>|<fs>|<io\.file>|<io>\.<@@writeFile@>|<@@writeText@>|<@@writebytes@>|<write@>\(","string.save("); 
 		
 		for fileObject in string.gmatch(code,"![\w_.$](\a\w*)\s*=\s*<assert(>?\s*<io\.file>|<fsys\.file>|<fsys\.stream>\(") { 
 		    code = replace(code,"![\w_.$]"+fileObject+"\.readall\(\)",fileObject+".readAll()"); 
@@ -685,7 +690,7 @@ class aifix{
 		
 		code = replace(code,"![\w_$.](\w+)\.lines\(\)","io.lines(\1)");
 		//-------------------- 字符串 --------------------------------------------
-		
+	
 		code = replace(code,`"(<\\n>+)"`,`'\1'`); 
 		code = replace(code,`"(<\\r\\n>+)"`,`'\1'`);  
 		code = replace(code,`"([^"+*\[\]\r\n\{\}']*:[^"+*\[\]]*\\[xuUrnt][^"+*\[\]\r\n\{\}']*)"\s*`,`'\1'`); 
@@ -697,14 +702,16 @@ class aifix{
 				}
 			}
 		)
-		
+
 		code = replace(code,`(%"")\.(\a\w*\(\s*)\)`,`string.\2\1)`);
 		code = replace(code,"(%``)\.(\a\w*\(\s*)\)","string.\2\1)");
 		code = replace(code,"(%'')\.(\a\w*\(\s*)\)","string.\2\1)"); 
 		code = replace(code,`(%"")\.(\a\w*\(\s*)`,`string.\2\1,`);
 		code = replace(code,"(%``)\.(\a\w*\(\s*)","string.\2\1,");
 		code = replace(code,"(%'')\.(\a\w*\(\s*)","string.\2\1,"); 
-
+		code = replace( code,`(%"")(\.\a\w+\()`,"string\2\1,");
+		
+		code = replace(code,"![\w._$](tostring%\(\))\:(\w+)\(","string.\2(\1,");
 		code = replace(code,"![\w._$]string\.<toBinary>|<binary>\(","raw\.buffer\("); 
 		code = replace(code,"![\w._$]string\.sub\(","string\.slice\("); 
 		code = replace(code,"![\w._$]string\.gsub\(","string\.replace\("); 
@@ -713,12 +720,10 @@ class aifix{
 		code = replace(code,"![\w._$]string\.toUnicode\(","string\.toUtf16\("); 
 		code = replace(code,"![\w._$]string\.fromUnicode\(","string\.fromUtf16\("); 
 		code = replace(code,"![\w._$]join\(","string\.join\(");  
-
-		code = replace(code,`![\w._$]<string>?!(\a\w*).(<match>|<replace>|<find>|<gmatch>\(\s*)`,"string.\2\1,")
+	
 		code = replace(code,`![\w._$]<string>?!(\a\w*).split(\(\s*)`,"string.splitEx\2\1,")
-				
 		code = replace(code,`(,\s*)/([^\n/]+)/\a*\s*`,`\1"\2"`);
-		
+	
 		code = replace(code,`![\w._$](string\.<match>|<replace>|<find>|<gmatch>|<splitEx>\([^,]+,\s*)("[^,"]+)`,
 			function(matching,pattern){
 				pattern = ..string.replace(pattern,"\\\\","\\");
@@ -772,6 +777,9 @@ class aifix{
 		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.[tT]oLower<Case>?%()`,"string.lower(\1)");
 		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.[tT]oUpper<Case>?%()`,"string.upper(\1)");
 		code = replace(code,`(![\w\.]<string>?![\w\.]+)\.is[Ee]mpty%()`,"!#\1");
+		
+		code = replace(code,"![\w\.][Ss]tring\s*\(","tostring("); 
+		code = replace(code,"(![\w\.][\w\.]+)\.[Tt]o[sS]tring\(\s*\)","tostring(\1)"); 
 
 		//-------------------- 表、数组 --------------------------------------------
 		code = replace(code,`![\w.$]<new\s+>?[Aa]rray\((.+?)\)\.fill\((.+?)\)`,"table.array(\1,\2)"); 
@@ -779,8 +787,10 @@ class aifix{
 			return "{" +..string.slice(arr,2,-2) + "}"
 		} ); 
 		
+		code = replace(code,`![\w\.]table\(\)`,"{}");
+		code = replace(code,`![\w\.]table.create\((\d+)`,"table.range(\1");
 		
-		code = replace(code,`![\w\.]table.eachi\(`,"table.eachIndex(");
+		code = replace(code,`![\w\.]table.eachi?\(`,"table.eachIndex(");
 		code = replace(code,`![\w\.]range\(`,"table.range(");
 		code = replace(code,"!\wnew\s+Map%()","{}"); 
 		code = replace(code,`(![\w\.]<table>?![\w\.]+)\.has[Oo]wnProperty\(([^)]+?)\)`,"\1[\2]");
@@ -807,11 +817,6 @@ class aifix{
 		
 		code = replace( code,"![\w\._$]table\.swap\(\s*(\a[\w_.]+)\s*,\s*([^,]+)\s*,\s*([^,]+)\s*\)"
 			,"\1[\2],\1[\3] = \1[\3],\1[\2]"); 
-
-		code = replace( code,`(%"")(\.\a\w+\()`,"string\2\1,");
-		
-		code = replace(code,"![\w\.][Ss]tring\s*\(","tostring("); 
-		code = replace(code,"(![\w\.][\w\.]+)\.[Tt]o[sS]tring\(\s*\)","tostring(\1)"); 
 		
 		//-------------------- 控制台 -------------------------------------------- 
 		
@@ -1413,6 +1418,9 @@ class aifix{
 						}
 						elseif(..string.indexOf(params,",")){
 							ret =  beginstr + `cls="`+cls+`",`+ params ++ endstr;
+						} 
+						else{
+							ret =  beginstr + `cls="`+cls+`"` ++ endstr;
 						} 
 						
 						var ret,count = replace(ret,"![\w._$]parent\s*=\s*"+formName+"\s*[;,]?","");

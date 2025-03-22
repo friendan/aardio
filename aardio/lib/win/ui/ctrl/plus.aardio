@@ -182,6 +182,8 @@ class plus {
 		var clipBkRect;
 		if( clipBk && winform.background ){ 
 			var hdc = graphics.getDc();
+			if(!hdc) return;
+			
 			clipBkRect = ..win.getRect(owner.hwnd);
 			if( this.parent != winform) ..win.mapRect(this.parent.hwnd,winform.hwnd,clipBkRect);
 			winform.background.drawRect(hdc, clipBkRect);

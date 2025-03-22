@@ -635,7 +635,6 @@ graphics = 该变量名仅适用于表示gdip.graphics对象\n!gdipgraphics.
 !gdipgraphics.pixelOffsetMode = @.pixelOffsetMode = _GdipPixelOffsetMode__/*像素偏移模式*/;
 !gdipgraphics.smoothingMode = @.smoothingMode = _GdipSmoothingMode__/*平滑模式,可用于抗锯齿, 文本抗锯齿请使用textRenderingHint*/;
 !gdipgraphics.textRenderingHint = @.textRenderingHint = _GdipTextRenderingHint__/*文本的呈现模式,可用于抗锯齿*/;
-!gdipgraphics.width = 宽度
 !gdipgraphics._image = 创建画板时使用的gdip.image对象\n!gdipimage.
 !gdipgraphics._hwnd = 创建画板时使用的句柄
 !gdipgraphics._bitmap = 创建画板时使用的gdip.bitmap对象\n!gdipbitmap.

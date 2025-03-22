@@ -55,7 +55,7 @@ winform.button.oncommand = function(id,event){
 			return;
 		}
 		
-		if(string.endWith(fullPath,".aardio",true)){
+		if(string.endsWith(fullPath,".aardio",true)){
 			//工具与范里里的 aardio 文件后缀名必须小写
 			fullPath = string.replace(fullPath,"\.<@@aardio@>$",".aardio");
 			
@@ -66,7 +66,7 @@ winform.button.oncommand = function(id,event){
 		}  
 	}
 	
-	if(aarData && !string.endWith(aarData,'\r\n')){
+	if(aarData && !string.endsWith(aarData,'\r\n')){
 		string.save(aarFilePath, '\r\n'+friendlyname+"="+filePath,true) 
 	}
 	else {
@@ -77,7 +77,7 @@ winform.button.oncommand = function(id,event){
 }
 
 winform.editPath.onChange = function(){ 
-	winform.chkRunAs.hide  = string.indexAny(owner.text,"\/") || !string.endWith(owner.text,".aardio",true) ;
+	winform.chkRunAs.hide  = string.indexAny(owner.text,"\/") || !string.endsWith(owner.text,".aardio",true) ;
 }
 
 winform.onDropFiles = function(files){

@@ -7,20 +7,20 @@ edit={cls="edit";left=13;top=12;right=426;bottom=382;edge=1;multiline=1;z=1}
 /*}}*/
 
 import key.hook;
-var hook = key.hook();
+var keyboardHook = key.hook();
 
 //录制回调函数
-hook.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){ 
-	if( injected ) return; //模拟鼠标不处理
+keyboardHook.proc = function(msg,vkCode,scanCode,injected,flags,timeStamp,extraInfo){ 
+	if( injected ) return; //模拟按键不处理
   
-    var kn = key.getName( vkcode ); 
+    var vkName = key.getName( vkCode ); 
     	
     select(msg) {
     	case 0x100/*_WM_KEYDOWN*/ ,0x104/*_WM_SYSKEYDOWN*/ {
-    	    winform.edit.print("按下","虚拟键名称:" + kn,"键码:"+vkcode)
+    	    winform.edit.print("按下","虚拟键名称:" + vkName,"键码:"+vkCode)
     	}
     	case 0x101/*_WM_KEYUP*/,0x105/*_WM_SYSKEYUP*/ {
-    	    winform.edit.print("弹起","虚拟键名称:" + kn,"键码:"+vkcode)
+    	    winform.edit.print("弹起","虚拟键名称:" + vkName,"键码:"+vkCode)
     	}  
     } 
     
@@ -39,9 +39,10 @@ hook.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){
 建议检查一下是否安装了什么特别的软件导致了这样的问题。
 
 一般不使用这种方法实现快捷键、热键功能,
-创建快捷键、热键参考:aardio范例->Windows窗口应用->快捷键
+创建快捷键、热键参考: aardio范例 / Windows窗口 / 快捷键
 end details**/ 
 
-winform.show(true) 
+winform.show(true); 
 win.loopMessage();  
-hook.close();
+
+keyboardHook.close();

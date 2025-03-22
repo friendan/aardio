@@ -384,6 +384,12 @@ namespace driver{
 			var result = this.title.get();
 			if( result[["status"]] == 0 )  return result.value;
 		};
+		getSource = function(){
+			var r,e = this.source.get();
+			if( r[["status"]] === 0 ){
+				return r.value
+			}
+		};
 		getCurrentWindow = function(){
 			var result = this.window_handle.get();
 			if( result[["status"]] == 0 )  return result.value;
@@ -496,7 +502,7 @@ namespace driver{
 					return r.value
 				}
 			};
-			getProperty = function(){
+			getProperty = function(name){
 				var r,e = this.property[name].get();
 				if( r[["status"]] === 0 ){
 					return r.value
@@ -832,7 +838,6 @@ window.rect.get() = 获取窗口位置\nHTTP接口：GET /session/{session id}/w
 window.rect(__) = 前进\POST	/session/{session id}/window/rect
 window.maximize() = 最大化\nHTTP接口：POST /session/{session id}/window/maximize
 window.minimize() = 最小化\nHTTP接口：POST /session/{session id}/window/minimize
-source.get() = 获取页面源码\nHTTP接口：GET /session/{session id}/source
 cdp( = 执行 CDP 命令。 \n调用成功则第一个返回值为 CDP 返回的表对象。\n调用失败则第二个返回值为错误信息。 \n注意 CDP 调用成功不等于命令执行成功，\n即使调用成功且第一个返回值为表对象， \n该返回值仍解码器能包含错误状态码与错误信息。\n返回表对象的字段含义请参考 CDP 文档。\n\nHTTP接口：POST /session/{session id}/goog|ms/cdp/execute
 doScript( = 执行脚本\nHTTP接口：POST /session/{session id}/execute/sync
 doScript(.("JS脚本",其他调用参数) = JS脚本会被放到一个匿名函数中执行,\n可添加任意个调用参数,节点对象可作为参数\n成功返回该匿名函数的返回值,\n失败返回null,以及REST API返回的响应对象
@@ -841,7 +846,7 @@ loadScript("__") = 加载JS脚本文件\n参数指定JS文件网址\n\n此函数
 cookie.get() = 获取cookie,也可以写为cookie.name.get \nHTTP接口：GET /session/{session id}/cookie
 cookie(__) = 修改cookie\nHTTP接口：POST /session/{session id}/cookie
 cookie.delete() = 删除cookie,\n也可以写为cookie.name.delete删除指定名字cookie\nDELETE	/session/{session id}/cookie/{name}
-source.get() = 获取页面源码\nHTTP接口：GET /session/{session id}/source
+getSource() = 获取网页 HTML 源码。
 actions(__) = 执行动作\nHTTP接口：POST /session/{session id}/actions
 actions.delete() = 删除动作\nDELETE	/session/{session id}/actions
 alert.dismiss() = 取消alert\nHTTP接口：POST /session/{session id}/alert/dismiss
@@ -896,8 +901,8 @@ sendKeys(__) = 在该节点发送按键。\n参数可指定一个或多个键名
 setValue(__) = 使用一个或多个字符串参数指定要发送的文本。\n如果要发送 chrome.driver.KEYS 定义的按键，必须指定对应键名的键值。\n改用 sendKeys 函数可在参数中指定键名
 getValue() = 返回文本值
 innerText() = 获取节点文本
-getAttribute() = 返回 HTML 标签属性值，成功返回字符串值，否则为 null 值
-getProperty() = 返回节点属性值
+getAttribute(__) = 返回 HTML 标签属性值，参数 @1 指定属性名。\n成功返回字符串值，失返返回 null 值
+getProperty(__) = 返回节点对象属性值，参数 @1 指定属性名。\n成功返回字符串值，失返返回 null 值
 getStyle(__) = 返回 CSS 样式指定属性值，参数 @1 指定属性名 
 getName(__) = 返回 name 属性值
 getRect(__) = 返回一个表示节点区块位置的 ::RECT 结构体

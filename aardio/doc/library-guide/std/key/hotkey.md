@@ -168,7 +168,7 @@ superHotkey = key.hotkey();
 superHotkey.loadTable({
 	
 	// 按 Ctrl+ I 触发热键
-	["Ctrl+I"] = function(hFocus){  
+	["Ctrl+Shift+F1"] = function(hFocus){  
 			
 			
 		//创建多线程以执行耗时操作，以避免阻塞键盘钩子消息导致热键失效。

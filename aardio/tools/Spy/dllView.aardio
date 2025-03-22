@@ -58,7 +58,7 @@ import raw.pefile;
 var showPeFile = function(pefile){
 	
 	if(pefile.getClrHeader()){
-		winform.lbInfo.text = ( ..string.endWith(pefile.path,".exe",true) ? ".Net 程序" : ".Net 程序集" )
+		winform.lbInfo.text = ( ..string.endsWith(pefile.path,".exe",true) ? ".Net 程序" : ".Net 程序集" )
 		
 		if( winform.btnLoad.text != "反编译" ){
 			tbs.selIndex = 2; 
@@ -101,7 +101,7 @@ var showPeFile = function(pefile){
 		if(names){
 			for(k,v in names){ 
 				if(v.name=="MetaDataGetDispenser"){
-					winform.lbInfo.text = ( ..string.endWith(pefile.path,".exe",true) ? ".Net 程序" : ".Net 程序集" ) 
+					winform.lbInfo.text = ( ..string.endsWith(pefile.path,".exe",true) ? ".Net 程序" : ".Net 程序集" ) 
 					if( winform.btnLoad.text != "反编译" ){ 
 						winform.btnLoad.text = "反编译";
 					} 
@@ -175,7 +175,7 @@ winform.editFilePath.editBox.onOk = function(){
 import fsys.lnk;
 winform.onDropFiles = function(files){
     var path = files[1];
-    if(string.endWith(path,".lnk",true)){
+    if(string.endsWith(path,".lnk",true)){
     	var lnk = fsys.lnk().load(path);
     	if(lnk){
     		path = lnk.path;
@@ -188,7 +188,7 @@ winform.onDropFiles = function(files){
 	winform.editFilePath.text = path;
 	winform.btnLoad.oncommand();
 	
-	if(string.endWith(path,".exe",true)){
+	if(string.endsWith(path,".exe",true)){
 		if(!winform.listview.count){
 			tbs.selIndex = 2;
 		} 

@@ -780,6 +780,7 @@ cookies[__] = @.cookies["__/*键名*/"] = {
 	expires = time().addday(7);
 	maxAge = 3600;
 }
+_headersWritten = 是否已向客户端发送 HTTP 头。\n如果已发送 HTTP 头，则后续修改 HTTP 状态码或响应头将被忽略。\n调用代码不应修改此属性。
 status = 响应状态码,值可以为数值或文本,\n默认为"200 OK"
 contentType = @.contentType = "application/json";__/*指定响应数据的MIME类型,默认为"text/html"*/
 charset = 输出字符集\n可以为空,默认值为UTF-8\n不建议更改此值

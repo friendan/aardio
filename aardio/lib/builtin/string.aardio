@@ -276,6 +276,8 @@ namespace string{
 		if(#s) return s;
     }
 
+	startsWith = startWith;//@Deprecated
+	endsWith = endWith;//@Deprecated
  	toUnicode = toUtf16;//@Deprecated
 	fromUnicode = fromUtf16;//@Deprecated
 	fromUnicodeIf = fromUtf16If;//@Deprecated

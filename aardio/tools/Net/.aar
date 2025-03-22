@@ -1,4 +1,4 @@
-﻿扫码传文件=asynHttpServer.aardio
+﻿扫码快传=asynHttpServer.aardio
 HTTP 代码生成=inetHelper.aardio
 HTTP 状态码检测=inetStatus.aardio
 RUNAS//网卡切换=NetworkConnections.aardio

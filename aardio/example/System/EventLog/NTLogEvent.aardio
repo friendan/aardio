@@ -20,13 +20,13 @@ for event in com.wmi.eachProperties(`SELECT * FROM Win32_NTLogEvent WHERE
  	var tm = time.utc( event.TimeWritten ).local();
  	
  	if(event.EventCode==7001 && event.SourceName=="Microsoft-Windows-Winlogon"){
- 		var idx,sid = table.find(event.InsertionStrings,lambda(v) string.startWith(v,"S-"));
+ 		var idx,sid = table.find(event.InsertionStrings,lambda(v) string.startsWith(v,"S-"));
  		var userName = sys.acl.sidStringToUserName(sid); 
  		
  		console.log(tm,userName + " 登录成功") 		
  	} 
  	if(event.EventCode==7002 && event.SourceName=="Microsoft-Windows-Winlogon"){
- 		var idx,sid = table.find(event.InsertionStrings,lambda(v) string.startWith(v,"S-"));
+ 		var idx,sid = table.find(event.InsertionStrings,lambda(v) string.startsWith(v,"S-"));
  		var userName = sys.acl.sidStringToUserName(sid); 
  		
  		console.log(tm,userName, " 已注销" ) 		

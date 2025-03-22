@@ -127,16 +127,19 @@ self.invoke = function(...){
 	..raw.closehandle( h ); 
 };
 
+serializeForm = function(form,kernelCall){
+	if( kernelCall ){ 
+		if( form[["_parentForm"]] && (!form._defaultProc[[0xACCD/*_WM_THREAD_CALLWND*/]]) ) form.threadCallable();
+		return ..string.format("{hwnd = %d; @thread.callWndMeta;}",form.hwnd);  
+	}
+	else {
+		return ..string.format("{hwnd = %d;}",form.hwnd);  
+	}	
+}
+
 callWndMeta =  {
 	_serialize = function(kernelCall){
-		if( kernelCall ){ 
-			if( owner[["_parentForm"]] && (!owner._defaultProc[[0xACCD/*_WM_THREAD_CALLWND*/]]) ) owner.threadCallable();
-			return ..string.format("{hwnd = %d; @thread.callWndMeta;}",owner.hwnd);  
-		}
-		else {
-			return ..string.format("{hwnd = %d;}",owner.hwnd);  
-		}
-		
+		return serializeForm(owner,kernelCall);
 	};
 	_get = function(k,ownerCall){
 		var hwnd = owner.hwnd;
@@ -346,6 +349,7 @@ thread.stillActive(__) = 线程是否未退出,参数为线程句柄
 thread.callWndMeta = 跨线程传输的窗口对象元表,用于支持跨线程调用
 thread._callableSerialize = 界面线程内非窗口对象 _serialize 元方法设定为此函数,可支持跨线程调用,\n绑定此元方法后，对象传入其他线程后所有成员调用都将回到界面线程执行
 thread.callable(__) = 开启界面线程非窗口对象的多线程界面回调功能。\n此函数会将对象的_serialize 元方法指定为 thread._callableSerialize,\n用于在界面线程内启用对象跨线程调用支持,注意启用后无法撤消,\n启用此特性后,对象传入其他线程后所有成员调用都将回到界面线程执行,\n\n参数指定 talbe 类型对象\n如果成功、或者对象已支持跨线程调用返回 true \n失败返回null或false
+thread.serializeForm(.(winform,kernelCall) = 用于在 _serialize 元方法内部返回序列化的窗体对象。\n窗体对象的 _serialize 元方法已默认调用此函数。\n显式调用此函数通常用于在线程间序列化对象传递其他窗体对象以替代自身。\n用法可参考 winex.loading 源码。\n\n参数 winform 必须指定一个窗体对象或者 hwnd 字段值为窗体句柄的表对象。\nkernelCall 参数必须是 _serialize 元方法的回调参数。
 thread.init(.(k,v) = 如果参数k指定名称的线程共享变量为空值,\n则初始化该变量值为参数v指定的值
 thread.add(.(k,v) = 对参数k指定线程共享变量名称的数值增加参数v指定的计数\n参数v可以使用负数执行减操作
 thread.var( = 创建线程共享变量 - 可直接作为调用参数传入其他线程

@@ -6,7 +6,7 @@ ide.command.join( ide.processGroup() );
 var projPath = ide.getProjectPath();
 if(!#projPath) return;
 
-if( ..string.startWith(projPath,"\\") ) {
+if( ..string.startsWith(projPath,"\\") ) {
 	import win;
 	win.msgboxErr('请不要在共享文件中打开工程文件:\n' + projPath,"aardio",ide.getMainHwnd());
 	return;

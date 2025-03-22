@@ -161,8 +161,8 @@ mainForm.cmbFunctions.onEditChange  = win.debounce(function(){
 	if(!items) return;
 	
     var text = mainForm.cmbFunctions.text;
-    var items1 = table.filter( items, lambda(v) string.startWith(v,text,true) ); 
-    var items2 = table.filter( items, lambda(v) (!string.startWith(v,text,true) && string.find(v,"@@"+text)) ); 
+    var items1 = table.filter( items, lambda(v) string.startsWith(v,text,true) ); 
+    var items2 = table.filter( items, lambda(v) (!string.startsWith(v,text,true) && string.find(v,"@@"+text)) ); 
 
     mainForm.cmbFunctions.autoComplete( table.append(items1,items2),1) //更新下拉列表	
 },300)

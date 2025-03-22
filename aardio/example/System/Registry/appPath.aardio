@@ -21,7 +21,7 @@ winform.cmbPath.onEditChange  = win.debounce(function(){
 	var lst = process.cache.list(false);
 	var files = table.filter(lst,function(v,index){
 		var f = io.splitpath(v).file;
-		return(f &&..string.startWith(f,filename,true));
+		return(f &&..string.startsWith(f,filename,true));
 	}) 
 	
     winform.cmbPath.autoComplete(files:{},1) //更新下拉列表	

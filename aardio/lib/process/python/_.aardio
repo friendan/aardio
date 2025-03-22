@@ -103,7 +103,7 @@ namespace process{
     	} 
     	
     	execfile = function(path,...){ 
-    	    var args = ..process.joinArguments(..io.fullpath(path),...);
+    	    var args = ..process.joinArguments({..io.fullpath(path),...});
     		return ..process.python(args);
     	}
     	

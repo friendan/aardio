@@ -393,7 +393,7 @@ pageNum = 读取或设置当前活动页码，页码自 1 开始
 extractBookmarks() = 提取目录,返回 fsys.pdfium.bookmark 对象
 getMeta() = 获取pdf属性表
 extractText() = 提取当前页文本
-asBitmap() = 当前页转换为 gdip.bitmap 对象
+asBitmap() = 当前页转换为 gdip.bitmap 对象\n!gdipbitmap.
 eachTextRect() = 遍历当前页文本块
 eachTextRect() = @for left,top,right,bottom,text in ??.eachTextRect(){
 	__/*遍历当前页文本区块。\nleft,top,right,bottom 分别为左上右下位置。\ntext 为文本*/

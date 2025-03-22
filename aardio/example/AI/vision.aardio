@@ -1,0 +1,61 @@
+//AI 图像识别
+import web.form.chat;
+var chatUi = web.form.chat();
+chatUi.showLoading(" 正在识别图像");
+
+//屏幕选区
+import mouse.screenArea;
+var screenArea = mouse.screenArea();
+
+//保存屏幕选区
+screenArea.onSelectionChanged = function(rc){
+	
+	import gdip.snap;
+	var bmp = gdip.snap(screenArea.hwnd,rc.xywh());
+	var pngData = bmp.saveToBuffer("*.png");  
+	
+	import inet.urlData;
+	var imgUrl = inet.urlData(pngData,".png"); 
+	
+	//添加用户提示词
+	chatUi.prompt("识别图像并分析总结",  imgUrl )
+	
+	owner.close();
+}
+screenArea.doModal();
+
+//创建 AI 对话线程
+thread.invoke( 
+	function(chatUi){
+		
+		//创建 AI 客户端
+		import web.rest.aiChat;
+		var aiClient = web.rest.aiChat(
+			key =   '\0\1\96';//密钥（API key）
+			url = "https://ai.aardio.com/api/v1/";//接口地址
+			model = "doubao-1-5-vision-pro-32k"
+		)  
+		
+		//调用聊天接口。
+		var resp,err = aiClient.messages(chatUi.chatMessage,
+			function(deltaText,reasoning){
+				
+				//输出思考过程
+				if(reasoning) { 
+					chatUi.showThinking(reasoning);
+				}
+				
+				//输出回复，自带高性能 Markdown 解析器。
+				chatUi.writeDelta(deltaText);
+			}
+		);
+		
+		if(err){
+			chatUi.errorMessage(err);
+		}
+		
+	},chatUi //将窗口对象作为参数传入工作线程
+)
+	
+//显示模态窗口
+chatUi.doModal();

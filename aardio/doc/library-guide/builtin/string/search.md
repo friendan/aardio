@@ -82,7 +82,7 @@ console.pause();
 
 ### 五、检测是否以指定字符串开始
 
-`string.startWith(str,substr,是否忽略大小写=false)  `
+`string.startsWith(str,substr,是否忽略大小写=false)  `
   
 判断第二个字符串参数 @substr是否位于第一个字符串参数 @str 开始处。参数三为可选参数(默认为false)
 
@@ -90,14 +90,14 @@ console.pause();
 
 ```aardio
 import console;
-console.log( string.startWith("abcdefg","abc") ) //显示true
-console.log( string.startWith("abcdefg","efg") ) //显示false
+console.log( string.startsWith("abcdefg","abc") ) //显示true
+console.log( string.startsWith("abcdefg","efg") ) //显示false
 console.pause(); 
 ```  
 
 ### 六、检测是否以指定字符串结束
 
-`string.endWith(str,substr,是否忽略大小写=false)  `
+`string.endsWith(str,substr,是否忽略大小写=false)  `
   
 判断第二个字符串参数 @substr 是否位于第一个字符串参数 @str 结束处。可选参数三指定是否忽略大小写( 默认值为false )。
 
@@ -105,7 +105,7 @@ console.pause();
   
 ```aardio
 import console;
-console.log( string.endWith("abcdefg","abc") ) //显示false
-console.log( string.endWith("abcdefg","efg") ) //显示true
+console.log( string.endsWith("abcdefg","abc") ) //显示false
+console.log( string.endsWith("abcdefg","efg") ) //显示true
 console.pause(); 
 ```

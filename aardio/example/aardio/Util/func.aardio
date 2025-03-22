@@ -5,11 +5,11 @@ import console;
 
 //util.bind可用于修改函数的默认实参,并生成新的函数
 string.findMail = util.bind( string.match, ,"\w+[\w\-\.]+\w@\w+[\w\-]*\w\.[\w\-\.]*\w{2,}" )
-string.endWith = util.bind( string.endWith, , ,true)
+string.endsWith = util.bind( string.endsWith, , ,true)
 
 console.log( 
 	string.findMail("aaaaaaaaaa web@aardio.com "),
-	string.endWith( "a abc","ABC" )
+	string.endsWith( "a abc","ABC" )
 )
 
 //===================================================

@@ -13,7 +13,7 @@ import process;
 import win.clip
 
 var str  = win.clip.read();
-if( str ? string.startWith(str,"HKEY_") ){
+if( str ? string.startsWith(str,"HKEY_") ){
 	winform.edit.text = str;
 }
 

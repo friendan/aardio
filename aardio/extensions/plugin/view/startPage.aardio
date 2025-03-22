@@ -24,7 +24,7 @@ wbLayout.wait();
 import string.xml;
 getProjectInfo = function(path){
  	if(!path) return;
- 	if( ..string.startWith(path,"\\") ) return;
+ 	if( ..string.startsWith(path,"\\") ) return;
  	
 	var xmlstr = string.load(path); 
 	if(!xmlstr) return;
@@ -171,11 +171,11 @@ wbLayout.sinking = {
 		}
 		["default"] = function (ltTarget,ltEle,reason,behaviorParams) {
 			var path = ltEle.href;
-			if(..string.startWith(path,"doc://")){
+			if(..string.startsWith(path,"doc://")){
 				ide.openDocument(path)
 				return true;
 			}
-			if( ..string.endWith(path,".aardio",true)  ){  
+			if( ..string.endsWith(path,".aardio",true)  ){  
 				if( ..io.exist(path)) {
 					ide.createProcess(path);
 					return true;

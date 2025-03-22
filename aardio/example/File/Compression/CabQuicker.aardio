@@ -59,7 +59,7 @@ frmCompress.wndproc = function(hwnd,message,wParam,lParam){
 	select(message) {//判断消息类型
 		case 0x233/*_WM_DROPFILES*/ { 
 			var path = win.getDropFile(wParam )[1];
-			if( ..string.endWith(path,".cab",true) ){
+			if( ..string.endsWith(path,".cab",true) ){
 				frmUnCompress.editSrc.text = path;
 				winform.tab.selIndex = 2;
 				return;
@@ -124,7 +124,7 @@ frmUnCompress.wndproc = function(hwnd,message,wParam,lParam){
 	select(message) {//判断消息类型
 		case 0x233/*_WM_DROPFILES*/ { 
 			var path = win.getDropFile(wParam )[1];
-			if( !..string.endWith(path,".cab",true) ){
+			if( !..string.endsWith(path,".cab",true) ){
 				frmCompress.editSrc.text = path;
 				winform.tab.selIndex = 1;
 				return;

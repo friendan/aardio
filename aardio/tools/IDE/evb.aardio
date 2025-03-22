@@ -33,7 +33,7 @@ for(i=1;#dirs;1){
 
 for(i=1;#files;1){
 	var hItem = winform.checklist.addItem(files[i]);
-	if(string.endWith(files[i],".exe",true) || string.endWith(files[i],".dll",true)){
+	if(string.endsWith(files[i],".exe",true) || string.endsWith(files[i],".dll",true)){
 		winform.checklist.setChecked(hItem,true)
 	}
 }

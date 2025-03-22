@@ -14,7 +14,7 @@ winform.combobox.items = itemData;
 winform.combobox.onEditChange = function(){ 
  
     var text = winform.combobox.text;
-    var items = table.filter( itemData, lambda(v) string.startWith(v,text) ); 
+    var items = table.filter( itemData, lambda(v) string.startsWith(v,text) ); 
     winform.combobox.autoComplete(items);  
 }
 

@@ -216,7 +216,7 @@ for(k,resName in resLibs){
 	var customBuild = fiber.create(
 		function(resName){
 			var libPath,libDir = io.libpath(resName);
-			if(libDir && libPath && ..string.endWith(libPath,"_.aardio",true) ){
+			if(libDir && libPath && ..string.endsWith(libPath,"_.aardio",true) ){
 				var builder = io.joinpath(libDir,".build\main.aardio");
 				if( io.exist( builder ) ){
 					var tHnd,tId = thread.create(builder)

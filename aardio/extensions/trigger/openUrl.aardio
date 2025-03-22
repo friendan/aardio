@@ -1,20 +1,20 @@
 import ide;
 
 var url = _ARGV[1];
-if(string.startWith(url,"doc://")){ 
+if(string.startsWith(url,"doc://")){ 
 	ide.openDocument(url);
 	return;
 }
 
-if(string.startWith(url,"file://~/",true) 
-	&& (string.endWith(url,".aardio",true) || string.endWith(url,".aproj",true) ) 
+if(string.startsWith(url,"file://~/",true) 
+	&& (string.endsWith(url,".aardio",true) || string.endsWith(url,".aproj",true) ) 
 	){
 	url = string.right(url,-8);
 	ide.openDocument(url);
 	return;
 }
 
-if(string.startWith(url,"file://",true) ){
+if(string.startsWith(url,"file://",true) ){
 	url = string.expand(url);
 }
 

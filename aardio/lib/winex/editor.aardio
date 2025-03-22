@@ -464,9 +464,23 @@ selectAll = function(){
 	}
 }
 
-
+var thinkingTrimmed;
 sendString = function(str){
 	if(!str) return;
+	
+	if( str[1] == '\n'# && str[1] == '\n'# && ..winex[["loading"]][["isThinking"]]){
+		if( ..winex.loading.isThinking() ){
+			if(!thinkingTrimmed){
+				str = ..string.right(str,-3);
+				thinkingTrimmed = true;
+			} 
+		} 
+		else {
+			thinkingTrimmed = null;
+		}
+	}
+	
+	if(!#str) return;
 	
 	var hwnd = ..winex.getFocus();
 	

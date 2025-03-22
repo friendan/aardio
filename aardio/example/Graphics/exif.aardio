@@ -23,7 +23,7 @@ for( tagId,tagName,propertyItem,t in exifTags.each() ){
 	支持用 tostring 转为文本，或用 tonumber 转为单个数值。
 	*/
 	
-	//if(string.startWith(tagName,"Gps")){
+	//if(string.startsWith(tagName,"Gps")){
 		console.printf('0x%04x\t%s\t%s',tagId, tagName, tostring(propertyItem)  ) 
 		console.more( 10 ) 
 	//}

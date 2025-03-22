@@ -209,7 +209,7 @@ winform.btnSetCurrent.oncommand = function(id,event){
 			import sys.wallpaper;
 			import inet.http;
 			
-			if(string.startWith(path,"http",true)){ 
+			if(string.startsWith(path,"http",true)){ 
 				var filename = string.match(path,"\w+.jpg");
 				if(!filename) {
 					winform.btnSetCurrent.disabledText = null;
@@ -259,7 +259,7 @@ winform.btnExplorer.oncommand = function(id,event){
 	var path = winform.editPath.text;
 	if(!#path) return winform.msgboxErr("请选择图像");
 	
-	if(string.startWith(path,"http",true)){
+	if(string.startsWith(path,"http",true)){
 		process.execute(path);
 	}
 	else {

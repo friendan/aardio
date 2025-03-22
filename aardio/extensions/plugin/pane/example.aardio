@@ -1,4 +1,5 @@
 //树形文件视图
+sleep(1000);
 import win.ui;
 /*DSG{{*/
 mainForm = win.form(text="范例";right=270;bottom=534;bgcolor=16777215;border="none";exmode="none";mode="child";parent=...)
@@ -117,7 +118,7 @@ explorer.onRightClick = function(filePath,hItem,x,y){
             		var newPath = frmSnippet.doModal();
             		
             		if(newPath){
-            			if(string.endWith(newPath,".aardio")){
+            			if(string.endsWith(newPath,".aardio")){
             				ide.openDocument(newPath);
             			}
             			

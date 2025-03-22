@@ -8,18 +8,39 @@
 
     ```aardio
     import web.rest.aiChat;
-    var aiClient = web.rest.aiChat(   
-        //测试密钥 24 小时后失效
+    var aiClient = web.rest.aiChat({
         key = '这里指定 API 密钥';
         url = "这指指定大模型接口地址";
         model = "这里指定模型名称";
         temperature = 0.1;//可选指定温度
         topP = 0.8;//可选指定 top-p 参数
         maxTokens = 1024,//可选指定最大回复长度
-    )
-    ```
+   } )
+   ```
 
     一般指定了 temperature 就不要指定 topP，与编程有关的 temperature 参数应当偏低以增强准确性与严谨性。
+
+    对于推理模型可选在参数表中添加 reasoning 字段自定义推理强度，
+    以 Claude 3.7 为例：
+
+    ```aardio
+    import web.rest.aiChat;
+    var aiClient = web.rest.aiChat({
+        key = '这里指定 API 密钥';
+        url = "这指指定大模型接口地址";
+        model = "claude-3.7-sonnet"; 
+        maxTokens = 2048,//可选指定最大回复长度
+        reasoning = {
+            maxTokens = 2048；
+        }
+   } )
+   ```    
+
+   如果是 OpenAI 的模型，则配置字段 reasoning 内可使用 effort 字段 指定推理强度，可选值为  "high", "medium", 或 "low" 。
+
+   可选使用 aiClient.extraParameters 指定一个表，表中的键值对将作为参数添加到所有请求数据中。
+
+   可选使用 aiClient.extraUrlParameters 指定一个表，表中的键值对将作为 URL 参数添加到所有请求网址。
 
 2. 创建聊天消息对列，保存对话上下文。
 
@@ -267,18 +288,48 @@ var ok,err = ai.messages(chatMsg,console.writeText);
 
 ## 五、AI 搜索 <a id="search" href="#search">&#x23;</a>
 
+如果是用于 aardio 编程的 AI 助手推荐使用 aardio 提供的 <a href="http://aardio.com/vip" >VIP 专属接口</a>，
+aardio 提供了专业版知识库，匹配速度更快，也更加智能与准确。
+
+### 调用 Tavily 搜索接口 <a id="exa" href="#exa">&#x23;</a>
+
+Tavily 搜索质量不错，而且只要注册账号就可以每月可以免费搜索 1000 次。
+
+示例：
+
+```aardio
+
+//导入 Tavily 搜索接口
+import web.rest.jsonClient;
+var http = web.rest.jsonClient();
+http.setAuthToken("接口密钥");
+var tavily = http.api("https://api.tavily.com");
+
+//搜索，不建议指定 include_raw_content 参数（ 返回的 raw_content 可能有乱码 ）.
+var resp = tavily.search(
+	query = "aardio 如何读写 JSON",
+	max_results = 3, //限制返回结果数，默认值为 5。
+	//topic = "news", //限定返回最新数据，可用 days 字段限制天数（默认为 3 天内）。 
+	include_domains = {"www.aardio.com"}, //可选用这个字段限定搜索的域名
+)
+
+//创建对话消息队列
+import web.rest.aiChat; 
+var msg = web.rest.aiChat.message();
+ 
+//将搜索结果添加到系统提示词
+msg.url(resp[["results"]])
+
+//添加用户提示词
+msg.prompt( "DeepSeek 有哪些成就" );
+```
 
 ### 调用 Exa 搜索接口 <a id="exa" href="#exa">&#x23;</a>
 
 一般需要根据用户的最后一个提示词进行搜索，并将搜索结果添加到最后一个用户提示词之前。
 
 ```aardio
-import web.rest.aiChat;
-
-//创建对话消息队列
-var msg = web.rest.aiChat.message();
-
-//导入 Exa 索接口
+//导入 Exa 搜索接口
 import web.rest.jsonClient; 
 var exaClient = web.rest.jsonClient(); 
 exaClient.setHeaders({ "x-api-key":"接口密钥"} )
@@ -292,6 +343,10 @@ var searchData,err = exa.search({
     includeDomains:{"www.aardio.com"},//可以在指定网站内搜索
     type:"keyword" //一般 keyword 搜索就够了（价格低一些）
 })
+
+//创建对话消息队列
+import web.rest.aiChat; 
+var msg = web.rest.aiChat.message();
  
 //将搜索结果添加到系统提示词
 msg.url(searchData[["data"]][["webPages"]][["value"]])
@@ -300,10 +355,7 @@ msg.url(searchData[["data"]][["webPages"]][["value"]])
 msg.prompt( "DeepSeek 有哪些成就" );
 ```
 
-exa.ai 的搜索效果较好，但速度有点慢，
-
-用于 aardio 编程的 AI 助手还是更建议大家使用 aardio 官方提供的专用接口，
-aardio 官方的 AI 接口专业版知识库，匹配速度更快也更智能，生成的内容与代码质量也更好。
+exa.ai 的搜索质量不错。
 
 ### 调用博查搜索接口 <a id="bocha" href="#bocha">&#x23;</a>
 
@@ -334,3 +386,7 @@ msg.url(searchData[["data"]][["webPages"]][["value"]])
 //添加用户提示词
 msg.prompt( "DeepSeek 最近有哪些新闻事件" );
 ```
+
+## 六、调用 RAG 知识库接口
+
+请参考：[调用火山方舟知识库接口](volcengine.md#knowledge)

@@ -23,7 +23,7 @@ if(fsys.isDir(filepath)){
 }
 
 var m = fsys.mime.fromFile(filepath);
-if( ..string.startWith(m,"image/",true)){
+if( ..string.startsWith(m,"image/",true)){
 
     var opened;
     fsys.wow64.disableRedirection(
@@ -46,7 +46,7 @@ if( ..string.startWith(m,"image/",true)){
 }
 
 var tpath = io.splitpath( string.lower(filepath) );
-if( ..string.startWith(m,"text/",true)  
+if( ..string.startsWith(m,"text/",true)  
 	|| tpath.ext ==".js"
 	|| tpath.ext ==".ts"
 	|| tpath.ext ==".html"

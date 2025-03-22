@@ -179,11 +179,13 @@ namespace metaProperty {
 				}
 			};
 			hide = {
-				_get = function(){ 
+				_get = function(ownerCall){ 
+					if(ownerCall) return function() owner.show(0/*_SW_HIDE*/);
+					
 					return ! ..win.getStyle(owner[["hwnd"]],0x10000000/*_WS_VISIBLE*/ ) 
 				}
 				_set = function(v){ 
-					owner.show(!v ? true:0x0/*_SW_HIDE*/)
+					owner.show(!v ? true:0/*_SW_HIDE*/)
 				}
 			
 			};

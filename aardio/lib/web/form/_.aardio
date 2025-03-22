@@ -916,6 +916,7 @@ namespace form {
 				}
 			}
 		};
+		show = lambda(...) owner._form.show(...);
 		doModal = lambda(...) owner._form.doModal(...);
 	) 
 	
@@ -1420,7 +1421,9 @@ document.compatMode = "BackCompat" 对应 quirks mode(无DTD声明)\n"CSS1Compat
 !wb.jQuery("__") = jQuery选择器,并可自动载入jQuery库\nn首次调用按需加载jQuery v1.10:\n "/res/js/jQuery/jQuery.min.js"\n失败则通过网络CDN服务器下载jquery-1.9.0.min.js\n\n注意 jQuery v1.6.3 以上 ajax 函数才会支持 res 协议访问 EXE 资源文件\nIE11 内核默认已阻止 ajax 访问本地文件,\n改用 wsock.tcp.simpleHttpServer/asynHttpServer 访问本地文件即可
 !wb.jQuery() = 无参数时返回jQuery类对象\n首次调用按需加载 jQuery v1.9:\n "/res/js/jQuery/jQuery.min.js"\n失败则通过网络CDN服务器下载jquery-1.9.0.min.js\n!jQuery.
 !wb.doModal(.(ownerForm,showFlags) = 宿主窗口显示为模态对话框。\n可选用参数 @ownerForm 指定所有者窗口，\n参数 @showFlags 可选用 _SW_ 前缀常量指定显示选项。
-!jQuery.val() = 取值
+!wb.show(.(true) = 显示窗口
+!wb.show(.(false) = 隐藏窗口
+jQuery.val() = 取值
 !jQuery.val("__") = 赋值
 !jQuery.hide() = 隐藏
 !jQuery.show() = 显示

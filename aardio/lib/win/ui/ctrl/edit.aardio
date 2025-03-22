@@ -213,7 +213,12 @@ edit._metaProperty =  metaProperty(
     	
     	if(text) owner.selText = text;
     };
-    scrollCaret = function(){
+    scrollToLine = function(line){
+    	var cl = owner.lineFromChar(owner.caretPos)
+    	owner.lineScroll(line-cl);
+    };
+    scrollCaret = function(pos){
+       if(pos!==null) owner.caretPos = pos;
        ::SendMessage( owner[["hwnd"]] , 0xB7/*_EM_SCROLLCARET*/);
     };
     canUndo = function(){
@@ -615,7 +620,7 @@ edit._metaProperty =  metaProperty(
 !edit._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 !edit.getParent() = 返回父窗口\n!static.
 !edit.setParent(__/*控件对象*/) = 改变父窗口 
-!edit.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。
+!edit.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。\n\n以 `.` 前导的 `.hide()` 作为成员函数被调用时，\n作用等价于将 hide 属性设为 null 。
 !edit.disabled = 控件时否禁用
 !edit.left = 左侧坐标
 !edit.right = 右侧坐标
@@ -631,8 +636,9 @@ edit._metaProperty =  metaProperty(
 !edit.printf(.(->->->) = 将多个参数调用string.format格式化后追加到文本尾部\n并追加换行
 !edit.appendText( = 追加文本并移动光标插入点到文本尾部。
 !edit.appendText(.(追加文本-->->) = 追加文本并移动光标插入点到文本尾部。\n可指定零个、或多个参数，参数可以是字符串、buffer、数值。\n传入其他类型参数会抛出异常。\n返回文本总长度
-!edit.scrollCaret() = 滚动到光标处
-!edit.lineScroll(.(滚动到指定行) = 滚动条移动到指定行\n如果不指定参数则滚动到最后一行 
+!edit.scrollCaret() = 滚动到输入光标处，可选用一个数值参数指定新的输入光标位置。
+!edit.scrollToLine(.(指定行) = 将光标移动到指定行，并滚动到该行。
+!edit.lineScroll(.(滚动行数) = 滚动条垂直滚动指定行数。\n如果不指定参数则滚动到最后一行 
 !edit.lineToChar(__/*指定行号*/) = 获取指定行首字符位置\n省略参数表示当前行,小于0表示自尾部倒数到指定行,-1表示最后一行
 !edit.lineToChar() = 获取当前选定行首字符位置
 !edit.lineFromChar(__/*指定位置*/) = 返回指定位置行数

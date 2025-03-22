@@ -179,45 +179,45 @@ richedit._metaProperty =  metaProperty(
 		if( fm.mask === null ) fm.mask = 0;
 		
 		if(fm.point) fm.yHeight/*twips*/ = fm.point * 20/*pt*/; 
-		if(fm.bold) {
-			fm.weight = 700;
-			fm.effects = (fm.effects:0)|1/*_CFE_BOLD*/;
+		if(fm.bold!==null) {
+			fm.weight = fm.bold?700:400;
+			if(fm.bold)fm.effects = (fm.effects:0)|1/*_CFE_BOLD*/;
 			fm.mask = fm.mask | 1/*_CFM_BOLD*/;
 		}
 		
-		if(fm.underline){
-			fm.effects = (fm.effects:0)|4/*_CFE_UNDERLINE*/
+		if(fm.underline!==null){
+			if(fm.underline) fm.effects = (fm.effects:0)|4/*_CFE_UNDERLINE*/
 			fm.mask = fm.mask | 4/*_CFM_UNDERLINE*/;
 			if(fm.underlineType===null)fm.underlineType=1/*_CFU_UNDERLINE*/
 		}
 		
-		if(fm.italic){
-			fm.effects = (fm.effects:0)|2/*_CFE_ITALIC*/
+		if(fm.italic!==null){
+			if(fm.italic) fm.effects = (fm.effects:0)|2/*_CFE_ITALIC*/
 			fm.mask = fm.mask |2/*_CFM_ITALIC*/;
 		}
 		
-		if(fm.strikeout){
-			fm.effects = (fm.effects:0)|8/*_CFE_STRIKEOUT*/
+		if(fm.strikeout!==null){
+			if(fm.strikeout) fm.effects = (fm.effects:0)|8/*_CFE_STRIKEOUT*/
 			fm.mask = fm.mask |8/*_CFM_STRIKEOUT*/;
 		}
 		
-		if(fm.disabled){
-			fm.effects = (fm.effects:0)|0x2000/*_CFE_DISABLED*/
+		if(fm.disabled!==null){
+			if(fm.disabled) fm.effects = (fm.effects:0)|0x2000/*_CFE_DISABLED*/
 			fm.mask = fm.mask |0x2000/*_CFM_DISABLED*/;
 		}
 		
-		if(fm.link){
-			fm.effects = (fm.effects:0)|0x20/*_CFE_LINK*/; 
+		if(fm.link!==null){
+			if(fm.link) fm.effects = (fm.effects:0)|0x20/*_CFE_LINK*/; 
 			fm.mask = fm.mask |0x20/*_CFM_LINK*/;
 		} 
 		
-		if(fm.hidden){
-			fm.effects = (fm.effects:0)| 0x100/*_CFE_HIDDEN*/
+		if(fm.hidden!==null){
+			if(fm.hidden) fm.effects = (fm.effects:0)| 0x100/*_CFE_HIDDEN*/
 			fm.mask = fm.mask |0x100/*_CFM_HIDDEN*/;  
 		}  
 		
-		if(fm.protected){
-			fm.effects = (fm.effects:0)|0x10/*_CFE_PROTECTED*/
+		if(fm.protected!==null){
+			if(fm.protected) fm.effects = (fm.effects:0)|0x10/*_CFE_PROTECTED*/
 			fm.mask = fm.mask |0x10/*_CFM_PROTECTED*/;
 		}
 		
@@ -897,7 +897,7 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit._parentForm = 创建该控件的父窗口（win.form对象）,\n设计时窗体容器是所有拖放在窗体上的控件的 _parentForm,\n\n即使窗口移除子窗口样式、更改父子关系，或以 orphanWindow显示,\n控件的 _parentForm 始终都不会改变\n!winform.
 !richedit.getParent() = 返回父窗口\n!static.
 !richedit.setParent(__/*控件对象*/) = 改变父窗口 
-!richedit.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。
+!richedit.hide = 当前控件窗口是否隐藏。\n仅检查当前窗口的可见性样式（窗口 是否移除了 _WS_VISIBLE 样式）。\n不考虑父窗口是否可见，不考虑是否被其他窗口遮挡。\n如果需要同时判断父窗口的可见性，应改用 win.isVisible 函数。\n\n以 `.` 前导的 `.hide()` 作为成员函数被调用时，\n作用等价于将 hide 属性设为 null 。
 !richedit.disabled = 控件时否可见
 !richedit.left = 左侧坐标
 !richedit.right = 右侧坐标
@@ -906,7 +906,8 @@ win.ui.ctrl.richedit() = 多功能文本框控件\n!richedit.
 !richedit.width = 宽度
 !richedit.height = 高度
 !richedit.limit = 字符数限制
-!richedit.scrollCaret() = 滚动到光标处
+!richedit.scrollCaret() = 滚动到输入光标处，可选用一个数值参数指定新的输入光标位置。
+!richedit.scrollToLine(.(指定行) = 将光标移动到指定行，并滚动到该行。
 !richedit.deselect() = 取消选定
 !richedit.setSelCharformat( = 设置选区样式。\n用法细节请参考 richedit 库函数文档。\n如果当前没有选区则修改插入点样式，新的样式仅在插入位置修改前有效。\n\n可调用控件的 setFocus,setsel 函数修改选区或光标插入位置。
 !richedit.setSelCharformat(.(charformat2) = 参数 @charformat2 使用 win.ui.ctrl.CHARFORMAT2 结构体设置文本样式，\n传入仅指定部分字段的表将自动转换为 CHARFORMAT2 结构体。\例如修改字体颜色可传入 {textColor=0x00ff00}

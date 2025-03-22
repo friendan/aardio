@@ -74,8 +74,8 @@ winform.btnPub.oncommand = function(id,event){
     		fsys.copy(libpath,"~\tools\IDE\.pub-lib\temp\")
     		
     		var loadPrivateFont = "";
-    		if(..string.startWith(libname,"fonts.") ){
-    			if(..string.endWith(libpath,".aardio") ){
+    		if(..string.startsWith(libname,"fonts.") ){
+    			if(..string.endsWith(libpath,".aardio") ){
     				var code = string.load(libpath)
     				var fontpath = string.match(code,`\$\"(\~?/lib/fonts/.res/.+?\.ttf)\"`);
     				if(!fontpath)fontpath = string.match(code,`\$\"(\~?\\lib\\fonts\\.res\\.+?\.ttf)\"`);

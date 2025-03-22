@@ -117,7 +117,7 @@ srvHttp.run(
 		if(request.path=="/upload/main.aardio"){
 			if(request.method=="DELETE"){
 				var path = request.postData();
-				if(path && string.startWith(path,"/upload/")){
+				if(path && string.startsWith(path,"/upload/")){
 					path = ..io.joinpath(srvHttp.documentRoot,path)
 					
 					if(io.exist(path)){

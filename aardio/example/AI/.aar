@@ -1,5 +1,8 @@
 ﻿调用大模型 API=aiChat.aardio
+AI 聊天界面=chatUi.aardio
 调用本地函数=function-calling.aardio
+AI 图像识别=vision.aardio
+Gemini 图像接口=gemini-image-gen.aardio
 AI 搜索=search.aardio
 Token 计数=llmTokens.aardio
 自动续写补全=aiHotkey.aardio

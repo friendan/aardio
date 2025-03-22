@@ -808,7 +808,7 @@ inet.http() = !inet_http.
 !inet_http.setSessionOption( _INTERNET_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_http.setRequestOption( _INTERNET_OPTION__, ) = 设置会话选项,\n参数可以是数值或结构体\n用法参数MSDN
 !inet_http.lastRequestUrl = 最后一次请求成功的URL
-!inet_http.setTimeouts(.(连接超时,请求超时,接收超时) = 设置超时,以亳秒为单位(1秒为1000毫秒)
+!inet_http.setTimeouts(.(连接超时,请求超时,接收超时) = 设置超时,以亳秒为单位（1秒为1000毫秒）。
 !inet_http.connectFlags = 指定打开服务端连接的默认选项\n此选项一般用户不需要了解，如果需要请参考beginRequest函数的源码以及相关API文档
 !inet_http.flags = @.flags = _INTERNET_FLAG___/*\n指定打开网址请求的默认选项\n禁用自动cookie管理请指定_INTERNET_FLAG_NO_COOKIE\n\n此选项一般用户不需要了解，\n请参考beginRequest函数的源码以及相关API文档\n*/ 
 !inet_http.accept = 指定可选择的文件类型,多个类型使用逗号分隔\n默认无需指定,也可以在参数中指定

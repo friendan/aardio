@@ -41,7 +41,7 @@ var showAsarInfo = function(){
 
 winform.editAsarPath.oncommand = function(id,event){ 
 	if( event == 0x300/*_EN_CHANGE*/){
-		if( ..string.endWith(winform.editAsarPath.text,"*.asar")){
+		if( ..string.endsWith(winform.editAsarPath.text,"*.asar")){
 				if( ..io.exist(winform.editAsarPath.text)){
 					showAsarInfo();
 				};

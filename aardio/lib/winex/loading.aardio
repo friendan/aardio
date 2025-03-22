@@ -45,13 +45,30 @@ class loading{
 				)
 				
 				frmProgress.getThinkingHwnd = function(deltaText){
-					frmProgress.editThinking.orphanWindow()
-					return frmProgress.editThinking.hwnd;
+					if(frmProgress.hwndThinking) return frmProgress.hwndThinking;
+					
+					frmProgress.editThinking.orphanWindow() 
+					frmProgress.hwndThinking = frmProgress.editThinking.hwnd;
+					return frmProgress.hwndThinking;
 				}
 				
 				frmProgress.isCanceled = function(){
 					return !frmProgress.valid;
 				}
+				
+				frmProgress.isThinking = function(){
+ 					if(frmProgress.hwndThinking) return ..win.isVisible(frmProgress.hwndThinking);
+ 				};
+				
+				frmProgress.thinking = function(reasoning){ 
+					var hwnd = frmProgress.getThinkingHwnd();
+					if(!..win.isWindow(hwnd)) return;
+			
+					var len = ::SendMessage(hwnd,0xE/*_WM_GETTEXTLENGTH*/ ); 
+					::User32.SendMessage(hwnd,0xB1/*_EM_SETSEL*/,len+1 ,len+1);
+					::User32.SendMessage(hwnd,0xC2/*_EM_REPLACESEL*/,,reasoning);
+					return true;; 
+ 				};
 				
 				var form = threadFormProgress.get();
  				if(form) form.close(); 
@@ -135,7 +152,7 @@ class loading{
 		
 		..table.gc(this,"close");		
  	}; 
- 	
+
  	thinking = function(reasoning){ 
  		if(!this.hwndThinking){
  			var form = __LOADING_FORM.get()
@@ -168,6 +185,11 @@ class loading{
  	isCanceled = function(){
  		return owner.eventStop.waitOne(0);
  	};
+ 	
+ 	isThinking = function(){
+ 		var form = __LOADING_FORM.get()
+ 		if(form) return form.isThinking();
+ 	};
  
 	@_meta	
 }
@@ -193,6 +215,11 @@ namespace loading{
  		}
  	}
  	
+ 	isThinking = function(){
+ 		var form = __LOADING_FORM.get()
+ 		if(form) return form.isThinking();
+ 	};
+ 	
  	valid = function(){
  		return lastLoading && lastLoading.isCanceled();
  	} 
@@ -203,10 +230,12 @@ namespace loading{
 winex.loading = 创建加载动画窗口。\n同线程不会同时创建多个 winex.loading 。\n同进程中创建动画窗口总会关闭之前的动画窗口。\n如果之前创建了动画窗口会自动关闭。\n动画窗口会创建独立的线程，不阻塞当前线程。
 winex.loading.close() = 如果创建了动画窗口，则关闭该窗口。\n支持关闭其他线程创建的 winex.loading 窗口。\n\n如果导入了 winex.loading，\nweb.rest.aiChat 在退出 messages 时会自动调用此函数。
 winex.loading.valid() = 当前线程是否有正在显示的动画窗口。
+winex.loading.isThinking() = 是否已显示处理思考过程窗口。
 winex.loading( = 创建多线程动画窗口。\nwinex.loading 对象可传入其他线程直接使用。\n所有线程都可以调用 winex.loading.close 关闭此动画窗口。
 winex.loading(.(title,hwndOwner,style) = 可选用参数 @1 指定标题，不要超过 4 个字。\n可选用参数 @2 指定所有者窗口。\n可选用参数 @3 自定义样式，样式格式与 plus 控件 skin 函数参数相同。
 winex.loading() = !winexLoading.
+!winexLoading.isThinking() = 是否已显示处理思考过程窗口。
 !winexLoading.isCanceled() = 用户是否已取消操作（关闭进度动画窗口）
 !winexLoading.close() = 关闭加载动画窗口，允许重复调用。\n对象回收时也会自动调用此函数。
-!winexLoading.thinking(__/*处理进度*/) = 参数指定描述处理进度的增量字符串，例如推理过程。\n进度窗口关闭时返回 false，否则返回 true。
+!winexLoading.thinking(__/*思考过程*/) = 参数指定描述思考过程的增量字符串，例如推理过程。\n进度窗口关闭时返回 false，否则返回 true。
 end intellisense*****/ 

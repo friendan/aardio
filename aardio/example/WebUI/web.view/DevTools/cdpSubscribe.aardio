@@ -1,4 +1,6 @@
 //事件
+import crypt;
+import console;
 import win.ui;
 /*DSG{{*/
 var winform = win.form(text="CDP 事件";right=818;bottom=507)
@@ -13,8 +15,18 @@ winform.show();
 wb.cdp("Network.enable");
 
 //订阅 CDP 事件
-wb.cdpSubscribe("Network.requestWillBeSent",function(cdpResult){
-	winform.text = cdpResult.documentURL; 
+wb.cdpSubscribe("Network.requestWillBeSent",function(params){
+	
+	//https://chromedevtools.github.io/devtools-protocol/tot/Network/#event-requestWillBeSent
+	if(params.request.url == params.documentURL){
+		
+		winform.text = params.request.url; 
+		
+		//获取 HTTP 请求头。
+		var headers = params.request.headers;
+		console.dumpJson(headers);
+	
+	}
 	
 	//CDP 事件应尽快退出，
 	//如果返回函数，该函数将在 CDP 事件退出以后异步执行。
@@ -23,15 +35,12 @@ wb.cdpSubscribe("Network.requestWillBeSent",function(cdpResult){
 	} 
 })
 
-import crypt;
-import console;
- 
 //订阅 CDP 事件
-wb.cdpSubscribe("Network.responseReceived",function(cdpResult){
+wb.cdpSubscribe("Network.responseReceived",function(params){
 
 	//CDP 事件内部不要阻塞调用其他 CDP 命令。
 	wb.cdp("Network.getResponseBody",
-		{requestId = cdpResult.requestId},
+		{requestId = params.requestId},
 		
 		//使用回调函数异步调用其他 CDP 命令
 		function(result,err){
@@ -50,6 +59,5 @@ wb.cdpSubscribe("Network.responseReceived",function(cdpResult){
 	) 
 } ) 
 
- 
 wb.go("https://www.aardio.com");
 win.loopMessage();

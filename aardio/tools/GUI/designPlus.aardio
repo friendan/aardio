@@ -236,8 +236,8 @@ for(name,ctrl in winform.eachControl("plus") ){
     	}
     	
     }
-    if(string.startWith(name,"chk") ){
-        if(string.startWith(name,"chkBorder") ){
+    if(string.startsWith(name,"chk") ){
+        if(string.startsWith(name,"chkBorder") ){
            
      		ctrl.skin(
     			color = { 
@@ -259,7 +259,7 @@ for(name,ctrl in winform.eachControl("plus") ){
             
 			ctrl.oncommand = function(id,event){ 
 			 	var chkCtrl = winform.currentChkColorCtrl;
-				if(chkCtrl ? string.startWith(chkCtrl.styleCtrlName,"chkBd") ){
+				if(chkCtrl ? string.startsWith(chkCtrl.styleCtrlName,"chkBd") ){
 					winform.onStyleChanged(
 						winform.currentChkColorCtrl.styleCtrlName,
 						winform.currentChkColorCtrl.checked,
@@ -291,7 +291,7 @@ for(name,ctrl in winform.eachControl("plus") ){
 
 		clrCtrl.checkColorCtrl = ctrl;
 		ctrl.styleCtrlName = name;
-		if(string.startWith(name,"chkBd") ){
+		if(string.startsWith(name,"chkBd") ){
 		
 			ctrl.oncommand = function(id,event){ 
 				winform.chkBorderTop.disabled = false;
@@ -363,7 +363,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
     
 	var style = previewStyle;
 	var styleStateTitle = ""
-	if( string.endWith(styleCtrlName,"Checked") ){
+	if( string.endsWith(styleCtrlName,"Checked") ){
 		if(!style.checked) style.checked = {} 
 		style = style.checked;
 		styleStateTitle = "(勾选后)"
@@ -390,7 +390,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 		styleStateTitle = "默认状态" + styleStateTitle;
 	}
 		
-	if(string.startWith(styleCtrlName,"chkBg")){
+	if(string.startsWith(styleCtrlName,"chkBg")){
 		if(!style.background)style.background={};
 		style.background[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：背景色 " + styleStateTitle;
@@ -398,7 +398,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 			style.background = null;
 		}
 	}
-	elseif(string.startWith(styleCtrlName,"chkFg")){
+	elseif(string.startsWith(styleCtrlName,"chkFg")){
 		if(!style.foreground)style.foreground={};
 		style.foreground[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：背景色 " + styleStateTitle;
@@ -406,7 +406,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 			style.foreground = null;
 		}
 	}
-	elseif(string.startWith(styleCtrlName,"chkTxt")){
+	elseif(string.startsWith(styleCtrlName,"chkTxt")){
 		if(!style.color)style.color={};
 		style.color[styleState] = styleCtrlChecked ? styleCtrlColor : null
 		winform.lbCurrentState.text = "正在编辑：文本色 " + styleStateTitle;
@@ -415,7 +415,7 @@ winform.onStyleChanged = function(styleCtrlName,styleCtrlChecked,styleCtrlColor)
 			style.color = null;
 		}
 	}
-	elseif(string.startWith(styleCtrlName,"chkBd")){
+	elseif(string.startsWith(styleCtrlName,"chkBd")){
 		winform.lbCurrentState.text = "正在编辑：边框色 " + styleStateTitle;
 		
 		if(!style.border)style.border={};
@@ -622,7 +622,7 @@ winform.chkPreviewBackground.oncommand = function(id,event){
 
 winform.tbBorderRadius.oncommand = function(id,event,pos){
 	var chkCtrl = winform.currentChkColorCtrl;
-	if(chkCtrl ? string.startWith(chkCtrl.styleCtrlName,"chkBd") ){
+	if(chkCtrl ? string.startsWith(chkCtrl.styleCtrlName,"chkBd") ){
 		winform.onStyleChanged(
 			winform.currentChkColorCtrl.styleCtrlName,
 			winform.currentChkColorCtrl.checked,
@@ -633,7 +633,7 @@ winform.tbBorderRadius.oncommand = function(id,event,pos){
 
 winform.tbBorderPadding.oncommand = function(id,event,pos){
 	var chkCtrl = winform.currentChkColorCtrl;
-	if(chkCtrl ? string.startWith(chkCtrl.styleCtrlName,"chkBd") ){
+	if(chkCtrl ? string.startsWith(chkCtrl.styleCtrlName,"chkBd") ){
 		winform.onStyleChanged(
 			winform.currentChkColorCtrl.styleCtrlName,
 			winform.currentChkColorCtrl.checked,
@@ -644,7 +644,7 @@ winform.tbBorderPadding.oncommand = function(id,event,pos){
 
 winform.tbBorderWidth.oncommand = function(id,event,pos){
 	var chkCtrl = winform.currentChkColorCtrl;
-	if(chkCtrl ? string.startWith(chkCtrl.styleCtrlName,"chkBd") ){
+	if(chkCtrl ? string.startsWith(chkCtrl.styleCtrlName,"chkBd") ){
 		winform.onStyleChanged(
 			winform.currentChkColorCtrl.styleCtrlName,
 			winform.currentChkColorCtrl.checked,
@@ -836,7 +836,7 @@ var pickerSetColor = winform.clrPicker.setColor;
 	updateIconStyle(config.winform.plusPreviewIconFont); 
 	
 	for(name,ctrl in winform.eachControl("plus") ){ 
-		if(string.startWith(name,"chk") ){
+		if(string.startsWith(name,"chk") ){
     		ctrl.oncommand ();
 		}
 	}
@@ -1089,22 +1089,22 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 		}
 		
 		var tab;
-		if( string.startWith(name,"cBg") ){
+		if( string.startsWith(name,"cBg") ){
 			clrName = "背景"
 			clrNameEn = "background"
 			tab = bg;
 		}
-		elseif( string.startWith(name,"cFg") ){
+		elseif( string.startsWith(name,"cFg") ){
 			clrName = "前景"
 			clrNameEn = "foreground"
 			tab = fg;
 		}
-		elseif( string.startWith(name,"cTxt") ){
+		elseif( string.startsWith(name,"cTxt") ){
 			clrName = "文本"
 			clrNameEn = "text"
 			tab = txt;
 		}
-		elseif( string.startWith(name,"cBd") ){
+		elseif( string.startsWith(name,"cBd") ){
 			clrName = "边框"
 			clrNameEn = "border"
 			tab  = border;
@@ -1113,7 +1113,7 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 			continue ;
 		}
 		
-		if( string.endWith(name,"Checked") ){
+		if( string.endsWith(name,"Checked") ){
 			clrName = clrName+"/勾选"
 			clrNameEn = clrNameEn + "/checked"
 			tab = tab.chk;
@@ -1166,7 +1166,7 @@ winform.btnOpenColorTable.oncommand = function(id,event){
 
 winform.onDropFiles = function(files){
 	var path = files[1];
-	if(!..string.endWith(path,".colors")){
+	if(!..string.endsWith(path,".colors")){
 		return;
 	}
 	
@@ -1271,7 +1271,7 @@ winform.editIconText.oncommand = function(id,event){
 var loadExampleStyle = function(exampleCtrl){
 
 	for(name,ctrl in winform.eachControl("combobox") ){ 
-		if(string.startWith(name,"chk") ){
+		if(string.startsWith(name,"chk") ){
     		ctrl.selIndex = 1;
 		}
 	}
@@ -1285,7 +1285,7 @@ var loadExampleStyle = function(exampleCtrl){
 	winform.editIconTextPadding.text = "0,0,0,0  //左,上,右,下";
 	
 	for(name,ctrl in winform.eachControl("plus") ){ 
-		if(string.startWith(name,"chk") ){
+		if(string.startsWith(name,"chk") ){
     		ctrl.checked = false;
 		}
 	}

@@ -68,11 +68,17 @@ isInteger = function(v) {
     }
 };
 
-stringify = function(v,p){  
+stringify = function(v,p){
 	if(isSize64(v)) return tostring(v);
 	
     var i,f = modf(v);
-    return (!f) ? ..string.format("%.0f",v) : ..string.trimright(..string.format("%."+(p:15)+"f",v),"0"); 
+    if(!f) return ..string.format("%.0f",v);
+    
+    if(!p){
+    	var s = tostring(v);
+    	if(!..string.find(s,"[Ee]")) return s;
+    }
+    return ..string.trimright(..string.format("%."+(p:15)+"f",v),"0"); 
 };
 
 roundToEven = function (v,p){ 

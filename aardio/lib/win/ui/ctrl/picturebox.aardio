@@ -40,8 +40,8 @@ picturebox._metaProperty = metaProperty(
 		}
 		_set = function( v ){
 	
-			if(type(v)==type.pointer)
-				return owner.setBitmap(v);
+			if(type(v)==type.pointer || v[["pBitmap"]])
+				return owner.setBitmap(v); 
 				
 			var img = ..com.picture.load(v)
 			if(!img){
@@ -73,6 +73,19 @@ picturebox._metaProperty = metaProperty(
 		return retPrev;
 	} 
 	setBitmap = function(h,delPrev){
+		if(h[["pBitmap"]]){
+			var h2 = h.copyHandle(); 
+			if(!h2) return;
+			
+			var r = owner.setBitmap( h2 );  
+			
+			if(owner.getBitmap()!=h2){
+				::DeleteObject(h2)
+			}
+			return r;
+		}
+		
+			
 		if(delPrev!==false) owner.clear();
 		owner.modifyStyle(3/*_SS_ICON*/,0xE/*_SS_BITMAP*/);
 		
@@ -130,9 +143,9 @@ picturebox._metaProperty = metaProperty(
 /***intellisense()
 !picturebox.cls = 设计时类名
 !picturebox.className = 运行时类名
-!picturebox.image = 按钮图片或图标\n赋值必须是图片文件路径或数据\n位图句柄由窗体负责销毁\n取值时返回位图句柄
-!picturebox.setIcon(__/*图标句柄*/) = 设置图标\n成功返回 true，自动销毁原来的位图。
-!picturebox.setBitmap(__/*图片句柄*/) = 设置图片\n成功返回 true，自动销毁原来的位图。\n\n注意：\n如果位图包含透明通道，控件会使用复制的位图副本。\n调用者必须自行释放传入的位图句柄。\n可比对 getBitmap 返回的句柄与设置的句柄验证此问题\ngdip.bitmap 复制的位图句柄就会有这个问题。\ncom.picture 加载的 GIF 图像无此问题\n\n改用 plus 控件没有这些麻烦
+!picturebox.image = 控件图像。\n取值时仅返回位图句柄。\n赋值时可指定图像文件路径、图像数据、位图句柄、gdip.bitmap 对象 之一。\n设为位图句柄时由窗体负责销毁，设为 gdip.bitmap 对象则自动调用 copyHandle 函数获取句柄。
+!picturebox.setIcon(__/*图标句柄*/) = 设置控件显示的图标，参数 @1 指定图标句柄。\n成功返回 true，自动销毁控件原来的位图或图标。
+!picturebox.setBitmap(__/*位图句柄*/) = 设置控件显示的位图。\n参数 @1 可指定位图句柄或 gdip.bitmap 对象。\n成功返回 true，自动销毁控件原来的位图或图标。\n\n注意：\n如果位图包含透明通道，控件会使用复制的位图副本。\n调用者必须自行释放传入的位图句柄。 \n可比对 getBitmap 返回的句柄与设置的句柄验证此问题。\n参数指定 gdip.bitmap 复制的位图句柄就会有这个问题。\ncom.picture 加载的 GIF 图像无此问题。\n直接在参转中传入 gdip.bitmap 对象或改用 plus 控件可避免此问题。 
 !picturebox.setIcon(__/*图标句柄*/,false) = 设置图标\n如果参数 @2 恒等于 false ，\n则成功返回控件原来的位图或图标句柄
 !picturebox.setBitmap(__/*图片句柄*/,false) = 设置图片\n如果参数 @2 恒等于 false ，\n则成功返回控件原来的位图或图标句柄
 !picturebox.getBitmap() = 返回位图句柄或图标句柄。\n返回值 1 为图标句柄则返回值 2 为 1/*_IMAGE_ICON*/\n返回值 1 为位图句柄则返回值 2 为 0/*_IMAGE_BITMAP*/
@@ -179,5 +192,5 @@ picturebox._metaProperty = metaProperty(
 !picturebox.reloadScale() = 按设计时位置参数、重新调整控件位置以适应窗口当前缩放比例。\n父窗口缩放时会自动执行此操作。\n默认在启动窗口消息循环时会自适应调整所有控件。\n所以在启动消息循环前添加控件不必调用此函数。
 !picturebox.adjust = @.adjust = function( cx,cy,wParam ) {	 \n	__/*窗口缩放时会自动触发此函数。\ncx 参数为窗口宽度,cy 参数为窗口高度,\nwParam 参数请参考 _WM_SIZE 消息参数说明,一般不用管。\n\n所有 win.form 创建的窗体和控件都支持此事件,\n重复赋值只会追加而不会覆盖此事件。\n一般不建议添加一个 wndproc 仅仅是为了处理  _WM_SIZE 消息，\n定义 adjust 事件是更好的选择。\n\n可主动调用此事件,省略参数时 cx,cy 参数默认设为窗口大小*/  \n}; 
 ?win.ui.ctrl.picturebox  =!picturebox.
-win.ui.ctrl.picturebox() = 图片控件\n!picturebox.
+win.ui.ctrl.picturebox() = 图像控件。\n推荐改用功能更强大的高级图像控件（plus 控件）。\n!picturebox.
 end intellisense***/

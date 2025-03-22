@@ -19,17 +19,26 @@ superHotkey = key.hotkey();
  
 superHotkey.loadTable({
 	
-	// 按 Ctrl+Shift+F1 触发热键
+	// 按 Ctrl+Shift+F1 调用沉浸式 AI 助手，务必修改下面代码中的 API 接口配置与密钥。
 	["Ctrl+Shift+F1"] = function(hFocus){   
 		/*智能续写与补全{{*/
 
 		//创建多线程以执行耗时操作，以避免阻塞键盘钩子消息导致热键失效。
 		thread.invoke( 
 			function(winform,hFocus){  
+				import web.rest.aiChat; 
+				var aiClient = web.rest.aiChat(
+					//务必修改下面代码中的 API 接口配置与密钥
+					key =   '\0\1\96';
+					url = "https://ai.aardio.com/api/v1/";//接口地址
+					model = "test-model-id";//模型名称首字符为 @ 则使用 Anthropic 接口
+					temperature = 0.5;//温度
+					maxTokens = 1024,//最大回复长度
+				)
+				
 				//import java.accessBridge;//支持 Java 程序窗口，例如 JetBrains 系列
 				import winex.editor;
-				import win.version; 
-				import web.rest.aiChat; 
+				import win.version;
 				import key;
 				
 				//获取当前文本输入窗口光标插入点前后的文本。				
@@ -107,19 +116,7 @@ console.log("Hello,
 				if(string.find(leftText,"<//>|<# >|<!\N[ \t]*#>|<#:>\N*[ \t]*$")){
 					winex.editor.sendString('\n')
 				}
-					    
-				var aiClient = web.rest.aiChat(
-					/*
-					下面的测试密钥 24 小时后失效，
-					DeepSeek 的 key 充 10 元估计能用一年，请自己申请一个吧！
-					*/
-					key =   '\0\48\67\91\29\5\81\84\83\83\4\5\81\81\6\1\86\4\9\84\1\9\1\82\2\86\0\0\83\7\81\6\7\5\86\86\82';
-					url = "https://api.deepseek.com/v1";//接口地址
-					model = "deepseek-chat";//模型名称首字符为 @ 则使用 Anthropic 接口
-					temperature = 0.5;//温度
-					maxTokens = 1024,//最大回复长度
-				)
-				 
+				
 				import winex.loading;
 				var loading = winex.loading("Thinking",hFocus) //进度动画
 				 

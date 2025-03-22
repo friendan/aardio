@@ -126,11 +126,11 @@ import inet.http;
 var userFontLibs = {};
 var addUserFont = function(path){
     var family;
-    if(..string.startWith(path,"//")){
+    if(..string.startsWith(path,"//")){
     	path = "http:" + path;
     }
     
-    if(..string.startWith(path,"http") || ..string.startWith(path,"//")){
+    if(..string.startsWith(path,"http") || ..string.startsWith(path,"//")){
     	var http = inet.http();
     	var data = http.get(path);
     	if(#data){
@@ -161,7 +161,7 @@ var addUserFont = function(path){
 		if( ! winform.cbFonts.findEx(fontName) ) winform.cbFonts.add(fontName); 
 		
 		showFonts(fontName);
-		if(!..string.startWith(path,"http",true) ){
+		if(!..string.startsWith(path,"http",true) ){
 			ide.loadPrivateFont(path);	
 		} 
 		
@@ -331,7 +331,7 @@ winform.plusSet.oncommand = function(id,event){
 			strImport = 'import fonts.'+stdFontLibs[winform.currentIconFontName ] + ';\r\n';
 		}
 		elseif(userFontLibs[winform.currentIconFontName]){
-			if(string.startWith(userFontLibs[winform.currentIconFontName],"http",true)){
+			if(string.startsWith(userFontLibs[winform.currentIconFontName],"http",true)){
 				strImport = 'import fonts.httpFamily\r\nfonts.httpFamily("'+userFontLibs[winform.currentIconFontName] + '");\r\n'
 			}
 			else {
@@ -419,7 +419,7 @@ winform.plusSet.oncommand = function(id,event){
 		}
 		elseif(userFontLibs[winform.currentIconFontName]){
 			if(!string.find(frmCode,"@"+userFontLibs[winform.currentIconFontName])){
-				if(string.startWith(userFontLibs[winform.currentIconFontName],"http",true)){
+				if(string.startsWith(userFontLibs[winform.currentIconFontName],"http",true)){
 					frmCode = 'fonts.httpFamily("'+userFontLibs[winform.currentIconFontName] + '");\r\n'+ frmCode;
 					if(!string.find(frmCode,"import\s*fonts.httpFamily")) frmCode = 'import fonts.httpFamily;\r\n'+ frmCode ; 
 				}
